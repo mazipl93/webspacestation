@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WEB SPACE STATION</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;800;900&display=swap" rel="stylesheet">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         :root {
             --accent: #00d2ff;
@@ -37,6 +37,8 @@
             align-items: center;
             justify-content: center;
             background: var(--bg);
+            overflow: hidden;
+            text-align: center;
         }
 
         #stars-canvas {
@@ -46,45 +48,53 @@
             z-index: 1;
         }
 
-        #nebula-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 2;
-            mask: url(#text-mask);
-            -webkit-mask: url(#text-mask);
+        .hero-title-container {
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            width: 100%;
         }
 
-        .mask-svg-container {
-            position: absolute;
-            width: 100%; height: 100%;
-            pointer-events: none;
+        .hero-title {
+            font-size: 10vw;
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: 0.9;
+            background: linear-gradient(45deg, #00d2ff, #ff00ff, #00d2ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 5s linear infinite;
+            filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.3));
         }
+
+        @keyframes shine { to { background-position: 200% center; } }
 
         /* --- MENU --- */
         .menu-btn {
             position: fixed;
-            top: 30px; right: 30px;
+            top: 25px; right: 25px;
             z-index: 1001;
-            background: rgba(0, 210, 255, 0.1);
+            background: rgba(1, 1, 3, 0.8);
             border: 1px solid var(--accent);
             color: white;
             width: 55px; height: 55px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.3s;
+            backdrop-filter: blur(10px);
         }
 
         .nav-panel {
             position: fixed;
-            top: 0; right: -400px;
-            width: 400px; height: 100%;
+            top: 0; right: -100%;
+            width: 100%; height: 100%;
+            max-width: 400px;
             background: rgba(5, 5, 10, 0.98);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             z-index: 1000;
             padding: 100px 50px;
             transition: 0.5s cubic-bezier(0.77, 0, 0.175, 1);
@@ -92,45 +102,48 @@
         }
 
         .nav-panel.active { right: 0; }
-        .nav-panel a { display: block; color: white; text-decoration: none; font-size: 1.8rem; margin: 25px 0; font-weight: 300; transition: 0.3s; }
+        .nav-panel a { display: block; color: white; text-decoration: none; font-size: 1.8rem; margin: 30px 0; font-weight: 300; transition: 0.3s; }
         .nav-panel a:hover { color: var(--accent); padding-left: 10px; }
 
         /* --- SECTIONS --- */
         section { position: relative; z-index: 5; padding: 100px 5%; }
-        .section-title { font-size: 3rem; margin-bottom: 80px; text-align: center; letter-spacing: 10px; color: var(--accent); text-transform: uppercase; }
+        .section-title { font-size: 2.5rem; margin-bottom: 60px; text-align: center; letter-spacing: 8px; color: var(--accent); text-transform: uppercase; }
 
         /* --- ARTICLES --- */
-        .articles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto 100px; }
+        .articles-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
         .art-card { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; transition: 0.4s; opacity: 0; transform: translateY(30px); }
         .art-card.visible { opacity: 1; transform: translateY(0); }
         .art-card:hover { border-color: var(--accent); background: rgba(0, 210, 255, 0.05); }
+        .art-card h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--accent); }
+        .art-card p { font-weight: 300; line-height: 1.6; color: #ccc; }
 
-        /* --- MISSIONS (TIMELINE) --- */
+        /* --- MISSIONS --- */
         .missions-container { max-width: 1000px; margin: 0 auto; position: relative; }
         .missions-container::before { content: ''; position: absolute; left: 50%; width: 2px; height: 100%; background: linear-gradient(to bottom, transparent, var(--accent), transparent); transform: translateX(-50%); }
 
-        .mission-item { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 100px; opacity: 0; transition: 1s all ease; }
+        .mission-item { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 100px; opacity: 0; transition: 1s all ease; position: relative; }
         .mission-item.visible { opacity: 1; }
         .mission-item:nth-child(even) { flex-direction: row-reverse; }
 
         .mission-content { width: 45%; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; transition: 0.3s; }
-        .mission-content:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(0, 210, 255, 0.2); }
-        .mission-img { width: 100%; height: 200px; background-size: cover; background-position: center; filter: grayscale(0.5) contrast(1.2); }
-        .mission-content:hover .mission-img { filter: grayscale(0); }
-
+        .mission-content:hover { transform: scale(1.03); box-shadow: 0 0 30px rgba(0, 210, 255, 0.2); }
+        .mission-img { width: 100%; height: 200px; background-size: cover; background-position: center; filter: grayscale(0.3); }
         .mission-text { padding: 25px; }
         .mission-date { color: var(--accent); font-weight: 800; font-size: 0.9rem; margin-bottom: 10px; display: block; }
         .mission-text h3 { font-size: 1.5rem; margin-bottom: 15px; }
-        .mission-text p { font-weight: 300; color: #ccc; line-height: 1.6; }
+        .mission-text p { font-weight: 300; color: #ccc; line-height: 1.6; font-size: 0.95rem; }
 
-        .mission-dot { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 15px var(--accent); z-index: 2; }
+        .mission-dot { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 15px var(--accent); z-index: 2; position: absolute; left: 50%; transform: translateX(-50%); }
 
+        /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 900px) {
-            #mask-text { font-size: 3rem !important; }
-            .missions-container::before { left: 20px; }
-            .mission-item, .mission-item:nth-child(even) { flex-direction: row; }
-            .mission-content { width: calc(100% - 50px); margin-left: 50px; }
-            .mission-dot { position: absolute; left: 10px; }
+            .hero-title { font-size: 15vw; }
+            .section-title { font-size: 1.8rem; letter-spacing: 4px; }
+            .missions-container::before { left: 20px; transform: none; }
+            .mission-item, .mission-item:nth-child(even) { flex-direction: row; margin-bottom: 50px; }
+            .mission-content { width: calc(100% - 60px); margin-left: 60px; }
+            .mission-dot { left: 20px; }
+            .mission-spacer { display: none; }
         }
     </style>
 </head>
@@ -147,22 +160,12 @@
 
     <section class="hero-section">
         <canvas id="stars-canvas"></canvas>
-        <canvas id="nebula-canvas"></canvas>
-        <svg class="mask-svg-container">
-            <defs>
-                <mask id="text-mask" maskUnits="userSpaceOnUse">
-                    <rect width="100%" height="100%" fill="black" />
-                    <text id="mask-text" x="50%" y="50%" fill="white" 
-                          text-anchor="middle" dominant-baseline="central" 
-                          style="font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 8rem; text-transform: uppercase;">
-                        WEB SPACE STATION
-                    </text>
-                </mask>
-            </defs>
-        </svg>
+        <div class="hero-title-container">
+            <h1 class="hero-title">WEB SPACE<br>STATION</h1>
+        </div>
     </section>
 
-    <section class="articles-section" id="articles">
+    <section id="articles">
         <h2 class="section-title">Ostatnie Meldunki</h2>
         <div class="articles-grid">
             <div class="art-card">
@@ -188,24 +191,24 @@
                 <div class="mission-content">
                     <div class="mission-img" style="background-image: url('https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&q=80&w=800')"></div>
                     <div class="mission-text">
-                        <span class="mission-date">TRWA (START PAŹDZIERNIK 2024)</span>
+                        <span class="mission-date">START PAŹDZIERNIK 2024</span>
                         <h3>Europa Clipper</h3>
                         <p>Największa międzyplanetarna misja NASA. Sonda jest w drodze do Jowisza, by zbadać ocean pod lodową skorupą Europy.</p>
                     </div>
                 </div>
                 <div class="mission-dot"></div>
-                <div style="width: 45%"></div>
+                <div class="mission-spacer" style="width: 45%"></div>
             </div>
 
             <div class="mission-item">
-                <div style="width: 45%"></div>
+                <div class="mission-spacer" style="width: 45%"></div>
                 <div class="mission-dot"></div>
                 <div class="mission-content">
                     <div class="mission-img" style="background-image: url('https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&q=80&w=800')"></div>
                     <div class="mission-text">
                         <span class="mission-date">KWIECIEŃ 2026</span>
-                        <h3>Artemis II: Załoga na orbitę</h3>
-                        <p>Pierwszy załogowy lot Oriona. Czworo astronautów (w tym jedna kobieta i jeden Kanadyjczyk) wykona przelot wokół Księżyca.</p>
+                        <h3>Artemis II</h3>
+                        <p>Pierwszy załogowy lot Oriona. Czworo astronautów wykona przelot wokół Księżyca, torując drogę do lądowania.</p>
                     </div>
                 </div>
             </div>
@@ -215,22 +218,20 @@
                     <div class="mission-img" style="background-image: url('https://images.unsplash.com/photo-1506466010722-395aa2bef877?auto=format&fit=crop&q=80&w=800')"></div>
                     <div class="mission-text">
                         <span class="mission-date">LIPIEC 2028</span>
-                        <h3>Dragonfly: Eksploracja Tytana</h3>
-                        <p>Wielowirnikowiec wielkości łazika wyląduje na księżycu Saturna. Będzie latał między lokacjami, szukając śladów życia.</p>
+                        <h3>Dragonfly</h3>
+                        <p>Wielowirnikowiec wielkości łazika wyląduje na księżycu Saturna - Tytanie, szukając śladów życia w tamtejszych jeziorach metanu.</p>
                     </div>
                 </div>
                 <div class="mission-dot"></div>
-                <div style="width: 45%"></div>
+                <div class="mission-spacer" style="width: 45%"></div>
             </div>
 
         </div>
     </section>
 
     <script>
-        const sCanvas = document.getElementById('stars-canvas');
-        const nCanvas = document.getElementById('nebula-canvas');
-        const sCtx = sCanvas.getContext('2d');
-        const nCtx = nCanvas.getContext('2d');
+        const canvas = document.getElementById('stars-canvas');
+        const ctx = canvas.getContext('2d');
         const navPanel = document.getElementById('navPanel');
         const menuBtn = document.getElementById('menuToggle');
 
@@ -244,59 +245,35 @@
             menuBtn.innerText = '☰';
         }));
 
-        let stars = [], nebulae = [], comets = [];
-
-        class Comet {
-            constructor() { this.init(); }
-            init() {
-                this.x = Math.random() * nCanvas.width;
-                this.y = Math.random() * nCanvas.height;
-                this.len = Math.random() * 150 + 50;
-                this.speed = Math.random() * 25 + 15;
-                this.color = Math.random() > 0.5 ? '#00fbff' : '#ff00ff';
-            }
-            update() {
-                this.x += this.speed;
-                this.y += this.speed * 0.1;
-                if (this.x > nCanvas.width + 200) this.init();
-            }
-            draw() {
-                nCtx.shadowBlur = 15; nCtx.shadowColor = this.color;
-                nCtx.strokeStyle = this.color; nCtx.lineWidth = 3;
-                nCtx.beginPath(); nCtx.moveTo(this.x, this.y);
-                nCtx.lineTo(this.x - this.len, this.y - (this.len * 0.1));
-                nCtx.stroke(); nCtx.shadowBlur = 0;
-            }
-        }
+        let stars = [];
 
         function init() {
-            sCanvas.width = nCanvas.width = window.innerWidth;
-            sCanvas.height = nCanvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             stars = [];
-            for (let i = 0; i < 400; i++) {
-                stars.push({ x: Math.random() * sCanvas.width, y: Math.random() * sCanvas.height, size: Math.random() * 1.5, opacity: Math.random() * 0.8 + 0.2 });
+            let count = window.innerWidth < 768 ? 150 : 400;
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5,
+                    speed: Math.random() * 0.5 + 0.1,
+                    opacity: Math.random()
+                });
             }
-            nebulae = [];
-            for (let i = 0; i < 25; i++) {
-                nebulae.push({ x: Math.random() * nCanvas.width, y: Math.random() * nCanvas.height, radius: Math.random() * 350 + 150, speed: Math.random() * 4.0 + 2.0, hue: Math.random() > 0.5 ? 190 : 280 });
-            }
-            comets = [];
-            for (let i = 0; i < 15; i++) comets.push(new Comet());
         }
 
         function animate() {
-            sCtx.fillStyle = '#010103'; sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
-            stars.forEach(s => { sCtx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`; sCtx.beginPath(); sCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2); sCtx.fill(); });
-            nCtx.clearRect(0, 0, nCanvas.width, nCanvas.height);
-            nCtx.fillStyle = "rgba(40, 40, 80, 0.4)"; nCtx.fillRect(0, 0, nCanvas.width, nCanvas.height);
-            nCtx.globalCompositeOperation = 'screen';
-            nebulae.forEach(n => {
-                n.x += n.speed; if (n.x - n.radius > nCanvas.width) n.x = -n.radius;
-                let grad = nCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
-                grad.addColorStop(0, `hsla(${n.hue}, 100%, 75%, 0.7)`); grad.addColorStop(1, 'transparent');
-                nCtx.fillStyle = grad; nCtx.beginPath(); nCtx.arc(n.x, n.y, n.radius, 0, Math.PI * 2); nCtx.fill();
+            ctx.fillStyle = '#010103';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+                s.y -= s.speed;
+                if (s.y < 0) s.y = canvas.height;
             });
-            comets.forEach(c => { c.update(); c.draw(); });
             requestAnimationFrame(animate);
         }
 
@@ -305,9 +282,9 @@
         }, { threshold: 0.1 });
 
         document.querySelectorAll('.art-card, .mission-item').forEach(el => observer.observe(el));
+        
         window.addEventListener('resize', init);
         init(); animate();
     </script>
 </body>
-
 </html>
