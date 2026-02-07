@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WEB SPACE STATION</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;400;600;800&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --void-bg: #010103;
+            --glass: rgba(10, 15, 25, 0.85);
+            --glass-border: rgba(0, 243, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--void-bg); font-family: 'Exo 2', sans-serif; color: #fff; overflow-x: hidden; scroll-behavior: smooth; touch-action: pan-y; }
+
+        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #000; }
+
+        /* --- NAWIGACJA --- */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .nav-logo { 
+            font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.2rem; 
+            letter-spacing: 2px; color: var(--neon-cyan); text-decoration: none;
+            text-transform: uppercase; transition: 0.5s; cursor: pointer;
+        }
+        .nav-logo:hover { letter-spacing: 4px; text-shadow: 0 0 15px var(--neon-cyan); }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a {
+            color: #888; text-decoration: none; font-size: 0.7rem;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .nav-links a:hover { color: #fff; text-shadow: 0 0 10px #fff; }
+
+        /* --- HERO & SENTENCJE --- */
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        
+        .quote-container {
+            min-height: 60px; margin-bottom: 15px; font-family: 'Rajdhani';
+            font-size: clamp(0.9rem, 2vw, 1.2rem); letter-spacing: 2px; color: #aaa;
+            text-transform: uppercase; font-weight: 300; padding: 0 15px;
+            max-width: 800px;
+        }
+        #quote-text { transition: opacity 1.2s ease-in-out; opacity: 0; display: block; line-height: 1.4; }
+
+        .nebula-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: clamp(2.5rem, 12vw, 8rem);
+            font-weight: 900; line-height: 0.9;
+            text-transform: uppercase;
+            background: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2000');
+            background-size: 200% auto;
+            -webkit-background-clip: text; background-clip: text;
+            color: rgba(255,255,255,0.05);
+            animation: moveNebula 40s linear infinite;
+        }
+        @keyframes moveNebula {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- DZIENNIK POKŁADOWY --- */
+        #logs { padding: 100px 5%; text-align: center; }
+        .section-title { font-size: clamp(1.5rem, 5vw, 2.2rem); margin-bottom: 50px; letter-spacing: 5px; font-weight: 200; text-transform: uppercase; text-align: center; width: 100%; }
+        
+        .slider-viewport { 
+            max-width: 1400px; margin: 0 auto; overflow: hidden; position: relative; 
+            cursor: grab; user-select: none;
+        }
+        .slider-viewport:active { cursor: grabbing; }
+        
+        .slider-track { display: flex; transition: transform 0.5s ease-out; pointer-events: none; }
+        .slider-track > * { pointer-events: auto; }
+
+        .slide-group { 
+            min-width: 100%; display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            grid-template-rows: repeat(2, 1fr); 
+            gap: 20px; padding: 10px;
+        }
+
+        @media (max-width: 1024px) { .slide-group { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); } }
+        @media (max-width: 600px) { .slide-group { grid-template-columns: 1fr; grid-template-rows: auto; } .art-card { height: auto !important; min-height: 380px; } }
+        
+        .art-card {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;
+            height: 420px; text-align: left; transition: 0.4s;
+        }
+        .art-img { height: 160px; background-size: cover; background-position: center; }
+        .art-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .art-tag { color: var(--neon-purple); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
+        .art-title { font-family: 'Rajdhani'; font-size: 1.2rem; margin-bottom: 10px; color: #fff; }
+        .art-desc { font-size: 0.85rem; color: #aaa; line-height: 1.5; margin-bottom: 15px; }
+        .art-link { margin-top: auto; color: var(--neon-cyan); text-decoration: none; font-size: 0.75rem; font-weight: bold; border: 1px solid var(--neon-cyan); padding: 10px; text-align: center; border-radius: 4px; }
+
+        /* --- TELEMETRIA --- */
+        .telemetry { padding: 100px 5%; background: rgba(5,5,10,0.8); text-align: center; }
+        .mon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 1200px; margin: 40px auto; }
+        .mon-box { background: #08080c; border: 1px solid #1a1a20; padding: 30px; border-radius: 15px; text-align: center; }
+        .artemis-info { text-align: left; margin-top: 15px; font-size: 0.85rem; border-top: 1px solid #222; padding-top: 15px; color: #ccc; line-height: 1.6; }
+        .artemis-info b { color: var(--neon-cyan); }
+
+        /* --- QUIZ --- */
+        #quiz { padding: 100px 5%; background: #000; text-align: center; }
+        .quiz-card { max-width: 800px; margin: 40px auto; background: var(--glass); border: 1px solid var(--glass-border); padding: 30px; border-radius: 20px; text-align: left; }
+        .quiz-stats { display: flex; justify-content: space-between; margin-bottom: 25px; font-family: 'Rajdhani'; color: var(--neon-cyan); font-size: 0.9rem; }
+        .quiz-opt { display: block; width: 100%; padding: 15px; margin: 10px 0; background: rgba(255,255,255,0.03); border: 1px solid #222; color: #fff; cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 0.9rem; }
+
+        footer { padding: 40px; text-align: center; color: #444; font-family: 'Rajdhani'; border-top: 1px solid #111; letter-spacing: 3px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <canvas id="starfield"></canvas>
+
+    <nav>
+        <a href="#" class="nav-logo">Web Space Station</a>
+        <div class="nav-links">
+            <a href="#logs">Dziennik</a>
+            <a href="#status">Telemetria</a>
+            <a href="#quiz">Egzamin</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="quote-container">
+            <span id="quote-text">Inicjalizacja protokołów inspiracji...</span>
+        </div>
+        <h1 class="nebula-title">WEB SPACE<br>STATION</h1>
+    </section>
+
+    <section id="logs">
+        <h2 class="section-title">Dziennik Pokładowy</h2>
+        <p style="color: #666; margin-top: -40px; margin-bottom: 30px; font-size: 0.8rem;">Przesuń palcem lub myszką</p>
+        <div class="slider-viewport" id="sliderViewport">
+            <div class="slider-track" id="sliderTrack">
+                
+                <div class="slide-group">
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">EGZOPLANETY</span>
+                            <h3 class="art-title">Zagadka K2-18b</h3>
+                            <p class="art-desc">Aktualizacja 2026: Sygnał DMS na tej wodnej planecie jest obecnie poddawany surowej weryfikacji przez zespół JWST.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">ASTROFIZYKA</span>
+                            <h3 class="art-title">Dżet M87* pod lupą</h3>
+                            <p class="art-desc">Najnowsze obrazy z Event Horizon Telescope ujawniają strukturę pola magnetycznego u podstawy czarnej dziury.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">KOSMOLOGIA</span>
+                            <h3 class="art-title">Napięcie Hubble'a</h3>
+                            <p class="art-desc">W lutym 2026 r. nowe pomiary soczewkowania grawitacyjnego pogłębiają kryzys w stałej ekspansji wszechświata.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1614313913007-2b4ae8ce32d6?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">ASTROFIZYKA</span>
+                            <h3 class="art-title">Fale Grawitacyjne</h3>
+                            <p class="art-desc">Sieć detektorów O4 odnotowała serię zderzeń gwiazd neutronowych, dostarczając danych o gęstej materii.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1541417904950-b855846fe074?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">MARS</span>
+                            <h3 class="art-title">Górnictwo na Marsie</h3>
+                            <p class="art-desc">Testy MOXIE-2 wykazały zdolność do produkcji tlenu na skalę potrzebną dla bazy załogowej.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4999d?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">SETI</span>
+                            <h3 class="art-title">Technosygnatury</h3>
+                            <p class="art-desc">Przeszukiwanie gromad kulistych pod kątem sygnałów laserowych o wysokiej częstotliwości.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slide-group">
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">VOYAGER</span>
+                            <h3 class="art-title">Głos z Otchłani</h3>
+                            <p class="art-desc">Voyager 1 kontynuuje pomiary wiatru międzygwiazdowego, mimo malejącej mocy generatorów RTG.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1454789548928-9efd52dc4031?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">SPACEX</span>
+                            <h3 class="art-title">Orbitalne Tankowanie</h3>
+                            <p class="art-desc">Kluczowa operacja dla programu Artemis: Starship zademonstruje transfer paliwa w czerwcu 2026 r.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1446941611757-91d2c3bd3d45?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">JOWISZ</span>
+                            <h3 class="art-title">Manewry JUICE</h3>
+                            <p class="art-desc">Sonda ESA wykona unikalny przelot wokół układu Ziemia-Księżyc we wrześniu 2026 r.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1538370910016-0d3c343f5020?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">TEORIA</span>
+                            <h3 class="art-title">Pola Kwantowe</h3>
+                            <p class="art-desc">Eksperymenty na stacji ISS potwierdzają dziwne zachowanie kondensatu Bosego-Einsteina w mikrograwitacji.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1614728423169-3f65fd722b7e?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">KSIĘŻYC</span>
+                            <h3 class="art-title">Baza Shackleton</h3>
+                            <p class="art-desc">Przygotowania do robotycznego wiercenia w wiecznie zacienionych kraterach bieguna południowego.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">SŁOŃCE</span>
+                            <h3 class="art-title">Maksimum Solarne</h3>
+                            <p class="art-desc">Luty 2026: Obserwujemy rekordową liczbę plam słonecznych w obecnym cyklu aktywności.</p>
+                            <a href="#" class="art-link">DOKUMENTACJA</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="status" class="telemetry">
+        <h2 class="section-title">Telemetria Systemów</h2>
+        <div class="mon-grid">
+            <div class="mon-box">
+                <div id="moonIcon" style="font-size: 3rem; margin-bottom: 20px;">🌑</div>
+                <h3 id="moonName" style="font-family: 'Rajdhani'; color: var(--neon-cyan); font-size: 1.5rem;">Faza</h3>
+                <p id="moonAge" style="color: #666; font-size: 0.85rem; margin: 10px 0;"></p>
+                <div class="artemis-info">
+                    <b>Sytuacja Lunarna:</b><br>
+                    Data ziemska: 7 lutego 2026. Księżyc ubywający. Idealne okno dla radioastronomii.
+                </div>
+            </div>
+            <div class="mon-box">
+                <div style="font-size: 3rem; margin-bottom: 20px;">🚀</div>
+                <h3 style="font-family: 'Rajdhani'; color: var(--neon-purple); font-size: 1.5rem;">Program Artemis</h3>
+                <div class="artemis-info">
+                    <b>Artemis II (Marzec 2026):</b> NASA potwierdza gotowość SLS po naprawie systemów naziemnych. Załoga: Wiseman, Glover, Koch, Hansen.<br><br>
+                    <b>Artemis III (2027):</b> Trwa budowa Starship HLS w Boca Chica. Cel: Pierwsza kobieta na Księżycu.<br><br>
+                    <b>Gateway:</b> Moduły PPE i HALO przechodzą ostatnie testy integracyjne.
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <section id="quiz">
+    <h2 class="section-title">Egzamin Astrofizyka</h2>
+    <div class="quiz-card">
+        <div class="quiz-stats">
+            <span>WYNIK: <b id="qScore" style="color:var(--neon-cyan)">0</b></span>
+            <span>BŁĘDY: <b id="qWrong" style="color:#ff4b2b">0</b></span>
+            <span onclick="location.reload()" style="cursor:pointer; color:var(--neon-purple); border:1px solid var(--neon-purple); padding:2px 8px; border-radius:4px; font-size:0.7rem;">RESTART</span>
+        </div>
+        <h3 id="qText" style="font-family:'Rajdhani'; font-size: 1.3rem; margin-bottom: 25px; min-height: 60px;">Ładowanie...</h3>
+        <div id="qOptions"></div>
+        <button id="nextBtn" style="display:none; width:100%; margin-top:20px; padding:15px; background:none; border:2px solid var(--neon-cyan); color:var(--neon-cyan); font-family:'Rajdhani'; font-weight:bold; cursor:pointer; border-radius:8px; letter-spacing:2px;">NASTĘPNE PYTANIE</button>
+    </div>
+</section>
+
+    <footer>WEB SPACE STATION | LIVE DATA: 07.02.2026</footer>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+        function initStars() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            stars = [];
+            for(let i=0; i<250; i++) stars.push({x: Math.random()*width, y: Math.random()*height, size: Math.random()*1.2, speed: Math.random()*0.3});
+        }
+        function animateStars() {
+            ctx.clearRect(0,0,width,height); ctx.fillStyle = "#fff";
+            stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill(); s.y -= s.speed; if(s.y < 0) s.y = height; });
+            requestAnimationFrame(animateStars);
+        }
+        initStars(); animateStars();
+
+        const viewport = document.getElementById('sliderViewport');
+        const track = document.getElementById('sliderTrack');
+        let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0, currentIndex = 0;
+
+        viewport.addEventListener('mousedown', dragStart);
+        viewport.addEventListener('touchstart', dragStart, {passive: true});
+        window.addEventListener('mousemove', dragMove);
+        window.addEventListener('touchmove', dragMove, {passive: true});
+        window.addEventListener('mouseup', dragEnd);
+        window.addEventListener('touchend', dragEnd);
+
+        function dragStart(e) { isDragging = true; startX = getPositionX(e); track.style.transition = 'none'; }
+        function dragMove(e) { if (!isDragging) return; const currentX = getPositionX(e); const diff = currentX - startX; currentTranslate = prevTranslate + diff; track.style.transform = `translateX(${currentTranslate}px)`; }
+        function dragEnd() {
+            isDragging = false; const movedBy = currentTranslate - prevTranslate;
+            if (movedBy < -100 && currentIndex < 1) currentIndex++;
+            if (movedBy > 100 && currentIndex > 0) currentIndex--;
+            setPositionByIndex();
+        }
+        function getPositionX(e) { return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX; }
+        function setPositionByIndex() {
+            currentTranslate = currentIndex * -viewport.offsetWidth;
+            prevTranslate = currentTranslate;
+            track.style.transition = 'transform 0.5s ease-out';
+            track.style.transform = `translateX(${currentTranslate}px)`;
+        }
+        window.addEventListener('resize', setPositionByIndex);
+
+        // BAZA SENTENCJI (PRZYWRÓCONA I ROZBUDOWANA)
+        const quotes = [
+            "Gdzieś tam coś niesamowitego czeka na odkrycie.",
+            "Jesteśmy sposobem, w jaki kosmos poznaje samego siebie.",
+            "Ziemia jest kolebką ludzkości, ale nie można wiecznie mieszkać w kolebce.",
+            "Na 100 kilometrach kończą się spory, a zaczyna wolność.",
+            "Każdy z nas jest zrobiony z pyłu gwiezdnego.",
+            "Nigdzie we wszechświecie nie jest napisane, że człowiek ma go zrozumieć.",
+            "Czas to tylko iluzja, choć bardzo uporczywa.",
+            "Księżyc jest pierwszym przystankiem w drodze do gwiazd.",
+            "Wszechświat nie jest tylko dziwniejszy niż przypuszczamy, jest dziwniejszy niż możemy przypuszczać.",
+            "Niebo wzywa nas, byśmy je zbadali.",
+            "To jeden mały krok dla człowieka, ale wielki skok dla ludzkości.",
+            "Kosmos jest tym, co jest, co było i co kiedykolwiek będzie.",
+            "Przyszłość należy do tych, którzy wierzą w piękno swoich marzeń o gwiazdach.",
+            "Bóg nie gra w kości z wszechświatem.",
+            "Ludzkość potrzebuje gwiazd, by nie zapomnieć o swojej małości i wielkości jednocześnie."
+        ];
+
+        let qIdx = 0;
+        function rotateQuotes() {
+            const el = document.getElementById('quote-text');
+            el.style.opacity = 0;
+            setTimeout(() => {
+                qIdx = (qIdx + 1) % quotes.length;
+                el.innerText = quotes[qIdx];
+                el.style.opacity = 1;
+            }, 1200);
+        }
+        setInterval(rotateQuotes, 7000);
+        rotateQuotes();
+
+        function updateMoon() {
+            const now = new Date(); const ref = new Date('2026-01-19T11:52:00');
+            const age = ((now - ref) / 86400000) % 29.53;
+            document.getElementById('moonName').innerText = age < 14.7 ? "Faza Wzrostowa" : "Faza Zanikająca";
+            document.getElementById('moonAge').innerText = `Wiek: ${age.toFixed(1)} dni`;
+        }
+        updateMoon();
+
+        // --- BAZA 70 PYTAŃ (FUNDAMENTALNE I EKSTREMALNE) ---
+const allQuestions = [
+    {q: "Czym jest horyzont zdarzeń?", a: ["Powierzchnią gwiazdy neutronowej", "Granicą, zza której światło nie może uciec", "Pierścieniem pyłu wokół planety", "Momentem narodzin galaktyki"], c: 1},
+    {q: "Zasada nieoznaczoności Heisenberga mówi, że:", a: ["Wszechświat dąży do chaosu", "Nie można jednocześnie znać pędu i położenia cząstki", "Czas płynie szybciej w próżni", "Grawitacja jest iluzją"], c: 1},
+    {q: "Granica Roche'a określa:", a: ["Maksymalną masę gwiazdy", "Odległość, przy której satelita rozpada się pod wpływem sił pływowych", "Prędkość ucieczki z układu słonecznego", "Temperaturę zera bezwzględnego"], c: 1},
+    {q: "Czym są soczewki grawitacyjne?", a: ["Przyrządami optycznymi NASA", "Masywnymi obiektami zakrzywiającymi światło dalszych galaktyk", "Lustrami teleskopu Jamesa Webba", "Skupiskami ciemnej energii"], c: 1},
+    {q: "Promieniowanie reliktowe (CMB) to:", a: ["Błyski pulsarów", "Echo Wielkiego Wybuchu", "Światło zorzy polarnej", "Sygnał od obcych cywilizacji"], c: 1},
+    {q: "Co jest głównym składnikiem ciemnej materii wg obecnych teorii?", a: ["Czarne dziury", "WIMP (Słabo oddziałujące masywne cząstki)", "Antymateria", "Neutrina sterylne"], c: 1},
+    {q: "Jak brzmi drugie prawo termodynamiki w kontekście kosmosu?", a: ["Energia jest zawsze zachowana", "Entropia układu zamkniętego nigdy nie maleje", "Czas płynie tylko do przodu", "Grawitacja zawsze przyciąga"], c: 1},
+    {q: "Czym jest osobliwość wewnątrz czarnej dziury?", a: ["Punktem o nieskończonej gęstości", "Pustą przestrzenią", "Jądrem z żelaza", "Portalem do innej galaktyki"], c: 0},
+    {q: "Efekt Dopplera w astronomii pozwala mierzyć:", a: ["Masę gwiazdy", "Prędkość radialną (oddalanie/przybliżanie się obiektu)", "Temperaturę powierzchni", "Skład chemiczny atmosfery"], c: 1},
+    {q: "Co przewiduje teoria kwantowej grawitacji?", a: ["Istnienie tuneli czasoprzestrzennych", "Połączenie mechaniki kwantowej z ogólną teorią względności", "Koniec wszechświata za miliard lat", "Stałość prędkości światła"], c: 1},
+    {q: "Sfera Dysona to:", a: ["Typ czarnej dziury", "Hipotetyczna megastruktura otaczająca gwiazdę", "Pole magnetyczne Ziemi", "Skafander nowej generacji"], c: 1},
+    {q: "Czym jest spaghettizacja?", a: ["Procesem powstawania galaktyk", "Rozciąganiem obiektu przez silne siły pływowe czarnej dziury", "Teorią o budowie strun", "Zjawiskiem wewnątrz słońca"], c: 1},
+    {q: "Paradoks informacyjny czarnej dziury sugeruje, że:", a: ["Informacja o materii wpadającej do dziury może zostać bezpowrotnie utracona", "Czarne dziury nie istnieją", "Światło podróżuje szybciej wewnątrz dziury", "Każda czarna dziura to nowy wszechświat"], c: 0},
+    {q: "Co to jest punkt Lagrange'a?", a: ["Miejsce, gdzie grawitacja dwóch ciał się równoważy", "Najgorętszy punkt na Słońcu", "Centrum Drogi Mlecznej", "Moment wybuchu supernowej"], c: 0},
+    {q: "Promieniowanie Hawkinga to zjawisko:", a: ["Wysyłania cząstek przez Słońce", "Powolnego parowania czarnych dziur", "Zderzania się galaktyk", "Powstawania atomów"], c: 1},
+    {q: "Czym charakteryzuje się pulsar?", a: ["Jest czarną dziurą", "Jest rotującą gwiazdą neutronową wysyłającą wiązki promieniowania", "Jest planetą gazową", "Jest kometą z antymaterii"], c: 1},
+    {q: "Prawo powszechnego ciążenia Newtona mówi, że siła grawitacji maleje wraz z:", a: ["Kwadratem odległości", "Sześcianem odległości", "Upływem czasu", "Masą obiektu"], c: 0},
+    {q: "Czym jest biały karzeł?", a: ["Młodą gwiazdą", "Pozostałością po gwiazdach o małej i średniej masie", "Największym typem gwiazdy", "Planetą skalistą"], c: 1},
+    {q: "Głównym paliwem gwiazd w ciągu głównym jest:", a: ["Hel", "Wodór", "Węgiel", "Tlen"], c: 1},
+    {q: "Co określa linia Kármána?", a: ["Granicę między atmosferą a przestrzenią kosmiczną (100 km)", "Głębokość oceanu", "Odległość do Księżyca", "Prędkość dźwięku w próżni"], c: 0},
+    {q: "Proces nukleosyntezy w gwiazdach kończy się na żelazie, ponieważ:", a: ["Żelazo jest najcięższe", "Fuzja żelaza nie dostarcza energii (jest endoenergetyczna)", "Wybuchają wcześniej", "Żelazo zamienia się w złoto"], c: 1},
+    {q: "Czym jest przesunięcie ku czerwieni (redshift)?", a: ["Ochłodzeniem gwiazdy", "Dowodem na oddalanie się galaktyk i rozszerzanie wszechświata", "Efektem pyłu kosmicznego", "Zmianą orbity planety"], c: 1},
+    {q: "Która siła podstawowa ma najkrótszy zasięg?", a: ["Grawitacyjna", "Oddziaływanie silne", "Elektromagnetyczna", "Magnetyczna"], c: 1},
+    {q: "Czym jest ciemna energia?", a: ["Materią, której nie widać", "Siłą napędzającą przyspieszoną ekspansję wszechświata", "Energią z wnętrza słońca", "Promieniowaniem z czarnych dziur"], c: 1},
+    {q: "Hipotetyczny 'Wielki Rozrywanie' (Big Rip) zakłada, że:", a: ["Wszechświat się zapadnie", "Ciemna energia rozerwie galaktyki, gwiazdy i atomy", "Powstanie nowa czarna dziura", "Czas stanie w miejscu"], c: 1},
+    {q: "Atomy w Twoim ciele powstały głównie:", a: ["W laboratoriach", "Wewnątrz gwiazd i podczas wybuchów supernowych", "Na Ziemi", "W wyniku promieniowania kosmicznego"], c: 1},
+    {q: "Zasada równoważności Einsteina mówi o:", a: ["Równości masy i energii (E=mc2)", "Nierozróżnialności sił grawitacji i bezwładności", "Stałości prędkości światła", "Zagięciu czasu przez prędkość"], c: 1},
+    {q: "Magnetar to:", a: ["Gwiazda z ekstremalnie silnym polem magnetycznym", "Magnes wewnątrz satelity", "Typ planety metalicznej", "Sonda badająca magnetyzm"], c: 0},
+    {q: "Czym jest fala uderzeniowa supernowej?", a: ["Dźwiękiem w kosmosie", "Frontem materii i energii po wybuchu gwiazdy", "Wiatrem słonecznym", "Cieniem galaktyki"], c: 1},
+    {q: "Kwazary są najjaśniejszymi obiektami we wszechświecie, bo:", a: ["Mają biliony gwiazd", "Są zasilane przez akrecję materii na supermasywne czarne dziury", "Składają się z czystego światła", "Są bardzo blisko nas"], c: 1},
+    {q: "Ile wynosi prędkość ucieczki z Ziemi?", a: ["7.9 km/s", "11.2 km/s", "42 km/s", "300,000 km/s"], c: 1},
+    {q: "Czym jest tachion?", a: ["Cząstką podróżującą wolniej od światła", "Hipotetyczną cząstką podróżującą szybciej od światła", "Składnikiem jądra atomu", "Rodzajem paliwa rakietowego"], c: 1},
+    {q: "Horyzont cząstek to:", a: ["Granica czarnej dziury", "Maksymalna odległość, z której światło mogło do nas dotrzeć od początku wszechświata", "Rozmiar atomu", "Koniec układu słonecznego"], c: 1},
+    {q: "Co to jest ergosfera?", a: ["Atmosfera Marsa", "Obszar wokół obracającej się czarnej dziury", "Wnętrze słońca", "Warstwa ozonowa"], c: 1},
+    {q: "Hipotetyczne 'tunele czasoprzestrzenne' to inaczej:", a: ["Mosty Einsteina-Rosena", "Dziury w niebie", "Ciemne szlaki", "Wrota grawitacyjne"], c: 0},
+    {q: "Paralaksa służy astronomom do:", a: ["Pomiaru temperatury", "Wyznaczania odległości do pobliskich gwiazd", "Ważenia galaktyk", "Szukania tlenu"], c: 1},
+    {q: "Która planeta Układu Słonecznego ma najsilniejsze pole magnetyczne?", a: ["Ziemia", "Jowisz", "Neptun", "Saturn"], c: 1},
+    {q: "Ile czasu zajmuje światłu podróż ze Słońca do Ziemi?", a: ["1 sekundę", "8 minut i 20 sekund", "1 godzinę", "24 godziny"], c: 1},
+    {q: "Wielki Atraktor to:", a: ["Gigantyczna czarna dziura w centrum drogi mlecznej", "Anomalia grawitacyjna przyciągająca naszą supergromadę galaktyk", "Słońce", "Inna nazwa Wielkiego Wybuchu"], c: 1},
+    {q: "Zjawisko dylatacji czasu oznacza, że:", a: ["Czas płynie wolniej dla obiektów w ruchu lub w silnym polu grawitacyjnym", "Czas płynie tak samo wszędzie", "Zegary psują się w kosmosie", "Czas można zatrzymać"], c: 0},
+    // --- NOWE 30 PYTAŃ (ŁĄCZNIE 70) ---
+    {q: "Czym jest granica Chandrasekhara?", a: ["Maksymalną masą białego karła", "Minimalną odległością od Słońca", "Prędkością cząstek elementarnych", "Rozmiarem galaktyki"], c: 0},
+    {q: "Jakie cząstki pośredniczą w oddziaływaniu elektromagnetycznym?", a: ["Gluony", "Fotony", "Grawitony", "Bozony W"], c: 1},
+    {q: "Teoria strun zakłada, że podstawowym budulcem materii są:", a: ["Punkty", "Wibrujące jednowymiarowe struny", "Kule energii", "Atomy wodoru"], c: 1},
+    {q: "Czym jest 'Wielkie Zamarznięcie' (Big Freeze)?", a: ["Nagłym ochłodzeniem Ziemi", "Śmiercią cieplną wszechświata", "Zlodowaceniem Marsa", "Zasypaniem słońca przez pył"], c: 1},
+    {q: "Który księżyc Saturna ma podziemny ocean i wyrzuca gejzery?", a: ["Tytan", "Enceladus", "Rea", "Mimas"], c: 1},
+    {q: "Gdzie znajduje się Pas Kuipera?", a: ["Między Marsem a Jowiszem", "Za orbitą Neptuna", "W centrum galaktyki", "Wokół Słońca"], c: 1},
+    {q: "Czym jest fala uderzeniowa termiczna w gwiazdach?", a: ["Błyskiem helu", "Wiatrem słonecznym", "Plamą na słońcu", "Zorzą"], c: 0},
+    {q: "Co to jest Neutrino?", a: ["Ciężka cząstka jądrowa", "Lekka cząstka prawie bezmasowa i bez ładunku", "Inna nazwa neutronu", "Cząstka światła"], c: 1},
+    {q: "Pulsar Hulse’a-Taylora dostarczył dowodu na:", a: ["Istnienie obcych", "Istnienie fal grawitacyjnych", "Wielki Wybuch", "Rozmiar drogi mlecznej"], c: 1},
+    {q: "Co mierzy skala Torina?", a: ["Jasność gwiazd", "Zagrożenie uderzeniem asteroidy", "Moc silników rakietowych", "Wiek galaktyk"], c: 1},
+    {q: "Czym jest anihilacja?", a: ["Zderzeniem dwóch planet", "Procesem zamiany materii i antymaterii w energię", "Wybuchu wulkanu", "Śmiercią komety"], c: 1},
+    {q: "Promień Schwarzschilda to:", a: ["Promień słońca", "Promień kuli, której masa tworzy czarną dziurę", "Odległość do Marsa", "Wielkość atomu"], c: 1},
+    {q: "Jakie jest najzimniejsze miejsce we Wszechświecie (naturalne)?", a: ["Ciemna strona Księżyca", "Mgławica Boomerang", "Pustka w Wolarzu", "Orbita Plutona"], c: 1},
+    {q: "Czym jest błądzenie losowe fotonu wewnątrz Słońca?", a: ["Ucieczką światła", "Długą drogą fotonu z jądra na powierzchnię (tysiące lat)", "Odbiciem od korony", "Zaćmieniem"], c: 1},
+    {q: "Który pierwiastek jako pierwszy powstał we Wszechświecie?", a: ["Hel", "Wodór", "Lit", "Tlen"], c: 1},
+    {q: "Czym jest grawitacyjne przesunięcie ku czerwieni?", a: ["Ruchem galaktyk", "Utratą energii światła przy ucieczce z pola grawitacyjnego", "Zmianą koloru planety", "Cieniem czarnej dziury"], c: 1},
+    {q: "Obłok Oorta to:", a: ["Mgławica gazowa", "Sferyczny obłok komet otaczający Układ Słoneczny", "Pas planetoid", "Atmosfera Wenus"], c: 1},
+    {q: "Czym jest proces potrójny-alfa?", a: ["Rodzajem paliwa", "Fuzją helu w węgiel wewnątrz gwiazd", "Rozpadem uranu", "Powstawaniem wody"], c: 1},
+    {q: "Który teleskop odkrył większość egzoplanet metodą tranzytu?", a: ["Hubble", "Kepler", "Spitzer", "Galileusz"], c: 1},
+    {q: "Co przewiduje 'Hipoteza rzadkiej Ziemi'?", a: ["Że planet jest mało", "Że życie złożone we wszechświecie jest wyjątkowo rzadkie", "Że Ziemia się kończy", "Że Mars jest starszy"], c: 1},
+    {q: "Czym jest magnetosfera?", a: ["Atmosferą magnetyczną", "Obszarem wokół planety zdominowanym przez jej pole magnetyczne", "Jądrem słońca", "Rodzajem gwiazdy"], c: 1},
+    {q: "Jakie zjawisko sprawia, że gwiazdy migoczą?", a: ["Erupcje na ich powierzchni", "Turbulencje w atmosferze Ziemi", "Wiatr kosmiczny", "Odległość"], c: 1},
+    {q: "Czym są brązowe karły?", a: ["Starymi planetami", "Obiektami zbyt małymi na fuzję wodoru, ale większymi od planet", "Skałami w kosmosie", "Wypalonymi słońcami"], c: 1},
+    {q: "Co to jest aerogel?", a: ["Paliwo rakietowe", "Materiał używany do łapania pyłu kosmicznego", "Gaz na Jowiszu", "Powietrze w skafandrze"], c: 1},
+    {q: "Czym jest jednostka astronomiczna (AU)?", a: ["Dystansem do Księżyca", "Średnią odległością Ziemi od Słońca", "Prędkością światła", "Rokiem świetlnym"], c: 1},
+    {q: "Kto sformułował trzy prawa ruchu planet?", a: ["Newton", "Kepler", "Kopernik", "Brahe"], c: 1},
+    {q: "Czym jest barionowa materia?", a: ["Ciemną materią", "Zwyczajną materią, z której zbudowane są gwiazdy i my", "Antymaterią", "Gazem kwantowym"], c: 1},
+    {q: "Wielka Czerwona Plama na Jowiszu to:", a: ["Wulkan", "Gigantyczny antycyklon (burza)", "Kontynent", "Chmura pyłu"], c: 1},
+    {q: "Czym jest promieniowanie synchrotronowe?", a: ["Ciepłem słońca", "Promieniowaniem naładowanych cząstek w polu magnetycznym", "Światłem zorzy", "Rozpadem atomu"], c: 1},
+    {q: "Która galaktyka zderzy się z Drogą Mleczną za ok. 4 mld lat?", a: ["Sombrero", "Andromeda", "Trójkąta", "M87"], c: 1}
+];
+
+let sessionQuestions = [];
+let curQ = 0, score = 0, wrong = 0, answered = false;
+
+function shuffleQuestions(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function initQuiz() {
+    // Kopiujemy, mieszamy i bierzemy 20 unikalnych pytań
+    const shuffled = shuffleQuestions([...allQuestions]);
+    sessionQuestions = shuffled.slice(0, 20); 
+    curQ = 0; score = 0; wrong = 0;
+    document.getElementById('qScore').innerText = "0";
+    document.getElementById('qWrong').innerText = "0";
+    loadQuiz();
+}
+
+function loadQuiz() {
+    if(curQ >= sessionQuestions.length) {
+        document.getElementById('qText').innerHTML = "EGZAMIN UKOŃCZONY<br>TWÓJ WYNIK: " + score + " / 20";
+        document.getElementById('qOptions').innerHTML = "";
+        document.getElementById('nextBtn').style.display = "none";
+        
+        const rb = document.createElement('button');
+        rb.className = "quiz-opt";
+        rb.innerText = "GENERUJ NOWY ZESTAW (20)";
+        rb.onclick = () => initQuiz();
+        document.getElementById('qOptions').appendChild(rb);
+        return;
+    }
+
+    answered = false;
+    const q = sessionQuestions[curQ];
+    document.getElementById('qText').innerText = q.q;
+    document.getElementById('nextBtn').style.display = "none";
+    
+    const cont = document.getElementById('qOptions'); 
+    cont.innerHTML = "";
+    
+    q.a.forEach((opt, i) => {
+        const b = document.createElement('button'); 
+        b.className = "quiz-opt"; 
+        b.innerText = opt;
+        b.onclick = () => { 
+            if(answered) return; 
+            answered = true;
+            
+            if(i === q.c) {
+                score++;
+                b.style.border = "2px solid #00ff88";
+                b.style.background = "rgba(0, 255, 136, 0.1)";
+                document.getElementById('qScore').innerText = score;
+            } else {
+                wrong++;
+                b.style.border = "2px solid #ff4b2b";
+                b.style.background = "rgba(255, 75, 43, 0.1)";
+                document.getElementById('qWrong').innerText = wrong;
+                // Pokazujemy poprawną odpowiedź
+                cont.children[q.c].style.border = "2px solid #00ff88";
+            }
+            document.getElementById('nextBtn').style.display = "block";
+        };
+        cont.appendChild(b);
+    });
+}
+
+document.getElementById('nextBtn').onclick = () => {
+    curQ++;
+    loadQuiz();
+};
+
+initQuiz();
+    </script>
+</body>
+</html>
