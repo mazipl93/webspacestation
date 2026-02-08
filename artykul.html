@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB SPACE STATION</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;400;600;800&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    
+    <nav>
+        <a href="index.html" class="nav-logo">Web Space Station</a>
+        <div class="nav-links">
+            <a href="index.html#meldunki">Meldunki</a>
+            <a href="index.html#popularne">Nauka</a>
+            <a href="index.html#tech">Technologia</a>
+            <a href="index.html#status">Live</a>
+        </div>
+    </nav>
+
+<main class="article-container" style="
+        background: rgba(10, 10, 15, 0.85); 
+        padding: 40px; 
+        border-radius: 20px; 
+        border: 1px solid rgba(0, 243, 255, 0.1); 
+        backdrop-filter: blur(15px); 
+        margin: 120px auto 60px auto; 
+        max-width: 900px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+    ">
+        <span id="art-tag" class="art-tag">Ładowanie danych...</span>
+        <h1 id="art-tytul" style="font-family:'Rajdhani'; font-size: 3rem; margin: 10px 0; text-transform: uppercase; color: var(--neon-cyan); text-shadow: 0 0 15px rgba(0, 243, 255, 0.3);">---</h1>
+        
+        <div style="position: relative; overflow: hidden; border-radius: 15px; margin: 30px 0; border: 1px solid rgba(255,255,255,0.1);">
+            <img id="art-img" src="" class="full-art-img" style="width: 100%; display: block; transition: transform 0.5s;">
+        </div>
+
+        <div id="art-tresc" class="article-body" style="font-size: 1.15rem; line-height: 1.9; color: #e0e0e0; font-weight: 300;"></div>
+    </main>
+
+    <section style="padding: 0 5% 80px 5%;">
+        <h2 style="
+    font-family: 'Rajdhani', sans-serif; 
+    text-align: center; 
+    letter-spacing: 8px; 
+    margin-bottom: 50px; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    color: var(--neon-purple); 
+    text-shadow: 0 0 15px var(--neon-purple);
+    border-bottom: 1px solid var(--neon-purple);
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 10px;
+">Więcej z tego działu</h2>
+        <div id="related-slider" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;"></div>
+    </section>
+
+    <script src="Artykuly/artykuly.js"></script>
+
+    <script>
+        // --- LOGIKA ŁADOWANIA TREŚCI ---
+        function loadArticle() {
+            const params = new URLSearchParams(window.location.search);
+            const rawId = params.get('id');
+
+            console.log("Szukam artykułu o ID:", rawId);
+
+            if (typeof bazaArtykulow === 'undefined') {
+                console.error("Baza artykułów nie jest dostępna!");
+                document.getElementById('art-tytul').innerText = "BŁĄD SYSTEMU: BRAK BAZY";
+                return;
+            }
+
+            // Szukamy artykułu (używamy == aby dopasować liczbę do stringa)
+            const art = bazaArtykulow.find(a => a.id == rawId);
+
+            if (art) {
+                document.title = art.tytul + " | WEB SPACE STATION";
+                document.getElementById('art-tag').innerText = art.tag;
+                document.getElementById('art-tytul').innerText = art.tytul;
+                document.getElementById('art-img').src = art.img;
+                
+                const trescContainer = document.getElementById('art-tresc');
+                if (trescContainer) {
+                    trescContainer.innerHTML = art.tresc || `<p>${art.opis}</p>`;
+                }
+                
+                renderRelated(art);
+            } else {
+                document.getElementById('art-tytul').innerText = "NIE ZNALEZIONO ARTYKUŁU";
+                if(document.getElementById('art-tag')) {
+                    document.getElementById('art-tag').style.display = 'none';
+                }
+            }
+        }
+
+        // --- RENDEROWANIE PODOBNYCH ---
+        function renderRelated(currentArt) {
+            const grid = document.getElementById('related-slider');
+            if(!grid) return;
+
+            const podobne = bazaArtykulow
+                .filter(item => item.kategoria === currentArt.kategoria && item.id != currentArt.id)
+                .sort(() => 0.5 - Math.random()) 
+                .slice(0, 3);
+
+            grid.innerHTML = podobne.map(item => `
+                <a href="artykul.html?id=${item.id}" class="art-card" style="text-decoration: none; color: inherit;">
+                    <div class="art-img" style="background-image: url('${item.img}'); height: 180px; background-size: cover; background-position: center; border-radius: 10px 10px 0 0;"></div>
+                    <div class="art-content" style="padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-top: none; border-radius: 0 0 10px 10px;">
+                        <span class="art-tag" style="font-size: 0.7rem;">${item.tag}</span>
+                        <h3 class="art-title" style="font-size: 1.1rem; margin: 5px 0;">${item.tytul}</h3>
+                        <p class="art-desc" style="font-size: 0.85rem; opacity: 0.7;">${item.opis.substring(0, 100)}...</p>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // --- LOGIKA GWIAZD (STARFIELD) ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+
+        function initStars() {
+            width = window.innerWidth; 
+            height = window.innerHeight;
+            canvas.width = width; 
+            canvas.height = height;
+            stars = [];
+            for(let i=0; i<250; i++) {
+                stars.push({
+                    x: Math.random() * width, 
+                    y: Math.random() * height, 
+                    size: Math.random() * 1.2, 
+                    speed: Math.random() * 0.3
+                });
+            }
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, width, height); 
+            ctx.fillStyle = "#fff";
+            stars.forEach(s => { 
+                ctx.beginPath(); 
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); 
+                ctx.fill(); 
+                s.y -= s.speed; 
+                if(s.y < 0) s.y = height; 
+            });
+            requestAnimationFrame(animateStars);
+        }
+
+        // --- JEDYNA INICJALIZACJA STARTOWA ---
+        window.addEventListener('resize', initStars);
+
+        window.onload = function() {
+            initStars();    
+            animateStars();
+            // Mały timeout, żeby baza danych na pewno zdążyła się "wczytać"
+            setTimeout(loadArticle, 50);
+        };
+    </script>
+</body>
+</html>
