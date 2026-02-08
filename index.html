@@ -130,60 +130,46 @@
         }
         initStars(); animateStars();
 
-// --- 2. SENTENCJE Z EFEKTEM PISANIA (NAPRAWIONE SPACJE) ---
-const quotes = [
-    "„Gdzieś tam coś niesamowitego czeka na odkrycie.” – Carl Sagan",
-    "„Jesteśmy sposobem, w jaki kosmos poznaje samego siebie.”",
-    "„Eksploracja to przeznaczenie gatunku.”",
-    "„Pamiętaj, by patrzeć w gwiazdy, a nie pod nogi.”",
-    "„Każdy z nas jest zrobiony z gwiezdnego pyłu.”",
-    "„Ziemia jest kolebką ludzkości, ale nie można w niej zostać na zawsze.”",
-    "„Niebo nie jest granicą. To dopiero początek.”",
-    "„Per aspera ad astra – Przez trudy do gwiazd.”",
-    "„Zostawiliśmy ślady na Księżycu, czas na Marsa.”",
-    "„Największą przygodą jest to, co dopiero przed nami.”",
-    "„Kosmos jest w nas. Jesteśmy zbudowani z gwiezdnej materii.”",
-    "„Jeden mały krok dla człowieka, ale wielki skok dla ludzkości.”",
-    "„Granice istnieją tylko w naszych umysłach.”",
-    "„Baza Spokoju, Orzeł wylądował.”",
-    "„Odkrywanie to nasza natura.”"
-];
-
-let qIdx = 0;
-let typingEffect; // Zmienna do trzymania interwału
+// --- 2. SENTENCJE Z EFEKTEM PISANIA (LOSOWANIE I WOLNIEJSZE TEMPO) ---
+let qIdx = 0; 
+let typingEffect; 
 
 function rotateQuotes() {
     const el = document.getElementById('quote-text');
     if(!el) return;
 
-    // Zatrzymujemy poprzednie pisanie, jeśli jeszcze trwa
     clearInterval(typingEffect);
 
-    // Płynne znikanie
     el.style.transition = "opacity 0.5s";
     el.style.opacity = 0;
 
     setTimeout(() => {
+        // --- TUTAJ JEST NAPRAWA LOSOWANIA ---
+        let newIdx;
+        do {
+            newIdx = Math.floor(Math.random() * quotes.length);
+        } while (newIdx === qIdx); // Losuj tak długo, aż trafisz na inny niż poprzedni
+        
+        qIdx = newIdx; // Przypisz wylosowany numer
         const fullText = quotes[qIdx];
-        el.textContent = ""; // Czyścimy pole (używając textContent)
+        
+        el.textContent = ""; 
         el.style.opacity = 1;
 
         let charIdx = 0;
         typingEffect = setInterval(() => {
-            // Dodajemy znak po znaku zachowując strukturę tekstu
             el.textContent += fullText[charIdx];
             charIdx++;
 
             if (charIdx >= fullText.length) {
                 clearInterval(typingEffect);
             }
-        }, 80); // Prędkość pisania
+        }, 80); // Wolniejsze tempo (80ms)
 
-        qIdx = (qIdx + 1) % quotes.length;
     }, 600);
 }
 
-// Uruchomienie cyklu
+// Zwiększyłem czas do 11 sekund (11000), żeby system nie przerywał pisania długich cytatów
 setInterval(rotateQuotes, 9000); 
 rotateQuotes();
 </script>
@@ -359,6 +345,7 @@ window.onload = () => {
 </body>
 
 </html>
+
 
 
 
