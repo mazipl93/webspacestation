@@ -262,11 +262,36 @@ footer {
 
 /* RWD dla telefonów */
 @media (max-width: 768px) {
-    .nebula-title { font-size: 4rem; }
-    .article-container { margin-top: 100px; }
-    .article-title { font-size: 2rem; }
+    /* --- PRZYWRÓCENIE MAŁEGO MENU --- */
+    nav {
+        flex-direction: column !important; /* Logo nad linkami */
+        padding: 5px 0 !important;         /* Bardzo mały odstęp góra-dół */
+        gap: 2px !important;               /* Minimalna przerwa */
+    }
+
+    .nav-logo {
+        font-size: 1rem !important;        /* Małe logo */
+        margin: 0 !important;
+    }
+
+    .nav-links {
+        gap: 8px !important;               /* Linki blisko siebie */
+        justify-content: center !important;
+    }
+
+    .nav-links a {
+        font-size: 0.65rem !important;     /* Bardzo drobny, estetyczny druk */
+        padding: 2px 4px !important;
+    }
+
+    /* --- RESZTA TWOICH USTAWIEŃ --- */
+    .nebula-title { font-size: 3rem; }     /* Trochę mniejszy tytuł, żeby nie wypychał strony */
+    .article-container { margin-top: 60px; }
+    .article-title { font-size: 1.8rem; }
 }
-.artemis-banner img {
+
+/* --- ANIMACJA LOGO --- */
+.artemis-banner svg, .artemis-banner img {
     animation: neonPulse 3s infinite ease-in-out;
 }
 
@@ -275,3 +300,4 @@ footer {
     50% { filter: drop-shadow(0 0 15px var(--neon-purple)); transform: scale(1.05); }
     100% { filter: drop-shadow(0 0 5px var(--neon-purple)); transform: scale(1); }
 }
+
