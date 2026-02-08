@@ -229,17 +229,18 @@ async function updateISS() {
         const velEl = document.getElementById('iss-vel');
         const altEl = document.getElementById('iss-alt');
 
-        if(latEl) latEl.innerText = data.latitude.toFixed(4);
-        if(lonEl) lonEl.innerText = data.longitude.toFixed(4);
+        if(latEl) latEl.innerText = parseFloat(data.latitude).toFixed(4);
+        if(lonEl) lonEl.innerText = parseFloat(data.longitude).toFixed(4);
         if(velEl) velEl.innerText = Math.round(data.velocity).toLocaleString();
-        if(altEl) altEl.innerText = data.altitude.toFixed(1);
+        if(altEl) altEl.innerText = parseFloat(data.altitude).toFixed(1);
     } catch (e) { console.error("Błąd ISS"); }
 }
 
-// --- 4. ZAŁOGA (LIVE) ---
+// --- 4. ZAŁOGA (LIVE - POPRAWIONY LINK HTTPS) ---
 async function updateCrew() {
     try {
-        const res = await fetch('http://api.open-notify.org/astros.json');
+        // Używamy alternatywnego źródła z HTTPS, bo open-notify często blokuje serwery SSL
+        const res = await fetch('https://corquaid.github.io/international-space-station-api/api/v1/astros.json');
         const data = await res.json();
         const countEl = document.getElementById('crew-count');
         const listEl = document.getElementById('crew-list');
@@ -253,32 +254,28 @@ async function updateCrew() {
     } catch (e) { console.error("Błąd załogi"); }
 }
 
-// --- 5. DANE O NAJBLIŻSZYM STARCIE (DOWOLNYM) ---
+// --- 5. NAJBLIŻSZY START (DOWOLNY - WYŁĄCZNIE PRZYSZŁE) ---
 async function updateNextLaunch() {
     try {
-        // Pobieramy więcej wyników (limit=10), aby mieć z czego wybierać
+        // Pobieramy z wersji produkcyjnej 'll' zamiast 'lldev'
         const res = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10');
         const data = await res.json();
         
         if (data.results && data.results.length > 0) {
             const now = new Date();
-            // Filtrujemy listę, aby znaleźć pierwszy start, który odbędzie się po obecnej godzinie
+            // Szukamy misji, która odbędzie się po 08.02.2026 15:30 (Twoim aktualnym czasie)
             const futureLaunch = data.results.find(launch => new Date(launch.net) > now);
 
             if (futureLaunch) {
                 const launchDate = new Date(futureLaunch.net);
-                
                 document.getElementById('launch-timer').innerText = launchDate.toLocaleString('pl-PL', {
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    hour: '2-digit', 
-                    minute: '2-digit'
+                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                 });
                 document.getElementById('launch-name').innerText = futureLaunch.name;
                 document.getElementById('launch-rocket').innerText = futureLaunch.rocket.configuration.full_name;
                 document.getElementById('launch-pad').innerText = futureLaunch.pad.location.name;
             } else {
-                document.getElementById('launch-timer').innerText = "BRAK STARTÓW DZIŚ";
+                document.getElementById('launch-timer').innerText = "OCZEKIWANIE NA DANE...";
             }
         }
     } catch (e) { 
@@ -286,10 +283,12 @@ async function updateNextLaunch() {
         document.getElementById('launch-timer').innerText = "BŁĄD SYNCHRO";
     }
 }
-// --- 6. DANE O ARTEMIS II (SEKCJA SPECJALNA) ---
+
+// --- 6. ARTEMIS II (MISJA SPECJALNA - DANE LIVE) ---
 async function updateArtemis() {
     try {
-        const res = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?search=Artemis%20II');
+        // Szukamy konkretnie misji Artemis II w całej bazie
+        const res = await fetch('https://ll.thespacedevs.com/2.2.0/launch/?search=Artemis%20II&limit=1');
         const data = await res.json();
         
         const dateEl = document.getElementById('artemis-date');
@@ -297,12 +296,19 @@ async function updateArtemis() {
 
         if (data.results && data.results.length > 0) {
             const art = data.results[0];
-            if(dateEl) dateEl.innerText = new Date(art.net).toLocaleDateString('pl-PL', {month:'long', year:'numeric'}).toUpperCase();
-            if(statusEl) statusEl.innerText = art.status.name;
+            const artDate = new Date(art.net);
+            
+            // Czyste formatowanie z API
+            dateEl.innerText = artDate.toLocaleDateString('pl-PL', {day:'2-digit', month:'long', year:'numeric'}).toUpperCase();
+            statusEl.innerText = art.status.name.toUpperCase();
         } else {
-            if(dateEl) dateEl.innerText = "WRZESIEŃ 2025"; // Data bezpieczna
+            dateEl.innerText = "SZUKANIE MISJI...";
+            statusEl.innerText = "NASA DATABASE OFFLINE";
         }
-    } catch (e) { console.error("Błąd Artemis"); }
+    } catch (e) { 
+        console.error("Błąd Artemis API:", e);
+        if(dateEl) dateEl.innerText = "BŁĄD POŁĄCZENIA";
+    }
 }
 
 // --- START SYSTEMU ---
@@ -320,4 +326,5 @@ window.onload = () => {
 };
 </script>
 </body>
+
 </html>
