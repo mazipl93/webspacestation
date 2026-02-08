@@ -259,6 +259,13 @@ footer {
     letter-spacing: 5px; 
     font-size: 0.7rem; 
 }
+/* --- FIX DLA SENTENCJI (MASZYNA DO PISANIA) --- */
+#quote-text {
+    white-space: pre-wrap !important; /* Kluczowe: zachowuje spacje podczas pisania */
+    display: inline-block;
+    min-height: 1.2em; /* Zapobiega skakaniu tekstu góra-dół */
+    text-align: center;
+}
 
 /* RWD dla telefonów */
 @media (max-width: 768px) {
@@ -300,6 +307,7 @@ footer {
     50% { filter: drop-shadow(0 0 15px var(--neon-purple)); transform: scale(1.05); }
     100% { filter: drop-shadow(0 0 5px var(--neon-purple)); transform: scale(1); }
 }
+
 
 
 
