@@ -130,27 +130,56 @@
         }
         initStars(); animateStars();
 
-        // --- SENTENCJE ---
-        const quotes = [
-            "„Gdzieś tam coś niesamowitego czeka na odkrycie.” – Carl Sagan",
-            "„Jesteśmy sposobem, w jaki kosmos poznaje samego siebie.”",
-            "„Stan systemu: 08.02.2026 – Wszystkie parametry w normie.”",
-            "„Eksploracja to przeznaczenie gatunku.”",
-            "„Pamiętaj, by patrzeć w gwiazdy, a nie pod nogi.”",
-            "„Każdy z nas jest zrobiony z gwiezdnego pyłu.”"
-        ];
-        let qIdx = 0;
-        function rotateQuotes() {
-            const el = document.getElementById('quote-text');
-            if(!el) return;
-            el.style.opacity = 0;
-            setTimeout(() => {
-                el.innerText = quotes[qIdx];
-                el.style.opacity = 1;
-                qIdx = (qIdx + 1) % quotes.length;
-            }, 1000);
-        }
-        setInterval(rotateQuotes, 7000); rotateQuotes();
+       // --- 2. SENTENCJE Z EFEKTEM PISANIA ---
+const quotes = [
+    "„Gdzieś tam coś niesamowitego czeka na odkrycie.” – Carl Sagan",
+    "„Jesteśmy sposobem, w jaki kosmos poznaje samego siebie.”",
+    "„Eksploracja to przeznaczenie gatunku.”",
+    "„Pamiętaj, by patrzeć w gwiazdy, a nie pod nogi.”",
+    "„Każdy z nas jest zrobiony z gwiezdnego pyłu.”",
+    "„Ziemia jest kolebką ludzkości, ale nie można w niej zostać na zawsze.”",
+    "„Niebo nie jest granicą. To dopiero początek.”",
+    "„Per aspera ad astra – Przez trudy do gwiazd.”",
+    "„Zostawiliśmy ślady na Księżycu, czas na Marsa.”",
+    "„Największą przygodą jest to, co dopiero przed nami.”",
+    "„Kosmos jest w nas. Jesteśmy zbudowani z gwiezdnej materii.”",
+    "„Jeden mały krok dla człowieka, ale wielki skok dla ludzkości.”",
+    "„Granice istnieją tylko w naszych umysłach.”",
+    "„Baza Spokoju, Orzeł wylądował.”",
+    "„Odkrywanie to nasza natura.”"
+];
+
+let qIdx = 0;
+
+function rotateQuotes() {
+    const el = document.getElementById('quote-text');
+    if(!el) return;
+
+    // Najpierw płynne wygaszenie starego tekstu
+    el.style.transition = "opacity 0.5s";
+    el.style.opacity = 0;
+
+    setTimeout(() => {
+        const fullText = quotes[qIdx];
+        el.innerText = ""; // Czyścimy pole
+        el.style.opacity = 1; // Pokazujemy element, ale pusty
+
+        let charIdx = 0;
+        const typingInterval = setInterval(() => {
+            el.innerText += fullText[charIdx];
+            charIdx++;
+
+            if (charIdx >= fullText.length) {
+                clearInterval(typingInterval);
+            }
+        }, 40); // Szybkość pisania liter
+
+        qIdx = (qIdx + 1) % quotes.length;
+    }, 600); // Czas na zniknięcie starego tekstu
+}
+
+// Ten interwał sprawia, że cytaty zmieniają się same
+setInterval(rotateQuotes, 8000);
 </script>
 <script>
 // --- 1. RENDEROWANIE ARTYKUŁÓW Z PLIKU JS ---
@@ -324,4 +353,5 @@ window.onload = () => {
 </body>
 
 </html>
+
 
