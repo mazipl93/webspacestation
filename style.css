@@ -261,27 +261,36 @@ footer {
     font-size: 0.7rem; 
 }
 
-/* --- RESPONSYWNOŚĆ (RWD) --- */
+/* --- PRECYZYJNE ODCHUDZANIE MENU NA TELEFONY --- */
 @media (max-width: 768px) {
-    /* Mniejsze menu na telefonach - wyżej i chudziej */
     nav {
-        padding: 8px 5%; 
+        padding: 5px 4%;       /* Ekstremalnie mały odstęp góra-dół (5px) */
+        min-height: 45px;      /* Sztywna, niska wysokość całego paska */
     }
 
     .nav-logo {
-        font-size: 0.95rem;
+        font-size: 0.85rem;    /* Zmniejszone logo, żeby nie "rozpychało" paska */
+        letter-spacing: 1px;
     }
 
     .nav-links {
-        gap: 12px;
+        gap: 10px;             /* Bardzo blisko siebie linki */
     }
 
-    .nebula-title { font-size: 4rem; }
+    .nav-links a {
+        font-size: 0.65rem;    /* Mniejsza czcionka linków */
+    }
 
-    /* Podciągnięcie treści wyżej */
+    /* Podciągamy kontener artykułu jeszcze wyżej, 
+       żeby był blisko tego malutkiego menu */
     .article-container { 
-        margin-top: 85px; 
+        margin-top: 65px;      /* Zmniejszono z 85px/120px */
     }
 
-    .article-title { font-size: 2rem; }
+    /* Zmniejszamy też tytuł artykułu na telefonach, 
+       bo ogromny napis też optycznie "powiększa" górę strony */
+    h1#art-tytul {
+        font-size: 1.8rem !important;
+        line-height: 1.1;
+    }
 }
