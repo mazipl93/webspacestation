@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WEB SPACE STATION</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;400;600;800&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+   <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <canvas id="starfield"></canvas>
+
+    <nav>
+        <a href="#" class="nav-logo">Web Space Station</a>
+        <div class="nav-links">
+            <a href="#meldunki">Meldunki</a>
+            <a href="#popularne">Nauka</a>
+            <a href="#tech">Technologia</a>
+            <a href="#status">Live</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="quote-container"><span id="quote-text">Synchronizacja bazy danych...</span></div>
+        <h1 class="nebula-title">WEB SPACE<br>STATION</h1>
+    </section>
+
+    <section id="meldunki" class="logs-container">
+        <h2 class="section-title">Najnowsze Meldunki</h2>
+        <div class="slider-viewport">
+            <div class="slider-track" id="track-meldunki">
+                </div>
+        </div>
+    </section>
+
+    <section id="popularne" class="logs-container">
+        <h2 class="section-title">Popularno-Naukowe</h2>
+        <div class="slider-viewport">
+            <div class="slider-track" id="track-nauka">
+                </div>
+        </div>
+    </section>
+
+    <section id="tech" class="logs-container">
+        <h2 class="section-title">Technologia</h2>
+        <div class="slider-viewport">
+            <div class="slider-track" id="track-tech">
+                </div>
+        </div>
+    </section>
+
+    <section id="status" class="telemetry">
+        <h2 class="section-title">Centrum Kontroli LIVE</h2>
+        <div class="mon-grid">
+            <div class="mon-box">
+                <div class="live-label">Pozycja ISS</div>
+                <div id="iss-lat" class="live-value">0.0000</div>
+                <div class="live-label">Szerokość</div>
+                <div id="iss-lon" class="live-value">0.0000</div>
+                <div class="live-label">Długość</div>
+                <div class="status-info">Prędkość: <b id="iss-vel">0</b> km/h<br>Wysokość: <b id="iss-alt">0</b> km</div>
+            </div>
+            <div class="mon-box">
+                <div class="live-label">Artemis II Launch</div>
+                <div class="live-value" style="color:var(--neon-purple)">MARZEC 2026</div>
+                <div class="live-label">Cel: Orbita Księżyca</div>
+                <div class="status-info">Status: <b>Integracja kapsuły</b><br>Załoga: <b>Wiseman, Glover, Koch, Hansen</b></div>
+            </div>
+            <div class="mon-box">
+                <div class="live-label">Obecnie w kosmosie</div>
+                <div id="crew-count" class="live-value">10</div>
+                <div class="live-label">Personel Orbitalny</div>
+                <div class="crew-list" id="crew-list">Synchronizacja...</div>
+            </div>
+        </div>
+    </section>
+
+    <footer>|| WEB SPACE STATION ||</footer>
+
+    <script src="Artykuly/artykuly.js"></script>
+
+    <script>
+        // --- GWIAZDY ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+        function initStars() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            stars = [];
+            for(let i=0; i<250; i++) stars.push({x: Math.random()*width, y: Math.random()*height, size: Math.random()*1.2, speed: Math.random()*0.3});
+        }
+        function animateStars() {
+            ctx.clearRect(0,0,width,height); ctx.fillStyle = "#fff";
+            stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill(); s.y -= s.speed; if(s.y < 0) s.y = height; });
+            requestAnimationFrame(animateStars);
+        }
+        initStars(); animateStars();
+
+        // --- SENTENCJE ---
+        const quotes = [
+            "„Gdzieś tam coś niesamowitego czeka na odkrycie.” – Carl Sagan",
+            "„Jesteśmy sposobem, w jaki kosmos poznaje samego siebie.”",
+            "„Stan systemu: 08.02.2026 – Wszystkie parametry w normie.”",
+            "„Eksploracja to przeznaczenie gatunku.”",
+            "„Pamiętaj, by patrzeć w gwiazdy, a nie pod nogi.”",
+            "„Każdy z nas jest zrobiony z gwiezdnego pyłu.”"
+        ];
+        let qIdx = 0;
+        function rotateQuotes() {
+            const el = document.getElementById('quote-text');
+            if(!el) return;
+            el.style.opacity = 0;
+            setTimeout(() => {
+                el.innerText = quotes[qIdx];
+                el.style.opacity = 1;
+                qIdx = (qIdx + 1) % quotes.length;
+            }, 1000);
+        }
+        setInterval(rotateQuotes, 7000); rotateQuotes();
+
+// --- RENDEROWANIE ARTYKUŁÓW Z PLIKU JS ---
+        function renderujArtykuly() {
+            const kontenery = {
+                'meldunki': document.getElementById('track-meldunki'),
+                'nauka': document.getElementById('track-nauka'),
+                'tech': document.getElementById('track-tech')
+            };
+
+            // Sprawdzamy czy bazaArtykulow została załadowana z pliku zewnętrznego
+            if (typeof bazaArtykulow === 'undefined') {
+                console.error("Błąd: Nie załadowano bazy z Artykuly/artykuly.js!");
+                return;
+            }
+
+            // Czyścimy tracki przed dodaniem nowych kart
+            Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
+
+            // Renderujemy karty (od najnowszych - odwracamy tablicę)
+            [...bazaArtykulow].reverse().forEach(art => {
+                const target = kontenery[art.kategoria];
+                if(!target) return;
+
+                // LIMIT: Jeśli w danym dziale jest już 10 artykułów, nie dodajemy więcej
+                if(target.children.length >= 10) return;
+
+                const card = `
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('${art.img}');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">${art.tag}</span>
+                            <h3 class="art-title">${art.tytul}</h3>
+                            <p class="art-desc">${art.opis}</p>
+                            <a href="${art.link}" class="art-link">CZYTAJ WIĘCEJ</a>
+                        </div>
+                    </div>
+                `;
+                target.innerHTML += card;
+            });
+            
+            // Ponowna inicjalizacja sliderów dla nowych elementów
+            initSliders();
+        }
+
+        // --- OBSŁUGA SLIDERÓW (PRZECIĄGANIE) ---
+        function initSliders() {
+            const viewports = document.querySelectorAll('.slider-viewport');
+            viewports.forEach(slider => {
+                let isDown = false;
+                let startX;
+                let scrollLeft;
+
+                slider.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    slider.style.scrollSnapType = 'none';
+                    startX = e.pageX - slider.offsetLeft;
+                    scrollLeft = slider.scrollLeft;
+                });
+                slider.addEventListener('mouseleave', () => { isDown = false; });
+                slider.addEventListener('mouseup', () => { 
+                    isDown = false; 
+                    slider.style.scrollSnapType = 'x mandatory';
+                });
+                slider.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - slider.offsetLeft;
+                    const walk = (x - startX) * 2;
+                    slider.scrollLeft = scrollLeft - walk;
+                });
+            });
+        }
+
+        // --- LIVE DATA: ISS ---
+        async function updateISS() {
+            try {
+                const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+                const data = await res.json();
+                document.getElementById('iss-lat').innerText = data.latitude.toFixed(4);
+                document.getElementById('iss-lon').innerText = data.longitude.toFixed(4);
+                document.getElementById('iss-vel').innerText = Math.round(data.velocity);
+                document.getElementById('iss-alt').innerText = Math.round(data.altitude);
+            } catch (e) {}
+        }
+        setInterval(updateISS, 5000); updateISS();
+
+        // --- LIVE DATA: CREW ---
+        function updateCrew() {
+            const realCrew = [
+                {name: "Donald Pettit", agency: "NASA"}, {name: "Nick Hague", agency: "NASA"},
+                {name: "Aleksandr Gorbunov", agency: "Roscosmos"}, {name: "Butch Wilmore", agency: "NASA"},
+                {name: "Suni Williams", agency: "NASA"}, {name: "Alexey Ovchinin", agency: "Roscosmos"},
+                {name: "Ivan Vagner", agency: "Roscosmos"}, {name: "Song Lingdong", agency: "CNSA"},
+                {name: "Cai Xuzhe", agency: "CNSA"}, {name: "Wang Haoze", agency: "CNSA"}
+            ];
+            document.getElementById('crew-count').innerText = realCrew.length;
+            const cl = document.getElementById('crew-list');
+            if(cl) {
+                cl.innerHTML = realCrew.map(p => `
+                    <div class="crew-item"><span>${p.name}</span><b>${p.agency}</b></div>`).join('');
+            }
+        }
+
+        // Start wszystkiego
+        window.onload = () => {
+            renderujArtykuly();
+            updateCrew();
+        };
+    </script>
+</body>
+</html>
