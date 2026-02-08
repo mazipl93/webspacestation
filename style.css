@@ -241,6 +241,27 @@ footer {
     letter-spacing: 5px; 
     font-size: 0.7rem; 
 }
+/* --- PRZYCISK CZYTAJ WIĘCEJ (NAPRAWA) --- */
+.art-link { 
+    margin-top: auto; 
+    color: var(--neon-cyan) !important; 
+    text-decoration: none !important; 
+    font-size: 0.7rem; 
+    font-weight: bold; 
+    border: 1px solid var(--neon-cyan); 
+    padding: 10px; 
+    text-align: center; 
+    border-radius: 4px; 
+    transition: 0.3s;
+    text-transform: uppercase;
+    display: block; /* Żeby zajął całą szerokość karty */
+}
+
+.art-link:hover { 
+    background: var(--neon-cyan); 
+    color: #000 !important; 
+    box-shadow: 0 0 15px var(--neon-cyan);
+}
 
 /* --- PRECYZYJNE ODCHUDZANIE MENU NA TELEFONY --- */
 @media (max-width: 768px) {
@@ -277,3 +298,4 @@ footer {
         line-height: 1.1;
     }
 }
+
