@@ -130,7 +130,7 @@
         }
         initStars(); animateStars();
 
-       // --- 2. SENTENCJE Z EFEKTEM PISANIA ---
+// --- 2. SENTENCJE Z EFEKTEM PISANIA (NAPRAWIONE SPACJE) ---
 const quotes = [
     "„Gdzieś tam coś niesamowitego czeka na odkrycie.” – Carl Sagan",
     "„Jesteśmy sposobem, w jaki kosmos poznaje samego siebie.”",
@@ -150,36 +150,42 @@ const quotes = [
 ];
 
 let qIdx = 0;
+let typingEffect; // Zmienna do trzymania interwału
 
 function rotateQuotes() {
     const el = document.getElementById('quote-text');
     if(!el) return;
 
-    // Najpierw płynne wygaszenie starego tekstu
+    // Zatrzymujemy poprzednie pisanie, jeśli jeszcze trwa
+    clearInterval(typingEffect);
+
+    // Płynne znikanie
     el.style.transition = "opacity 0.5s";
     el.style.opacity = 0;
 
     setTimeout(() => {
         const fullText = quotes[qIdx];
-        el.innerText = ""; // Czyścimy pole
-        el.style.opacity = 1; // Pokazujemy element, ale pusty
+        el.textContent = ""; // Czyścimy pole (używając textContent)
+        el.style.opacity = 1;
 
         let charIdx = 0;
-        const typingInterval = setInterval(() => {
-            el.innerText += fullText[charIdx];
+        typingEffect = setInterval(() => {
+            // Dodajemy znak po znaku zachowując strukturę tekstu
+            el.textContent += fullText[charIdx];
             charIdx++;
 
             if (charIdx >= fullText.length) {
-                clearInterval(typingInterval);
+                clearInterval(typingEffect);
             }
-        }, 40); // Szybkość pisania liter
+        }, 40); // Prędkość pisania
 
         qIdx = (qIdx + 1) % quotes.length;
-    }, 600); // Czas na zniknięcie starego tekstu
+    }, 600);
 }
 
-// Ten interwał sprawia, że cytaty zmieniają się same
-setInterval(rotateQuotes, 8000);
+// Uruchomienie cyklu
+setInterval(rotateQuotes, 9000); 
+rotateQuotes();
 </script>
 <script>
 // --- 1. RENDEROWANIE ARTYKUŁÓW Z PLIKU JS ---
@@ -353,5 +359,6 @@ window.onload = () => {
 </body>
 
 </html>
+
 
 
