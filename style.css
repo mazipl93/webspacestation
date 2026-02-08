@@ -265,8 +265,8 @@ footer {
     /* --- PRZYWRÓCENIE MAŁEGO MENU --- */
     nav {
         flex-direction: column !important; /* Logo nad linkami */
-        padding: 10px 0 !important;         /* Bardzo mały odstęp góra-dół */
-        gap: 4px !important;               /* Minimalna przerwa */
+        padding: 8px 0 !important;         /* Bardzo mały odstęp góra-dół */
+        gap: 5px !important;               /* Minimalna przerwa */
     }
 
     .nav-logo {
@@ -300,6 +300,7 @@ footer {
     50% { filter: drop-shadow(0 0 15px var(--neon-purple)); transform: scale(1.05); }
     100% { filter: drop-shadow(0 0 5px var(--neon-purple)); transform: scale(1); }
 }
+
 
 
 
