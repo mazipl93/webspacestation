@@ -34,7 +34,7 @@ body {
     background: #000; 
 }
 
-/* --- NAWIGACJA (GŁÓWNA) --- */
+/* --- NAWIGACJA --- */
 nav {
     position: fixed; 
     top: 0; 
@@ -47,7 +47,7 @@ nav {
     background: rgba(0,0,0,0.9); 
     backdrop-filter: blur(15px);
     border-bottom: 1px solid var(--glass-border);
-    transition: padding 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .nav-logo { 
@@ -189,20 +189,6 @@ nav {
 .art-title { font-family: 'Rajdhani'; font-size: 1.1rem; margin-bottom: 10px; color: #fff; line-height: 1.2; }
 .art-desc { font-size: 0.8rem; color: #aaa; line-height: 1.5; margin-bottom: 15px; }
 
-.art-link { 
-    margin-top: auto; 
-    color: var(--neon-cyan); 
-    text-decoration: none; 
-    font-size: 0.7rem; 
-    font-weight: bold; 
-    border: 1px solid var(--neon-cyan); 
-    padding: 10px; 
-    text-align: center; 
-    border-radius: 4px; 
-    transition: 0.3s; 
-}
-.art-link:hover { background: var(--neon-cyan); color: #000; }
-
 /* --- STRONA ARTYKUŁU --- */
 .article-container {
     max-width: 850px;
@@ -244,11 +230,6 @@ nav {
 
 .live-value { font-family: 'Rajdhani'; color: var(--neon-cyan); font-size: 1.8rem; font-weight: 700; margin: 10px 0; }
 .live-label { font-size: 0.65rem; color: #666; text-transform: uppercase; letter-spacing: 3px; }
-.status-info { text-align: left; margin-top: 20px; font-size: 0.85rem; border-top: 1px solid #222; padding-top: 15px; color: #bbb; line-height: 1.6; }
-.status-info b { color: var(--neon-cyan); }
-
-.crew-list { text-align: left; font-size: 0.8rem; max-height: 150px; overflow-y: auto; color: #999; margin-top: 15px; }
-.crew-item { padding: 8px 0; border-bottom: 1px solid #111; display: flex; justify-content: space-between; }
 
 /* --- STOPKA --- */
 footer { 
@@ -264,31 +245,33 @@ footer {
 /* --- PRECYZYJNE ODCHUDZANIE MENU NA TELEFONY --- */
 @media (max-width: 768px) {
     nav {
-        padding: 5px 4%;       /* Ekstremalnie mały odstęp góra-dół (5px) */
-        min-height: 45px;      /* Sztywna, niska wysokość całego paska */
+        padding: 5px 4% !important;   /* Wymuszamy mały odstęp góra-dół */
+        height: 45px !important;      /* Sztywna niska wysokość paska */
+        min-height: 45px !important;
     }
 
     .nav-logo {
-        font-size: 0.85rem;    /* Zmniejszone logo, żeby nie "rozpychało" paska */
+        font-size: 0.85rem !important;
         letter-spacing: 1px;
     }
 
     .nav-links {
-        gap: 10px;             /* Bardzo blisko siebie linki */
+        gap: 10px;
     }
 
     .nav-links a {
-        font-size: 0.65rem;    /* Mniejsza czcionka linków */
+        font-size: 0.65rem !important;
     }
 
-    /* Podciągamy kontener artykułu jeszcze wyżej, 
-       żeby był blisko tego malutkiego menu */
-    .article-container { 
-        margin-top: 65px;      /* Zmniejszono z 85px/120px */
+    /* Podciągamy wszystko wyżej pod chudsze menu */
+    .article-container, .hero { 
+        margin-top: 55px !important; 
     }
 
-    /* Zmniejszamy też tytuł artykułu na telefonach, 
-       bo ogromny napis też optycznie "powiększa" górę strony */
+    .nebula-title { 
+        font-size: 4rem; 
+    }
+
     h1#art-tytul {
         font-size: 1.8rem !important;
         line-height: 1.1;
