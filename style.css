@@ -280,8 +280,8 @@ footer {
     }
 
     .nav-links a {
-        font-size: 0.65rem !important;     /* Bardzo drobny, estetyczny druk */
-        padding: 2px 4px !important;
+        font-size: 0.8rem !important;     /* Bardzo drobny, estetyczny druk */
+        padding: 5px 8px !important;
     }
 
     /* --- RESZTA TWOICH USTAWIEŃ --- */
@@ -300,5 +300,6 @@ footer {
     50% { filter: drop-shadow(0 0 15px var(--neon-purple)); transform: scale(1.05); }
     100% { filter: drop-shadow(0 0 5px var(--neon-purple)); transform: scale(1); }
 }
+
 
 
