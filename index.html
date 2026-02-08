@@ -57,27 +57,55 @@
     <section id="status" class="telemetry">
         <h2 class="section-title">Centrum Kontroli LIVE</h2>
         <div class="mon-grid">
-            <div class="mon-box">
-                <div class="live-label">Pozycja ISS</div>
-                <div id="iss-lat" class="live-value">0.0000</div>
-                <div class="live-label">Szerokość</div>
-                <div id="iss-lon" class="live-value">0.0000</div>
-                <div class="live-label">Długość</div>
-                <div class="status-info">Prędkość: <b id="iss-vel">0</b> km/h<br>Wysokość: <b id="iss-alt">0</b> km</div>
+    <div class="mon-box">
+        <div class="live-label">Pozycja ISS</div>
+        <div id="iss-lat" class="live-value">0.0000</div>
+        <div class="live-label">Szerokość</div>
+        <div id="iss-lon" class="live-value">0.0000</div>
+        <div class="live-label">Długość</div>
+        <div class="status-info">Prędkość: <b id="iss-vel">0</b> km/h<br>Wysokość: <b id="iss-alt">0</b> km</div>
+    </div>
+
+    <div class="mon-box" id="next-launch-box">
+        <div class="live-label">Najbliższy Start</div>
+        <div id="launch-timer" class="live-value" style="color:var(--neon-yellow); font-size: 1.4rem;">ŁADOWANIE...</div>
+        <div id="launch-name" class="live-label">Szukanie misji...</div>
+        <div class="status-info">Rakieta: <b id="launch-rocket">---</b><br>Miejsce: <b id="launch-pad">---</b></div>
+    </div>
+
+    <div class="mon-box">
+        <div class="live-label">Obecnie w kosmosie</div>
+        <div id="crew-count" class="live-value">0</div>
+        <div class="live-label">Personel Orbitalny</div>
+        <div class="crew-list" id="crew-list">Synchronizacja...</div>
+    </div>
+</div>
+
+<div class="artemis-banner">
+    <div class="mon-box" style="width: 100%; margin-top: 20px; border: 1px solid var(--neon-purple); position: relative; overflow: hidden;">
+        <div class="live-label" style="text-align: center; letter-spacing: 2px;">PROGRAM ARTEMIS: POWRÓT LUDZI NA KSIĘŻYC</div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; flex-wrap: wrap;">
+            
+            <div style="flex: 1; text-align: center;">
+                <div class="live-label">MISJA ARTEMIS II</div>
+                <div id="artemis-date" class="live-value" style="color:var(--neon-purple); font-size: 1.8rem;">---</div>
             </div>
-            <div class="mon-box">
-                <div class="live-label">Artemis II Launch</div>
-                <div class="live-value" style="color:var(--neon-purple)">MARZEC 2026</div>
-                <div class="live-label">Cel: Orbita Księżyca</div>
-                <div class="status-info">Status: <b>Integracja kapsuły</b><br>Załoga: <b>Wiseman, Glover, Koch, Hansen</b></div>
+
+            <div style="flex: 1; display: flex; justify-content: center; align-items: center; min-width: 150px;">
+                <img src="artemis.jpg" 
+                     alt="Artemis Logo" 
+                     style="height: 100px; filter: drop-shadow(0 0 10px var(--neon-purple));">
             </div>
-            <div class="mon-box">
-                <div class="live-label">Obecnie w kosmosie</div>
-                <div id="crew-count" class="live-value">10</div>
-                <div class="live-label">Personel Orbitalny</div>
-                <div class="crew-list" id="crew-list">Synchronizacja...</div>
+
+            <div style="flex: 1; text-align: center;" class="status-info">
+                Status: <b id="artemis-status" style="color: #fff;">W przygotowaniu</b><br>
+                Załoga: <span style="font-size: 0.9rem; display: block; margin-top: 5px;">Wiseman, Glover, Koch, Hansen</span>
             </div>
+
         </div>
+    </div>
+</div>
     </section>
 
     <footer>|| WEB SPACE STATION ||</footer>
@@ -123,114 +151,173 @@
             }, 1000);
         }
         setInterval(rotateQuotes, 7000); rotateQuotes();
+</script>
+<script>
+// --- 1. RENDEROWANIE ARTYKUŁÓW Z PLIKU JS ---
+function renderujArtykuly() {
+    const kontenery = {
+        'meldunki': document.getElementById('track-meldunki'),
+        'nauka': document.getElementById('track-nauka'),
+        'tech': document.getElementById('track-tech')
+    };
 
-// --- RENDEROWANIE ARTYKUŁÓW Z PLIKU JS ---
-        function renderujArtykuly() {
-            const kontenery = {
-                'meldunki': document.getElementById('track-meldunki'),
-                'nauka': document.getElementById('track-nauka'),
-                'tech': document.getElementById('track-tech')
-            };
+    if (typeof bazaArtykulow === 'undefined') {
+        console.error("Błąd: Nie załadowano bazy z Artykuly/artykuly.js!");
+        return;
+    }
 
-            // Sprawdzamy czy bazaArtykulow została załadowana z pliku zewnętrznego
-            if (typeof bazaArtykulow === 'undefined') {
-                console.error("Błąd: Nie załadowano bazy z Artykuly/artykuly.js!");
-                return;
+    Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
+
+    [...bazaArtykulow].reverse().forEach(art => {
+        const target = kontenery[art.kategoria];
+        if(!target) return;
+        if(target.children.length >= 10) return;
+
+        const card = `
+            <div class="art-card">
+                <div class="art-img" style="background-image: url('${art.img}');"></div>
+                <div class="art-content">
+                    <span class="art-tag">${art.tag}</span>
+                    <h3 class="art-title">${art.tytul}</h3>
+                    <p class="art-desc">${art.opis}</p>
+                    <a href="${art.link}" class="art-link">CZYTAJ WIĘCEJ</a>
+                </div>
+            </div>
+        `;
+        target.innerHTML += card;
+    });
+    
+    initSliders();
+}
+
+// --- 2. OBSŁUGA SLIDERÓW ---
+function initSliders() {
+    const viewports = document.querySelectorAll('.slider-viewport');
+    viewports.forEach(slider => {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            slider.style.scrollSnapType = 'none';
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+        });
+        slider.addEventListener('mouseleave', () => { isDown = false; });
+        slider.addEventListener('mouseup', () => { 
+            isDown = false; 
+            slider.style.scrollSnapType = 'x mandatory';
+        });
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2;
+            slider.scrollLeft = scrollLeft - walk;
+        });
+    });
+}
+
+// --- 3. DANE ISS (NA ŻYWO CO 1 SEKUNDĘ) ---
+async function updateISS() {
+    try {
+        const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+        const data = await res.json();
+        const latEl = document.getElementById('iss-lat');
+        const lonEl = document.getElementById('iss-lon');
+        const velEl = document.getElementById('iss-vel');
+        const altEl = document.getElementById('iss-alt');
+
+        if(latEl) latEl.innerText = data.latitude.toFixed(4);
+        if(lonEl) lonEl.innerText = data.longitude.toFixed(4);
+        if(velEl) velEl.innerText = Math.round(data.velocity).toLocaleString();
+        if(altEl) altEl.innerText = data.altitude.toFixed(1);
+    } catch (e) { console.error("Błąd ISS"); }
+}
+
+// --- 4. ZAŁOGA (LIVE) ---
+async function updateCrew() {
+    try {
+        const res = await fetch('http://api.open-notify.org/astros.json');
+        const data = await res.json();
+        const countEl = document.getElementById('crew-count');
+        const listEl = document.getElementById('crew-list');
+
+        if(countEl) countEl.innerText = data.number;
+        if(listEl) {
+            listEl.innerHTML = data.people.map(p => `
+                <div class="crew-item"><span>${p.name}</span> <b style="color:var(--neon-cyan)">${p.craft}</b></div>
+            `).join('');
+        }
+    } catch (e) { console.error("Błąd załogi"); }
+}
+
+// --- 5. DANE O NAJBLIŻSZYM STARCIE (DOWOLNYM) ---
+async function updateNextLaunch() {
+    try {
+        // Pobieramy więcej wyników (limit=10), aby mieć z czego wybierać
+        const res = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10');
+        const data = await res.json();
+        
+        if (data.results && data.results.length > 0) {
+            const now = new Date();
+            // Filtrujemy listę, aby znaleźć pierwszy start, który odbędzie się po obecnej godzinie
+            const futureLaunch = data.results.find(launch => new Date(launch.net) > now);
+
+            if (futureLaunch) {
+                const launchDate = new Date(futureLaunch.net);
+                
+                document.getElementById('launch-timer').innerText = launchDate.toLocaleString('pl-PL', {
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit'
+                });
+                document.getElementById('launch-name').innerText = futureLaunch.name;
+                document.getElementById('launch-rocket').innerText = futureLaunch.rocket.configuration.full_name;
+                document.getElementById('launch-pad').innerText = futureLaunch.pad.location.name;
+            } else {
+                document.getElementById('launch-timer').innerText = "BRAK STARTÓW DZIŚ";
             }
-
-            // Czyścimy tracki przed dodaniem nowych kart
-            Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
-
-            // Renderujemy karty (od najnowszych - odwracamy tablicę)
-            [...bazaArtykulow].reverse().forEach(art => {
-                const target = kontenery[art.kategoria];
-                if(!target) return;
-
-                // LIMIT: Jeśli w danym dziale jest już 10 artykułów, nie dodajemy więcej
-                if(target.children.length >= 10) return;
-
-                const card = `
-                    <div class="art-card">
-                        <div class="art-img" style="background-image: url('${art.img}');"></div>
-                        <div class="art-content">
-                            <span class="art-tag">${art.tag}</span>
-                            <h3 class="art-title">${art.tytul}</h3>
-                            <p class="art-desc">${art.opis}</p>
-                            <a href="${art.link}" class="art-link">CZYTAJ WIĘCEJ</a>
-                        </div>
-                    </div>
-                `;
-                target.innerHTML += card;
-            });
-            
-            // Ponowna inicjalizacja sliderów dla nowych elementów
-            initSliders();
         }
+    } catch (e) { 
+        console.error("Błąd bazy startów:", e);
+        document.getElementById('launch-timer').innerText = "BŁĄD SYNCHRO";
+    }
+}
+// --- 6. DANE O ARTEMIS II (SEKCJA SPECJALNA) ---
+async function updateArtemis() {
+    try {
+        const res = await fetch('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?search=Artemis%20II');
+        const data = await res.json();
+        
+        const dateEl = document.getElementById('artemis-date');
+        const statusEl = document.getElementById('artemis-status');
 
-        // --- OBSŁUGA SLIDERÓW (PRZECIĄGANIE) ---
-        function initSliders() {
-            const viewports = document.querySelectorAll('.slider-viewport');
-            viewports.forEach(slider => {
-                let isDown = false;
-                let startX;
-                let scrollLeft;
-
-                slider.addEventListener('mousedown', (e) => {
-                    isDown = true;
-                    slider.style.scrollSnapType = 'none';
-                    startX = e.pageX - slider.offsetLeft;
-                    scrollLeft = slider.scrollLeft;
-                });
-                slider.addEventListener('mouseleave', () => { isDown = false; });
-                slider.addEventListener('mouseup', () => { 
-                    isDown = false; 
-                    slider.style.scrollSnapType = 'x mandatory';
-                });
-                slider.addEventListener('mousemove', (e) => {
-                    if (!isDown) return;
-                    e.preventDefault();
-                    const x = e.pageX - slider.offsetLeft;
-                    const walk = (x - startX) * 2;
-                    slider.scrollLeft = scrollLeft - walk;
-                });
-            });
+        if (data.results && data.results.length > 0) {
+            const art = data.results[0];
+            if(dateEl) dateEl.innerText = new Date(art.net).toLocaleDateString('pl-PL', {month:'long', year:'numeric'}).toUpperCase();
+            if(statusEl) statusEl.innerText = art.status.name;
+        } else {
+            if(dateEl) dateEl.innerText = "WRZESIEŃ 2025"; // Data bezpieczna
         }
+    } catch (e) { console.error("Błąd Artemis"); }
+}
 
-        // --- LIVE DATA: ISS ---
-        async function updateISS() {
-            try {
-                const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
-                const data = await res.json();
-                document.getElementById('iss-lat').innerText = data.latitude.toFixed(4);
-                document.getElementById('iss-lon').innerText = data.longitude.toFixed(4);
-                document.getElementById('iss-vel').innerText = Math.round(data.velocity);
-                document.getElementById('iss-alt').innerText = Math.round(data.altitude);
-            } catch (e) {}
-        }
-        setInterval(updateISS, 5000); updateISS();
-
-        // --- LIVE DATA: CREW ---
-        function updateCrew() {
-            const realCrew = [
-                {name: "Donald Pettit", agency: "NASA"}, {name: "Nick Hague", agency: "NASA"},
-                {name: "Aleksandr Gorbunov", agency: "Roscosmos"}, {name: "Butch Wilmore", agency: "NASA"},
-                {name: "Suni Williams", agency: "NASA"}, {name: "Alexey Ovchinin", agency: "Roscosmos"},
-                {name: "Ivan Vagner", agency: "Roscosmos"}, {name: "Song Lingdong", agency: "CNSA"},
-                {name: "Cai Xuzhe", agency: "CNSA"}, {name: "Wang Haoze", agency: "CNSA"}
-            ];
-            document.getElementById('crew-count').innerText = realCrew.length;
-            const cl = document.getElementById('crew-list');
-            if(cl) {
-                cl.innerHTML = realCrew.map(p => `
-                    <div class="crew-item"><span>${p.name}</span><b>${p.agency}</b></div>`).join('');
-            }
-        }
-
-        // Start wszystkiego
-        window.onload = () => {
-            renderujArtykuly();
-            updateCrew();
-        };
-    </script>
+// --- START SYSTEMU ---
+window.onload = () => {
+    renderujArtykuly();
+    updateISS();
+    updateCrew();
+    updateNextLaunch(); // Nowa funkcja!
+    updateArtemis();
+    
+    // Odświeżaj pozycję ISS co sekundę
+    setInterval(updateISS, 1000);
+    // Odświeżaj info o startach co 10 minut (żeby nie blokować API)
+    setInterval(updateNextLaunch, 600000);
+};
+</script>
 </body>
 </html>
