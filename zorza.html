@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEB SPACE STATION | MONITOROWANIE L1</title>
+    <title>SPACE TERMINAL | REAL-TIME L1 MONITOR</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -39,7 +39,7 @@
             align-items: center; 
             padding: 15px 40px; 
             background: rgba(0,0,0,0.95); 
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border); 
             position: sticky; 
             top: 0; 
             z-index: 100;
@@ -67,7 +67,7 @@
             padding: 4px 12px; 
             border-radius: 4px; 
             font-weight: bold; 
-            text-transform: uppercase;
+            text-transform: uppercase; 
         }
 
         .dashboard { 
@@ -162,10 +162,9 @@
         }
 
         @media (max-width: 768px) { 
-            .top-row, .charts-grid, .visual-grid { grid-template-columns: 1fr; }
-            .header-nav { padding: 10px 20px; }
-            .main-value { font-size: 3rem; }
-            .chart-item { height: 280px; }
+            .top-row, .charts-grid, .visual-grid { grid-template-columns: 1fr; } 
+            .header-nav { padding: 10px 20px; } 
+            .main-value { font-size: 3rem; } 
         }
 
         #footer-status { 
@@ -192,10 +191,10 @@
 <body>
     <canvas id="starfield"></canvas>
     <div class="header-nav">
-        <a href="index.html" class="nav-logo">WEB SPACE STATION</a>
+        <a href="#" class="nav-logo">WEB SPACE STATION</a>
         <div class="status-box">
             <div id="sync-indicator" class="heartbeat"></div>
-            <div class="status-badge">SATELITA L1 LIVE</div>
+            <div class="status-badge">LIVE: DSCOVR L1</div>
         </div>
     </div>
     <div class="dashboard">
@@ -203,12 +202,12 @@
             <div class="main-card">
                 <div class="main-label">Indeks Geomagnetyczny (Kp)</div>
                 <div id="kp-val" class="main-value">--</div>
-                <div id="kp-stat" class="main-sub">SYNCHRONIZACJA...</div>
+                <div id="kp-stat" class="main-sub">POBIERANIE...</div>
             </div>
             <div class="main-card" style="border-color: var(--neon-yellow);">
                 <div class="main-label">Czas dolotu do Ziemi (ETA)</div>
                 <div id="eta-val" class="main-value" style="color: var(--neon-yellow);">-- min</div>
-                <div id="eta-desc" class="main-sub" style="color: #666;">OBLICZANIE PRĘDKOŚCI...</div>
+                <div id="eta-desc" class="main-sub" style="color: #666;">ANALIZA STRUMIENIA...</div>
             </div>
         </div>
         <div class="charts-grid">
@@ -231,18 +230,18 @@
         </div>
         <div class="visual-grid">
             <div class="visual-card">
-                <div class="main-label">Prognoza Zorzy (Północ)</div>
+                <div class="main-label">Prognoza Zorzy (N)</div>
                 <img id="img-aurora" src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg">
             </div>
             <div class="visual-card">
-                <div class="main-label">Słońce: SOHO / SDO Live</div>
+                <div class="main-label">Słońce Live (HMI)</div>
                 <img id="img-sun" src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg">
             </div>
         </div>
         <div id="footer-status">
-            STATUS SYSTEMU: OPERACYJNY // 
-            OSTATNIA AKTUALIZACJA: <span id="last-sync">--:--:--</span> // 
-            KOLEJNE SPRAWDZENIE ZA: <span id="next-sync">15</span>s
+            SYSTEM DATA LINK: <span id="link-status" style="color:var(--neon-green)">AKTYWNY</span> // 
+            OSTATNI ODCZYT: <span id="last-sync">--:--:--</span> // 
+            AUTO-ODŚWIEŻANIE: <span id="next-sync" style="color:var(--neon-blue)">15</span>s
         </div>
     </div>
     <script src="stars.js"></script>
@@ -255,20 +254,25 @@
             id: 'earthLine',
             afterDraw: (chart) => {
                 if (!chart.data.labels || !chart.data.labels.length || !chart.currentWind) return;
-                const xAxis = chart.scales.x;
+                const xAxis = chart.scales.x; 
                 const yAxis = chart.scales.y;
                 const travelMin = Math.floor((L1_DIST / chart.currentWind) / 60);
                 const earthIdx = chart.data.labels.length - 1 - travelMin;
                 if (earthIdx >= 0) {
-                    const x = xAxis.getPixelForValue(earthIdx);
+                    const x = xAxis.getPixelForValue(earthIdx); 
                     const ctx = chart.ctx;
-                    ctx.save();
-                    ctx.setLineDash([4, 4]);
+                    ctx.save(); 
+                    ctx.setLineDash([4, 4]); 
                     ctx.strokeStyle = 'rgba(0, 243, 255, 0.8)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath(); ctx.moveTo(x, yAxis.top); ctx.lineTo(x, yAxis.bottom); ctx.stroke();
-                    ctx.fillStyle = '#00f3ff'; ctx.font = 'bold 9px Rajdhani';
-                    ctx.textAlign = 'right'; ctx.fillText('UDERZENIE W ZIEMIĘ', x - 5, yAxis.top + 12);
+                    ctx.lineWidth = 2; 
+                    ctx.beginPath(); 
+                    ctx.moveTo(x, yAxis.top); 
+                    ctx.lineTo(x, yAxis.bottom); 
+                    ctx.stroke();
+                    ctx.fillStyle = '#00f3ff'; 
+                    ctx.font = 'bold 9px Rajdhani'; 
+                    ctx.textAlign = 'right'; 
+                    ctx.fillText('UDERZENIE W ZIEMIĘ', x - 5, yAxis.top + 12); 
                     ctx.restore();
                 }
             }
@@ -280,7 +284,9 @@
                 type: 'line',
                 data: { labels: [], datasets: [{ data: [], borderColor: color, borderWidth: 2, fill: false, tension: 0.2, pointRadius: 0 }] },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    animation: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { ticks: { color: '#444', font: { size: 8 }, maxTicksLimit: 6 }, grid: { display: false } },
@@ -290,11 +296,11 @@
             });
         }
 
-        const charts = {
-            wind: createChart('chart-wind', '#ffcc00'),
-            bz: createChart('chart-bz', '#ff3366'),
-            dens: createChart('chart-dens', '#00ff88'),
-            temp: createChart('chart-temp', '#00f3ff')
+        const charts = { 
+            wind: createChart('chart-wind', '#ffcc00'), 
+            bz: createChart('chart-bz', '#ff3366'), 
+            dens: createChart('chart-dens', '#00ff88'), 
+            temp: createChart('chart-temp', '#00f3ff') 
         };
 
         async function update() {
@@ -305,51 +311,53 @@
                     fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json")).then(r => r.json()),
                     fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json")).then(r => r.json())
                 ]);
-                const plasma = JSON.parse(pRaw.contents);
-                const mag = JSON.parse(mRaw.contents);
+                const plasma = JSON.parse(pRaw.contents); 
+                const mag = JSON.parse(mRaw.contents); 
                 const kp = JSON.parse(kRaw.contents);
-                const labels = plasma.slice(1).map(d => {
-                    const t = new Date(d[0]);
-                    return t.getHours() + ":" + t.getMinutes().toString().padStart(2, '0');
+                const labels = plasma.slice(1).map(d => { 
+                    const t = new Date(d[0]); 
+                    return t.getHours() + ":" + t.getMinutes().toString().padStart(2, '0'); 
                 });
-                const curWind = parseFloat(plasma[plasma.length-1][2]);
+                const curWind = parseFloat(plasma[plasma.length-1][2]); 
                 const travelMin = Math.floor((L1_DIST / curWind) / 60);
-                const refresh = (chart, data) => {
-                    chart.data.labels = labels;
-                    chart.data.datasets[0].data = data;
-                    chart.currentWind = curWind;
-                    chart.update('none');
+                const refresh = (chart, data) => { 
+                    chart.data.labels = labels; 
+                    chart.data.datasets[0].data = data; 
+                    chart.currentWind = curWind; 
+                    chart.update(); 
                 };
-                refresh(charts.wind, plasma.slice(1).map(d => parseFloat(d[2])));
+                refresh(charts.wind, plasma.slice(1).map(d => parseFloat(d[2]))); 
                 refresh(charts.bz, mag.slice(1).map(d => parseFloat(d[3])));
-                refresh(charts.dens, plasma.slice(1).map(d => parseFloat(d[1])));
+                refresh(charts.dens, plasma.slice(1).map(d => parseFloat(d[1]))); 
                 refresh(charts.temp, plasma.slice(1).map(d => Math.round(parseFloat(d[3]) - 273.15)));
                 document.getElementById('v-wind').innerText = Math.round(curWind) + " km/s";
                 document.getElementById('v-bz').innerText = parseFloat(mag[mag.length-1][3]).toFixed(2) + " nT";
                 document.getElementById('v-dens').innerText = parseFloat(plasma[plasma.length-1][1]).toFixed(1) + " p/cm³";
                 document.getElementById('v-temp').innerText = Math.round(parseFloat(plasma[plasma.length-1][3]) - 273.15).toLocaleString() + " °C";
                 document.getElementById('eta-val').innerText = travelMin + " min";
-                document.getElementById('eta-desc').innerText = "V-PRĘDKOŚĆ: " + Math.round(curWind) + " KM/S";
-                const kVal = parseFloat(kp[kp.length-1][1]);
+                const kVal = parseFloat(kp[kp.length-1][1]); 
                 document.getElementById('kp-val').innerText = kVal.toFixed(2);
-                const s = document.getElementById('kp-stat');
+                const s = document.getElementById('kp-stat'); 
                 s.innerText = kVal >= 5 ? "BURZA MAGNETYCZNA" : (kVal >= 4 ? "NIEPOKÓJ" : "SPOKOJNIE");
                 s.style.color = kVal >= 5 ? 'var(--neon-red)' : (kVal >= 4 ? 'var(--neon-yellow)' : 'var(--neon-green)');
                 document.getElementById('img-aurora').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
                 document.getElementById('img-sun').src = "https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg?t=" + Date.now();
                 document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
                 timeLeft = 15;
-            } catch (e) { console.error("Błąd synchroniczacji"); }
+            } catch (e) { 
+                document.getElementById('link-status').innerText = "BŁĄD"; 
+                document.getElementById('link-status').style.color = "var(--neon-red)"; 
+            }
             setTimeout(() => document.getElementById('sync-indicator').classList.remove('blink'), 2000);
         }
 
-        setInterval(() => {
-            timeLeft--;
-            if(timeLeft < 0) timeLeft = 0;
-            document.getElementById('next-sync').innerText = timeLeft;
+        setInterval(() => { 
+            timeLeft--; 
+            if(timeLeft < 0) timeLeft = 0; 
+            document.getElementById('next-sync').innerText = timeLeft; 
         }, 1000);
 
-        update();
+        update(); 
         setInterval(update, 15000);
     </script>
 </body>
