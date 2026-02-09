@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL POGODY KOSMICZNEJ</title>
+    <title>TERMINAL POGODY KOSMICZNEJ | LIVE</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -15,7 +15,7 @@
             --neon-red: #ff3366;
         }
 
-        body { background: var(--bg-dark); color: #fff; margin: 0; font-family: 'Exo 2', sans-serif; }
+        body { background: var(--bg-dark); color: #fff; margin: 0; font-family: 'Exo 2', sans-serif; overflow-x: hidden; }
         
         .dashboard-grid {
             display: grid;
@@ -35,17 +35,17 @@
             backdrop-filter: blur(10px);
         }
 
-        .label { font-family: 'Rajdhani'; font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
-        .value { font-family: 'Rajdhani'; font-size: 2.2rem; font-weight: 700; color: var(--neon-blue); margin: 5px 0; line-height: 1; }
-        .unit { font-size: 0.75rem; opacity: 0.5; display: block; }
+        .label { font-family: 'Rajdhani'; font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 2px; }
+        .value { font-family: 'Rajdhani'; font-size: 2.5rem; font-weight: 700; color: var(--neon-blue); margin: 5px 0; }
+        .unit { font-size: 0.8rem; opacity: 0.6; display: block; }
         
-        .indicator { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; padding: 3px; border-radius: 3px; background: rgba(255,255,255,0.05); }
+        .indicator { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; padding: 4px; border-radius: 4px; background: rgba(255,255,255,0.05); }
 
         .visual-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            padding: 0 20px 40px;
+            padding: 20px;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -59,6 +59,14 @@
         }
 
         .img-box img { width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #222; }
+        
+        #update-status {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 10px;
+            font-family: monospace;
+        }
 
         @media (max-width: 800px) {
             .visual-container { grid-template-columns: 1fr; }
@@ -80,23 +88,27 @@
         <div class="stat-card">
             <div class="label">Indeks Kp</div>
             <div id="kp-val" class="value">--</div>
-            <div id="kp-txt" class="indicator">CZEKAM...</div>
+            <div id="kp-txt" class="indicator">Inicjalizacja...</div>
         </div>
+
         <div class="stat-card">
             <div class="label">Wiatr Słoneczny</div>
             <div id="wind-val" class="value">--</div>
             <span class="unit">km/s</span>
         </div>
+
         <div class="stat-card">
             <div class="label">Pole Mag. Bz</div>
             <div id="bz-val" class="value">--</div>
-            <div id="bz-txt" class="indicator">STABILNE</div>
+            <div id="bz-txt" class="indicator">Kierunek</div>
         </div>
+
         <div class="stat-card">
             <div class="label">Gęstość</div>
             <div id="dens-val" class="value">--</div>
             <span class="unit">p/cm³</span>
         </div>
+
         <div class="stat-card">
             <div class="label">Temperatura</div>
             <div id="temp-val" class="value">--</div>
@@ -104,13 +116,15 @@
         </div>
     </div>
 
+    <div id="update-status">Czekam na dane z NOAA...</div>
+
     <div class="visual-container">
         <div class="img-box">
             <div class="label">Zasięg Zorzy (Północ)</div>
             <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora-map">
         </div>
         <div class="img-box">
-            <div class="label">Słońce: Plamy & Korona</div>
+            <div class="label">Aktywność Słoneczna (SDO/HMI & SOHO)</div>
             <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg" style="margin-bottom:10px">
             <img src="https://sohowww.nascom.nasa.gov/data/realtime/c3/512/latest.jpg">
         </div>
@@ -118,48 +132,63 @@
 
     <script src="stars.js"></script>
     <script>
-        // Używamy proxy, aby uniknąć blokady CORS
-        const PROXY = "https://api.allorigins.win/raw?url=";
+        const proxy = "https://corsproxy.io/?";
 
-        async function updateData() {
+        async function updateDashboard() {
+            const statusEl = document.getElementById('update-status');
+            
             try {
-                // Pobieranie danych przez proxy
-                const [magRes, plasRes, kpRes] = await Promise.all([
-                    fetch(PROXY + encodeURIComponent('https://services.swpc.noaa.gov/products/solar-wind/mag-1-day.json')),
-                    fetch(PROXY + encodeURIComponent('https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json')),
-                    fetch(PROXY + encodeURIComponent('https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json'))
+                // Adresy JSON z NOAA
+                const urlMag = "https://services.swpc.noaa.gov/products/solar-wind/mag-1-day.json";
+                const urlPlas = "https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json";
+                const urlKp = "https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json";
+
+                // Pobieranie przez proxy
+                const fetchJSON = async (url) => {
+                    const response = await fetch(proxy + encodeURIComponent(url));
+                    if (!response.ok) throw new Error('Proxy error');
+                    return response.json();
+                };
+
+                const [mag, plas, kpData] = await Promise.all([
+                    fetchJSON(urlMag),
+                    fetchJSON(urlPlas),
+                    fetchJSON(urlKp)
                 ]);
 
-                const magData = await magRes.json();
-                const plasData = await plasRes.json();
-                const kpData = await kpRes.json();
-
-                const lastMag = magData[magData.length - 1];
-                const lastPlas = plasData[plasData.length - 1];
+                // Ostatnie rekordy
+                const lastMag = mag[mag.length - 1];
+                const lastPlas = plas[plas.length - 1];
                 const lastKp = kpData[kpData.length - 1];
 
-                // KP
+                // 1. KP INDEX
                 const kp = parseFloat(lastKp[1]);
-                document.getElementById('kp-val').textContent = kp.toFixed(1);
+                document.getElementById('kp-val').innerText = kp.toFixed(1);
                 const kpTxt = document.getElementById('kp-txt');
-                kpTxt.textContent = kp >= 5 ? "BURZA!" : (kp >= 4 ? "AKTYWNOŚĆ" : "SPOKÓJ");
+                kpTxt.innerText = kp >= 5 ? "BURZA GEOMAG." : (kp >= 4 ? "AKTYWNOŚĆ" : "CISZA");
                 kpTxt.style.color = kp >= 5 ? "var(--neon-red)" : (kp >= 4 ? "#ffcc00" : "var(--neon-green)");
 
-                // WIATR I GĘSTOŚĆ I TEMP
-                document.getElementById('wind-val').textContent = Math.round(lastPlas[2]);
-                document.getElementById('dens-val').textContent = parseFloat(lastPlas[1]).toFixed(1);
-                document.getElementById('temp-val').textContent = parseInt(lastPlas[3]).toLocaleString();
+                // 2. WIND SPEED (Indeks 2)
+                document.getElementById('wind-val').innerText = Math.round(lastPlas[2]);
 
-                // BZ
+                // 3. BZ (Indeks 3)
                 const bz = parseFloat(lastMag[3]);
-                const bzVal = document.getElementById('bz-val');
-                bzVal.textContent = bz.toFixed(1);
-                bzVal.style.color = bz < -5 ? "var(--neon-red)" : "var(--neon-blue)";
-                document.getElementById('bz-txt').textContent = bz < -5 ? "KIERUNEK S" : "KIERUNEK N";
+                const bzValEl = document.getElementById('bz-val');
+                bzValEl.innerText = bz.toFixed(1);
+                bzValEl.style.color = bz < -5 ? "var(--neon-red)" : "var(--neon-blue)";
+                document.getElementById('bz-txt').innerText = bz < -5 ? "POŁUDNIE (ZORZA)" : "PÓŁNOC";
 
-            } catch (e) {
-                console.error("Błąd pobierania danych:", e);
-                // Jeśli proxy AllOrigins zawiedzie, spróbujmy bezpośrednio (niektóre przeglądarki puszczą)
+                // 4. DENSITY (Indeks 1)
+                document.getElementById('dens-val').innerText = parseFloat(lastPlas[1]).toFixed(1);
+
+                // 5. TEMP (Indeks 3)
+                document.getElementById('temp-val').innerText = parseInt(lastPlas[3]).toLocaleString();
+
+                statusEl.innerText = "Dane zaktualizowane: " + new Date().toLocaleTimeString();
+
+            } catch (err) {
+                console.error("Critical error:", err);
+                statusEl.innerText = "Błąd połączenia. Próba ponownego nawiązania...";
             }
         }
 
@@ -168,8 +197,8 @@
             document.getElementById('aurora-map').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
         }, 300000);
 
-        setInterval(updateData, 60000);
-        updateData();
+        setInterval(updateDashboard, 60000);
+        updateDashboard();
     </script>
 </body>
 </html>
