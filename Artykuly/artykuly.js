@@ -121,5 +121,37 @@ Pierwszy operacyjny model ma zostać zamontowany na stacji Gateway w 2027 roku. 
         img: 'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=1200',
         link: 'artykul.html?id=1770583599447'
     },
+{
+    id: 1739103000,
+    kategoria: 'nauka',
+    tag: 'WENUS',
+    tytul: 'Podziemne tunele na Wenus? Nowe dane z misji Magellan zmieniają wszystko',
+    opis: 'Analiza archiwalnych danych radarowych NASA ujawniła struktury, które mogą być gigantycznymi tunelami uformowanymi przez lawę.',
+    tresc: `
+        <p style="color: var(--neon-blue); font-weight: bold; letter-spacing: 2px;">[ STATUS: MELDUNEK ODEBRANY ]</p>
+        
+        <p>Naukowcy analizujący dane z sondy Magellan (misji NASA z lat 90.) ogłosili odkrycie struktur, które niemal na pewno są tunelami lawowymi. Jeśli odkrycie zostanie potwierdzone, będzie to drugi przypadek zidentyfikowania takich formacji na Wenus, co stawia tę planetę w jednym rzędzie z Księżycem i Marsem jako światami posiadającymi podziemne jaskinie.</p>
+        
+        <h2>Dowody ukryte w radarze</h2>
+        <p>Wenus jest stale zasłonięta gęstymi chmurami, dlatego jedynym sposobem na badanie jej powierzchni jest użycie radaru. Zespół badawczy z Uniwersytetu w Tryncie we Włoszech skupił się na zboczu wulkanu Nyx Mons. Zidentyfikowali tam specyficzne sygnatury radarowe odpowiadające zapadniętym dachom tuneli, które mogą ciągnąć się pod ziemią przez dziesiątki kilometrów.</p>
+        
+        <p>Odkrycie to jest kolejnym dowodem podważającym teorię o geologicznie martwej Wenus. Sugeruje ono, że aktywność wulkaniczna kształtowała tę planetę znacznie intensywniej i niedawniej, niż dotąd sądzono.</p>
+        
+        <h2>Przyszłe misje potwierdzą teorię</h2>
+        <p>Potwierdzenie pełnej skali i stabilności tych tuneli będzie możliwe dzięki nadchodzącym misjom, takim jak europejska EnVision. Sonda ta zostanie wyposażona w radar SRS (Subsurface Radar Sounder), zdolny do zaglądania pod powierzchnię planety na głębokość kilkuset metrów, co pozwoli nam dosłownie "zobaczyć" wenusjańskie podziemia.</p>
+
+        <div style="border-top: 1px dashed rgba(0,255,255,0.3); margin-top: 30px; padding-top: 10px; font-size: 0.85rem; color: #888; font-family: 'Rajdhani', sans-serif;">
+            <p>Autor tekstu źródłowego: <strong>Sharmila Kuthunur (Space.com)</strong></p>
+            <p>Pełny artykuł źródłowy: <a href="https://www.space.com/astronomy/venus/venus-may-have-an-underground-tunnel-carved-by-volcano-eruptions" target="_blank" style="color: var(--neon-blue); text-decoration: none; border-bottom: 1px solid var(--neon-blue);">https://www.space.com/astronomy/venus/venus-may-have-an-underground-tunnel-carved-by-volcano-eruptions</a></p>
+        </div>
+
+        <p style="border-top: 1px solid rgba(0,255,255,0.2); padding-top: 15px; margin-top: 20px; font-family: 'Rajdhani'; color: #0f0;">
+            // ANALIZA SYSTEMOWA: 100% | PROCES ZAKOŃCZONY //
+        </p>
+    `,
+    img: 'https://cdn.mos.cms.futurecdn.net/p9Xqf6X8D3H5N9N9X9X9X9.jpg', 
+    link: 'artykul.html?id=1739103000'
+}
+
 
 ];
