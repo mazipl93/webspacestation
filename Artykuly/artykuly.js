@@ -121,5 +121,4 @@ Pierwszy operacyjny model ma zostać zamontowany na stacji Gateway w 2027 roku. 
         img: 'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=1200',
         link: 'artykul.html?id=1770583599447'
     },
-
 ];

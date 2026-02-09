@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>TERMINAL ADMINA - WEB SPACE STATION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Exo+2:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00f3ff; --magenta: #f0f; --bg: #0a0a0f; }
+        body { background: var(--bg); color: #fff; font-family: 'Exo 2', sans-serif; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; background: rgba(22, 22, 30, 0.8); padding: 30px; border-radius: 15px; border: 1px solid var(--neon); box-shadow: 0 0 20px rgba(0, 243, 255, 0.1); }
+        h1 { font-family: 'Rajdhani'; text-align: center; color: var(--neon); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 30px; }
+        label { display: block; margin-top: 20px; color: var(--magenta); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        select, textarea, input { 
+            width: 100%; padding: 12px; margin-top: 8px; 
+            background: #000; border: 1px solid #333; color: #fff; 
+            border-radius: 5px; outline: none; transition: 0.3s;
+        }
+        input:focus, textarea:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
+        textarea { height: 350px; font-size: 1rem; line-height: 1.5; }
+        .result { 
+            background: #000; padding: 20px; border: 1px dashed var(--magenta); 
+            margin-top: 30px; white-space: pre-wrap; font-family: monospace; 
+            color: #adff2f; font-size: 0.85rem; display: none;
+        }
+        button { 
+            background: var(--neon); border: none; padding: 18px 40px; 
+            margin-top: 25px; cursor: pointer; color: #000; font-weight: 800;
+            width: 100%; text-transform: uppercase; letter-spacing: 2px;
+            border-radius: 5px; transition: 0.3s;
+        }
+        button:hover { background: #fff; box-shadow: 0 0 30px var(--neon); }
+        .hint { font-size: 0.75rem; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>System Autopilot Content</h1>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <label>Kategoria</label>
+            <select id="kat">
+                <option value="meldunki">Meldunki</option>
+                <option value="nauka">Nauka</option>
+                <option value="tech">Technologia</option>
+            </select>
+        </div>
+        <div>
+            <label>Tag / Sygnatura</label>
+            <input type="text" id="tag" placeholder="np. NASA, SPACEX, MARS">
+        </div>
+    </div>
+
+    <label>Link do zdjęcia</label>
+    <input type="text" id="img_url" placeholder="Wklej URL zdjęcia z Unsplash lub NASA">
+
+    <label>Tytuł Artykułu</label>
+    <input type="text" id="art_title" placeholder="Wpisz główny tytuł">
+
+    <label>Treść (Wklej czysty tekst)</label>
+    <textarea id="raw_text" placeholder="Wklej tekst. System sam wykryje akapity, nagłówki (krótkie linie) oraz cytaty (linie od „ lub -)."></textarea>
+    <p class="hint">Wskazówka: Zostaw pustą linię między akapitami.</p>
+
+    <button onclick="generateSuperCode()">Generuj Kod i Dodaj do Bazy</button>
+
+    <div id="output" class="result"></div>
+</div>
+
+<script>
+    function generateSuperCode() {
+        const text = document.getElementById('raw_text').value;
+        const kategoria = document.getElementById('kat').value;
+        const tag = document.getElementById('tag').value.toUpperCase() || "NEWS";
+        const tytul = document.getElementById('art_title').value;
+        const imgUrl = document.getElementById('img_url').value || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200';
+        
+        if (!text || !tytul) {
+            alert("Uzupełnij tytuł i treść!");
+            return;
+        }
+
+        const uniqueID = Date.now();
+        
+        // --- LOGIKA AUTOPILOTA ---
+        const paragraphs = text.split('\n\n').filter(p => p.trim() !== "");
+        let htmlContent = "";
+        let shortDesc = paragraphs[0].replace(/[„"”-]/g, '').substring(0, 150) + "...";
+
+        paragraphs.forEach((p) => {
+            const cleanP = p.trim();
+            if (cleanP.length < 60) {
+                // Krótka linia = Nagłówek
+                htmlContent += `<h2>${cleanP}</h2>`;
+            } else if (cleanP.startsWith('„') || cleanP.startsWith('"') || cleanP.startsWith('-')) {
+                // Cytat
+                htmlContent += `<div class="highlight-box">${cleanP}</div>`;
+            } else {
+                // Zwykły akapit
+                htmlContent += `<p>${cleanP}</p>`;
+            }
+        });
+
+        const code = `,
+    {
+        id: ${uniqueID},
+        kategoria: '${kategoria}',
+        tag: '${tag}',
+        tytul: '${tytul}',
+        opis: '${shortDesc.replace(/'/g, "&apos;")}',
+        tresc: \`${htmlContent.replace(/`/g, "\\`")}\`,
+        img: '${imgUrl}',
+        link: 'artykul.html?id=${uniqueID}'
+    }`;
+
+        const out = document.getElementById('output');
+        out.textContent = code;
+        out.style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
