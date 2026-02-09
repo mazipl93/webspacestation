@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEB SPACE STATION | ZORZA LIVE</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #020205;
+    --panel: rgba(5,5,15,.95);
+    --blue: #00f3ff;
+    --green: #00ff88;
+    --red: #ff3355;
+    --border: rgba(0,243,255,.25);
+}
+
+* { box-sizing: border-box }
+body {
+    margin:0;
+    background:var(--bg);
+    color:#fff;
+    font-family:'Exo 2',sans-serif;
+}
+
+nav {
+    display:flex;
+    justify-content:space-between;
+    padding:15px 30px;
+    background:rgba(0,0,0,.85);
+    border-bottom:1px solid var(--border);
+}
+
+nav a {
+    color:#aaa;
+    text-decoration:none;
+    font-size:.75rem;
+    letter-spacing:2px;
+}
+
+.logo {
+    color:#fff;
+    font-family:'Rajdhani';
+    font-weight:700;
+}
+
+.dashboard {
+    max-width:1400px;
+    margin:auto;
+    padding:30px 20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+}
+
+.card {
+    background:var(--panel);
+    border:1px solid var(--border);
+    padding:20px;
+    text-align:center;
+}
+
+.label {
+    font-size:.65rem;
+    color:#777;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+.value {
+    font-family:'Rajdhani';
+    font-size:2.4rem;
+    margin:8px 0;
+    color:var(--blue);
+}
+
+.unit {
+    font-size:.65rem;
+    color:#555;
+}
+
+.status {
+    font-size:.65rem;
+    margin-top:8px;
+}
+
+#footer {
+    text-align:center;
+    font-family:monospace;
+    font-size:.65rem;
+    color:#444;
+    margin-bottom:15px;
+}
+
+.visuals {
+    max-width:1400px;
+    margin:auto;
+    padding:0 20px 40px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.box {
+    background:var(--panel);
+    border:1px solid var(--border);
+    padding:15px;
+}
+
+.box img {
+    width:100%;
+    margin-top:10px;
+    border:1px solid #111;
+}
+
+@media(max-width:800px){
+    .visuals { grid-template-columns:1fr }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">WEB SPACE STATION</div>
+    <div>
+        <a href="#">BAZA</a>
+        <a href="#" style="color:var(--blue)">ZORZA LIVE</a>
+    </div>
+</nav>
+
+<section class="dashboard">
+    <div class="card">
+        <div class="label">Kp Index</div>
+        <div id="kp" class="value">--</div>
+        <div id="kpTxt" class="status">---</div>
+    </div>
+
+    <div class="card">
+        <div class="label">Solar Wind</div>
+        <div id="wind" class="value">--</div>
+        <div class="unit">km/s</div>
+    </div>
+
+    <div class="card">
+        <div class="label">Density</div>
+        <div id="dens" class="value">--</div>
+        <div class="unit">p/cm³</div>
+    </div>
+
+    <div class="card">
+        <div class="label">Bz (GSM)</div>
+        <div id="bz" class="value">--</div>
+        <div id="bzTxt" class="status">---</div>
+    </div>
+
+    <div class="card">
+        <div class="label">Temperature</div>
+        <div id="temp" class="value">--</div>
+        <div class="unit">K</div>
+    </div>
+</section>
+
+<div id="footer">TERMINAL ONLINE | WAITING FOR DATA</div>
+
+<section class="visuals">
+    <div class="box">
+        <div class="label">Aurora Forecast</div>
+        <img id="auroraMap" src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg">
+    </div>
+
+    <div class="box">
+        <div class="label">Solar Magnetic Field</div>
+        <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg">
+    </div>
+</section>
+
+<script>
+async function getJSON(url){
+    const r = await fetch(url,{cache:"no-store"});
+    if(!r.ok) throw new Error("Fetch error");
+    return r.json();
+}
+
+function lastValid(data,index){
+    for(let i=data.length-1;i>0;i--){
+        if(data[i][index] !== null) return data[i];
+    }
+    return null;
+}
+
+async function update(){
+    const footer = document.getElementById("footer");
+
+    try {
+        const plasma = await getJSON("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json");
+        const mag    = await getJSON("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json");
+        const kpData = await getJSON("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
+
+        const pH = plasma[0];
+        const p  = lastValid(plasma, pH.indexOf("speed"));
+
+        document.getElementById("wind").innerText = Math.round(p[pH.indexOf("speed")]);
+        document.getElementById("dens").innerText = (+p[pH.indexOf("density")]).toFixed(1);
+        document.getElementById("temp").innerText = parseInt(p[pH.indexOf("temperature")]).toLocaleString();
+
+        const mH = mag[0];
+        const m  = lastValid(mag, mH.indexOf("bz_gsm"));
+        const bz = +m[mH.indexOf("bz_gsm")];
+
+        const bzEl = document.getElementById("bz");
+        bzEl.innerText = bz.toFixed(1);
+        bzEl.style.color = bz < -5 ? "var(--red)" : "var(--blue)";
+        document.getElementById("bzTxt").innerText = bz < -5 ? "SOUTHWARD" : "NORTHWARD";
+
+        const k = lastValid(kpData,1);
+        const kp = +k[1];
+
+        document.getElementById("kp").innerText = kp.toFixed(1);
+        const kpTxt = document.getElementById("kpTxt");
+
+        if(kp >= 5){
+            kpTxt.innerText = "GEOMAG STORM";
+            kpTxt.style.color = "var(--red)";
+        } else if(kp >= 4){
+            kpTxt.innerText = "UNSETTLED";
+            kpTxt.style.color = "#ffaa00";
+        } else {
+            kpTxt.innerText = "QUIET";
+            kpTxt.style.color = "var(--green)";
+        }
+
+        footer.innerText = "LAST SYNC: " + new Date().toLocaleTimeString();
+        footer.style.color = "#444";
+
+    } catch(e){
+        console.error(e);
+        footer.innerText = "DATA ERROR – RECONNECTING…";
+        footer.style.color = "var(--red)";
+    }
+}
+
+update();
+setInterval(update,60000);
+setInterval(()=>{
+    document.getElementById("auroraMap").src =
+        "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t="+Date.now();
+},300000);
+</script>
+
+</body>
+</html>
