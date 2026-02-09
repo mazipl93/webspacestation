@@ -293,18 +293,63 @@ nav {
     pointer-events: none;        /* Sprawia, że dzieci karty nie przechwytują myszki */
 }
 
-/* --- RWD --- */
+/* --- POPRAWKA DLA NISKICH EKRANÓW (Laptopy 1366x768 i mniejsze) --- */
+@media (max-height: 850px) {
+    section {
+        height: auto !important;      /* Pozwala sekcjom rosnąć w dół */
+        min-height: 100vh;            /* Zapewnia, że tło nadal pokrywa cały ekran */
+        padding: 100px 20px !important; /* Daje oddech treściom na górze i dole */
+    }
+
+    .nebula-title {
+        font-size: 3.5rem;            /* Nieco mniejszy tytuł, by nie wypychał reszty */
+    }
+
+    .hero-container {
+        justify-content: flex-start !important; /* Startuj od góry, zamiast centrować na siłę */
+        padding-top: 50px;
+    }
+}
+
+/* --- OGÓLNE RWD (Telefony i Tablety) --- */
 @media (max-width: 768px) {
+    /* Nawigacja */
     nav {
         flex-direction: column !important; 
         padding: 10px 0 !important;
-        gap: 2px !important;
+        gap: 10px !important;
+        height: auto !important;
     }
-    .nav-logo { font-size: 1rem !important; }
-    .nav-links { gap: 8px !important; }
-    .nav-links a { font-size: 0.8rem !important; }
-    .nebula-title { font-size: 3rem; }
-    .slider-arrow { display: none; } /* Na telefonach przewijamy palcem */
+    .nav-logo { font-size: 1.2rem !important; }
+    .nav-links { 
+        gap: 15px !important; 
+        flex-wrap: wrap; 
+        justify-content: center; 
+    }
+    .nav-links a { font-size: 0.85rem !important; }
+
+    /* Treść */
+    section {
+        height: auto !important;
+        min-height: 100vh;
+        padding: 80px 15px !important;
+    }
+
+    .nebula-title { 
+        font-size: 2.5rem; 
+        line-height: 1.1;
+    }
+
+    .quote-container blockquote {
+        font-size: 1.2rem !important; /* Skaluje sentencje na telefonach */
+    }
+
+    .slider-arrow { display: none; } /* Przewijanie dotykowe */
+    
+    /* Grid artykułów na telefonach - 1 kolumna */
+    .article-grid, .archive-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* --- FIX DLA SENTENCJI --- */
