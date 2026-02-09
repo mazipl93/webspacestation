@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTRUM MONITORINGU POGODY KOSMICZNEJ</title>
+    <title>WEB SPACE STATION | MONITORING LIVE</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <style>
         :root {
             --bg-dark: #020205;
-            --panel-bg: rgba(10, 10, 20, 0.9);
+            --panel-bg: rgba(10, 10, 20, 0.95);
             --neon-blue: #00f3ff;
             --glass-border: rgba(0, 243, 255, 0.2);
         }
@@ -20,47 +20,40 @@
 
         nav {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 30px; background: rgba(0,0,0,0.9);
+            padding: 15px 30px; background: rgba(0,0,0,0.95);
             border-bottom: 1px solid var(--glass-border);
         }
         .nav-logo { font-family: 'Rajdhani'; font-weight: 700; color: #fff; text-decoration: none; letter-spacing: 2px; }
 
-        .dashboard-container {
-            max-width: 1200px; margin: 0 auto; padding: 20px;
-        }
-
-        h2 { text-align: center; font-family: 'Rajdhani'; letter-spacing: 4px; color: var(--neon-blue); text-transform: uppercase; }
+        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h2 { text-align: center; font-family: 'Rajdhani'; letter-spacing: 4px; color: var(--neon-blue); text-transform: uppercase; margin-bottom: 30px; }
 
         .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px; margin-bottom: 40px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px; margin-bottom: 30px;
         }
 
         .chart-box {
-            background: var(--panel-bg);
-            border: 1px solid var(--glass-border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-radius: 4px;
+            background: var(--panel-bg); border: 1px solid var(--glass-border);
+            padding: 20px; display: flex; flex-direction: column; align-items: center; border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.05);
         }
 
-        .chart-box h3 { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 15px; }
+        .chart-box h3 { font-size: 0.85rem; color: #aaa; text-transform: uppercase; margin-bottom: 15px; font-family: 'Rajdhani'; }
         
-        /* Stylizacja Google Charts dla ciemnego motywu */
-        #kp_chart, #wind_chart, #bz_chart { width: 200px; height: 200px; }
+        .gauge-div { width: 200px; height: 200px; }
 
-        .visuals {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-        }
-        .img-card { background: var(--panel-bg); padding: 15px; border: 1px solid var(--glass-border); text-align: center; }
-        .img-card img { width: 100%; border: 1px solid #111; margin-top: 10px; }
+        .data-card { display: flex; flex-direction: column; justify-content: center; min-height: 200px; }
+        .data-row { margin: 15px 0; text-align: center; }
+        .data-label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .data-value { font-family: 'Rajdhani'; font-size: 2rem; color: var(--neon-blue); font-weight: 700; }
 
-        #status { text-align: center; font-size: 0.7rem; color: #444; margin: 20px; font-family: monospace; }
-        
-        .temp-val { font-family: 'Rajdhani'; font-size: 1.5rem; color: var(--neon-blue); }
+        .visuals { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .img-card { background: var(--panel-bg); padding: 15px; border: 1px solid var(--glass-border); text-align: center; border-radius: 8px; }
+        .img-card img { width: 100%; border-radius: 4px; margin-top: 10px; }
+
+        #status { text-align: center; font-size: 0.65rem; color: #444; margin: 20px; font-family: monospace; }
+        .indicator-text { font-size: 0.75rem; font-weight: 700; margin-top: 10px; }
 
         @media (max-width: 800px) { .visuals { grid-template-columns: 1fr; } }
     </style>
@@ -70,52 +63,57 @@
     <nav>
         <a href="index.html" class="nav-logo">WEB SPACE STATION</a>
         <div class="nav-links">
-            <a href="index.html" style="color:#888; text-decoration:none">Baza</a>
+            <a href="index.html" style="color:#888; text-decoration:none; font-size: 0.8rem;">POWRÓT DO BAZY</a>
         </div>
     </nav>
 
     <div class="dashboard-container">
-        <h2>Parametry Wiatru Słonecznego Live</h2>
+        <h2>Pogoda Kosmiczna Live</h2>
         
         <div class="charts-grid">
             <div class="chart-box">
-                <h3>Indeks KP (Aktywność)</h3>
-                <div id="kp_chart"></div>
-                <div id="kp_desc" style="font-size: 0.7rem; margin-top:10px">Ładowanie...</div>
+                <h3>Aktywność (Indeks Kp)</h3>
+                <div id="kp_chart" class="gauge-div"></div>
+                <div id="kp_desc" class="indicator-text">POBIERANIE...</div>
             </div>
 
             <div class="chart-box">
-                <h3>Prędkość Wiatru (km/s)</h3>
-                <div id="wind_chart"></div>
+                <h3>Prędkość Wiatru</h3>
+                <div id="wind_chart" class="gauge-div"></div>
+                <div style="font-size: 0.7rem; color: #555">Jednostka: km/s</div>
             </div>
 
             <div class="chart-box">
-                <h3>Pole Bz (Zorza)</h3>
-                <div id="bz_chart"></div>
-                <div id="bz_desc" style="font-size: 0.7rem; margin-top:10px">Kierunek: --</div>
+                <h3>Pole Magnet. (Bz)</h3>
+                <div id="bz_chart" class="gauge-div"></div>
+                <div id="bz_desc" class="indicator-text">ANALIZA...</div>
             </div>
 
-            <div class="chart-box">
-                <h3>Warunki Plazmy</h3>
-                <div class="temp-val" id="temp_c">-- °C</div>
-                <div style="font-size:0.7rem; color:#666">Temperatura</div>
-                <div class="temp-val" style="margin-top:15px" id="dens_val">--</div>
-                <div style="font-size:0.7rem; color:#666">Gęstość (p/cm³)</div>
+            <div class="chart-box data-card">
+                <h3>Parametry Plazmy</h3>
+                <div class="data-row">
+                    <div class="data-value" id="temp_c">-- °C</div>
+                    <div class="data-label">Temperatura korony</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-value" id="dens_val">--</div>
+                    <div class="data-label">Gęstość (p/cm³)</div>
+                </div>
             </div>
         </div>
 
         <div class="visuals">
             <div class="img-card">
-                <div style="font-size:0.7rem; letter-spacing:2px">PROGNOZA ZASIĘGU ZORZY</div>
-                <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora">
+                <h3>Prognoza Zorzy (Zasięg)</h3>
+                <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora_img">
             </div>
             <div class="img-card">
-                <div style="font-size:0.7rem; letter-spacing:2px">OBRAZ SŁOŃCA (SDO)</div>
+                <h3>Aktywność Plam (SDO)</h3>
                 <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg">
             </div>
         </div>
 
-        <div id="status">INICJALIZACJA SYSTEMU...</div>
+        <div id="status">INICJALIZACJA TERMINALA...</div>
     </div>
 
     <script src="stars.js"></script>
@@ -125,76 +123,86 @@
 
         const proxy = "https://api.allorigins.win/get?url=";
 
+        async function fetchNOAA(url) {
+            const r = await fetch(proxy + encodeURIComponent(url));
+            const j = await r.json();
+            return JSON.parse(j.contents);
+        }
+
         async function drawCharts() {
             try {
-                const response = await fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/summary/solar-wind-speed.json"));
-                const kpRes = await fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"));
-                const magRes = await fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json"));
-                const plasRes = await fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json"));
+                const [windData, kpData, magData, plasData] = await Promise.all([
+                    fetchNOAA("https://services.swpc.noaa.gov/products/summary/solar-wind-speed.json"),
+                    fetchNOAA("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"),
+                    fetchNOAA("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json"),
+                    fetchNOAA("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json")
+                ]);
 
-                const windData = JSON.parse((await response.json()).contents);
-                const kpData = JSON.parse((await kpRes.json()).contents);
-                const magData = JSON.parse((await magRes.json()).contents);
-                const plasData = JSON.parse((await plasRes.json()).contents);
+                // Walidacja danych (branie ostatniego rzędu, który jest liczbą)
+                const getValidNum = (arr, index) => {
+                    for(let i = arr.length-1; i >= 0; i--) {
+                        let val = parseFloat(arr[i][index]);
+                        if(!isNaN(val)) return val;
+                    }
+                    return 0;
+                };
 
-                // Dane końcowe
-                const windSpeed = Math.round(windData.wind_speed);
-                const kpVal = parseFloat(kpData[kpData.length - 1][1]);
-                const bzVal = parseFloat(magData[magData.length - 1][3]);
-                const tempK = parseFloat(plasData[plasData.length - 1][3]);
-                const dens = parseFloat(plasData[plasData.length - 1][1]);
+                const windSpeed = Math.round(windData.wind_speed || 400);
+                const kpVal = getValidNum(kpData, 1);
+                const bzVal = getValidNum(magData, 3);
+                const tempK = getValidNum(plasData, 3);
+                const dens = getValidNum(plasData, 1);
 
-                // Przeliczanie na Celsjusza (K - 273.15)
                 const tempC = Math.round(tempK - 273.15);
 
-                // --- WYKRES KP ---
-                var dataKp = google.visualization.arrayToDataTable([
-                    ['Label', 'Value'],
-                    ['Kp', kpVal]
-                ]);
-                var optionsKp = {
-                    min: 0, max: 9, redFrom: 5, redTo: 9, yellowFrom: 3, yellowTo: 5, minorTicks: 1
+                // WYKRESY
+                const chartOptions = {
+                    minorTicks: 5,
+                    redFrom: 7, redTo: 9,
+                    yellowFrom: 4, yellowTo: 7,
+                    redColor: '#ff3366', yellowColor: '#ffcc00'
                 };
-                var chartKp = new google.visualization.Gauge(document.getElementById('kp_chart'));
-                chartKp.draw(dataKp, optionsKp);
-                document.getElementById('kp_desc').innerText = kpVal >= 5 ? "BURZA GEOMAGNETYCZNA!" : "POZIOM BEZPIECZNY";
 
-                // --- WYKRES WIATRU ---
-                var dataWind = google.visualization.arrayToDataTable([
-                    ['Label', 'Value'],
-                    ['km/s', windSpeed]
-                ]);
-                var optionsWind = {
-                    min: 200, max: 1000, yellowFrom: 500, yellowTo: 700, redFrom: 700, redTo: 1000, minorTicks: 50
-                };
-                var chartWind = new google.visualization.Gauge(document.getElementById('wind_chart'));
-                chartWind.draw(dataWind, optionsWind);
+                // Kp
+                new google.visualization.Gauge(document.getElementById('kp_chart')).draw(
+                    google.visualization.arrayToDataTable([['Label', 'Value'], ['Kp', kpVal]]),
+                    { ...chartOptions, min: 0, max: 9 }
+                );
+                const kpDesc = document.getElementById('kp_desc');
+                kpDesc.innerText = kpVal >= 5 ? "BURZA MAGNETYCZNA!" : (kpVal >= 4 ? "NIEPOKÓJ" : "SPOKOJNIE");
+                kpDesc.style.color = kpVal >= 5 ? "#ff3366" : (kpVal >= 4 ? "#ffcc00" : "#00ff88");
 
-                // --- WYKRES BZ ---
-                var dataBz = google.visualization.arrayToDataTable([
-                    ['Label', 'Value'],
-                    ['Bz', bzVal]
-                ]);
-                var optionsBz = {
-                    min: -20, max: 20, redFrom: -20, redTo: -5, yellowFrom: -5, yellowTo: 0, minorTicks: 2
-                };
-                var chartBz = new google.visualization.Gauge(document.getElementById('bz_chart'));
-                chartBz.draw(dataBz, optionsBz);
-                document.getElementById('bz_desc').innerText = bzVal < 0 ? "POŁUDNIOWE (DOBRE DLA ZORZY)" : "PÓŁNOCNE (SŁABA SZANSA)";
+                // Wind
+                new google.visualization.Gauge(document.getElementById('wind_chart')).draw(
+                    google.visualization.arrayToDataTable([['Label', 'Value'], ['km/s', windSpeed]]),
+                    { min: 200, max: 1000, yellowFrom: 600, yellowTo: 800, redFrom: 800, redTo: 1000 }
+                );
 
-                // DANE TEKSTOWE
+                // Bz
+                new google.visualization.Gauge(document.getElementById('bz_chart')).draw(
+                    google.visualization.arrayToDataTable([['Label', 'Value'], ['Bz', bzVal]]),
+                    { min: -20, max: 20, redFrom: -20, redTo: -5, yellowFrom: -5, yellowTo: 0 }
+                );
+                const bzDesc = document.getElementById('bz_desc');
+                bzDesc.innerText = bzVal < -5 ? "POŁUDNIOWE (ZORZA!)" : "PÓŁNOCNE (BRAK)";
+                bzDesc.style.color = bzVal < -5 ? "#00f3ff" : "#888";
+
+                // Tekst
                 document.getElementById('temp_c').innerText = tempC.toLocaleString() + " °C";
                 document.getElementById('dens_val').innerText = dens.toFixed(1);
-                
-                document.getElementById('status').innerText = "OSTATNIA AKTUALIZACJA: " + new Date().toLocaleTimeString();
+                document.getElementById('status').innerText = "SYNCHRONIZACJA OK: " + new Date().toLocaleTimeString();
 
             } catch (err) {
-                document.getElementById('status').innerText = "BŁĄD SYNCHRONIZACJI. PRÓBUJĘ PONOWNIE...";
-                setTimeout(drawCharts, 5000);
+                console.error(err);
+                document.getElementById('status').innerText = "PRÓBA ODŚWIEŻENIA POŁĄCZENIA...";
+                setTimeout(drawCharts, 10000);
             }
         }
 
         setInterval(drawCharts, 60000);
+        setInterval(() => {
+            document.getElementById('aurora_img').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
+        }, 300000);
     </script>
 </body>
 </html>
