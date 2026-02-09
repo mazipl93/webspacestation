@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL POGODY KOSMICZNEJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --bg-dark: #050508;
+            --panel-bg: rgba(10, 10, 20, 0.95);
+            --neon-blue: #00f3ff;
+            --neon-green: #00ff88;
+            --neon-red: #ff3366;
+        }
+
+        body { background: var(--bg-dark); color: #fff; margin: 0; font-family: 'Exo 2', sans-serif; }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 100px 20px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .label { font-family: 'Rajdhani'; font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+        .value { font-family: 'Rajdhani'; font-size: 2.2rem; font-weight: 700; color: var(--neon-blue); margin: 5px 0; line-height: 1; }
+        .unit { font-size: 0.75rem; opacity: 0.5; display: block; }
+        
+        .indicator { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; margin-top: 8px; padding: 3px; border-radius: 3px; background: rgba(255,255,255,0.05); }
+
+        .visual-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 0 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .img-box {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+        }
+
+        .img-box img { width: 100%; border-radius: 6px; margin-top: 10px; border: 1px solid #222; }
+
+        @media (max-width: 800px) {
+            .visual-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    
+    <nav>
+        <a href="index.html" class="nav-logo">Web Space Station</a>
+        <div class="nav-links">
+            <a href="index.html">Baza</a>
+            <a href="zorza.html" style="color: var(--neon-blue)">Zorza Live</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="label">Indeks Kp</div>
+            <div id="kp-val" class="value">--</div>
+            <div id="kp-txt" class="indicator">CZEKAM...</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Wiatr Słoneczny</div>
+            <div id="wind-val" class="value">--</div>
+            <span class="unit">km/s</span>
+        </div>
+        <div class="stat-card">
+            <div class="label">Pole Mag. Bz</div>
+            <div id="bz-val" class="value">--</div>
+            <div id="bz-txt" class="indicator">STABILNE</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Gęstość</div>
+            <div id="dens-val" class="value">--</div>
+            <span class="unit">p/cm³</span>
+        </div>
+        <div class="stat-card">
+            <div class="label">Temperatura</div>
+            <div id="temp-val" class="value">--</div>
+            <span class="unit">Kelvin</span>
+        </div>
+    </div>
+
+    <div class="visual-container">
+        <div class="img-box">
+            <div class="label">Zasięg Zorzy (Północ)</div>
+            <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora-map">
+        </div>
+        <div class="img-box">
+            <div class="label">Słońce: Plamy & Korona</div>
+            <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg" style="margin-bottom:10px">
+            <img src="https://sohowww.nascom.nasa.gov/data/realtime/c3/512/latest.jpg">
+        </div>
+    </div>
+
+    <script src="stars.js"></script>
+    <script>
+        // Używamy proxy, aby uniknąć blokady CORS
+        const PROXY = "https://api.allorigins.win/raw?url=";
+
+        async function updateData() {
+            try {
+                // Pobieranie danych przez proxy
+                const [magRes, plasRes, kpRes] = await Promise.all([
+                    fetch(PROXY + encodeURIComponent('https://services.swpc.noaa.gov/products/solar-wind/mag-1-day.json')),
+                    fetch(PROXY + encodeURIComponent('https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json')),
+                    fetch(PROXY + encodeURIComponent('https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json'))
+                ]);
+
+                const magData = await magRes.json();
+                const plasData = await plasRes.json();
+                const kpData = await kpRes.json();
+
+                const lastMag = magData[magData.length - 1];
+                const lastPlas = plasData[plasData.length - 1];
+                const lastKp = kpData[kpData.length - 1];
+
+                // KP
+                const kp = parseFloat(lastKp[1]);
+                document.getElementById('kp-val').textContent = kp.toFixed(1);
+                const kpTxt = document.getElementById('kp-txt');
+                kpTxt.textContent = kp >= 5 ? "BURZA!" : (kp >= 4 ? "AKTYWNOŚĆ" : "SPOKÓJ");
+                kpTxt.style.color = kp >= 5 ? "var(--neon-red)" : (kp >= 4 ? "#ffcc00" : "var(--neon-green)");
+
+                // WIATR I GĘSTOŚĆ I TEMP
+                document.getElementById('wind-val').textContent = Math.round(lastPlas[2]);
+                document.getElementById('dens-val').textContent = parseFloat(lastPlas[1]).toFixed(1);
+                document.getElementById('temp-val').textContent = parseInt(lastPlas[3]).toLocaleString();
+
+                // BZ
+                const bz = parseFloat(lastMag[3]);
+                const bzVal = document.getElementById('bz-val');
+                bzVal.textContent = bz.toFixed(1);
+                bzVal.style.color = bz < -5 ? "var(--neon-red)" : "var(--neon-blue)";
+                document.getElementById('bz-txt').textContent = bz < -5 ? "KIERUNEK S" : "KIERUNEK N";
+
+            } catch (e) {
+                console.error("Błąd pobierania danych:", e);
+                // Jeśli proxy AllOrigins zawiedzie, spróbujmy bezpośrednio (niektóre przeglądarki puszczą)
+            }
+        }
+
+        // Odświeżaj mapę co 5 minut, dane co minutę
+        setInterval(() => {
+            document.getElementById('aurora-map').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
+        }, 300000);
+
+        setInterval(updateData, 60000);
+        updateData();
+    </script>
+</body>
+</html>
