@@ -2,121 +2,91 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WEB SPACE STATION | ZORZA LIVE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WEB SPACE STATION | REALTIME SPACE WEATHER</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
-    --bg: #020205;
-    --panel: rgba(5,5,15,.95);
-    --blue: #00f3ff;
-    --green: #00ff88;
-    --red: #ff3355;
-    --border: rgba(0,243,255,.25);
+:root{
+ --bg:#020205;
+ --panel:#05050f;
+ --blue:#00f3ff;
+ --green:#00ff88;
+ --red:#ff3355;
+ --orange:#ffaa00;
+ --border:rgba(0,243,255,.25);
+}
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:var(--bg);
+ color:#fff;
+ font-family:'Exo 2',sans-serif;
+}
+nav{
+ padding:15px 30px;
+ background:rgba(0,0,0,.85);
+ border-bottom:1px solid var(--border);
+ display:flex;
+ justify-content:space-between;
+}
+.logo{
+ font-family:'Rajdhani';
+ font-weight:700;
+ letter-spacing:3px;
+}
+a{color:#aaa;text-decoration:none;font-size:.75rem}
+
+.dashboard{
+ max-width:1400px;
+ margin:auto;
+ padding:30px 20px;
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+ gap:15px;
+}
+.card{
+ background:var(--panel);
+ border:1px solid var(--border);
+ padding:18px;
+ text-align:center;
+}
+.label{
+ font-size:.65rem;
+ letter-spacing:2px;
+ text-transform:uppercase;
+ color:#777;
+}
+.value{
+ font-family:'Rajdhani';
+ font-size:2.3rem;
+ margin:6px 0;
+ color:var(--blue);
+}
+.status{font-size:.65rem}
+footer{
+ text-align:center;
+ font-family:monospace;
+ font-size:.65rem;
+ color:#444;
+ margin:10px 0;
 }
 
-* { box-sizing: border-box }
-body {
-    margin:0;
-    background:var(--bg);
-    color:#fff;
-    font-family:'Exo 2',sans-serif;
+canvas{
+ width:100%;
+ height:220px;
+ background:#020208;
+ border:1px solid var(--border);
 }
 
-nav {
-    display:flex;
-    justify-content:space-between;
-    padding:15px 30px;
-    background:rgba(0,0,0,.85);
-    border-bottom:1px solid var(--border);
+.alert{
+ animation:blink 1s infinite;
 }
-
-nav a {
-    color:#aaa;
-    text-decoration:none;
-    font-size:.75rem;
-    letter-spacing:2px;
-}
-
-.logo {
-    color:#fff;
-    font-family:'Rajdhani';
-    font-weight:700;
-}
-
-.dashboard {
-    max-width:1400px;
-    margin:auto;
-    padding:30px 20px;
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:15px;
-}
-
-.card {
-    background:var(--panel);
-    border:1px solid var(--border);
-    padding:20px;
-    text-align:center;
-}
-
-.label {
-    font-size:.65rem;
-    color:#777;
-    letter-spacing:2px;
-    text-transform:uppercase;
-}
-
-.value {
-    font-family:'Rajdhani';
-    font-size:2.4rem;
-    margin:8px 0;
-    color:var(--blue);
-}
-
-.unit {
-    font-size:.65rem;
-    color:#555;
-}
-
-.status {
-    font-size:.65rem;
-    margin-top:8px;
-}
-
-#footer {
-    text-align:center;
-    font-family:monospace;
-    font-size:.65rem;
-    color:#444;
-    margin-bottom:15px;
-}
-
-.visuals {
-    max-width:1400px;
-    margin:auto;
-    padding:0 20px 40px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-}
-
-.box {
-    background:var(--panel);
-    border:1px solid var(--border);
-    padding:15px;
-}
-
-.box img {
-    width:100%;
-    margin-top:10px;
-    border:1px solid #111;
-}
-
-@media(max-width:800px){
-    .visuals { grid-template-columns:1fr }
+@keyframes blink{
+ 0%{background:#200}
+ 50%{background:#400}
+ 100%{background:#200}
 }
 </style>
 </head>
@@ -124,130 +94,175 @@ nav a {
 <body>
 
 <nav>
-    <div class="logo">WEB SPACE STATION</div>
-    <div>
-        <a href="#">BAZA</a>
-        <a href="#" style="color:var(--blue)">ZORZA LIVE</a>
-    </div>
+ <div class="logo">WEB SPACE STATION</div>
+ <div>
+  <a href="#">BASE</a>
+  <a href="#" style="color:var(--blue)">REALTIME</a>
+ </div>
 </nav>
 
 <section class="dashboard">
-    <div class="card">
-        <div class="label">Kp Index</div>
-        <div id="kp" class="value">--</div>
-        <div id="kpTxt" class="status">---</div>
-    </div>
+ <div class="card">
+  <div class="label">Solar Wind Speed</div>
+  <div id="speed" class="value">--</div>
+  <div class="status">km/s</div>
+ </div>
 
-    <div class="card">
-        <div class="label">Solar Wind</div>
-        <div id="wind" class="value">--</div>
-        <div class="unit">km/s</div>
-    </div>
+ <div class="card">
+  <div class="label">Density</div>
+  <div id="density" class="value">--</div>
+  <div class="status">p/cm³</div>
+ </div>
 
-    <div class="card">
-        <div class="label">Density</div>
-        <div id="dens" class="value">--</div>
-        <div class="unit">p/cm³</div>
-    </div>
+ <div class="card">
+  <div class="label">Bz GSM</div>
+  <div id="bz" class="value">--</div>
+  <div id="bzStatus" class="status">---</div>
+ </div>
 
-    <div class="card">
-        <div class="label">Bz (GSM)</div>
-        <div id="bz" class="value">--</div>
-        <div id="bzTxt" class="status">---</div>
-    </div>
+ <div class="card">
+  <div class="label">Bz South Time</div>
+  <div id="bzTimer" class="value">0</div>
+  <div class="status">minutes</div>
+ </div>
 
-    <div class="card">
-        <div class="label">Temperature</div>
-        <div id="temp" class="value">--</div>
-        <div class="unit">K</div>
-    </div>
+ <div class="card">
+  <div class="label">Aurora Probability</div>
+  <div id="api" class="value">0</div>
+  <div id="apiTxt" class="status">QUIET</div>
+ </div>
 </section>
 
-<div id="footer">TERMINAL ONLINE | WAITING FOR DATA</div>
-
-<section class="visuals">
-    <div class="box">
-        <div class="label">Aurora Forecast</div>
-        <img id="auroraMap" src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg">
-    </div>
-
-    <div class="box">
-        <div class="label">Solar Magnetic Field</div>
-        <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg">
-    </div>
+<section class="dashboard">
+ <div class="card" style="grid-column:1/-1">
+  <div class="label">Bz GSM – Last 120 min</div>
+  <canvas id="chart"></canvas>
+ </div>
 </section>
+
+<footer id="footer">TERMINAL ONLINE | WAITING FOR DATA</footer>
 
 <script>
-async function getJSON(url){
-    const r = await fetch(url,{cache:"no-store"});
-    if(!r.ok) throw new Error("Fetch error");
-    return r.json();
+const plasmaURL="https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json";
+const magURL="https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json";
+
+let bzHistory=[];
+let southStart=null;
+
+async function fetchJSON(url){
+ const r=await fetch(url,{cache:"no-store"});
+ if(!r.ok) throw new Error("Fetch error");
+ return r.json();
 }
 
 function lastValid(data,index){
-    for(let i=data.length-1;i>0;i--){
-        if(data[i][index] !== null) return data[i];
-    }
-    return null;
+ for(let i=data.length-1;i>0;i--){
+  if(data[i][index]!==null) return data[i];
+ }
+ return null;
+}
+
+function calcAPI(speed,bz,dens){
+ let score=0;
+ if(speed>500) score+=2;
+ if(speed>650) score+=3;
+ if(bz<-5) score+=2;
+ if(bz<-10) score+=4;
+ if(dens>10) score+=1;
+ return score;
+}
+
+function drawChart(){
+ const c=document.getElementById("chart");
+ const ctx=c.getContext("2d");
+ c.width=c.offsetWidth;
+ c.height=c.offsetHeight;
+
+ ctx.clearRect(0,0,c.width,c.height);
+ ctx.strokeStyle="#00f3ff";
+ ctx.beginPath();
+
+ const max=20;
+ const min=-20;
+
+ bzHistory.forEach((v,i)=>{
+  const x=i/(bzHistory.length-1)*c.width;
+  const y=c.height-(v-min)/(max-min)*c.height;
+  if(i===0) ctx.moveTo(x,y);
+  else ctx.lineTo(x,y);
+ });
+
+ ctx.stroke();
+
+ ctx.strokeStyle="#333";
+ ctx.beginPath();
+ const zeroY=c.height-(0-min)/(max-min)*c.height;
+ ctx.moveTo(0,zeroY);
+ ctx.lineTo(c.width,zeroY);
+ ctx.stroke();
 }
 
 async function update(){
-    const footer = document.getElementById("footer");
+ const footer=document.getElementById("footer");
+ try{
+  const plasma=await fetchJSON(plasmaURL);
+  const mag=await fetchJSON(magURL);
 
-    try {
-        const plasma = await getJSON("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json");
-        const mag    = await getJSON("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json");
-        const kpData = await getJSON("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
+  const pH=plasma[0];
+  const p=lastValid(plasma,pH.indexOf("speed"));
 
-        const pH = plasma[0];
-        const p  = lastValid(plasma, pH.indexOf("speed"));
+  const speed=+p[pH.indexOf("speed")];
+  const density=+p[pH.indexOf("density")];
 
-        document.getElementById("wind").innerText = Math.round(p[pH.indexOf("speed")]);
-        document.getElementById("dens").innerText = (+p[pH.indexOf("density")]).toFixed(1);
-        document.getElementById("temp").innerText = parseInt(p[pH.indexOf("temperature")]).toLocaleString();
+  document.getElementById("speed").innerText=Math.round(speed);
+  document.getElementById("density").innerText=density.toFixed(1);
 
-        const mH = mag[0];
-        const m  = lastValid(mag, mH.indexOf("bz_gsm"));
-        const bz = +m[mH.indexOf("bz_gsm")];
+  const mH=mag[0];
+  const m=lastValid(mag,mH.indexOf("bz_gsm"));
+  const bz=+m[mH.indexOf("bz_gsm")];
 
-        const bzEl = document.getElementById("bz");
-        bzEl.innerText = bz.toFixed(1);
-        bzEl.style.color = bz < -5 ? "var(--red)" : "var(--blue)";
-        document.getElementById("bzTxt").innerText = bz < -5 ? "SOUTHWARD" : "NORTHWARD";
+  document.getElementById("bz").innerText=bz.toFixed(1);
+  document.getElementById("bz").style.color=bz<-5?"var(--red)":"var(--blue)";
+  document.getElementById("bzStatus").innerText=bz<0?"SOUTH":"NORTH";
 
-        const k = lastValid(kpData,1);
-        const kp = +k[1];
+  if(bz<0){
+   if(!southStart) southStart=Date.now();
+  } else southStart=null;
 
-        document.getElementById("kp").innerText = kp.toFixed(1);
-        const kpTxt = document.getElementById("kpTxt");
+  const southMin=southStart?Math.floor((Date.now()-southStart)/60000):0;
+  document.getElementById("bzTimer").innerText=southMin;
 
-        if(kp >= 5){
-            kpTxt.innerText = "GEOMAG STORM";
-            kpTxt.style.color = "var(--red)";
-        } else if(kp >= 4){
-            kpTxt.innerText = "UNSETTLED";
-            kpTxt.style.color = "#ffaa00";
-        } else {
-            kpTxt.innerText = "QUIET";
-            kpTxt.style.color = "var(--green)";
-        }
+  bzHistory.push(bz);
+  if(bzHistory.length>120) bzHistory.shift();
+  drawChart();
 
-        footer.innerText = "LAST SYNC: " + new Date().toLocaleTimeString();
-        footer.style.color = "#444";
+  const api=calcAPI(speed,bz,density);
+  document.getElementById("api").innerText=api;
 
-    } catch(e){
-        console.error(e);
-        footer.innerText = "DATA ERROR – RECONNECTING…";
-        footer.style.color = "var(--red)";
-    }
+  const apiTxt=document.getElementById("apiTxt");
+  let state="QUIET",col="var(--green)";
+  if(api>=8){state="STORM";col="var(--red)"}
+  else if(api>=5){state="WATCH";col="var(--orange)"}
+
+  apiTxt.innerText=state;
+  apiTxt.style.color=col;
+
+  if(api>=8 && southMin>15){
+   document.body.classList.add("alert");
+  } else document.body.classList.remove("alert");
+
+  footer.innerText="LAST UPDATE: "+new Date().toLocaleTimeString();
+  footer.style.color="#444";
+
+ }catch(e){
+  console.error(e);
+  footer.innerText="DATA ERROR – RETRYING…";
+  footer.style.color="var(--red)";
+ }
 }
 
 update();
 setInterval(update,60000);
-setInterval(()=>{
-    document.getElementById("auroraMap").src =
-        "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t="+Date.now();
-},300000);
 </script>
 
 </body>
