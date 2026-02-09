@@ -222,7 +222,11 @@
 
 // --- 3. SYSTEM ARTYKUŁÓW (Wszystko wpada do Meldunków + do swoich sekcji) ---
 function renderujArtykuly() {
-    if (typeof bazaArtykulow === 'undefined') return;
+    // Sprawdzenie czy baza istnieje
+    if (typeof bazaArtykulow === 'undefined' || !bazaArtykulow) {
+        console.error("Błąd: bazaArtykulow nie została znaleziona!");
+        return;
+    }
 
     const kontenery = {
         'meldunki': document.getElementById('track-meldunki'),
@@ -233,13 +237,12 @@ function renderujArtykuly() {
     // Czyścimy kontenery przed ponownym załadowaniem
     Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
 
-    // SORTOWANIE: Najpierw robimy kopię, potem sortujemy malejąco po ID (najwyższe ID = najnowszy news)
-    // Jeśli ID są równe, .reverse() dodatkowo ubezpiecza nas na wypadek kolejności w pliku
-    const bazaSorted = [...bazaArtykulow].sort((a, b) => b.id - a.id);
+    // 1. Sortujemy od najnowszych ID (największa liczba na początek)
+    const bazaSorted = [...bazaArtykulow].sort((a, b) => Number(b.id) - Number(a.id));
 
     bazaSorted.forEach(art => {
-        // Generujemy kod karty (używamy czystego szablonu)
-        const cardHTML = `
+        // 2. Generujemy kod HTML karty
+        const card = `
             <div class="art-card">
                 <div class="art-img" style="background-image: url('${art.img}');"></div>
                 <div class="art-content">
@@ -251,25 +254,21 @@ function renderujArtykuly() {
             </div>
         `;
 
-        // Tworzymy tymczasowy element, żeby móc użyć appendChild (bezpieczniejsze niż +=)
-        const placeholder = document.createElement('div');
-        placeholder.innerHTML = cardHTML;
-        const cardElement = placeholder.firstElementChild;
-
-        // LOGIKA 1: Wszystko trafia do Meldunków (limit 15 najnowszych)
+        // 3. LOGIKA: Wszystko trafia do Meldunków (limit 15)
         if (kontenery['meldunki'] && kontenery['meldunki'].children.length < 15) {
-            kontenery['meldunki'].appendChild(cardElement.cloneNode(true));
+            kontenery['meldunki'].innerHTML += card;
         }
 
-        // LOGIKA 2: Trafia dodatkowo do swojej sekcji tematycznej (Nauka lub Tech)
+        // 4. LOGIKA: Trafia do swojej sekcji tematycznej (Nauka lub Tech)
         const target = kontenery[art.kategoria];
         if (target && art.kategoria !== 'meldunki') {
             if (target.children.length < 10) {
-                target.appendChild(cardElement);
+                target.innerHTML += card;
             }
         }
     });
 }
+
 
 
         // --- 4. OBSŁUGA SLIDERÓW (STRZAŁKI + DRAG) ---
