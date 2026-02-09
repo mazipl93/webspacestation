@@ -221,53 +221,55 @@
         }
 
 // --- 3. SYSTEM ARTYKUŁÓW (Wszystko wpada do Meldunków + do swoich sekcji) ---
-function renderujArtykuly() {
-    // Sprawdzenie czy baza istnieje
-    if (typeof bazaArtykulow === 'undefined' || !bazaArtykulow) {
-        console.error("Błąd: bazaArtykulow nie została znaleziona!");
-        return;
-    }
+        function renderujArtykuly() {
+            if (typeof bazaArtykulow === 'undefined') return;
 
-    const kontenery = {
-        'meldunki': document.getElementById('track-meldunki'),
-        'nauka': document.getElementById('track-nauka'),
-        'tech': document.getElementById('track-tech')
-    };
+            const kontenery = {
+                'meldunki': document.getElementById('track-meldunki'),
+                'nauka': document.getElementById('track-nauka'),
+                'tech': document.getElementById('track-tech')
+            };
 
-    // Czyścimy kontenery przed ponownym załadowaniem
-    Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
+            // Czyścimy kontenery przed ponownym załadowaniem
+            Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
 
-    // 1. Sortujemy od najnowszych ID (największa liczba na początek)
-    const bazaSorted = [...bazaArtykulow].sort((a, b) => Number(b.id) - Number(a.id));
+            // Sortujemy od najnowszych ID
+            const bazaSorted = [...bazaArtykulow].sort((a, b) => b.id - a.id);
 
-    bazaSorted.forEach(art => {
-        // 2. Generujemy kod HTML karty
-        const card = `
-            <div class="art-card">
-                <div class="art-img" style="background-image: url('${art.img}');"></div>
-                <div class="art-content">
-                    <span class="art-tag">${art.tag} | ${art.kategoria.toUpperCase()}</span>
-                    <h3 class="art-title">${art.tytul}</h3>
-                    <p class="art-desc">${art.opis}</p>
-                    <a href="artykul.html?id=${art.id}" class="art-link">CZYTAJ WIĘCEJ</a>
-                </div>
-            </div>
-        `;
+            bazaSorted.forEach(art => {
+                // Generujemy kod karty
+                // Dodałem mały dopisek [${art.kategoria.toUpperCase()}] przy tagu, żeby było wiadomo skąd jest news
+                const card = `
+                    <div class="art-card">
+                        <div class="art-img" style="background-image: url('${art.img}');"></div>
+                        <div class="art-content">
+                            <span class="art-tag">${art.tag} | ${art.kategoria.toUpperCase()}</span>
+                            <h3 class="art-title">${art.tytul}</h3>
+                            <p class="art-desc">${art.opis}</p>
+                            <a href="artykul.html?id=${art.id}" class="art-link">CZYTAJ WIĘCEJ</a>
+                        </div>
+                    </div>
+                `;
 
-        // 3. LOGIKA: Wszystko trafia do Meldunków (limit 15)
-        if (kontenery['meldunki'] && kontenery['meldunki'].children.length < 15) {
-            kontenery['meldunki'].innerHTML += card;
+                // LOGIKA 1: Wszystko trafia do Meldunków (limit 15 najnowszych)
+                if (kontenery['meldunki'] && kontenery['meldunki'].children.length < 15) {
+                    kontenery['meldunki'].innerHTML += card;
+                }
+
+                // LOGIKA 2: Trafia dodatkowo do swojej sekcji tematycznej (Nauka lub Tech)
+                const target = kontenery[art.kategoria];
+                // Warunek: dodaj do sekcji tematycznej tylko jeśli to NIE jest kategoria 'meldunki' 
+                // (żeby nie dublować w tym samym miejscu)
+                if (target && art.kategoria !== 'meldunki') {
+                    if (target.children.length < 10) {
+                        target.innerHTML += card;
+                    }
+                }
+            });
         }
 
-        // 4. LOGIKA: Trafia do swojej sekcji tematycznej (Nauka lub Tech)
-        const target = kontenery[art.kategoria];
-        if (target && art.kategoria !== 'meldunki') {
-            if (target.children.length < 10) {
-                target.innerHTML += card;
-            }
-        }
-    });
-}
+
+Tutaj zmień i wyślij
 
 
 
