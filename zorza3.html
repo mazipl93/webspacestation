@@ -45,14 +45,21 @@
             z-index: 100;
         }
 
-        .nav-logo { 
-            font-family: 'Rajdhani'; 
-            font-weight: 700; 
-            letter-spacing: 3px; 
-            color: #fff; 
-            text-decoration: none; 
-            font-size: 1.2rem; 
-        }
+       .nav-logo { 
+    font-family: 'Rajdhani', sans-serif; 
+    font-weight: 700; 
+    font-size: 1.1rem; 
+    letter-spacing: 2px; 
+    color: #fff; 
+    text-decoration: none;
+    text-transform: uppercase; 
+    transition: 0.4s; /* To zapewnia subtelne przejście */
+}
+
+.nav-logo:hover { 
+    color: var(--neon-cyan); 
+    text-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan); 
+}
 
         .status-box { 
             display: flex; 
@@ -192,7 +199,7 @@
     <canvas id="starfield"></canvas>
     
     <div class="header-nav">
-        <a href="#" class="nav-logo">WEB SPACE STATION</a>
+        <a href="index.html" class="nav-logo">WEB SPACE STATION</a>
         <div class="status-box">
             <div id="sync-indicator" class="heartbeat"></div>
             <div class="status-badge">LIVE: DSCOVR L1</div>
