@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>WEB SPACE STATION | REALTIME SPACE WEATHER</title>
+<title>WEB SPACE STATION | AURORA PRO TERMINAL</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
@@ -39,7 +39,7 @@ nav{
 a{color:#aaa;text-decoration:none;font-size:.75rem}
 
 .dashboard{
- max-width:1400px;
+ max-width:1500px;
  margin:auto;
  padding:30px 20px;
  display:grid;
@@ -60,17 +60,18 @@ a{color:#aaa;text-decoration:none;font-size:.75rem}
 }
 .value{
  font-family:'Rajdhani';
- font-size:2.3rem;
+ font-size:2.2rem;
  margin:6px 0;
  color:var(--blue);
 }
-.status{font-size:.65rem}
+.status{font-size:.7rem}
+
 footer{
  text-align:center;
  font-family:monospace;
  font-size:.65rem;
  color:#444;
- margin:10px 0;
+ margin-bottom:12px;
 }
 
 canvas{
@@ -78,15 +79,6 @@ canvas{
  height:220px;
  background:#020208;
  border:1px solid var(--border);
-}
-
-.alert{
- animation:blink 1s infinite;
-}
-@keyframes blink{
- 0%{background:#200}
- 50%{background:#400}
- 100%{background:#200}
 }
 </style>
 </head>
@@ -97,11 +89,12 @@ canvas{
  <div class="logo">WEB SPACE STATION</div>
  <div>
   <a href="#">BASE</a>
-  <a href="#" style="color:var(--blue)">REALTIME</a>
+  <a href="#" style="color:var(--blue)">AURORA PRO</a>
  </div>
 </nav>
 
 <section class="dashboard">
+
  <div class="card">
   <div class="label">Solar Wind Speed</div>
   <div id="speed" class="value">--</div>
@@ -117,25 +110,32 @@ canvas{
  <div class="card">
   <div class="label">Bz GSM</div>
   <div id="bz" class="value">--</div>
-  <div id="bzStatus" class="status">---</div>
+  <div id="bzTxt" class="status">---</div>
  </div>
 
  <div class="card">
-  <div class="label">Bz South Time</div>
-  <div id="bzTimer" class="value">0</div>
+  <div class="label">Bz South Duration</div>
+  <div id="bzTime" class="value">0</div>
   <div class="status">minutes</div>
  </div>
 
  <div class="card">
-  <div class="label">Aurora Probability</div>
+  <div class="label">Aurora Probability Index</div>
   <div id="api" class="value">0</div>
   <div id="apiTxt" class="status">QUIET</div>
  </div>
+
+ <div class="card">
+  <div class="label">Poland Visibility</div>
+  <div id="plVis" class="value">---</div>
+  <div id="plTxt" class="status">---</div>
+ </div>
+
 </section>
 
 <section class="dashboard">
  <div class="card" style="grid-column:1/-1">
-  <div class="label">Bz GSM – Last 120 min</div>
+  <div class="label">Bz GSM – last 120 minutes</div>
   <canvas id="chart"></canvas>
  </div>
 </section>
@@ -151,59 +151,69 @@ let southStart=null;
 
 async function fetchJSON(url){
  const r=await fetch(url,{cache:"no-store"});
- if(!r.ok) throw new Error("Fetch error");
+ if(!r.ok) throw new Error("fetch");
  return r.json();
 }
 
-function lastValid(data,index){
- for(let i=data.length-1;i>0;i--){
-  if(data[i][index]!==null) return data[i];
+function lastValid(data,i){
+ for(let x=data.length-1;x>0;x--){
+  if(data[x][i]!==null) return data[x];
  }
  return null;
 }
 
-function calcAPI(speed,bz,dens){
- let score=0;
- if(speed>500) score+=2;
- if(speed>650) score+=3;
- if(bz<-5) score+=2;
- if(bz<-10) score+=4;
- if(dens>10) score+=1;
- return score;
+function calcAPI(speed,bz,d){
+ let s=0;
+ if(speed>500) s+=2;
+ if(speed>650) s+=3;
+ if(bz<-5) s+=2;
+ if(bz<-10) s+=4;
+ if(d>10) s+=1;
+ return s;
 }
 
-function drawChart(){
+function polandVisibility(speed,bz,d,southMin){
+ if(bz>-5 || southMin<10) return ["NOT VISIBLE","Too weak / unstable", "var(--green)"];
+
+ if(speed>650 && bz<-12 && southMin>30)
+  return ["VERY HIGH","Likely visible to naked eye", "var(--red)"];
+
+ if(speed>580 && bz<-8 && southMin>20)
+  return ["HIGH CHANCE","Photos + naked eye north", "var(--orange)"];
+
+ if(speed>520 && bz<-6 && southMin>15)
+  return ["POSSIBLE","Camera / northern horizon", "var(--blue)"];
+
+ return ["LOW","Marginal conditions", "#666"];
+}
+
+function draw(){
  const c=document.getElementById("chart");
  const ctx=c.getContext("2d");
  c.width=c.offsetWidth;
  c.height=c.offsetHeight;
 
  ctx.clearRect(0,0,c.width,c.height);
+
+ const max=20,min=-20;
  ctx.strokeStyle="#00f3ff";
  ctx.beginPath();
-
- const max=20;
- const min=-20;
 
  bzHistory.forEach((v,i)=>{
   const x=i/(bzHistory.length-1)*c.width;
   const y=c.height-(v-min)/(max-min)*c.height;
-  if(i===0) ctx.moveTo(x,y);
-  else ctx.lineTo(x,y);
+  i?ctx.lineTo(x,y):ctx.moveTo(x,y);
  });
-
  ctx.stroke();
 
  ctx.strokeStyle="#333";
+ const y0=c.height-(0-min)/(max-min)*c.height;
  ctx.beginPath();
- const zeroY=c.height-(0-min)/(max-min)*c.height;
- ctx.moveTo(0,zeroY);
- ctx.lineTo(c.width,zeroY);
- ctx.stroke();
+ ctx.moveTo(0,y0);ctx.lineTo(c.width,y0);ctx.stroke();
 }
 
 async function update(){
- const footer=document.getElementById("footer");
+ const f=document.getElementById("footer");
  try{
   const plasma=await fetchJSON(plasmaURL);
   const mag=await fetchJSON(magURL);
@@ -212,10 +222,10 @@ async function update(){
   const p=lastValid(plasma,pH.indexOf("speed"));
 
   const speed=+p[pH.indexOf("speed")];
-  const density=+p[pH.indexOf("density")];
+  const dens=+p[pH.indexOf("density")];
 
   document.getElementById("speed").innerText=Math.round(speed);
-  document.getElementById("density").innerText=density.toFixed(1);
+  document.getElementById("density").innerText=dens.toFixed(1);
 
   const mH=mag[0];
   const m=lastValid(mag,mH.indexOf("bz_gsm"));
@@ -223,41 +233,38 @@ async function update(){
 
   document.getElementById("bz").innerText=bz.toFixed(1);
   document.getElementById("bz").style.color=bz<-5?"var(--red)":"var(--blue)";
-  document.getElementById("bzStatus").innerText=bz<0?"SOUTH":"NORTH";
+  document.getElementById("bzTxt").innerText=bz<0?"SOUTH":"NORTH";
 
-  if(bz<0){
-   if(!southStart) southStart=Date.now();
-  } else southStart=null;
+  if(bz<0){ if(!southStart) southStart=Date.now(); }
+  else southStart=null;
 
   const southMin=southStart?Math.floor((Date.now()-southStart)/60000):0;
-  document.getElementById("bzTimer").innerText=southMin;
+  document.getElementById("bzTime").innerText=southMin;
 
   bzHistory.push(bz);
   if(bzHistory.length>120) bzHistory.shift();
-  drawChart();
+  draw();
 
-  const api=calcAPI(speed,bz,density);
+  const api=calcAPI(speed,bz,dens);
   document.getElementById("api").innerText=api;
 
   const apiTxt=document.getElementById("apiTxt");
-  let state="QUIET",col="var(--green)";
-  if(api>=8){state="STORM";col="var(--red)"}
-  else if(api>=5){state="WATCH";col="var(--orange)"}
+  if(api>=8){apiTxt.innerText="STORM";apiTxt.style.color="var(--red)";}
+  else if(api>=5){apiTxt.innerText="WATCH";apiTxt.style.color="var(--orange)";}
+  else{apiTxt.innerText="QUIET";apiTxt.style.color="var(--green)";}
 
-  apiTxt.innerText=state;
-  apiTxt.style.color=col;
+  const [v,t,c]=polandVisibility(speed,bz,dens,southMin);
+  document.getElementById("plVis").innerText=v;
+  document.getElementById("plTxt").innerText=t;
+  document.getElementById("plVis").style.color=c;
 
-  if(api>=8 && southMin>15){
-   document.body.classList.add("alert");
-  } else document.body.classList.remove("alert");
-
-  footer.innerText="LAST UPDATE: "+new Date().toLocaleTimeString();
-  footer.style.color="#444";
+  f.innerText="LAST UPDATE: "+new Date().toLocaleTimeString();
+  f.style.color="#444";
 
  }catch(e){
   console.error(e);
-  footer.innerText="DATA ERROR – RETRYING…";
-  footer.style.color="var(--red)";
+  f.innerText="DATA ERROR – RETRYING…";
+  f.style.color="var(--red)";
  }
 }
 
