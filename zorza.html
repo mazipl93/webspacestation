@@ -3,53 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEB SPACE STATION | PROFESSIONAL MONITOR</title>
+    <title>WEB SPACE STATION | MONITOROWANIE L1</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-dark: #020205; --panel: rgba(13, 13, 25, 0.96);
-            --neon-blue: #00f3ff; --neon-green: #00ff88;
-            --neon-red: #ff3366; --neon-yellow: #ffcc00;
+            --bg-dark: #020205; 
+            --panel: rgba(13, 13, 25, 0.96);
+            --neon-blue: #00f3ff; 
+            --neon-green: #00ff88;
+            --neon-red: #ff3366; 
+            --neon-yellow: #ffcc00;
             --glass-border: rgba(0, 243, 255, 0.2);
         }
 
-        body { background: var(--bg-dark); color: #fff; margin: 0; font-family: 'Exo 2', sans-serif; overflow-x: hidden; }
-        canvas#starfield { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
-
-        /* HEADER */
-        .header-nav { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 15px 40px; background: rgba(0,0,0,0.95); 
-            border-bottom: 1px solid var(--glass-border);
-            position: sticky; top: 0; z-index: 100;
+        body { 
+            background: var(--bg-dark); 
+            color: #fff; 
+            margin: 0; 
+            font-family: 'Exo 2', sans-serif; 
+            overflow-x: hidden; 
         }
-        .nav-logo { font-family: 'Rajdhani'; font-weight: 700; letter-spacing: 3px; color: #fff; text-decoration: none; font-size: 1.2rem; }
-        .status-box { display: flex; align-items: center; gap: 15px; }
-        .status-badge { font-size: 0.7rem; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 4px 12px; border-radius: 4px; font-weight: bold; }
 
-        .dashboard { max-width: 1400px; margin: 0 auto; padding: 20px; display: grid; gap: 20px; }
+        canvas#starfield { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: -1; 
+            pointer-events: none; 
+        }
 
-        /* KPI */
-        .top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .header-nav { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 40px; 
+            background: rgba(0,0,0,0.95); 
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky; 
+            top: 0; 
+            z-index: 100;
+        }
+
+        .nav-logo { 
+            font-family: 'Rajdhani'; 
+            font-weight: 700; 
+            letter-spacing: 3px; 
+            color: #fff; 
+            text-decoration: none; 
+            font-size: 1.2rem; 
+        }
+
+        .status-box { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+
+        .status-badge { 
+            font-size: 0.7rem; 
+            color: var(--neon-blue); 
+            border: 1px solid var(--neon-blue); 
+            padding: 4px 12px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+
+        .dashboard { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            display: grid; 
+            gap: 20px; 
+        }
+
+        .top-row { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+
         .main-card { 
-            background: var(--panel); border: 1px solid var(--glass-border); 
-            padding: 25px; text-align: center; border-radius: 12px;
+            background: var(--panel); 
+            border: 1px solid var(--glass-border); 
+            padding: 25px; 
+            text-align: center; 
+            border-radius: 12px;
             box-shadow: 0 0 20px rgba(0, 243, 255, 0.05);
         }
-        .main-label { font-size: 0.7rem; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
-        .main-value { font-family: 'Rajdhani'; font-size: 4rem; font-weight: 700; line-height: 1; margin: 10px 0; }
-        .main-sub { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* WYKRESY */
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .chart-item { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; height: 320px; }
-        .chart-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-family: 'Rajdhani'; color: #aaa; font-size: 0.8rem; }
+        .main-label { 
+            font-size: 0.7rem; 
+            color: #888; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            margin-bottom: 5px; 
+        }
 
-        /* GRAFIKI SOHO / AURORA */
-        .visual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
-        .visual-card { background: var(--panel); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border); text-align: center; }
-        .visual-card img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .main-value { 
+            font-family: 'Rajdhani'; 
+            font-size: 4rem; 
+            font-weight: 700; 
+            line-height: 1; 
+            margin: 10px 0; 
+        }
+
+        .main-sub { 
+            font-weight: 700; 
+            font-size: 0.8rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+
+        .charts-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .chart-item { 
+            background: var(--panel); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            padding: 20px; 
+            border-radius: 12px; 
+            height: 320px; 
+        }
+
+        .chart-info { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+            font-family: 'Rajdhani'; 
+            color: #aaa; 
+            font-size: 0.8rem; 
+        }
+
+        .visual-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+            margin-top: 10px; 
+        }
+
+        .visual-card { 
+            background: var(--panel); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--glass-border); 
+            text-align: center; 
+        }
+
+        .visual-card img { 
+            width: 100%; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
 
         @media (max-width: 768px) { 
             .top-row, .charts-grid, .visual-grid { grid-template-columns: 1fr; }
@@ -58,84 +168,97 @@
             .chart-item { height: 280px; }
         }
 
-        #footer-status { text-align: center; font-size: 0.6rem; color: #555; padding: 20px; font-family: monospace; text-transform: uppercase; }
-        .heartbeat { display: inline-block; width: 8px; height: 8px; background: var(--neon-green); border-radius: 50%; margin-right: 8px; }
+        #footer-status { 
+            text-align: center; 
+            font-size: 0.65rem; 
+            color: #666; 
+            padding: 20px; 
+            font-family: monospace; 
+        }
+
+        .heartbeat { 
+            display: inline-block; 
+            width: 8px; 
+            height: 8px; 
+            background: var(--neon-green); 
+            border-radius: 50%; 
+            margin-right: 8px; 
+        }
+
         .blink { animation: blinker 1s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
     <canvas id="starfield"></canvas>
-    
     <div class="header-nav">
         <a href="index.html" class="nav-logo">WEB SPACE STATION</a>
         <div class="status-box">
             <div id="sync-indicator" class="heartbeat"></div>
-            <div class="status-badge">DSCOVR L1 LIVE</div>
+            <div class="status-badge">SATELITA L1 LIVE</div>
         </div>
     </div>
-
     <div class="dashboard">
         <div class="top-row">
             <div class="main-card">
-                <div class="main-label">Geomagnetic Index (Kp)</div>
+                <div class="main-label">Indeks Geomagnetyczny (Kp)</div>
                 <div id="kp-val" class="main-value">--</div>
-                <div id="kp-stat" class="main-sub">SYNCING...</div>
+                <div id="kp-stat" class="main-sub">SYNCHRONIZACJA...</div>
             </div>
             <div class="main-card" style="border-color: var(--neon-yellow);">
-                <div class="main-label">Estimated Arrival (ETA)</div>
+                <div class="main-label">Czas dolotu do Ziemi (ETA)</div>
                 <div id="eta-val" class="main-value" style="color: var(--neon-yellow);">-- min</div>
-                <div id="eta-desc" class="main-sub" style="color: #666;">CALCULATING...</div>
+                <div id="eta-desc" class="main-sub" style="color: #666;">OBLICZANIE PRĘDKOŚCI...</div>
             </div>
         </div>
-
         <div class="charts-grid">
             <div class="chart-item">
-                <div class="chart-info"><span>Solar Wind Speed</span><span id="v-wind" style="color:var(--neon-yellow)">-- km/s</span></div>
+                <div class="chart-info"><span>Prędkość Wiatru</span><span id="v-wind" style="color:var(--neon-yellow)">-- km/s</span></div>
                 <canvas id="chart-wind"></canvas>
             </div>
             <div class="chart-item">
-                <div class="chart-info"><span>Magnetic Field Bz</span><span id="v-bz" style="color:var(--neon-red)">-- nT</span></div>
+                <div class="chart-info"><span>Pole Magnetyczne Bz</span><span id="v-bz" style="color:var(--neon-red)">-- nT</span></div>
                 <canvas id="chart-bz"></canvas>
             </div>
             <div class="chart-item">
-                <div class="chart-info"><span>Proton Density</span><span id="v-dens" style="color:var(--neon-green)">-- p/cm³</span></div>
+                <div class="chart-info"><span>Gęstość Protonów</span><span id="v-dens" style="color:var(--neon-green)">-- p/cm³</span></div>
                 <canvas id="chart-dens"></canvas>
             </div>
             <div class="chart-item">
-                <div class="chart-info"><span>Plasma Temp</span><span id="v-temp" style="color:var(--neon-blue)">-- °C</span></div>
+                <div class="chart-info"><span>Temperatura Plazmy</span><span id="v-temp" style="color:var(--neon-blue)">-- °C</span></div>
                 <canvas id="chart-temp"></canvas>
             </div>
         </div>
-
         <div class="visual-grid">
             <div class="visual-card">
-                <div class="main-label">Aurora Forecast (North)</div>
+                <div class="main-label">Prognoza Zorzy (Północ)</div>
                 <img id="img-aurora" src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg">
             </div>
             <div class="visual-card">
-                <div class="main-label">SOHO / SDO Real-time Sun</div>
+                <div class="main-label">Słońce: SOHO / SDO Live</div>
                 <img id="img-sun" src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg">
             </div>
         </div>
-
-        <div id="footer-status">System Operational // Latency: <span id="lat-val">0</span>ms</div>
+        <div id="footer-status">
+            STATUS SYSTEMU: OPERACYJNY // 
+            OSTATNIA AKTUALIZACJA: <span id="last-sync">--:--:--</span> // 
+            KOLEJNE SPRAWDZENIE ZA: <span id="next-sync">15</span>s
+        </div>
     </div>
-
     <script src="stars.js"></script>
     <script>
         const proxy = "https://api.allorigins.win/get?url=";
         const L1_DIST = 1500000;
+        let timeLeft = 15;
 
         const earthLinePlugin = {
             id: 'earthLine',
             afterDraw: (chart) => {
-                if (!chart.data.datasets[0].data.length || !chart.currentWind) return;
+                if (!chart.data.labels || !chart.data.labels.length || !chart.currentWind) return;
                 const xAxis = chart.scales.x;
                 const yAxis = chart.scales.y;
                 const travelMin = Math.floor((L1_DIST / chart.currentWind) / 60);
                 const earthIdx = chart.data.labels.length - 1 - travelMin;
-
                 if (earthIdx >= 0) {
                     const x = xAxis.getPixelForValue(earthIdx);
                     const ctx = chart.ctx;
@@ -145,7 +268,7 @@
                     ctx.lineWidth = 2;
                     ctx.beginPath(); ctx.moveTo(x, yAxis.top); ctx.lineTo(x, yAxis.bottom); ctx.stroke();
                     ctx.fillStyle = '#00f3ff'; ctx.font = 'bold 9px Rajdhani';
-                    ctx.textAlign = 'right'; ctx.fillText('EARTH IMPACT', x - 5, yAxis.top + 12);
+                    ctx.textAlign = 'right'; ctx.fillText('UDERZENIE W ZIEMIĘ', x - 5, yAxis.top + 12);
                     ctx.restore();
                 }
             }
@@ -160,8 +283,8 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { ticks: { color: '#333', font: { size: 8 }, maxTicksLimit: 6 }, grid: { display: false } },
-                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#555', font: { size: 9 } } }
+                        x: { ticks: { color: '#444', font: { size: 8 }, maxTicksLimit: 6 }, grid: { display: false } },
+                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#666', font: { size: 9 } } }
                     }
                 }
             });
@@ -175,63 +298,56 @@
         };
 
         async function update() {
-            const start = Date.now();
             document.getElementById('sync-indicator').classList.add('blink');
-            
             try {
                 const [pRaw, mRaw, kRaw] = await Promise.all([
                     fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json")).then(r => r.json()),
                     fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json")).then(r => r.json()),
                     fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json")).then(r => r.json())
                 ]);
-
                 const plasma = JSON.parse(pRaw.contents);
                 const mag = JSON.parse(mRaw.contents);
                 const kp = JSON.parse(kRaw.contents);
-
                 const labels = plasma.slice(1).map(d => {
                     const t = new Date(d[0]);
                     return t.getHours() + ":" + t.getMinutes().toString().padStart(2, '0');
                 });
-
                 const curWind = parseFloat(plasma[plasma.length-1][2]);
                 const travelMin = Math.floor((L1_DIST / curWind) / 60);
-
                 const refresh = (chart, data) => {
                     chart.data.labels = labels;
                     chart.data.datasets[0].data = data;
                     chart.currentWind = curWind;
                     chart.update('none');
                 };
-
                 refresh(charts.wind, plasma.slice(1).map(d => parseFloat(d[2])));
                 refresh(charts.bz, mag.slice(1).map(d => parseFloat(d[3])));
                 refresh(charts.dens, plasma.slice(1).map(d => parseFloat(d[1])));
                 refresh(charts.temp, plasma.slice(1).map(d => Math.round(parseFloat(d[3]) - 273.15)));
-
                 document.getElementById('v-wind').innerText = Math.round(curWind) + " km/s";
                 document.getElementById('v-bz').innerText = parseFloat(mag[mag.length-1][3]).toFixed(2) + " nT";
                 document.getElementById('v-dens').innerText = parseFloat(plasma[plasma.length-1][1]).toFixed(1) + " p/cm³";
                 document.getElementById('v-temp').innerText = Math.round(parseFloat(plasma[plasma.length-1][3]) - 273.15).toLocaleString() + " °C";
-                
                 document.getElementById('eta-val').innerText = travelMin + " min";
-                document.getElementById('eta-desc').innerText = "V-VELOCITY: " + Math.round(curWind) + " KM/S";
-
+                document.getElementById('eta-desc').innerText = "V-PRĘDKOŚĆ: " + Math.round(curWind) + " KM/S";
                 const kVal = parseFloat(kp[kp.length-1][1]);
                 document.getElementById('kp-val').innerText = kVal.toFixed(2);
                 const s = document.getElementById('kp-stat');
-                s.innerText = kVal >= 5 ? "G-STORM ACTIVE" : (kVal >= 4 ? "UNSETTLED" : "QUIET");
+                s.innerText = kVal >= 5 ? "BURZA MAGNETYCZNA" : (kVal >= 4 ? "NIEPOKÓJ" : "SPOKOJNIE");
                 s.style.color = kVal >= 5 ? 'var(--neon-red)' : (kVal >= 4 ? 'var(--neon-yellow)' : 'var(--neon-green)');
-
                 document.getElementById('img-aurora').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
                 document.getElementById('img-sun').src = "https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg?t=" + Date.now();
-
-                document.getElementById('lat-val').innerText = Date.now() - start;
-                
-            } catch (e) { console.error("Sync Error"); }
-            
+                document.getElementById('last-sync').innerText = new Date().toLocaleTimeString();
+                timeLeft = 15;
+            } catch (e) { console.error("Błąd synchroniczacji"); }
             setTimeout(() => document.getElementById('sync-indicator').classList.remove('blink'), 2000);
         }
+
+        setInterval(() => {
+            timeLeft--;
+            if(timeLeft < 0) timeLeft = 0;
+            document.getElementById('next-sync').innerText = timeLeft;
+        }, 1000);
 
         update();
         setInterval(update, 15000);
