@@ -129,77 +129,61 @@
 
     <script src="stars.js"></script>
     <script>
-        // System rotacyjnych serwerów proxy
-        const proxyList = [
-            "https://api.allorigins.win/raw?url=",
-            "https://corsproxy.io/?",
-            "https://thingproxy.freeboard.io/fetch/"
-        ];
-
-        async function fetchWithRetry(targetUrl) {
-            for (let proxy of proxyList) {
-                try {
-                    const response = await fetch(proxy + encodeURIComponent(targetUrl));
-                    if (response.ok) return await response.json();
-                } catch (e) {
-                    console.warn(`Proxy ${proxy} zawiodło, próbuję następne...`);
-                }
-            }
-            throw new Error("Wszystkie metody połączenia zawiodły.");
-        }
+        // Używamy najbardziej niezawodnego proxy, które rzadko blokuje
+        const proxy = "https://api.allorigins.win/raw?url=";
 
         async function updateDashboard() {
             const statusEl = document.getElementById('update-status');
             
-            const urls = {
-                mag: "https://services.swpc.noaa.gov/products/solar-wind/mag-1-day.json",
-                plas: "https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json",
-                kp: "https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json"
-            };
-
             try {
-                const [mag, plas, kpData] = await Promise.all([
-                    fetchWithRetry(urls.mag),
-                    fetchWithRetry(urls.plas),
-                    fetchWithRetry(urls.kp)
+                // Pobieramy dane tekstowe zamiast JSONów - mniejsza szansa na blokadę
+                const plasmaUrl = "https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json";
+                const magUrl = "https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json";
+                const kpUrl = "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json";
+
+                const fetchJSON = async (url) => {
+                    const res = await fetch(proxy + encodeURIComponent(url));
+                    if(!res.ok) throw new Error();
+                    return await res.json();
+                };
+
+                const [plasma, mag, kpData] = await Promise.all([
+                    fetchJSON(plasmaUrl),
+                    fetchJSON(magUrl),
+                    fetchJSON(kpUrl)
                 ]);
 
-                const lastMag = mag[mag.length - 1];
-                const lastPlas = plas[plas.length - 1];
-                const lastKp = kpData[kpData.length - 1];
+                // Parsowanie danych (ostatni dostępny rekord)
+                const p = plasma[plasma.length - 1]; // [time, density, speed, temp]
+                const m = mag[mag.length - 1];       // [time, bx, by, bz, bt, ...]
+                const k = kpData[kpData.length - 1]; // [time, kp, ...]
 
-                // KP INDEX
-                const kp = parseFloat(lastKp[1]);
-                document.getElementById('kp-val').innerText = kp.toFixed(1);
+                // Wyświetlanie
+                document.getElementById('kp-val').innerText = parseFloat(k[1]).toFixed(1);
+                document.getElementById('wind-val').innerText = Math.round(parseFloat(p[2]));
+                document.getElementById('dens-val').innerText = parseFloat(p[1]).toFixed(1);
+                document.getElementById('temp-val').innerText = parseInt(p[3]).toLocaleString();
+                
+                const bz = parseFloat(m[3]);
+                document.getElementById('bz-val').innerText = bz.toFixed(1);
+                document.getElementById('bz-val').style.color = bz < -5 ? "var(--neon-red)" : "var(--neon-blue)";
+                document.getElementById('bz-txt').innerText = bz < -5 ? "POŁUDNIE (ZORZA)" : "PÓŁNOC";
+
+                const kp = parseFloat(k[1]);
                 const kpTxt = document.getElementById('kp-txt');
-                kpTxt.innerText = kp >= 5 ? "BURZA GEOMAGNETYCZNA" : (kp >= 4 ? "PODWYŻSZONA AKTYWNOŚĆ" : "SPOKÓJ");
+                kpTxt.innerText = kp >= 5 ? "BURZA GEOMAG." : (kp >= 4 ? "AKTYWNOŚĆ" : "SPOKÓJ");
                 kpTxt.style.color = kp >= 5 ? "var(--neon-red)" : (kp >= 4 ? "#ffcc00" : "var(--neon-green)");
-
-                // WIND & DENSITY
-                document.getElementById('wind-val').innerText = Math.round(lastPlas[2]);
-                document.getElementById('dens-val').innerText = parseFloat(lastPlas[1]).toFixed(1);
-
-                // BZ FIELD
-                const bz = parseFloat(lastMag[3]);
-                const bzValEl = document.getElementById('bz-val');
-                bzValEl.innerText = bz.toFixed(1);
-                bzValEl.style.color = bz < -5 ? "var(--neon-red)" : "var(--neon-blue)";
-                document.getElementById('bz-txt').innerText = bz < -5 ? "POŁUDNIOWE (ZORZA)" : "PÓŁNOCNE";
-
-                // TEMP
-                document.getElementById('temp-val').innerText = parseInt(lastPlas[3]).toLocaleString();
 
                 statusEl.innerText = "POŁĄCZONO | OSTATNIA AKTUALIZACJA: " + new Date().toLocaleTimeString();
                 statusEl.style.color = "var(--neon-green)";
 
             } catch (err) {
                 console.error(err);
-                statusEl.innerText = "BŁĄD POŁĄCZENIA | SERWERY NOAA NIEODPOWIADAJĄ";
+                statusEl.innerText = "PRÓBA REKONEKCJI Z SERWEREM NOAA...";
                 statusEl.style.color = "var(--neon-red)";
             }
         }
 
-        // Interwały
         updateDashboard();
         setInterval(updateDashboard, 60000);
 
