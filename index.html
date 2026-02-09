@@ -220,6 +220,42 @@
             }, 600);
         }
 
+        ];
+
+        let qIdx = -1;
+        let typingEffect; 
+
+        function rotateQuotes() {
+            const el = document.getElementById('quote-text');
+            if (!el) return;
+
+            clearInterval(typingEffect);
+            el.style.transition = "opacity 0.5s";
+            el.style.opacity = 0;
+
+            setTimeout(() => {
+                let newIdx;
+                do {
+                    newIdx = Math.floor(Math.random() * quotes.length);
+                } while (newIdx === qIdx);
+
+                qIdx = newIdx;
+                const fullText = quotes[qIdx];
+                el.textContent = ""; 
+                el.style.opacity = 1;
+
+                let charIdx = 0;
+                typingEffect = setInterval(() => {
+                    if (charIdx < fullText.length) {
+                        el.textContent += fullText[charIdx];
+                        charIdx++;
+                    } else {
+                        clearInterval(typingEffect);
+                    }
+                }, 80);
+            }, 600);
+        }
+
 // --- 3. SYSTEM ARTYKUŁÓW (Wszystko wpada do Meldunków + do swoich sekcji) ---
         function renderujArtykuly() {
             if (typeof bazaArtykulow === 'undefined') return;
@@ -233,12 +269,10 @@
             // Czyścimy kontenery przed ponownym załadowaniem
             Object.values(kontenery).forEach(k => { if(k) k.innerHTML = ""; });
 
-            // Sortujemy od najnowszych ID
+            // Sortujemy od najnowszych ID (najnowsze na górę)
             const bazaSorted = [...bazaArtykulow].sort((a, b) => b.id - a.id);
 
             bazaSorted.forEach(art => {
-                // Generujemy kod karty
-                // Dodałem mały dopisek [${art.kategoria.toUpperCase()}] przy tagu, żeby było wiadomo skąd jest news
                 const card = `
                     <div class="art-card">
                         <div class="art-img" style="background-image: url('${art.img}');"></div>
@@ -258,18 +292,16 @@
 
                 // LOGIKA 2: Trafia dodatkowo do swojej sekcji tematycznej (Nauka lub Tech)
                 const target = kontenery[art.kategoria];
-                // Warunek: dodaj do sekcji tematycznej tylko jeśli to NIE jest kategoria 'meldunki' 
-                // (żeby nie dublować w tym samym miejscu)
                 if (target && art.kategoria !== 'meldunki') {
                     if (target.children.length < 10) {
                         target.innerHTML += card;
                     }
                 }
             });
-        }
+        } // <--- TEJ KLAMRY BRAKOWAŁO! To ona naprawi gwiazdy i wyświetlanie.
 
 
-Tutaj zmień i wyślij
+
 
 
 
