@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baza Danych | Web Space Station</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;400;600;800&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specyficzne style dla Archiwum */
+        .archive-container {
+            max-width: 1200px;
+            margin: 100px auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .archive-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 25px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        /* Reużywamy Twoich stylów kart ze strony głównej */
+        .archive-card {
+            text-decoration: none;
+            color: white;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            transition: 0.4s;
+            display: flex;
+            flex-direction: column;
+        }
+        .archive-card:hover {
+            border-color: var(--neon-blue);
+            transform: translateY(-10px);
+            background: rgba(0, 255, 255, 0.05);
+        }
+        .card-img {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .card-tag {
+            color: var(--neon-blue);
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    
+    <nav>
+        <a href="index.html" class="nav-logo">Web Space Station</a>
+        <div class="nav-links">
+            <a href="index.html#meldunki">Meldunki</a>
+            <a href="archiwum.html" class="active">Baza Danych</a>
+            <a href="index.html#status">Live</a>
+        </div>
+    </nav>
+
+    <main class="archive-container">
+        <header class="archive-header">
+            <h1 style="font-family:'Rajdhani'; font-size: 3.5rem; color: var(--neon-blue);">CENTRALNE ARCHIWUM</h1>
+            <p>Dostęp do wszystkich zarejestrowanych meldunków i danych technologicznych.</p>
+        </header>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filtruj('wszystkie', this)">Wszystkie</button>
+            <button class="filter-btn" onclick="filtruj('meldunki', this)">Meldunki</button>
+            <button class="filter-btn" onclick="filtruj('nauka', this)">Nauka</button>
+            <button class="filter-btn" onclick="filtruj('tech', this)">Technologia</button>
+        </div>
+
+        <div id="archive-grid" class="archive-grid">
+            </div>
+    </main>
+
+    <script src="Artykuly/artykuly.js"></script>
+    <script>
+        // Ładowanie i filtrowanie
+        function renderuj(kat = 'wszystkie') {
+            const grid = document.getElementById('archive-grid');
+            const dane = kat === 'wszystkie' 
+                ? bazaArtykulow 
+                : bazaArtykulow.filter(a => a.kategoria === kat);
+
+            grid.innerHTML = dane.slice().reverse().map(art => `
+                <a href="artykul.html?id=${art.id}" class="archive-card">
+                    <div class="card-img" style="background-image: url('${art.img}')"></div>
+                    <div class="card-body">
+                        <span class="card-tag">${art.tag}</span>
+                        <h3 style="margin: 10px 0;">${art.tytul}</h3>
+                        <p style="font-size: 0.9rem; color: #ccc;">${art.opis}</p>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function filtruj(kat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderuj(kat);
+        }
+
+        // Gwiazdy (Starfield) - skrócona wersja Twojego kodu
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [];
+
+        function initStars() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+            stars = [];
+            for(let i=0; i<200; i++) stars.push({x: Math.random()*width, y: Math.random()*height, s: Math.random()*1.2});
+        }
+
+        function animate() {
+            ctx.clearRect(0,0,width,height);
+            ctx.fillStyle = "#fff";
+            stars.forEach(s => {
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill();
+                s.y -= 0.2; if(s.y < 0) s.y = height;
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', initStars);
+        initStars();
+        animate();
+        renderuj(); // Startowe renderowanie wszystkiego
+    </script>
+</body>
+</html>
