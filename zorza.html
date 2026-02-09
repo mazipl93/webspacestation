@@ -3,205 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEB SPACE STATION | MONITORING LIVE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+    <title>WEB SPACE STATION | TERMINAL MONITORINGU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-dark: #020205;
-            --panel-bg: rgba(10, 10, 20, 0.95);
+            --panel: rgba(13, 13, 25, 0.95);
             --neon-blue: #00f3ff;
+            --neon-green: #00ff88;
+            --neon-red: #ff3366;
+            --neon-yellow: #ffcc00;
             --glass-border: rgba(0, 243, 255, 0.2);
         }
 
-        body { background: var(--bg-dark); color: #fff; margin: 0; font-family: 'Exo 2', sans-serif; }
-        canvas#starfield { position: fixed; top: 0; z-index: -1; }
+        body { background: var(--bg-dark); color: #fff; margin: 0; font-family: 'Exo 2', sans-serif; overflow-x: hidden; }
+        canvas#starfield { position: fixed; top: 0; left: 0; z-index: -1; }
 
-        nav {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 30px; background: rgba(0,0,0,0.95);
+        .header-nav { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px 40px; background: rgba(0,0,0,0.9); 
             border-bottom: 1px solid var(--glass-border);
         }
-        .nav-logo { font-family: 'Rajdhani'; font-weight: 700; color: #fff; text-decoration: none; letter-spacing: 2px; }
+        .nav-logo { font-family: 'Rajdhani'; font-weight: 700; letter-spacing: 3px; color: #fff; text-decoration: none; }
 
-        .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h2 { text-align: center; font-family: 'Rajdhani'; letter-spacing: 4px; color: var(--neon-blue); text-transform: uppercase; margin-bottom: 30px; }
+        .dashboard { max-width: 1400px; margin: 0 auto; padding: 20px; display: grid; gap: 20px; }
 
-        .charts-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px; margin-bottom: 30px;
-        }
-
-        .chart-box {
-            background: var(--panel-bg); border: 1px solid var(--glass-border);
-            padding: 20px; display: flex; flex-direction: column; align-items: center; border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.05);
-        }
-
-        .chart-box h3 { font-size: 0.85rem; color: #aaa; text-transform: uppercase; margin-bottom: 15px; font-family: 'Rajdhani'; }
+        /* Główne liczniki (Kp i ETA) */
+        .top-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
-        .gauge-div { width: 200px; height: 200px; }
+        .main-card { 
+            background: var(--panel); border: 1px solid var(--glass-border); 
+            padding: 25px; text-align: center; border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.05);
+        }
+        .main-label { font-size: 0.75rem; color: #888; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+        .main-value { font-family: 'Rajdhani'; font-size: 4.5rem; font-weight: 700; line-height: 1; margin: 10px 0; }
+        .main-status { font-weight: 700; letter-spacing: 2px; font-size: 0.9rem; text-transform: uppercase; }
 
-        .data-card { display: flex; flex-direction: column; justify-content: center; min-height: 200px; }
-        .data-row { margin: 15px 0; text-align: center; }
-        .data-label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-        .data-value { font-family: 'Rajdhani'; font-size: 2rem; color: var(--neon-blue); font-weight: 700; }
+        /* Grid wykresów */
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .chart-card { background: var(--panel); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; height: 320px; position: relative; }
+        .chart-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-family: 'Rajdhani'; text-transform: uppercase; color: #aaa; font-size: 0.85rem; }
+        .cur-val { color: var(--neon-blue); font-weight: 700; }
 
-        .visuals { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .img-card { background: var(--panel-bg); padding: 15px; border: 1px solid var(--glass-border); text-align: center; border-radius: 8px; }
-        .img-card img { width: 100%; border-radius: 4px; margin-top: 10px; }
+        /* Mapy i obrazy */
+        .visual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .img-box { background: var(--panel); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .img-box h3 { font-size: 0.7rem; color: #666; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+        .img-box img { width: 100%; border-radius: 6px; filter: contrast(1.1) brightness(0.9); }
 
-        #status { text-align: center; font-size: 0.65rem; color: #444; margin: 20px; font-family: monospace; }
-        .indicator-text { font-size: 0.75rem; font-weight: 700; margin-top: 10px; }
+        #footer-status { text-align: center; font-size: 0.65rem; color: #444; padding: 20px; font-family: monospace; }
 
-        @media (max-width: 800px) { .visuals { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { 
+            .top-row, .charts-container, .visual-grid { grid-template-columns: 1fr; }
+            .main-value { font-size: 3.5rem; }
+        }
     </style>
 </head>
 <body>
     <canvas id="starfield"></canvas>
-    <nav>
+    
+    <div class="header-nav">
         <a href="index.html" class="nav-logo">WEB SPACE STATION</a>
-        <div class="nav-links">
-            <a href="index.html" style="color:#888; text-decoration:none; font-size: 0.8rem;">POWRÓT DO BAZY</a>
-        </div>
-    </nav>
+        <div style="font-size: 0.7rem; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 4px 10px; border-radius: 4px;">SYSTEM AKTYWNY</div>
+    </div>
 
-    <div class="dashboard-container">
-        <h2>Pogoda Kosmiczna Live</h2>
-        
-        <div class="charts-grid">
-            <div class="chart-box">
-                <h3>Aktywność (Indeks Kp)</h3>
-                <div id="kp_chart" class="gauge-div"></div>
-                <div id="kp_desc" class="indicator-text">POBIERANIE...</div>
+    <div class="dashboard">
+        <div class="top-row">
+            <div class="main-card">
+                <div class="main-label">Indeks Geomagnetyczny (Kp)</div>
+                <div id="kp-val" class="main-value">--</div>
+                <div id="kp-status" class="main-status">INICJALIZACJA...</div>
             </div>
-
-            <div class="chart-box">
-                <h3>Prędkość Wiatru</h3>
-                <div id="wind_chart" class="gauge-div"></div>
-                <div style="font-size: 0.7rem; color: #555">Jednostka: km/s</div>
-            </div>
-
-            <div class="chart-box">
-                <h3>Pole Magnet. (Bz)</h3>
-                <div id="bz_chart" class="gauge-div"></div>
-                <div id="bz_desc" class="indicator-text">ANALIZA...</div>
-            </div>
-
-            <div class="chart-box data-card">
-                <h3>Parametry Plazmy</h3>
-                <div class="data-row">
-                    <div class="data-value" id="temp_c">-- °C</div>
-                    <div class="data-label">Temperatura korony</div>
-                </div>
-                <div class="data-row">
-                    <div class="data-value" id="dens_val">--</div>
-                    <div class="data-label">Gęstość (p/cm³)</div>
-                </div>
+            <div class="main-card" style="border-color: rgba(255, 204, 0, 0.3);">
+                <div class="main-label">Czas dotarcia z punktu L1 (ETA)</div>
+                <div id="eta-val" class="main-value" style="color: var(--neon-yellow);">-- min</div>
+                <div id="eta-desc" class="main-status" style="color: #666;">ANALIZA PRĘDKOŚCI...</div>
             </div>
         </div>
 
-        <div class="visuals">
-            <div class="img-card">
-                <h3>Prognoza Zorzy (Zasięg)</h3>
-                <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora_img">
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header"><span>Wiatr Słoneczny (Prędkość)</span><span id="cur-wind" class="cur-val">-- km/s</span></div>
+                <canvas id="windChart"></canvas>
             </div>
-            <div class="img-card">
-                <h3>Aktywność Plam (SDO)</h3>
+            <div class="chart-card">
+                <div class="chart-header"><span>Pole Magnetyczne (Bz)</span><span id="cur-bz" class="cur-val">-- nT</span></div>
+                <canvas id="bzChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><span>Gęstość Plazmy</span><span id="cur-dens" class="cur-val">-- p/cm³</span></div>
+                <canvas id="densChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><span>Temperatura Korony</span><span id="cur-temp" class="cur-val">-- °C</span></div>
+                <canvas id="tempChart"></canvas>
+            </div>
+        </div>
+
+        <div class="visual-grid">
+            <div class="img-box">
+                <h3>Prognoza Zasięgu Zorzy</h3>
+                <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora-map">
+            </div>
+            <div class="img-box">
+                <h3>Obraz Słońca SDO/HMI</h3>
                 <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg">
             </div>
         </div>
 
-        <div id="status">INICJALIZACJA TERMINALA...</div>
+        <div id="footer-status">Oczekiwanie na dane z satelitów...</div>
     </div>
 
     <script src="stars.js"></script>
     <script>
-        google.charts.load('current', {'packages':['gauge']});
-        google.charts.setOnLoadCallback(drawCharts);
-
         const proxy = "https://api.allorigins.win/get?url=";
+        const L1_DISTANCE = 1500000; // dystans do sondy DSCOVR w km
 
-        async function fetchNOAA(url) {
-            const r = await fetch(proxy + encodeURIComponent(url));
-            const j = await r.json();
-            return JSON.parse(j.contents);
+        // Funkcja tworząca wykresy
+        function initChart(id, color, fill = false) {
+            return new Chart(document.getElementById(id), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: color,
+                        backgroundColor: color + '15',
+                        fill: fill,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+                            ticks: { color: '#444', font: { size: 9 } }
+                        }
+                    }
+                }
+            });
         }
 
-        async function drawCharts() {
+        const charts = {
+            wind: initChart('windChart', '#ffcc00', true),
+            bz: initChart('bzChart', '#ff3366'),
+            dens: initChart('densChart', '#00ff88', true),
+            temp: initChart('tempChart', '#00f3ff')
+        };
+
+        async function updateDashboard() {
             try {
-                const [windData, kpData, magData, plasData] = await Promise.all([
-                    fetchNOAA("https://services.swpc.noaa.gov/products/summary/solar-wind-speed.json"),
-                    fetchNOAA("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json"),
-                    fetchNOAA("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json"),
-                    fetchNOAA("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json")
+                const [plasmaRes, magRes, kpRes] = await Promise.all([
+                    fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json")).then(r => r.json()),
+                    fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json")).then(r => r.json()),
+                    fetch(proxy + encodeURIComponent("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json")).then(r => r.json())
                 ]);
 
-                // Walidacja danych (branie ostatniego rzędu, który jest liczbą)
-                const getValidNum = (arr, index) => {
-                    for(let i = arr.length-1; i >= 0; i--) {
-                        let val = parseFloat(arr[i][index]);
-                        if(!isNaN(val)) return val;
-                    }
-                    return 0;
-                };
+                const plasma = JSON.parse(plasmaRes.contents);
+                const mag = JSON.parse(magRes.contents);
+                const kp = JSON.parse(kpRes.contents);
 
-                const windSpeed = Math.round(windData.wind_speed || 400);
-                const kpVal = getValidNum(kpData, 1);
-                const bzVal = getValidNum(magData, 3);
-                const tempK = getValidNum(plasData, 3);
-                const dens = getValidNum(plasData, 1);
+                // Wycinamy nagłówki i pobieramy dane
+                const labels = plasma.slice(1).map(d => d[0]);
+                
+                // 1. WIATR
+                const windValues = plasma.slice(1).map(d => parseFloat(d[2]));
+                charts.wind.data.labels = labels;
+                charts.wind.data.datasets[0].data = windValues;
+                charts.wind.update();
+                const curWind = windValues[windValues.length - 1];
+                document.getElementById('cur-wind').innerText = Math.round(curWind) + " km/s";
 
-                const tempC = Math.round(tempK - 273.15);
+                // 2. BZ
+                const bzValues = mag.slice(1).map(d => parseFloat(d[3]));
+                charts.bz.data.labels = labels;
+                charts.bz.data.datasets[0].data = bzValues;
+                charts.bz.update();
+                const curBz = bzValues[bzValues.length - 1];
+                document.getElementById('cur-bz').innerText = curBz.toFixed(2) + " nT";
 
-                // WYKRESY
-                const chartOptions = {
-                    minorTicks: 5,
-                    redFrom: 7, redTo: 9,
-                    yellowFrom: 4, yellowTo: 7,
-                    redColor: '#ff3366', yellowColor: '#ffcc00'
-                };
+                // 3. GĘSTOŚĆ
+                const densValues = plasma.slice(1).map(d => parseFloat(d[1]));
+                charts.dens.data.labels = labels;
+                charts.dens.data.datasets[0].data = densValues;
+                charts.dens.update();
+                document.getElementById('cur-dens').innerText = densValues[densValues.length - 1].toFixed(1) + " p/cm³";
 
-                // Kp
-                new google.visualization.Gauge(document.getElementById('kp_chart')).draw(
-                    google.visualization.arrayToDataTable([['Label', 'Value'], ['Kp', kpVal]]),
-                    { ...chartOptions, min: 0, max: 9 }
-                );
-                const kpDesc = document.getElementById('kp_desc');
-                kpDesc.innerText = kpVal >= 5 ? "BURZA MAGNETYCZNA!" : (kpVal >= 4 ? "NIEPOKÓJ" : "SPOKOJNIE");
-                kpDesc.style.color = kpVal >= 5 ? "#ff3366" : (kpVal >= 4 ? "#ffcc00" : "#00ff88");
+                // 4. TEMP (Celsjusz)
+                const tempValues = plasma.slice(1).map(d => Math.round(parseFloat(d[3]) - 273.15));
+                charts.temp.data.labels = labels;
+                charts.temp.data.datasets[0].data = tempValues;
+                charts.temp.update();
+                document.getElementById('cur-temp').innerText = tempValues[tempValues.length - 1].toLocaleString() + " °C";
 
-                // Wind
-                new google.visualization.Gauge(document.getElementById('wind_chart')).draw(
-                    google.visualization.arrayToDataTable([['Label', 'Value'], ['km/s', windSpeed]]),
-                    { min: 200, max: 1000, yellowFrom: 600, yellowTo: 800, redFrom: 800, redTo: 1000 }
-                );
+                // 5. INDEKS KP
+                const curKp = parseFloat(kp[kp.length - 1][1]);
+                const kpEl = document.getElementById('kp-val');
+                kpEl.innerText = curKp.toFixed(2);
+                const kpStat = document.getElementById('kp-status');
+                
+                if(curKp >= 5) { 
+                    kpEl.style.color = 'var(--neon-red)'; 
+                    kpStat.innerText = "SILNA BURZA"; kpStat.style.color = 'var(--neon-red)';
+                } else if(curKp >= 4) {
+                    kpEl.style.color = 'var(--neon-yellow)';
+                    kpStat.innerText = "NIEPOKÓJ"; kpStat.style.color = 'var(--neon-yellow)';
+                } else {
+                    kpEl.style.color = 'var(--neon-green)';
+                    kpStat.innerText = "SPOKOJNIE"; kpStat.style.color = 'var(--neon-green)';
+                }
 
-                // Bz
-                new google.visualization.Gauge(document.getElementById('bz_chart')).draw(
-                    google.visualization.arrayToDataTable([['Label', 'Value'], ['Bz', bzVal]]),
-                    { min: -20, max: 20, redFrom: -20, redTo: -5, yellowFrom: -5, yellowTo: 0 }
-                );
-                const bzDesc = document.getElementById('bz_desc');
-                bzDesc.innerText = bzVal < -5 ? "POŁUDNIOWE (ZORZA!)" : "PÓŁNOCNE (BRAK)";
-                bzDesc.style.color = bzVal < -5 ? "#00f3ff" : "#888";
+                // 6. OBLICZANIE ETA (Czas dotarcia)
+                if(curWind > 0) {
+                    const travelTimeSeconds = L1_DISTANCE / curWind;
+                    const travelTimeMinutes = Math.floor(travelTimeSeconds / 60);
+                    document.getElementById('eta-val').innerText = travelTimeMinutes + " min";
+                    document.getElementById('eta-desc').innerText = "DO DOTARCIA WIATRU (" + Math.round(curWind) + " km/s)";
+                    
+                    const etaVal = document.getElementById('eta-val');
+                    if(travelTimeMinutes < 35) etaVal.style.color = 'var(--neon-red)';
+                    else if(travelTimeMinutes < 50) etaVal.style.color = 'var(--neon-yellow)';
+                    else etaVal.style.color = 'var(--neon-green)';
+                }
 
-                // Tekst
-                document.getElementById('temp_c').innerText = tempC.toLocaleString() + " °C";
-                document.getElementById('dens_val').innerText = dens.toFixed(1);
-                document.getElementById('status').innerText = "SYNCHRONIZACJA OK: " + new Date().toLocaleTimeString();
+                document.getElementById('footer-status').innerText = "OSTATNIA AKTUALIZACJA: " + new Date().toLocaleTimeString();
 
             } catch (err) {
-                console.error(err);
-                document.getElementById('status').innerText = "PRÓBA ODŚWIEŻENIA POŁĄCZENIA...";
-                setTimeout(drawCharts, 10000);
+                console.error("Błąd połączenia:", err);
+                document.getElementById('footer-status').innerText = "BŁĄD POŁĄCZENIA. REKONSTRUKCJA SESJI...";
             }
         }
 
-        setInterval(drawCharts, 60000);
+        // Interwały
+        updateDashboard();
+        setInterval(updateDashboard, 60000); // Odświeżaj co minutę
+        
+        // Odświeżaj mapy co 5 minut
         setInterval(() => {
-            document.getElementById('aurora_img').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
+            document.getElementById('aurora-map').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
         }, 300000);
     </script>
 </body>
