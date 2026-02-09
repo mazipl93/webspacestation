@@ -33,6 +33,7 @@
             padding: 15px;
             text-align: center;
             backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
         .label { font-family: 'Rajdhani'; font-size: 0.75rem; text-transform: uppercase; color: #888; letter-spacing: 2px; }
@@ -62,10 +63,10 @@
         
         #update-status {
             text-align: center;
-            font-size: 0.7rem;
-            color: #555;
-            margin-top: 10px;
+            font-size: 0.8rem;
+            margin: 10px 0;
             font-family: monospace;
+            min-height: 1.2em;
         }
 
         @media (max-width: 800px) {
@@ -88,27 +89,23 @@
         <div class="stat-card">
             <div class="label">Indeks Kp</div>
             <div id="kp-val" class="value">--</div>
-            <div id="kp-txt" class="indicator">Inicjalizacja...</div>
+            <div id="kp-txt" class="indicator">CZEKAM...</div>
         </div>
-
         <div class="stat-card">
             <div class="label">Wiatr Słoneczny</div>
             <div id="wind-val" class="value">--</div>
             <span class="unit">km/s</span>
         </div>
-
         <div class="stat-card">
             <div class="label">Pole Mag. Bz</div>
             <div id="bz-val" class="value">--</div>
-            <div id="bz-txt" class="indicator">Kierunek</div>
+            <div id="bz-txt" class="indicator">KIERUNEK</div>
         </div>
-
         <div class="stat-card">
             <div class="label">Gęstość</div>
             <div id="dens-val" class="value">--</div>
             <span class="unit">p/cm³</span>
         </div>
-
         <div class="stat-card">
             <div class="label">Temperatura</div>
             <div id="temp-val" class="value">--</div>
@@ -116,15 +113,15 @@
         </div>
     </div>
 
-    <div id="update-status">Czekam na dane z NOAA...</div>
+    <div id="update-status">Inicjalizacja terminala...</div>
 
     <div class="visual-container">
         <div class="img-box">
-            <div class="label">Zasięg Zorzy (Północ)</div>
+            <div class="label">Prognoza Zorzy (Północ)</div>
             <img src="https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg" id="aurora-map">
         </div>
         <div class="img-box">
-            <div class="label">Aktywność Słoneczna (SDO/HMI & SOHO)</div>
+            <div class="label">Słońce: Plamy & Korona</div>
             <img src="https://sohowww.nascom.nasa.gov/data/realtime/hmi_mag/512/latest.jpg" style="margin-bottom:10px">
             <img src="https://sohowww.nascom.nasa.gov/data/realtime/c3/512/latest.jpg">
         </div>
@@ -132,73 +129,84 @@
 
     <script src="stars.js"></script>
     <script>
-        const proxy = "https://corsproxy.io/?";
+        // System rotacyjnych serwerów proxy
+        const proxyList = [
+            "https://api.allorigins.win/raw?url=",
+            "https://corsproxy.io/?",
+            "https://thingproxy.freeboard.io/fetch/"
+        ];
+
+        async function fetchWithRetry(targetUrl) {
+            for (let proxy of proxyList) {
+                try {
+                    const response = await fetch(proxy + encodeURIComponent(targetUrl));
+                    if (response.ok) return await response.json();
+                } catch (e) {
+                    console.warn(`Proxy ${proxy} zawiodło, próbuję następne...`);
+                }
+            }
+            throw new Error("Wszystkie metody połączenia zawiodły.");
+        }
 
         async function updateDashboard() {
             const statusEl = document.getElementById('update-status');
             
+            const urls = {
+                mag: "https://services.swpc.noaa.gov/products/solar-wind/mag-1-day.json",
+                plas: "https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json",
+                kp: "https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json"
+            };
+
             try {
-                // Adresy JSON z NOAA
-                const urlMag = "https://services.swpc.noaa.gov/products/solar-wind/mag-1-day.json";
-                const urlPlas = "https://services.swpc.noaa.gov/products/solar-wind/plasma-1-day.json";
-                const urlKp = "https://services.swpc.noaa.gov/products/noaa-estimated-planetary-k-index-1-minute.json";
-
-                // Pobieranie przez proxy
-                const fetchJSON = async (url) => {
-                    const response = await fetch(proxy + encodeURIComponent(url));
-                    if (!response.ok) throw new Error('Proxy error');
-                    return response.json();
-                };
-
                 const [mag, plas, kpData] = await Promise.all([
-                    fetchJSON(urlMag),
-                    fetchJSON(urlPlas),
-                    fetchJSON(urlKp)
+                    fetchWithRetry(urls.mag),
+                    fetchWithRetry(urls.plas),
+                    fetchWithRetry(urls.kp)
                 ]);
 
-                // Ostatnie rekordy
                 const lastMag = mag[mag.length - 1];
                 const lastPlas = plas[plas.length - 1];
                 const lastKp = kpData[kpData.length - 1];
 
-                // 1. KP INDEX
+                // KP INDEX
                 const kp = parseFloat(lastKp[1]);
                 document.getElementById('kp-val').innerText = kp.toFixed(1);
                 const kpTxt = document.getElementById('kp-txt');
-                kpTxt.innerText = kp >= 5 ? "BURZA GEOMAG." : (kp >= 4 ? "AKTYWNOŚĆ" : "CISZA");
+                kpTxt.innerText = kp >= 5 ? "BURZA GEOMAGNETYCZNA" : (kp >= 4 ? "PODWYŻSZONA AKTYWNOŚĆ" : "SPOKÓJ");
                 kpTxt.style.color = kp >= 5 ? "var(--neon-red)" : (kp >= 4 ? "#ffcc00" : "var(--neon-green)");
 
-                // 2. WIND SPEED (Indeks 2)
+                // WIND & DENSITY
                 document.getElementById('wind-val').innerText = Math.round(lastPlas[2]);
+                document.getElementById('dens-val').innerText = parseFloat(lastPlas[1]).toFixed(1);
 
-                // 3. BZ (Indeks 3)
+                // BZ FIELD
                 const bz = parseFloat(lastMag[3]);
                 const bzValEl = document.getElementById('bz-val');
                 bzValEl.innerText = bz.toFixed(1);
                 bzValEl.style.color = bz < -5 ? "var(--neon-red)" : "var(--neon-blue)";
-                document.getElementById('bz-txt').innerText = bz < -5 ? "POŁUDNIE (ZORZA)" : "PÓŁNOC";
+                document.getElementById('bz-txt').innerText = bz < -5 ? "POŁUDNIOWE (ZORZA)" : "PÓŁNOCNE";
 
-                // 4. DENSITY (Indeks 1)
-                document.getElementById('dens-val').innerText = parseFloat(lastPlas[1]).toFixed(1);
-
-                // 5. TEMP (Indeks 3)
+                // TEMP
                 document.getElementById('temp-val').innerText = parseInt(lastPlas[3]).toLocaleString();
 
-                statusEl.innerText = "Dane zaktualizowane: " + new Date().toLocaleTimeString();
+                statusEl.innerText = "POŁĄCZONO | OSTATNIA AKTUALIZACJA: " + new Date().toLocaleTimeString();
+                statusEl.style.color = "var(--neon-green)";
 
             } catch (err) {
-                console.error("Critical error:", err);
-                statusEl.innerText = "Błąd połączenia. Próba ponownego nawiązania...";
+                console.error(err);
+                statusEl.innerText = "BŁĄD POŁĄCZENIA | SERWERY NOAA NIEODPOWIADAJĄ";
+                statusEl.style.color = "var(--neon-red)";
             }
         }
 
-        // Odświeżaj mapę co 5 minut, dane co minutę
-        setInterval(() => {
-            document.getElementById('aurora-map').src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
-        }, 300000);
-
-        setInterval(updateDashboard, 60000);
+        // Interwały
         updateDashboard();
+        setInterval(updateDashboard, 60000);
+
+        setInterval(() => {
+            const map = document.getElementById('aurora-map');
+            if(map) map.src = "https://services.swpc.noaa.gov/images/aurora-forecast-northern-hemisphere.jpg?t=" + Date.now();
+        }, 300000);
     </script>
 </body>
 </html>
