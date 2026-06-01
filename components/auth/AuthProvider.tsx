@@ -10,51 +10,25 @@ import {
 } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { toSessionUser, type SessionUser } from "@/lib/auth/session-user";
 
-export interface SessionUser {
-  email: string;
-  name: string;
-  /** Optional profile picture URL from user_metadata.avatar_url. */
-  avatarUrl?: string;
-}
+export type { SessionUser };
 
 interface AuthContextValue {
   user: SessionUser | null;
   /** True only during the (rare) window before the first auth check resolves. */
   loading: boolean;
   signOut: () => Promise<void>;
-}
-
-// Maps a raw Supabase user into the trimmed shape the UI needs. Name falls back
-// to user_metadata.name → email local-part → a generic label.
-export function toSessionUser(
-  raw:
-    | { email?: string; user_metadata?: Record<string, unknown> }
-    | null
-    | undefined
-): SessionUser | null {
-  if (!raw) return null;
-  const email = raw.email ?? "";
-  const metaName =
-    typeof raw.user_metadata?.name === "string"
-      ? (raw.user_metadata.name as string)
-      : "";
-  const name = metaName || (email ? email.split("@")[0] : "Użytkownik");
-  const avatarUrl =
-    typeof raw.user_metadata?.avatar_url === "string"
-      ? (raw.user_metadata.avatar_url as string)
-      : undefined;
-  return { email, name, avatarUrl };
+  /** Reload user from Supabase (e.g. after avatar upload). */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
  * Single source of truth for public auth state. Seeded with the server-resolved
- * user (`initialUser`) so the first client paint already matches the session —
- * no logged-out → logged-in flicker on refresh/navigation. A single
- * onAuthStateChange subscription keeps every consumer in sync instantly, and
- * the whole thing degrades to signed-out when Supabase isn't configured.
+ * user (`initialUser`) so the first client paint already matches the session.
+ * Uses auth.getUser() (not session cookie alone) so user_metadata.avatar_url stays current.
  */
 export function AuthProvider({
   initialUser,
@@ -64,11 +38,10 @@ export function AuthProvider({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<SessionUser | null>(initialUser);
-  // Server already resolved the session, so we're not in a loading state.
   const [loading, setLoading] = useState(false);
   const clientRef = useRef<SupabaseClient | null>(null);
+  const syncUserRef = useRef<(() => Promise<void>) | null>(null);
 
-  // Keep client state in sync after router.refresh() (e.g. avatar upload on /profil).
   useEffect(() => {
     setUser(initialUser);
   }, [initialUser]);
@@ -90,11 +63,22 @@ export function AuthProvider({
       return;
     }
 
+    async function syncUser() {
+      if (!supabase) return;
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (active) setUser(toSessionUser(authUser));
+    }
+    syncUserRef.current = syncUser;
+
+    void syncUser();
+
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async () => {
       if (!active) return;
-      setUser(toSessionUser(session?.user));
+      await syncUser();
       setLoading(false);
     });
 
@@ -102,6 +86,10 @@ export function AuthProvider({
       active = false;
       subscription.unsubscribe();
     };
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    await syncUserRef.current?.();
   }, []);
 
   const signOut = useCallback(async () => {
@@ -114,7 +102,7 @@ export function AuthProvider({
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -127,3 +115,6 @@ export function useAuth(): AuthContextValue {
   }
   return ctx;
 }
+
+// Re-export for existing imports
+export { toSessionUser } from "@/lib/auth/session-user";

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/cn";
 
@@ -26,6 +27,13 @@ export default function Avatar({
 }: Props) {
   const radius = squared ? "rounded-2xl" : "rounded-full";
   const fontSize = Math.max(11, Math.round(size * 0.42));
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [src]);
+
+  const showImage = !!src && !imgFailed;
 
   return (
     <span
@@ -42,7 +50,7 @@ export default function Avatar({
         background: "linear-gradient(135deg, #2f6dff 0%, #1a4fd0 100%)",
       }}
     >
-      {src ? (
+      {showImage ? (
         <Image
           src={src}
           alt=""
@@ -50,6 +58,7 @@ export default function Avatar({
           sizes={`${size}px`}
           className="object-cover"
           unoptimized
+          onError={() => setImgFailed(true)}
         />
       ) : (
         initial(name)

@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { AuthProvider, type SessionUser } from "@/components/auth/AuthProvider";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { toSessionUser } from "@/lib/auth/session-user";
 import { getCurrentUser } from "@/lib/auth/session";
 import "./globals.css";
 
@@ -54,19 +55,10 @@ export const viewport: Viewport = {
 
 // Resolve the signed-in user on the server so the first paint already reflects
 // the session. Degrades to null when Supabase isn't configured.
-async function getInitialUser(): Promise<SessionUser | null> {
+async function getInitialUser() {
   try {
     const u = await getCurrentUser();
-    if (!u) return null;
-    const email = u.email ?? "";
-    const metaName =
-      typeof u.user_metadata?.name === "string" ? u.user_metadata.name : "";
-    const name = metaName || (email ? email.split("@")[0] : "Użytkownik");
-    const avatarUrl =
-      typeof u.user_metadata?.avatar_url === "string"
-        ? u.user_metadata.avatar_url
-        : undefined;
-    return { email, name, avatarUrl };
+    return toSessionUser(u);
   } catch {
     return null;
   }

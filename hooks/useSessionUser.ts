@@ -1,6 +1,7 @@
 "use client";
 
-import { useAuth, type SessionUser } from "@/components/auth/AuthProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
+import type { SessionUser } from "@/lib/auth/session-user";
 
 export type { SessionUser };
 

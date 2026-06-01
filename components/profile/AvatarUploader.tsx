@@ -27,7 +27,7 @@ function resolveMime(file: File, ext: string): string | null {
 }
 
 export default function AvatarUploader() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -93,7 +93,7 @@ export default function AvatarUploader() {
         data: { publicUrl },
       } = supabase.storage.from(BUCKET).getPublicUrl(path);
 
-      const { data: updated, error: updateError } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         data: { avatar_url: publicUrl },
       });
       if (updateError) {
@@ -101,10 +101,8 @@ export default function AvatarUploader() {
         return;
       }
 
-      // USER_UPDATED may lag; refresh server layout + rely on AuthProvider initialUser sync.
-      if (updated.user) {
-        await supabase.auth.refreshSession();
-      }
+      await supabase.auth.refreshSession();
+      await refreshUser();
       router.refresh();
     } catch {
       setError("Wystąpił błąd podczas przesyłania.");
