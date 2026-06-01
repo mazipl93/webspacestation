@@ -1,0 +1,382 @@
+@import "tailwindcss";
+
+/* ════════════════════════════════════════════════════════════════════════
+   WEB SPACE STATION — Design System
+   A premium editorial dashboard system (Apple News / Bloomberg inspired)
+   ════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Surfaces (layered elevation) ───────────────────────────────────── */
+  --color-space-bg:        #050709;   /* page base                       */
+  --color-space-surface:   #0a0d14;   /* recessed wells                   */
+  --color-space-card:      #0c1018;   /* base card                        */
+  --color-space-elevated:  #11151f;   /* raised card / nested             */
+  --color-space-border:    #191e2b;   /* legacy solid border (rarely used)*/
+  --color-space-muted:     #232a3a;
+
+  /* ── Accents ─────────────────────────────────────────────────────────── */
+  --color-accent-blue:       #2f6dff;
+  --color-accent-blue-hover: #4480ff;
+  --color-accent-cyan:       #38bdf8;
+  --color-accent-live:       #ff453a;   /* iOS-style red                  */
+  --color-accent-amber:      #ffb830;
+
+  /* ── Text scale ──────────────────────────────────────────────────────── */
+  --color-text-primary:    #f5f7fb;
+  --color-text-secondary:  #a3afc7;
+  --color-text-tertiary:   #6b7892;
+  --color-text-muted:      #4a5670;
+
+  /* ── Hairlines & glass (alpha-based, the premium look) ───────────────── */
+  --hairline:        rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.11);
+  --hairline-faint:  rgba(255, 255, 255, 0.045);
+  --glass-fill:      rgba(255, 255, 255, 0.022);
+  --glass-fill-hover:rgba(255, 255, 255, 0.045);
+
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  --font-sans: var(--font-geist-sans), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* Fluid type scale (8pt-aligned, editorial) */
+  --text-overline:  0.6875rem;  /* 11 — uppercase labels                 */
+  --text-caption:   0.75rem;    /* 12                                     */
+  --text-meta:      0.8125rem;  /* 13                                     */
+  --text-body:      0.9375rem;  /* 15                                     */
+  --text-title-sm:  1.0625rem;  /* 17                                     */
+  --text-title:     1.375rem;   /* 22                                     */
+  --text-headline:  1.75rem;    /* 28                                     */
+
+  /* ── Layout ──────────────────────────────────────────────────────────── */
+  --spacing-container: 1240px;
+
+  /* ── Radius scale ────────────────────────────────────────────────────── */
+  --radius-badge: 0.375rem;
+  --radius-card:  0.875rem;   /* 14px — softer, more premium             */
+  --radius-lg:    1.125rem;   /* 18px                                     */
+
+  /* ── Motion ──────────────────────────────────────────────────────────── */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   BASE
+   ════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-space-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    font-synthesis: none;
+    min-height: 100dvh;
+    line-height: 1.55;
+    letter-spacing: -0.011em;   /* tighten body slightly, Apple-like      */
+  }
+
+  /* Headings inherit tighter optical tracking */
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  /* Tabular numerals everywhere numbers matter */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-space-muted);
+    border-radius: 4px;
+    border: 2px solid var(--color-space-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+  ::selection {
+    background-color: rgba(47, 109, 255, 0.32);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   COMPONENT UTILITIES
+   ════════════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* ── Layout container with responsive gutters ──────────────────────── */
+  .container-site {
+    width: 100%;
+    max-width: var(--spacing-container);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container-site { padding-inline: 2rem; }
+  }
+  @media (min-width: 1280px) {
+    .container-site { padding-inline: 2.5rem; }
+  }
+
+  /* ── Premium card surface ───────────────────────────────────────────────
+     Layered: subtle top-lit gradient + hairline border + inset highlight
+     + soft ambient shadow. This is the core of the premium feel.        */
+  .card-surface {
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0) 38%),
+      var(--color-space-card);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.045),
+      0 1px 2px 0 rgba(0, 0, 0, 0.4),
+      0 12px 32px -16px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Nested / recessed well inside a card */
+  .well {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--hairline-faint);
+    border-radius: 0.75rem;
+  }
+
+  /* Interactive surface (hover lift) */
+  .surface-interactive {
+    transition:
+      border-color 0.4s var(--ease-out-soft),
+      background-color 0.4s var(--ease-out-soft),
+      box-shadow 0.4s var(--ease-out-soft),
+      transform 0.4s var(--ease-out-soft);
+  }
+  .surface-interactive:hover {
+    border-color: var(--hairline-strong);
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+      0 1px 2px 0 rgba(0, 0, 0, 0.4),
+      0 20px 44px -18px rgba(0, 0, 0, 0.8);
+  }
+
+  /* ── Typographic helpers ────────────────────────────────────────────── */
+  .overline {
+    font-size: var(--text-overline);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .text-gradient {
+    background: linear-gradient(180deg, #ffffff 0%, #c3cee4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Hairline borders (alpha) ───────────────────────────────────────── */
+  .border-hairline        { border-color: var(--hairline); }
+  .border-hairline-strong { border-color: var(--hairline-strong); }
+  .border-hairline-faint  { border-color: var(--hairline-faint); }
+
+  /* ── Glass fills used across buttons/chips ──────────────────────────── */
+  .bg-glass        { background-color: var(--glass-fill); }
+  .hover\:bg-glass-hover:hover { background-color: var(--glass-fill-hover); }
+
+  /* ── Live status dot ────────────────────────────────────────────────── */
+  .live-dot {
+    position: relative;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-accent-live);
+    border-radius: 50%;
+  }
+  .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background-color: var(--color-accent-live);
+    opacity: 0.4;
+    animation: ping-live 1.8s var(--ease-out-soft) infinite;
+  }
+
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
+
+/* ── Legacy white-alpha shorthands (kept so existing markup renders) ──── */
+.bg-white\/4  { background-color: rgba(255,255,255,0.04); }
+.bg-white\/5  { background-color: rgba(255,255,255,0.05); }
+.bg-white\/6  { background-color: rgba(255,255,255,0.06); }
+.bg-white\/8  { background-color: rgba(255,255,255,0.08); }
+.bg-white\/10 { background-color: rgba(255,255,255,0.10); }
+.bg-white\/12 { background-color: rgba(255,255,255,0.12); }
+.border-white\/10 { border-color: rgba(255,255,255,0.10); }
+.border-white\/12 { border-color: rgba(255,255,255,0.12); }
+.border-white\/20 { border-color: rgba(255,255,255,0.20); }
+.hover\:bg-white\/5:hover  { background-color: rgba(255,255,255,0.05); }
+.hover\:bg-white\/8:hover  { background-color: rgba(255,255,255,0.08); }
+.hover\:bg-white\/10:hover { background-color: rgba(255,255,255,0.10); }
+.hover\:border-white\/20:hover { border-color: rgba(255,255,255,0.20); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ════════════════════════════════════════════════════════════════════════ */
+
+@keyframes ping-live {
+  0%        { transform: scale(1);   opacity: 0.5; }
+  70%, 100% { transform: scale(2.4); opacity: 0;   }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--star-o, 0.5); }
+  50%      { opacity: calc(var(--star-o, 0.5) * 0.35); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   INTERACTION LAYER — perceived "live product" feel
+   (no layout / token / type changes — only motion & affordance)
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Pressable affordance + relative context for in-card light ──────────── */
+.surface-interactive {
+  position: relative;
+}
+.surface-interactive:hover {
+  /* brighter top edge on hover = directional light from above */
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.09),
+    0 1px 2px 0 rgba(0, 0, 0, 0.4),
+    0 22px 48px -18px rgba(0, 0, 0, 0.85);
+}
+.surface-interactive:active {
+  transform: translateY(-1px) scale(0.992);
+  transition-duration: 0.11s;
+}
+
+/* ── Directional light sweep across imagery on hover ────────────────────── */
+.img-sheen {
+  position: relative;
+}
+.img-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 64%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--ease-out-soft);
+}
+.group:hover .img-sheen::after {
+  transform: translateX(120%);
+}
+
+/* ── Live context micro-elements ───────────────────────────────────────── */
+/* Gentle breathing (NOT blinking) for "updated / live" cues */
+.live-breathe {
+  animation: live-breathe 3.6s ease-in-out infinite;
+}
+@keyframes live-breathe {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* Minimal premium breaking-news glow pulse */
+.breaking-pulse {
+  animation: breaking-pulse 2.6s var(--ease-out-soft) infinite;
+}
+@keyframes breaking-pulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 69, 58, 0); }
+  50%      { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 16px 1px rgba(255, 69, 58, 0.5); }
+}
+
+/* ── Hero depth animation (extremely subtle, continuous) ────────────────── */
+.hero-drift {
+  animation: hero-drift 42s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes hero-drift {
+  from { transform: scale(1.06) translate3d(0, 0, 0); }
+  to   { transform: scale(1.12) translate3d(-1.6%, -1.1%, 0); }
+}
+.hero-glow-drift {
+  animation: hero-glow-drift 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes hero-glow-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(2.2%, 1.6%, 0); }
+}
+
+/* ── Scroll-driven flow (progressive enhancement only) ──────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Lower sections ease in as they enter → continuous reading flow */
+    .reveal {
+      animation: reveal-fade linear both;
+      animation-timeline: view();
+      animation-range: entry 2% cover 16%;
+    }
+    /* Hero defocuses as it leaves → fades naturally into the feed */
+    .hero-fade {
+      animation: hero-defocus linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+@keyframes reveal-fade {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-defocus {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-26px); }
+}
+
+/* ── Respect reduced-motion across the whole interaction layer ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-drift,
+  .hero-glow-drift,
+  .live-breathe,
+  .breaking-pulse,
+  .live-dot::after {
+    animation: none !important;
+  }
+  .img-sheen::after {
+    transition: none !important;
+  }
+}

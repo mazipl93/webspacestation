@@ -1,0 +1,96 @@
+// Web Space Station (WSS) — CMS database schema
+// Backend foundation only. No frontend coupling.
+// Docs: docs/WSS_CHECKPOINT_PHASE_2.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EDITOR
+  AUTHOR
+}
+
+enum ArticleStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+// ─── Models ────────────────────────────────────────────────────────────────--
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(AUTHOR)
+  name         String
+  createdAt    DateTime  @default(now())
+
+  articles     Article[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  colorTheme  String?
+  orderIndex  Int       @default(0)
+
+  articles    Article[]
+
+  @@index([orderIndex])
+  @@map("categories")
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  subtitle    String?
+  excerpt     String?
+  content     String?       @db.Text
+  coverImage  String?
+  status      ArticleStatus @default(DRAFT)
+  featured    Boolean       @default(false)
+  readingTime Int?
+
+  categoryId  String
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  publishedAt DateTime?
+
+  @@index([status])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([featured])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String
+  type      String
+  createdAt DateTime @default(now())
+
+  @@map("media")
+}
