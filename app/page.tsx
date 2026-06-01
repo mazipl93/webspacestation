@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: "Web Space Station – Aktualności kosmiczne",
 };
 
-// Home pulls the lead stories from the DB — refresh at most once per minute.
-export const revalidate = 60;
+// DB-backed — render on demand so Vercel build never needs DATABASE_URL.
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (

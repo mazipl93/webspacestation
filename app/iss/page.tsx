@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     "Aktualności z Międzynarodowej Stacji Kosmicznej — spacery kosmiczne, ekspedycje, eksperymenty naukowe i rotacje załogi.",
 };
 
-// DB-backed feed — refresh at most once per minute (ISR).
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default function IssPage() {
   return (

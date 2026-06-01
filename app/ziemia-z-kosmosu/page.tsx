@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     "Zdjęcia i obserwacje Ziemi z orbity — zmiany klimatu, zorze polarne, burze geomagnetyczne i nocne światła kontynentów.",
 };
 
-// DB-backed feed — refresh at most once per minute (ISR).
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default function ZiemiaZKosmosPage() {
   return (

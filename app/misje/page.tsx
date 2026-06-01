@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     "Artykuły o misjach kosmicznych — eksploracja planet, loty załogowe, starty rakiet i programy kosmiczne NASA, SpaceX i ESA.",
 };
 
-// DB-backed feed — refresh at most once per minute (ISR).
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default function MisjePage() {
   return (

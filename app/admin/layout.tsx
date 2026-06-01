@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Prisma auth lookup — runtime only (Vercel build has no DB).
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {

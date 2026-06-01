@@ -8,7 +8,6 @@ import type { NewsArticle } from "@/types";
 import {
   getArticleBySlug,
   getRelatedArticles,
-  getAllSlugs,
 } from "@/lib/articles";
 import { getCurrentUser } from "@/lib/auth/user";
 import { canEditArticle } from "@/lib/auth/permissions";
@@ -17,9 +16,8 @@ import Footer from "@/components/layout/Footer";
 import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 
-// Public reads are DB-backed now, so admin edits should surface quickly.
-// ISR: regenerate at most once per minute instead of freezing at build time.
-export const revalidate = 60;
+// DB-backed — on-demand render (avoids Prisma during `next build` on Vercel).
+export const dynamic = "force-dynamic";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,18 +65,6 @@ function fadeIn(delay = 0, duration = 0.75): CSSProperties {
   return {
     animation: `reveal-fade ${duration}s cubic-bezier(0.22,1,0.36,1) ${delay}s both`,
   };
-}
-
-// ─── Static generation ───────────────────────────────────────────────────────
-
-export async function generateStaticParams() {
-  try {
-    const slugs = await getAllSlugs();
-    return slugs.map((slug) => ({ slug }));
-  } catch {
-    // DB unreachable at build — fall back to fully on-demand generation.
-    return [];
-  }
 }
 
 // ─── Per-article SEO ─────────────────────────────────────────────────────────

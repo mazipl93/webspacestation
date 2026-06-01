@@ -9,8 +9,7 @@ export const metadata: Metadata = {
     "Odkrycia astronomiczne, teleskopy kosmiczne, egzoplanety, czarne dziury i tajemnice wszechświata.",
 };
 
-// DB-backed feed — refresh at most once per minute (ISR).
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default function AstronomiaPage() {
   return (
