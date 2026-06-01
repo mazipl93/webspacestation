@@ -13,11 +13,13 @@ import {
   X,
 } from "lucide-react";
 import { useSessionUser } from "@/hooks/useSessionUser";
+import Avatar from "@/components/profile/Avatar";
 
 type StoredComment = {
   id: string;
   author: string;
   authorEmail?: string; // owner identity — enables edit/delete by author
+  authorAvatarUrl?: string; // profile picture at post time (from user_metadata)
   body: string;
   createdAt: string; // ISO
   editedAt?: string; // ISO, set when the author edits
@@ -59,8 +61,19 @@ function formatWhen(iso: string): string {
   });
 }
 
-function initials(name: string): string {
-  return name.trim().charAt(0).toUpperCase() || "?";
+function commentAvatarSrc(
+  comment: StoredComment,
+  currentUser: { email: string; avatarUrl?: string } | null
+): string | undefined {
+  if (comment.authorAvatarUrl) return comment.authorAvatarUrl;
+  if (
+    currentUser?.avatarUrl &&
+    comment.authorEmail &&
+    comment.authorEmail === currentUser.email
+  ) {
+    return currentUser.avatarUrl;
+  }
+  return undefined;
 }
 
 export default function Comments({ slug }: { slug: string }) {
@@ -100,6 +113,7 @@ export default function Comments({ slug }: { slug: string }) {
             : String(Date.now()),
         author: user.name,
         authorEmail: user.email,
+        authorAvatarUrl: user.avatarUrl,
         body,
         createdAt: new Date().toISOString(),
       },
@@ -234,13 +248,11 @@ export default function Comments({ slug }: { slug: string }) {
                   animation: "reveal-fade 0.4s cubic-bezier(0.22,1,0.36,1) both"
                 } : undefined}
               >
-                <span
-                  aria-hidden="true"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #2f6dff 0%, #1a4fd0 100%)" }}
-                >
-                  {initials(c.author)}
-                </span>
+                <Avatar
+                  name={c.author}
+                  src={commentAvatarSrc(c, user)}
+                  size={36}
+                />
                 <div className="min-w-0 flex-1 rounded-xl border border-hairline bg-space-card px-4 py-3">
                   <div className="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                     <span className="text-[13px] font-semibold text-text-primary">{c.author}</span>
