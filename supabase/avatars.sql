@@ -9,10 +9,11 @@
 -- URL in user_metadata.avatar_url.
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- 1. Public bucket (idempotent).
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
-on conflict (id) do update set public = true;
+-- 1. Public bucket (idempotent), 3 MB limit per file.
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('avatars', 'avatars', true, 3145728)
+on conflict (id) do update
+set public = true, file_size_limit = 3145728;
 
 -- 2. Policies on storage.objects scoped to this bucket.
 
@@ -32,7 +33,7 @@ create policy "avatars_owner_insert"
   to authenticated
   with check (
     bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (storage.foldername(name))[1] = (select auth.uid()::text)
   );
 
 -- Owner can overwrite their own files (upsert).
@@ -43,11 +44,11 @@ create policy "avatars_owner_update"
   to authenticated
   using (
     bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (storage.foldername(name))[1] = (select auth.uid()::text)
   )
   with check (
     bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (storage.foldername(name))[1] = (select auth.uid()::text)
   );
 
 -- Owner can delete their own files.
@@ -58,5 +59,5 @@ create policy "avatars_owner_delete"
   to authenticated
   using (
     bucket_id = 'avatars'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (storage.foldername(name))[1] = (select auth.uid()::text)
   );

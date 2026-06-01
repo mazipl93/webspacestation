@@ -68,6 +68,11 @@ export function AuthProvider({
   const [loading, setLoading] = useState(false);
   const clientRef = useRef<SupabaseClient | null>(null);
 
+  // Keep client state in sync after router.refresh() (e.g. avatar upload on /profil).
+  useEffect(() => {
+    setUser(initialUser);
+  }, [initialUser]);
+
   useEffect(() => {
     let active = true;
 

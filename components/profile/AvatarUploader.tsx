@@ -7,10 +7,24 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "@/components/profile/Avatar";
+import { avatarUploadErrorMessage } from "@/lib/supabase/storage-errors";
 
 const MAX_BYTES = 3 * 1024 * 1024; // 3 MB
 const ACCEPTED = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+const ACCEPTED_EXT = ["png", "jpg", "jpeg", "webp", "gif"];
 const BUCKET = "avatars";
+
+function resolveMime(file: File, ext: string): string | null {
+  if (file.type && ACCEPTED.includes(file.type)) return file.type;
+  const map: Record<string, string> = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    webp: "image/webp",
+    gif: "image/gif",
+  };
+  return map[ext] ?? null;
+}
 
 export default function AvatarUploader() {
   const { user } = useAuth();
@@ -34,7 +48,9 @@ export default function AvatarUploader() {
   async function handleFile(file: File) {
     setError(null);
 
-    if (!ACCEPTED.includes(file.type)) {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    const mime = resolveMime(file, ext);
+    if (!mime || !ACCEPTED_EXT.includes(ext)) {
       setError("Dozwolone formaty: PNG, JPG, WEBP, GIF.");
       return;
     }
@@ -59,14 +75,17 @@ export default function AvatarUploader() {
         return;
       }
 
-      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-      const path = `${authUser.id}/avatar-${Date.now()}.${ext}`;
+      const path = `${authUser.id}/avatar-${Date.now()}.${ext || "png"}`;
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
-        .upload(path, file, { upsert: true, cacheControl: "3600" });
+        .upload(path, file, {
+          upsert: true,
+          cacheControl: "3600",
+          contentType: mime,
+        });
       if (uploadError) {
-        setError("Nie udało się przesłać zdjęcia. Spróbuj ponownie.");
+        setError(avatarUploadErrorMessage(uploadError));
         return;
       }
 
@@ -74,14 +93,18 @@ export default function AvatarUploader() {
         data: { publicUrl },
       } = supabase.storage.from(BUCKET).getPublicUrl(path);
 
-      const { error: updateError } = await supabase.auth.updateUser({
+      const { data: updated, error: updateError } = await supabase.auth.updateUser({
         data: { avatar_url: publicUrl },
       });
       if (updateError) {
-        setError("Nie udało się zapisać zdjęcia profilowego.");
+        setError(avatarUploadErrorMessage(updateError));
         return;
       }
 
+      // USER_UPDATED may lag; refresh server layout + rely on AuthProvider initialUser sync.
+      if (updated.user) {
+        await supabase.auth.refreshSession();
+      }
       router.refresh();
     } catch {
       setError("Wystąpił błąd podczas przesyłania.");
