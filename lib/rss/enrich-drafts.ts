@@ -198,3 +198,81 @@ export async function enrichRssDrafts(
 
   return output;
 }
+
+export type RssRevisionInput = {
+  title_pl: string;
+  summary_pl: string;
+  source?: string | null;
+};
+
+/**
+ * Re-run AI when original EN RSS snippet is unavailable (article already in REVIEW/PUBLISHED).
+ * Rewrites Polish title + summary instead of re-translating the same PL text.
+ */
+export async function reviseRssArticlePolish(
+  input: RssRevisionInput
+): Promise<RssDraftEnrichment> {
+  const key = requireOpenAIKey();
+  const model = getOpenAIEnrichmentModel();
+
+  const res = await fetch(OPENAI_API, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.35,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You edit Polish metadata for a science/tech news portal (RSS aggregator). " +
+            "Improve title_pl and summary_pl: clearer natural Polish, fix awkward phrasing, " +
+            "keep all facts — do not invent details. summary_pl must add context beyond title_pl " +
+            "(1–2 factual sentences). Optionally adjust category, 3–5 tags, reading_time_min (1–5). " +
+            "Use commas not em dashes. Keep proper names and numbers. " +
+            'Return JSON only: {"title_pl":"...","summary_pl":"...","category":"...","tags":["..."],"reading_time_min":1}',
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            title_pl: input.title_pl,
+            summary_pl: input.summary_pl,
+            source: input.source ?? undefined,
+          }),
+        },
+      ],
+    }),
+  });
+
+  const raw = await res.text();
+  if (!res.ok) {
+    throw new Error(`OpenAI HTTP ${res.status}: ${raw.slice(0, 400)}`);
+  }
+
+  let parsed: { choices?: { message?: { content?: string } }[] };
+  try {
+    parsed = JSON.parse(raw) as typeof parsed;
+  } catch {
+    throw new Error("OpenAI: invalid JSON envelope");
+  }
+
+  const content = parsed.choices?.[0]?.message?.content?.trim();
+  if (!content) throw new Error("OpenAI: empty response");
+
+  let item: RssDraftEnrichment;
+  try {
+    item = JSON.parse(content) as RssDraftEnrichment;
+  } catch {
+    throw new Error("OpenAI: invalid revision JSON");
+  }
+
+  return normalizeEnrichment(item, {
+    title: input.title_pl,
+    excerpt: input.summary_pl,
+    source: input.source,
+  });
+}

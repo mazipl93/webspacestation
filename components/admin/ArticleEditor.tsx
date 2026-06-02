@@ -94,6 +94,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const [savingLabel, setSavingLabel] = useState<string>("");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aiSuccess, setAiSuccess] = useState<string | null>(null);
   const [reprocessing, setReprocessing] = useState(false);
 
   const slugTouched = useRef(Boolean(articleId));
@@ -203,13 +204,22 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     ) {
       return;
     }
+    if (autosaveTimer.current) {
+      clearTimeout(autosaveTimer.current);
+      autosaveTimer.current = null;
+    }
     setReprocessing(true);
     setError(null);
+    setAiSuccess(null);
     try {
       const saved = await adminApi.reprocessRssArticle(currentId);
+      dirty.current = false;
       setLoadedArticle(saved);
       setForm(toForm(saved));
       setStatus(saved.status);
+      setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
+      setLastSavedAt(new Date());
+      setAiSuccess("AI zaktualizowało tytuł, streszczenie i tagi.");
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -311,6 +321,11 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           <Banner tone="error">{error}</Banner>
         </div>
       ) : null}
+      {aiSuccess ? (
+        <div className="mb-5">
+          <Banner tone="success">{aiSuccess}</Banner>
+        </div>
+      ) : null}
 
       {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
         <Card className="mb-5 border-accent-cyan/20 bg-accent-cyan/[0.04]">
@@ -323,17 +338,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               })()}
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              {currentId && status !== "PUBLISHED" ? (
-                <Link
-                  href={`/admin/articles/${currentId}/preview`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-badge border border-accent-cyan/40 bg-accent-cyan/15 px-3.5 py-2 text-meta font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/25"
-                >
-                  <ExternalLink className="h-4 w-4 shrink-0" />
-                  Zobacz przed publikacją
-                </Link>
-              ) : null}
               <Button
                 type="button"
                 disabled={reprocessing || saving}

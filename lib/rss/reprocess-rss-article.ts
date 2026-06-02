@@ -1,7 +1,11 @@
 import { ArticleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
-import { enrichRssDrafts, mapAiCategoryToSlug } from "@/lib/rss/enrich-drafts";
+import {
+  enrichRssDrafts,
+  mapAiCategoryToSlug,
+  reviseRssArticlePolish,
+} from "@/lib/rss/enrich-drafts";
 import { buildAggregatorSubtitle, buildUniqueSlug } from "@/lib/rss/normalize";
 import { fetchRssItemByUrl } from "@/lib/rss/refetch-rss-item";
 import { isSummaryDuplicateOfTitle } from "@/lib/rss/summary-quality";
@@ -38,21 +42,24 @@ export async function reprocessRssArticle(
   }
 
   const fresh = await fetchRssItemByUrl(row.originalUrl);
-  const input = fresh
-    ? {
-        title: fresh.title,
-        excerpt: fresh.excerpt,
-        source: row.source,
-      }
-    : {
-        title: row.title,
-        excerpt: row.excerpt ?? row.title.slice(0, 300),
-        source: row.source,
-      };
 
   let enriched;
   try {
-    [enriched] = await enrichRssDrafts([input]);
+    if (fresh) {
+      [enriched] = await enrichRssDrafts([
+        {
+          title: fresh.title,
+          excerpt: fresh.excerpt,
+          source: row.source,
+        },
+      ]);
+    } else {
+      enriched = await reviseRssArticlePolish({
+        title_pl: row.title,
+        summary_pl: row.excerpt ?? row.title.slice(0, 300),
+        source: row.source,
+      });
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { ok: false, error: `OpenAI: ${message}` };
