@@ -1,7 +1,19 @@
 // Client-facing shapes mirroring the JSON returned by the API layer.
 // Dates are serialized as ISO strings over HTTP.
 
+import type { UserRole } from "@/lib/auth/permissions";
+
+export type { UserRole };
+
 export type ArticleStatus = "DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED";
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  createdAt: string;
+}
 
 export interface AdminCategory {
   id: string;

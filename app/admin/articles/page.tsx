@@ -22,7 +22,7 @@ type FilterId = (typeof FILTERS)[number]["id"];
 
 export default function ArticlesListPage() {
   const { role } = useAdminAuth();
-  const mayDelete = canDeleteArticle(role ? { role } : null);
+  const mayDelete = canDeleteArticle(role);
 
   const [filter, setFilter] = useState<FilterId>("all");
   const [articles, setArticles] = useState<AdminArticle[]>([]);

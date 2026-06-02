@@ -93,7 +93,6 @@ export default function AccountMenu() {
               next="/"
               formClassName="w-full"
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] text-text-secondary transition-colors duration-200 hover:bg-accent-live/10 hover:text-accent-live"
-              onClick={() => setOpen(false)}
             >
               <LogOut size={15} />
               Wyloguj się

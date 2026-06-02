@@ -510,7 +510,6 @@ export default function Navbar() {
                   next="/"
                   formClassName="w-full"
                   className="flex w-full items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-accent-live/60 hover:text-accent-live"
-                  onClick={() => setMobileOpen(false)}
                 >
                   <LogOut size={16} />
                   Wyloguj się

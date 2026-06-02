@@ -1,7 +1,9 @@
 import type {
   AdminArticle,
   AdminCategory,
+  AdminUser,
   ArticleStatus,
+  UserRole,
 } from "@/lib/admin/types";
 
 export class ApiError extends Error {
@@ -122,6 +124,17 @@ export const adminApi = {
     return request<AdminCategory>(`/api/categories/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
+    });
+  },
+
+  listUsers() {
+    return request<AdminUser[]>(`/api/users`);
+  },
+
+  updateUserRole(id: string, role: UserRole) {
+    return request<AdminUser>(`/api/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
     });
   },
 };

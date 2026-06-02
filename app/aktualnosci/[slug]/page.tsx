@@ -608,7 +608,7 @@ export default async function ArticlePage({ params }: Props) {
 
   // Inline edit affordance for editors/admins only (RBAC via Prisma role).
   const appUser = await getCurrentUser().catch(() => null);
-  const canEdit = canEditArticle(appUser);
+  const canEdit = canEditArticle(appUser?.role);
 
   return (
     <>
