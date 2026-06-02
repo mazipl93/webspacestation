@@ -182,7 +182,7 @@ function ArticleHero({ article }: { article: NewsArticle }) {
           <div className="mb-4" style={fadeIn(0.08)}>
             <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
               <span className="live-dot" style={{ background: "#fff" }} />
-              Pilne
+              Ważne
             </span>
           </div>
         )}

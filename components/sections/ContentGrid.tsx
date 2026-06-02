@@ -64,9 +64,9 @@ const CATEGORY_META: Record<
 };
 
 const CATEGORY_ORDER = [
-  "misje",
-  "astronomia",
   "technologie",
+  "astronomia",
+  "misje",
   "ziemia-z-kosmosu",
   "iss",
 ] as const;
