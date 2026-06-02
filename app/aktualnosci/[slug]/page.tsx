@@ -15,6 +15,7 @@ import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 import ArticleEditButton from "@/components/article/ArticleEditButton";
 import SourceAttribution from "@/components/article/SourceAttribution";
+import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 
@@ -392,8 +393,8 @@ function ArticleBody({
 
   const bodyParagraphs = getArticleBodyParagraphs(article);
   const isExternal = Boolean(article.originalUrl && article.source);
-  const lead = bodyParagraphs[0] ?? (isExternal ? null : article.excerpt);
-  const rest = isExternal ? [] : bodyParagraphs.slice(lead ? 1 : 0);
+  const lead = isExternal ? null : bodyParagraphs[0] ?? article.excerpt;
+  const rest = isExternal ? bodyParagraphs : bodyParagraphs.slice(lead ? 1 : 0);
 
   return (
     <div id="article-body" className="container-site py-10 reveal">
@@ -408,24 +409,19 @@ function ArticleBody({
             on wide screens — intentional whitespace, not wasted space.
           */}
           <div className="max-w-[72ch]">
-            {isExternal ? (
-              <SourceAttribution article={article} />
-            ) : (
-              lead && (
-                <p
-                  className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
-                  style={{
-                    fontSize: "var(--text-body)",
-                    lineHeight: 1.78,
-                    borderColor: meta.color,
-                  }}
-                >
-                  {lead}
-                </p>
-              )
-            )}
+            {!isExternal && lead ? (
+              <p
+                className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
+                style={{
+                  fontSize: "var(--text-body)",
+                  lineHeight: 1.78,
+                  borderColor: meta.color,
+                }}
+              >
+                {lead}
+              </p>
+            ) : null}
 
-            {/* Body paragraphs — comfortable 1.8 leading, slightly cooler tone */}
             {rest.map((paragraph, i) => (
               <p
                 key={i}
@@ -435,6 +431,14 @@ function ArticleBody({
                 {paragraph}
               </p>
             ))}
+
+            {isExternal && article.contextNote ? (
+              <WssContextBox text={article.contextNote} />
+            ) : null}
+
+            {isExternal ? (
+              <SourceAttribution article={article} />
+            ) : null}
           </div>
 
           {/* Article end mark — full card width */}

@@ -1,5 +1,5 @@
-import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
 import type { NewsArticle } from "@/types";
+import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
 
 const BOILERPLATE_SNIPPETS = [
   "zebrany automatycznie przez wss news engine",
@@ -19,10 +19,12 @@ function isBoilerplateParagraph(text: string): boolean {
 
 /** Body paragraphs for article page (no duplicate aggregator legal text). */
 export function getArticleBodyParagraphs(article: NewsArticle): string[] {
+  const raw = article.content ?? [];
+  const paragraphs = raw.filter((p) => !isBoilerplateParagraph(p));
+
   if (isExternalAggregatorArticle(article)) {
-    return [];
+    return paragraphs;
   }
 
-  const raw = article.content ?? [];
-  return raw.filter((p) => !isBoilerplateParagraph(p));
+  return paragraphs;
 }

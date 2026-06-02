@@ -68,6 +68,8 @@ model Article {
   subtitle    String?
   excerpt     String?
   content     String?       @db.Text
+  /// WSS editorial context for RSS articles (general trend framing, not source facts).
+  contextNote String?       @db.Text
   coverImage  String?
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)

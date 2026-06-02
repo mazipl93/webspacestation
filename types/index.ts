@@ -24,6 +24,8 @@ export interface NewsArticle {
   score?: number;
   content?: string[];  // article body paragraphs
   readTime?: number;   // estimated reading time in minutes
+  /** WSS editorial context (RSS hybrid articles) */
+  contextNote?: string;
   /** External publisher when ingested by News Engine */
   source?: string;
   originalUrl?: string;

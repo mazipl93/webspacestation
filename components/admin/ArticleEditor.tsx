@@ -22,13 +22,12 @@ import {
   Toggle,
 } from "@/components/admin/primitives";
 import StatusBadge from "@/components/admin/StatusBadge";
-import ArticleEnrichmentPreview from "@/components/admin/ArticleEnrichmentPreview";
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
 import {
+  getAdminArticleTags,
   inferRssSource,
   isRssAggregatorArticle,
-  toAdminEnrichmentView,
 } from "@/lib/admin/rss-display";
 import {
   buildRssImageCredit,
@@ -42,6 +41,7 @@ const EMPTY_FORM: ArticleFormValues = {
   subtitle: "",
   excerpt: "",
   content: "",
+  contextNote: "",
   coverImage: "",
   categoryId: "",
   featured: false,
@@ -49,6 +49,8 @@ const EMPTY_FORM: ArticleFormValues = {
 };
 
 const AUTOSAVE_DELAY = 1500;
+const READONLY_FIELD =
+  "cursor-default opacity-90 read-only:border-hairline-faint read-only:bg-white/[0.02]";
 
 function toForm(a: AdminArticle): ArticleFormValues {
   return {
@@ -57,6 +59,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     subtitle: a.subtitle ?? "",
     excerpt: a.excerpt ?? "",
     content: a.content ?? "",
+    contextNote: a.contextNote ?? "",
     coverImage: a.coverImage ?? "",
     categoryId: a.category.id,
     featured: a.featured,
@@ -71,6 +74,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     subtitle: form.subtitle || null,
     excerpt: form.excerpt || null,
     content: form.content || null,
+    contextNote: form.contextNote || null,
     coverImage: form.coverImage || null,
     categoryId: form.categoryId,
     featured: form.featured,
@@ -102,7 +106,9 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
 
-  // ── Initial load ─────────────────────────────────────────────────────────
+  const isRss =
+    loadedArticle !== null && isRssAggregatorArticle(loadedArticle);
+
   useEffect(() => {
     let active = true;
     (async () => {
@@ -130,7 +136,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     };
   }, [articleId]);
 
-  // ── Core save routine (shared by autosave, manual save, publish) ──────────
   const persist = useCallback(
     async (opts: { publish?: boolean; silent?: boolean } = {}) => {
       if (savingRef.current) return;
@@ -139,7 +144,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         return;
       }
       if (!form.categoryId) {
-        if (!opts.silent) setError("Wybierz kategorię.");
+        if (!opts.silent) setError("Wybierz kategorię przed zapisem lub publikacją.");
         return;
       }
 
@@ -156,9 +161,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         if (!currentId) {
           saved = await adminApi.createArticle(payload);
           setCurrentId(saved.id);
-          // Update the URL to the canonical edit route WITHOUT a client
-          // navigation, so the editor instance (and any in-flight keystrokes)
-          // is preserved instead of remounting.
           window.history.replaceState(null, "", `/admin/articles/${saved.id}/edit`);
         } else {
           saved = await adminApi.updateArticle(currentId, payload);
@@ -166,6 +168,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
         dirty.current = false;
         setLoadedArticle(saved);
+        setForm(toForm(saved));
         setStatus(saved.status);
         setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
         setLastSavedAt(new Date());
@@ -180,10 +183,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     [form, currentId]
   );
 
-  // ── Debounced autosave on changes ─────────────────────────────────────────
   useEffect(() => {
     if (!dirty.current) return;
-    if (!form.title.trim() || !form.categoryId) return;
+    if (!form.categoryId) return;
+    if (!isRss && !form.title.trim()) return;
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     autosaveTimer.current = setTimeout(() => {
@@ -193,13 +196,13 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [form, persist]);
+  }, [form, persist, isRss]);
 
   const handleReprocessAi = async () => {
-    if (!currentId || !loadedArticle || !isRssAggregatorArticle(loadedArticle)) return;
+    if (!currentId || !loadedArticle || !isRss) return;
     if (
       !window.confirm(
-        "Ponownie uruchomić OpenAI (gpt-5.4-mini)? Tytuł, streszczenie i tagi zostaną nadpisane."
+        "Ponownie uruchomić OpenAI (gpt-5.4-mini)? Lead, treść, kontekst WSS i tagi zostaną nadpisane."
       )
     ) {
       return;
@@ -219,7 +222,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setStatus(saved.status);
       setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
       setLastSavedAt(new Date());
-      setAiSuccess("AI zaktualizowało tytuł, streszczenie i tagi.");
+      setAiSuccess("AI zaktualizowało lead, treść, kontekst WSS i tagi.");
     } catch (e) {
       setError(
         e instanceof ApiError
@@ -238,7 +241,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     dirty.current = true;
     setForm((prev) => {
       const next = { ...prev, [key]: value };
-      if (key === "title" && !slugTouched.current) {
+      if (key === "title" && !slugTouched.current && !isRss) {
         next.slug = slugify(String(value));
       }
       return next;
@@ -254,9 +257,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     );
   }
 
+  const rssTags = loadedArticle ? getAdminArticleTags(loadedArticle) : [];
+
   return (
     <div>
-      {/* ── Top bar ── */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link
@@ -277,7 +281,9 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   ? savingLabel
                   : lastSavedAt
                     ? `Zapisano ${lastSavedAt.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}`
-                    : "Niezapisane zmiany zapisują się automatycznie"}
+                    : isRss
+                      ? "Artykuł RSS — edytujesz kategorię; treść z AI"
+                      : "Niezapisane zmiany zapisują się automatycznie"}
               </span>
             </div>
           </div>
@@ -300,16 +306,24 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               }
             >
               <ExternalLink className="h-4 w-4 shrink-0" />
-              {publishedSlug ? "Podgląd na portalu" : "Zobacz przed publikacją"}
+              {publishedSlug ? "Podgląd na portalu" : "Preview publikacji"}
             </Link>
           ) : null}
-          <Button variant="ghost" onClick={() => persist()} disabled={saving}>
-            Zapisz szkic
-          </Button>
+          {!isRss ? (
+            <Button variant="ghost" onClick={() => persist()} disabled={saving}>
+              Zapisz szkic
+            </Button>
+          ) : null}
           <Button
             onClick={() => persist({ publish: true })}
-            disabled={saving || !mayPublish}
-            title={mayPublish ? undefined : "Twoja rola nie pozwala na publikację"}
+            disabled={saving || !mayPublish || !form.categoryId}
+            title={
+              !form.categoryId
+                ? "Wybierz kategorię przed publikacją"
+                : mayPublish
+                  ? undefined
+                  : "Twoja rola nie pozwala na publikację"
+            }
           >
             {status === "PUBLISHED" ? "Zaktualizuj" : "Opublikuj"}
           </Button>
@@ -327,105 +341,77 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </div>
       ) : null}
 
-      {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
+      {isRss && loadedArticle ? (
         <Card className="mb-5 border-accent-cyan/20 bg-accent-cyan/[0.04]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p className="text-overline font-semibold uppercase tracking-wide text-accent-cyan">
-              Artykuł RSS — zewnętrzne źródło
+              Źródło RSS
               {(() => {
                 const label = inferRssSource(loadedArticle);
-                return label ? ` (${label})` : null;
+                return label ? ` · ${label}` : null;
               })()}
             </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                disabled={reprocessing || saving}
-                onClick={handleReprocessAi}
-                title="OpenAI (gpt-5.4-mini): ponownie tytuł PL, zajawka, tagi i etykieta Ze świata"
-              >
-                {reprocessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                    Poprawianie…
-                  </>
-                ) : (
-                  "Popraw z AI"
-                )}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              disabled={reprocessing || saving}
+              onClick={handleReprocessAi}
+              title="OpenAI: lead, treść, kontekst WSS, tagi"
+            >
+              {reprocessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Poprawianie…
+                </>
+              ) : (
+                "Popraw z AI"
+              )}
+            </Button>
           </div>
-          <ArticleEnrichmentPreview
-            view={toAdminEnrichmentView({
-              ...loadedArticle,
-              title: form.title,
-              excerpt: form.excerpt,
-              readingTime: form.readingTime,
-              tags: loadedArticle.tags,
-              category: loadedArticle.category,
-              subtitle: form.subtitle || loadedArticle.subtitle,
-            })}
-          />
           {loadedArticle.originalUrl ? (
-            <div className="mt-4 rounded-[0.5rem] border border-hairline bg-white/[0.03] px-3 py-2.5">
-              <p className="text-caption text-text-muted">
-                Materiał z zewnętrznego źródła — na stronie publicznej link „Czytaj u{" "}
-                {inferRssSource(loadedArticle) ?? "wydawcy"}”.
-              </p>
-              <a
-                href={loadedArticle.originalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1.5 inline-flex items-center gap-1.5 break-all text-meta font-medium text-accent-cyan hover:underline"
-              >
-                <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                {loadedArticle.originalUrl}
-              </a>
-            </div>
+            <a
+              href={loadedArticle.originalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 break-all text-meta font-medium text-accent-cyan hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {loadedArticle.originalUrl}
+            </a>
           ) : (
-            <div className="mt-4">
-              <Banner tone="error">
-                Brak linku do oryginału w bazie — na stronie nie będzie przycisku „Czytaj u
-                źródła”. Uruchom ingest RSS lub uzupełnij URL.
-              </Banner>
-            </div>
+            <Banner tone="error">
+              Brak linku do oryginału — uruchom ingest RSS lub uzupełnij URL.
+            </Banner>
           )}
+          {rssTags.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {rssTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-badge border border-hairline bg-white/[0.04] px-2 py-0.5 text-caption text-text-secondary"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </Card>
       ) : null}
 
-      {/* ── Layout: main + sidebar ── */}
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <div className="flex flex-col gap-5">
           <Card className="flex flex-col gap-4">
-            <Field
-              label={
-                status === "REVIEW" && loadedArticle && isRssAggregatorArticle(loadedArticle)
-                  ? "Tytuł (PL, AI)"
-                  : "Tytuł"
-              }
-              htmlFor="title"
-            >
+            <Field label="Tytuł" htmlFor="title">
               <TextInput
                 id="title"
                 value={form.title}
                 placeholder="Nagłówek artykułu"
+                readOnly={isRss}
+                className={isRss ? READONLY_FIELD : undefined}
                 onChange={(e) => update("title", e.target.value)}
               />
             </Field>
-            {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
-              <Field
-                label="Etykieta CMS (opcjonalnie)"
-                htmlFor="subtitle"
-                hint="Na stronie publicznej widać blok „Ze świata” i link do źródła — nie ten tekst."
-              >
-                <TextInput
-                  id="subtitle"
-                  value={form.subtitle}
-                  placeholder="Ze świata · SpaceNews"
-                  onChange={(e) => update("subtitle", e.target.value)}
-                />
-              </Field>
-            ) : (
+
+            {!isRss ? (
               <Field label="Podtytuł" htmlFor="subtitle">
                 <TextInput
                   id="subtitle"
@@ -434,35 +420,42 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   onChange={(e) => update("subtitle", e.target.value)}
                 />
               </Field>
-            )}
+            ) : null}
+
+            {!isRss ? (
+              <Field
+                label="Slug"
+                htmlFor="slug"
+                hint="Generowany automatycznie z tytułu — można nadpisać."
+              >
+                <TextInput
+                  id="slug"
+                  value={form.slug}
+                  placeholder="slug-artykulu"
+                  onChange={(e) => {
+                    slugTouched.current = true;
+                    update("slug", slugify(e.target.value));
+                  }}
+                />
+              </Field>
+            ) : null}
+
             <Field
-              label="Slug"
-              htmlFor="slug"
-              hint="Generowany automatycznie z tytułu — można nadpisać."
-            >
-              <TextInput
-                id="slug"
-                value={form.slug}
-                placeholder="slug-artykulu"
-                onChange={(e) => {
-                  slugTouched.current = true;
-                  update("slug", slugify(e.target.value));
-                }}
-              />
-            </Field>
-            <Field
-              label={
-                status === "REVIEW" && loadedArticle && isRssAggregatorArticle(loadedArticle)
-                  ? "Streszczenie (AI)"
-                  : "Zajawka"
-              }
+              label={isRss ? "Lead (publiczny)" : "Zajawka"}
               htmlFor="excerpt"
+              hint={
+                isRss
+                  ? "1–2 zdania w hero. Bez wzmianki o wydawcy — źródło jest w stopce."
+                  : undefined
+              }
             >
               <TextArea
                 id="excerpt"
-                rows={3}
+                rows={isRss ? 2 : 3}
                 value={form.excerpt}
-                placeholder="Streszczenie wyświetlane na listach i w podglądzie moderacji."
+                readOnly={isRss}
+                className={isRss ? READONLY_FIELD : undefined}
+                placeholder="Lead wyświetlany pod tytułem."
                 onChange={(e) => update("excerpt", e.target.value)}
               />
             </Field>
@@ -470,25 +463,50 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
           <Card className="flex flex-col gap-2">
             <Field
-              label="Treść"
+              label={isRss ? "Treść (AI)" : "Treść"}
               htmlFor="content"
-              hint="Markdown lub zwykły tekst. Akapity oddzielaj pustą linią."
+              hint={
+                isRss
+                  ? "2–4 akapity na stronie artykułu. Generowane przez AI z RSS."
+                  : "Markdown lub zwykły tekst. Akapity oddzielaj pustą linią."
+              }
             >
               <TextArea
                 id="content"
-                rows={16}
+                rows={isRss ? 10 : 16}
                 value={form.content}
-                placeholder="Treść artykułu…"
-                className="font-mono text-meta"
+                readOnly={isRss}
+                className={isRss ? READONLY_FIELD : "font-mono text-meta"}
+                placeholder={isRss ? "Brak treści — uruchom Popraw z AI." : "Treść artykułu…"}
                 onChange={(e) => update("content", e.target.value)}
               />
             </Field>
           </Card>
+
+          {isRss ? (
+            <Card className="flex flex-col gap-2">
+              <Field
+                label="Kontekst WSS (AI)"
+                htmlFor="contextNote"
+                hint="Ramowanie redakcyjne — ogólny trend, nie cytat ze źródła."
+              >
+                <TextArea
+                  id="contextNote"
+                  rows={3}
+                  value={form.contextNote}
+                  readOnly
+                  className={READONLY_FIELD}
+                  placeholder="Brak kontekstu — uruchom Popraw z AI."
+                  onChange={(e) => update("contextNote", e.target.value)}
+                />
+              </Field>
+            </Card>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-5">
           <Card className="flex flex-col gap-4">
-            <Field label="Kategoria" htmlFor="category">
+            <Field label="Kategoria" htmlFor="category" hint="Wymagana przed publikacją.">
               <Select
                 id="category"
                 value={form.categoryId}
@@ -509,6 +527,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 type="number"
                 min={0}
                 value={form.readingTime ?? ""}
+                readOnly={isRss}
+                className={isRss ? READONLY_FIELD : undefined}
                 placeholder="np. 4"
                 onChange={(e) =>
                   update(
@@ -519,13 +539,15 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               />
             </Field>
 
-            <div className="flex items-center justify-between border-t border-hairline-faint pt-4">
-              <span className="text-meta text-text-secondary">Wyróżniony</span>
-              <Toggle
-                checked={form.featured}
-                onChange={(v) => update("featured", v)}
-              />
-            </div>
+            {!isRss ? (
+              <div className="flex items-center justify-between border-t border-hairline-faint pt-4">
+                <span className="text-meta text-text-secondary">Wyróżniony</span>
+                <Toggle
+                  checked={form.featured}
+                  onChange={(v) => update("featured", v)}
+                />
+              </div>
+            ) : null}
           </Card>
 
           <Card className="flex flex-col gap-4">
@@ -533,6 +555,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <TextInput
                 id="coverImage"
                 value={form.coverImage}
+                readOnly={isRss}
+                className={isRss ? READONLY_FIELD : undefined}
                 placeholder="https://…"
                 onChange={(e) => update("coverImage", e.target.value)}
               />
@@ -542,8 +566,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <img
                 src={form.coverImage}
                 alt={
-                  loadedArticle && isRssAggregatorArticle(loadedArticle)
-                    ? getRssImageCreditForArticle(loadedArticle) ?? "Okładka RSS"
+                  isRss
+                    ? getRssImageCreditForArticle(loadedArticle!) ?? "Okładka RSS"
                     : "Podgląd okładki"
                 }
                 className="aspect-video w-full rounded-[0.6rem] border border-hairline object-cover"
@@ -553,7 +577,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 Brak okładki
               </div>
             )}
-            {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
+            {isRss && loadedArticle ? (
               <CoverImageCredit
                 variant="compact"
                 credit={

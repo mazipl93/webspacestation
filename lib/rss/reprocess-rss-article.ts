@@ -2,23 +2,24 @@ import { ArticleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import {
+  enrichmentToArticleFields,
+  splitContentToParagraphs,
+  validateRssEnrichment,
+} from "@/lib/rss/apply-enrichment";
+import {
   enrichRssDrafts,
   mapAiCategoryToSlug,
   reviseRssArticlePolish,
 } from "@/lib/rss/enrich-drafts";
 import { buildAggregatorSubtitle, buildUniqueSlug } from "@/lib/rss/normalize";
 import { fetchRssItemByUrl } from "@/lib/rss/refetch-rss-item";
-import { isSummaryDuplicateOfTitle } from "@/lib/rss/summary-quality";
-
-/** Reject summaries that look broken (e.g. lone "S." from U.S.). */
-export const MIN_SUMMARY_PL_LENGTH = 48;
 
 export type ReprocessRssArticleResult =
   | { ok: true; articleId: string }
   | { ok: false; error: string };
 
 /**
- * Re-run OpenAI enrichment for one RSS article (REVIEW or DRAFT).
+ * Re-run OpenAI B+ enrichment for one RSS article (REVIEW, DRAFT, or PUBLISHED).
  * Refetches EN title/snippet from feeds when the URL is still listed.
  */
 export async function reprocessRssArticle(
@@ -33,6 +34,8 @@ export async function reprocessRssArticle(
       originalUrl: true,
       title: true,
       excerpt: true,
+      content: true,
+      contextNote: true,
     },
   });
 
@@ -56,7 +59,9 @@ export async function reprocessRssArticle(
     } else {
       enriched = await reviseRssArticlePolish({
         title_pl: row.title,
-        summary_pl: row.excerpt ?? row.title.slice(0, 300),
+        lead_pl: row.excerpt ?? row.title.slice(0, 300),
+        body_pl: splitContentToParagraphs(row.content),
+        context_pl: row.contextNote,
         source: row.source,
       });
     }
@@ -65,27 +70,15 @@ export async function reprocessRssArticle(
     return { ok: false, error: `OpenAI: ${message}` };
   }
 
-  if (!enriched?.title_pl?.trim() || !enriched?.summary_pl?.trim()) {
-    return { ok: false, error: "OpenAI zwróciło puste tytuł lub streszczenie." };
+  const validation = validateRssEnrichment(enriched);
+  if (!validation.ok) {
+    return { ok: false, error: validation.error };
   }
 
-  if (enriched.summary_pl.trim().length < MIN_SUMMARY_PL_LENGTH) {
-    return {
-      ok: false,
-      error: `Streszczenie za krótkie (${enriched.summary_pl.trim().length} znaków). Spróbuj ponownie lub edytuj ręcznie.`,
-    };
-  }
-
-  if (isSummaryDuplicateOfTitle(enriched.title_pl, enriched.summary_pl)) {
-    return {
-      ok: false,
-      error:
-        "Streszczenie jest prawie identyczne z tytułem. RSS mógł nie mieć dodatkowego opisu — uzupełnij streszczenie ręcznie.",
-    };
-  }
+  const fields = enrichmentToArticleFields(enriched, row.source);
 
   let categoryId: string | undefined;
-  const catSlug = mapAiCategoryToSlug(enriched.category);
+  const catSlug = mapAiCategoryToSlug(fields.category);
   if (catSlug) {
     const cat = await prisma.category.findUnique({
       where: { slug: catSlug },
@@ -102,12 +95,14 @@ export async function reprocessRssArticle(
   await prisma.article.update({
     where: { id: row.id },
     data: {
-      title: enriched.title_pl,
-      excerpt: enriched.summary_pl,
-      slug: buildUniqueSlug(enriched.title_pl, row.originalUrl),
+      title: fields.title,
+      excerpt: fields.excerpt,
+      content: fields.content,
+      contextNote: fields.contextNote,
+      slug: buildUniqueSlug(fields.title, row.originalUrl),
       subtitle: buildAggregatorSubtitle(row.source),
-      tags: normalizeArticleTags(enriched.tags),
-      readingTime: enriched.reading_time_min ?? 1,
+      tags: normalizeArticleTags(fields.tags),
+      readingTime: fields.readingTime ?? 3,
       status: nextStatus,
       ...(categoryId ? { categoryId } : {}),
     },

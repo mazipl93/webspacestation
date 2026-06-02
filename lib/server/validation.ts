@@ -1,15 +1,18 @@
 import { ArticleStatus } from "@prisma/client";
 
+const PL_CHARS = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g;
 const PL_MAP: Record<string, string> = {
   ą: "a", ć: "c", ę: "e", ł: "l", ń: "n", ó: "o", ś: "s", ź: "z", ż: "z",
+  Ą: "a", Ć: "c", Ę: "e", Ł: "l", Ń: "n", Ó: "o", Ś: "s", Ź: "z", Ż: "z",
 };
 
 /** Slugify a title into a URL-safe slug (handles Polish diacritics). */
 export function slugify(input: string): string {
   return input
+    .normalize("NFC")
+    .replace(PL_CHARS, (c) => PL_MAP[c] ?? c)
     .toLowerCase()
     .trim()
-    .replace(/[ąćęłńóśźż]/g, (c) => PL_MAP[c] ?? c)
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 200);
@@ -49,6 +52,7 @@ export interface ArticleCreateInput {
   subtitle: string | null;
   excerpt: string | null;
   content: string | null;
+  contextNote: string | null;
   coverImage: string | null;
   categoryId: string;
   status: ArticleStatus;
@@ -97,6 +101,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       subtitle: asTrimmedString(body.subtitle) ?? null,
       excerpt: asTrimmedString(body.excerpt) ?? null,
       content: typeof body.content === "string" ? body.content : null,
+      contextNote: asTrimmedString(body.contextNote) ?? null,
       coverImage: asTrimmedString(body.coverImage) ?? null,
       categoryId,
       status,
@@ -139,6 +144,9 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   if (body.excerpt !== undefined) out.excerpt = asTrimmedString(body.excerpt) ?? null;
   if (body.content !== undefined) {
     out.content = typeof body.content === "string" ? body.content : null;
+  }
+  if (body.contextNote !== undefined) {
+    out.contextNote = asTrimmedString(body.contextNote) ?? null;
   }
   if (body.coverImage !== undefined) out.coverImage = asTrimmedString(body.coverImage) ?? null;
   if (body.featured !== undefined) out.featured = body.featured === true;

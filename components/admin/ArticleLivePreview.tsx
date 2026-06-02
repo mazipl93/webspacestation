@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { NewsArticle } from "@/types";
 import SourceAttribution from "@/components/article/SourceAttribution";
+import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 import { inferRssSource } from "@/lib/admin/rss-display";
 import { isRssAggregatorArticle } from "@/lib/rss/is-aggregator";
 
@@ -24,12 +26,13 @@ export default function ArticleLivePreview({
     source: article.source,
     subtitle,
   });
+  const bodyParagraphs = getArticleBodyParagraphs(article);
 
   return (
     <div className="min-h-dvh bg-space-bg">
       <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-meta text-amber-100">
-        Podgląd redakcyjny — status: <strong>{status}</strong>. Na portalu publicznym ten
-        wpis {status === "PUBLISHED" ? "jest widoczny" : "nie jest jeszcze widoczny"}.
+        Preview publikacji — status: <strong>{status}</strong>. Na portalu{" "}
+        {status === "PUBLISHED" ? "widoczny" : "jeszcze niewidoczny"}.
       </div>
 
       <div className="relative aspect-[21/9] max-h-[420px] w-full overflow-hidden bg-space-card">
@@ -63,6 +66,23 @@ export default function ArticleLivePreview({
           {article.excerpt ? (
             <p className="mt-4 text-body leading-relaxed text-text-secondary">{article.excerpt}</p>
           ) : null}
+
+          {bodyParagraphs.length > 0 ? (
+            <div className="mt-8 space-y-5">
+              {bodyParagraphs.map((p, i) => (
+                <p key={i} className="text-body leading-relaxed text-text-secondary">
+                  {p}
+                </p>
+              ))}
+            </div>
+          ) : null}
+
+          {article.contextNote ? (
+            <div className="mt-8">
+              <WssContextBox text={article.contextNote} />
+            </div>
+          ) : null}
+
           {rss && article.originalUrl ? (
             <div className="mt-8">
               <SourceAttribution article={article} />

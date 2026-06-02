@@ -1,14 +1,16 @@
 /**
- * AI layer: unprocessed DRAFT (raw RSS) → OpenAI enrich → REVIEW.
+ * AI layer: unprocessed DRAFT (raw RSS) → OpenAI B+ enrich → REVIEW.
  * Never sets PUBLISHED. REVIEW/PUBLISHED are never selected or updated.
  */
 import { ArticleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
+import {
+  enrichmentToArticleFields,
+  validateRssEnrichment,
+} from "@/lib/rss/apply-enrichment";
 import { getOpenAIEnrichmentModel } from "@/lib/rss/openai-config";
 import { enrichRssDrafts, mapAiCategoryToSlug } from "@/lib/rss/enrich-drafts";
-import { MIN_SUMMARY_PL_LENGTH } from "@/lib/rss/reprocess-rss-article";
-import { isSummaryDuplicateOfTitle } from "@/lib/rss/summary-quality";
 import {
   buildAggregatorSubtitle,
   buildUniqueSlug,
@@ -104,30 +106,17 @@ export async function runRssDraftProcessing(): Promise<ProcessDraftsResult> {
     const source = row.source ?? "źródło";
     const originalUrl = row.originalUrl!;
 
-    if (!e?.title_pl?.trim() || !e?.summary_pl?.trim()) {
+    const validation = validateRssEnrichment(e);
+    if (!validation.ok) {
       result.failed += 1;
-      result.errors.push(`${originalUrl}: puste wzbogacenie — pozostaje DRAFT`);
+      result.errors.push(`${originalUrl}: ${validation.error} — pozostaje DRAFT`);
       continue;
     }
 
-    if (e.summary_pl.trim().length < MIN_SUMMARY_PL_LENGTH) {
-      result.failed += 1;
-      result.errors.push(
-        `${originalUrl}: streszczenie za krótkie (${e.summary_pl.trim().length} zn.) — pozostaje DRAFT`
-      );
-      continue;
-    }
-
-    if (isSummaryDuplicateOfTitle(e.title_pl, e.summary_pl)) {
-      result.failed += 1;
-      result.errors.push(
-        `${originalUrl}: streszczenie powtarza tytuł — pozostaje DRAFT (ponów AI w CMS)`
-      );
-      continue;
-    }
+    const fields = enrichmentToArticleFields(e, source);
 
     let categoryId: string | undefined;
-    const catSlug = mapAiCategoryToSlug(e.category);
+    const catSlug = mapAiCategoryToSlug(fields.category);
     if (catSlug) {
       let id = slugCache.get(catSlug);
       if (id === undefined) {
@@ -145,12 +134,14 @@ export async function runRssDraftProcessing(): Promise<ProcessDraftsResult> {
       const updated = await prisma.article.updateMany({
         where: { id: row.id, ...unprocessedRssDraftWhere() },
         data: {
-          title: e.title_pl,
-          excerpt: e.summary_pl,
-          slug: buildUniqueSlug(e.title_pl, originalUrl),
+          title: fields.title,
+          excerpt: fields.excerpt,
+          content: fields.content,
+          contextNote: fields.contextNote,
+          slug: buildUniqueSlug(fields.title, originalUrl),
           subtitle: buildAggregatorSubtitle(source),
-          tags: normalizeArticleTags(e.tags),
-          readingTime: e.reading_time_min ?? 1,
+          tags: normalizeArticleTags(fields.tags),
+          readingTime: fields.readingTime ?? 3,
           status: ArticleStatus.REVIEW,
           ...(categoryId ? { categoryId } : {}),
         },

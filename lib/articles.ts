@@ -81,6 +81,9 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     score: a.score,
     content: paragraphs.length > 0 ? paragraphs : undefined,
     readTime: a.readingTime ?? undefined,
+    contextNote: a.contextNote?.trim()
+      ? polishTypography(a.contextNote)
+      : undefined,
     source: a.source ?? undefined,
     originalUrl: a.originalUrl ?? undefined,
     imageCredit: external

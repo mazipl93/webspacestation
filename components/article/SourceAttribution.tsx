@@ -27,9 +27,9 @@ export default function SourceAttribution({ article }: { article: NewsArticle })
             Materiał z zewnętrznego źródła
           </p>
           <p className="mt-2 text-[15px] leading-relaxed text-text-secondary">
-            To skrót wiadomości po polsku (tłumaczenie automatyczne). Pełny tekst
-            jest u{" "}
+            Opracowanie redakcyjne WSS na podstawie materiału u{" "}
             <span className="font-semibold text-text-primary">{publisher}</span>.
+            Pełny tekst i szczegóły są u wydawcy.
           </p>
           <a
             href={article.originalUrl}

@@ -44,6 +44,7 @@ export interface AdminArticle {
   subtitle: string | null;
   excerpt: string | null;
   content: string | null;
+  contextNote: string | null;
   coverImage: string | null;
   status: ArticleStatus;
   featured: boolean;
@@ -64,6 +65,7 @@ export interface ArticleFormValues {
   subtitle: string;
   excerpt: string;
   content: string;
+  contextNote: string;
   coverImage: string;
   categoryId: string;
   featured: boolean;
