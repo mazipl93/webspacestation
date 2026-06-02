@@ -35,7 +35,9 @@ function relativeLabel(date: Date): string {
 // Map a DB article (with relations) onto the NewsArticle shape the public UI
 // expects. `featured` drives the "Najważniejsze" badge / lead-story pick.
 export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
-  const when = a.publishedAt ?? a.createdAt;
+  // `when` may arrive as a Date (direct Prisma) or an ISO string (after the
+  // unstable_cache Data Cache round-trips the value), so coerce defensively.
+  const when = new Date(a.publishedAt ?? a.createdAt);
   const paragraphs = a.content
     ? a.content
         .split(/\n\s*\n/)

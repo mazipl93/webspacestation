@@ -26,25 +26,24 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
- * Single source of truth for public auth state. Seeded with the server-resolved
- * user (`initialUser`) so the first client paint already matches the session.
- * Uses auth.getUser() (not session cookie alone) so user_metadata.avatar_url stays current.
+ * Single source of truth for public auth state. The user is hydrated entirely
+ * on the client (Supabase auth.getUser + onAuthStateChange) so the root layout
+ * stays free of server-side session reads and public pages remain cacheable.
+ * `loading` stays true until that first client check resolves, which lets
+ * auth-gated screens (e.g. /profil) wait instead of redirecting prematurely.
+ * `initialUser` is accepted for completeness but defaults to null.
  */
 export function AuthProvider({
-  initialUser,
+  initialUser = null,
   children,
 }: {
-  initialUser: SessionUser | null;
+  initialUser?: SessionUser | null;
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<SessionUser | null>(initialUser);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const clientRef = useRef<SupabaseClient | null>(null);
   const syncUserRef = useRef<(() => Promise<void>) | null>(null);
-
-  useEffect(() => {
-    setUser(initialUser);
-  }, [initialUser]);
 
   useEffect(() => {
     let active = true;
@@ -72,7 +71,10 @@ export function AuthProvider({
     }
     syncUserRef.current = syncUser;
 
-    void syncUser();
+    // Resolve the initial auth check, then drop the loading flag exactly once.
+    void syncUser().finally(() => {
+      if (active) setLoading(false);
+    });
 
     const {
       data: { subscription },

@@ -2,22 +2,23 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, Calendar, ChevronRight, Pencil } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
   getArticleBySlug,
   getRelatedArticles,
 } from "@/lib/articles";
-import { getCurrentUser } from "@/lib/auth/user";
-import { canEditArticle } from "@/lib/auth/permissions";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
+import ArticleEditButton from "@/components/article/ArticleEditButton";
 
-// DB-backed — on-demand render (avoids Prisma during `next build` on Vercel).
-export const dynamic = "force-dynamic";
+// DB-backed but cacheable: dynamic route with no generateStaticParams means no
+// DB access during `next build`; the page is rendered on first request, cached,
+// and revalidated every 5 min or on-demand via revalidateTag(articleTag(slug)).
+export const revalidate = 300;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -349,11 +350,9 @@ function RelatedCard({ article }: { article: NewsArticle }) {
 function ArticleBody({
   article,
   sidebarRelated,
-  canEdit,
 }: {
   article: NewsArticle;
   sidebarRelated: NewsArticle[];
-  canEdit: boolean;
 }) {
   const meta = catMeta(article.category);
   const fullDate = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
@@ -424,15 +423,9 @@ function ArticleBody({
             >
               Strona główna
             </Link>
-            {canEdit && (
-              <Link
-                href={`/admin/articles/${article.id}/edit`}
-                className="ml-auto inline-flex items-center gap-2 rounded-xl border border-accent-blue/40 bg-accent-blue/10 px-4 py-2.5 text-[12.5px] font-semibold text-accent-cyan transition-all duration-300 hover:border-accent-blue/60 hover:bg-accent-blue/15 active:scale-[0.97]"
-              >
-                <Pencil size={14} />
-                Edytuj artykuł
-              </Link>
-            )}
+            {/* Edit affordance is resolved on the client (useAuth + CMS check)
+                so this page stays statically cacheable for anonymous visitors. */}
+            <ArticleEditButton articleId={article.id} />
           </div>
         </article>
 
@@ -606,10 +599,6 @@ export default async function ArticlePage({ params }: Props) {
   const stripRelated =
     allRelated.length > 3 ? allRelated.slice(3, 6) : allRelated.slice(0, 3);
 
-  // Inline edit affordance for editors/admins only (RBAC via Prisma role).
-  const appUser = await getCurrentUser().catch(() => null);
-  const canEdit = canEditArticle(appUser?.role);
-
   return (
     <>
       <Navbar />
@@ -617,7 +606,7 @@ export default async function ArticlePage({ params }: Props) {
       <StickyArticleBar title={article.title} category={article.category} slug={article.slug} />
       <main>
         <ArticleHero article={article} />
-        <ArticleBody article={article} sidebarRelated={sidebarRelated} canEdit={canEdit} />
+        <ArticleBody article={article} sidebarRelated={sidebarRelated} />
         <ArticleInteractions slug={article.slug} title={article.title} />
         <ReturnBand category={article.category} />
         <ReadAlso articles={stripRelated} />

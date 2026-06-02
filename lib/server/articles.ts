@@ -1,11 +1,18 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus, Prisma, Role } from "@prisma/client";
 import type {
   ArticleCreateInput,
   ArticleUpdateInput,
 } from "@/lib/server/validation";
+import {
+  ARTICLES_TAG,
+  CATEGORIES_TAG,
+  articleTag,
+  categoryTag,
+} from "@/lib/cache/tags";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -54,52 +61,104 @@ export type CategoryRecord = Prisma.CategoryGetPayload<{
   };
 }>;
 
-/** All published articles, newest first. */
+// ─── Public reads (cached) ───────────────────────────────────────────────────
+// These power the public site and are wrapped in `unstable_cache` with tags so
+// ISR pages share one Data Cache entry instead of querying Prisma per request.
+// Each query is wrapped in try/catch returning an empty/null result so a
+// build-time prerender (or a transient DB blip) never fails — the first live
+// request after deploy repopulates the cache. Mutations invalidate via
+// `revalidateTag` (see app/api/articles & app/api/categories).
+
+/** All published articles, newest first. Cached under the ARTICLES tag. */
 export function getPublishedArticles(): Promise<ArticleWithRelations[]> {
-  return prisma.article.findMany({
-    where: { status: ArticleStatus.PUBLISHED },
-    orderBy: { publishedAt: "desc" },
-    select: articleSelect,
-  });
+  return unstable_cache(
+    async (): Promise<ArticleWithRelations[]> => {
+      try {
+        return await prisma.article.findMany({
+          where: { status: ArticleStatus.PUBLISHED },
+          orderBy: { publishedAt: "desc" },
+          select: articleSelect,
+        });
+      } catch (error) {
+        console.error("[getPublishedArticles]", error);
+        return [];
+      }
+    },
+    ["published-articles"],
+    { tags: [ARTICLES_TAG] }
+  )();
 }
 
 /** A single published article by slug, or null if not found / not published. */
 export function getPublishedArticleBySlug(
   slug: string
 ): Promise<ArticleWithRelations | null> {
-  return prisma.article.findFirst({
-    where: { slug, status: ArticleStatus.PUBLISHED },
-    select: articleSelect,
-  });
+  return unstable_cache(
+    async (): Promise<ArticleWithRelations | null> => {
+      try {
+        return await prisma.article.findFirst({
+          where: { slug, status: ArticleStatus.PUBLISHED },
+          select: articleSelect,
+        });
+      } catch (error) {
+        console.error("[getPublishedArticleBySlug]", error);
+        return null;
+      }
+    },
+    ["published-article", slug],
+    { tags: [ARTICLES_TAG, articleTag(slug)] }
+  )();
 }
 
 /** Published articles within a category (by category slug), newest first. */
 export function getArticlesByCategory(
   categorySlug: string
 ): Promise<ArticleWithRelations[]> {
-  return prisma.article.findMany({
-    where: {
-      status: ArticleStatus.PUBLISHED,
-      category: { slug: categorySlug },
+  return unstable_cache(
+    async (): Promise<ArticleWithRelations[]> => {
+      try {
+        return await prisma.article.findMany({
+          where: {
+            status: ArticleStatus.PUBLISHED,
+            category: { slug: categorySlug },
+          },
+          orderBy: { publishedAt: "desc" },
+          select: articleSelect,
+        });
+      } catch (error) {
+        console.error("[getArticlesByCategory]", error);
+        return [];
+      }
     },
-    orderBy: { publishedAt: "desc" },
-    select: articleSelect,
-  });
+    ["category-articles", categorySlug],
+    { tags: [ARTICLES_TAG, categoryTag(categorySlug)] }
+  )();
 }
 
-/** All categories ordered by their editorial orderIndex. */
+/** All categories ordered by their editorial orderIndex. Cached. */
 export function getCategories(): Promise<CategoryRecord[]> {
-  return prisma.category.findMany({
-    orderBy: { orderIndex: "asc" },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      description: true,
-      colorTheme: true,
-      orderIndex: true,
+  return unstable_cache(
+    async (): Promise<CategoryRecord[]> => {
+      try {
+        return await prisma.category.findMany({
+          orderBy: { orderIndex: "asc" },
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            description: true,
+            colorTheme: true,
+            orderIndex: true,
+          },
+        });
+      } catch (error) {
+        console.error("[getCategories]", error);
+        return [];
+      }
     },
-  });
+    ["categories"],
+    { tags: [CATEGORIES_TAG] }
+  )();
 }
 
 // ─── Admin reads / mutations ─────────────────────────────────────────────────

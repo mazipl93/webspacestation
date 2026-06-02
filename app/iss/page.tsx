@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     "Aktualności z Międzynarodowej Stacji Kosmicznej — spacery kosmiczne, ekspedycje, eksperymenty naukowe i rotacje załogi.",
 };
 
-export const dynamic = "force-dynamic";
+// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
+export const revalidate = 300;
 
 export default function IssPage() {
   return (

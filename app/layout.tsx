@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import { toSessionUser } from "@/lib/auth/session-user";
-import { getCurrentUser } from "@/lib/auth/session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -53,24 +51,16 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Resolve the signed-in user on the server so the first paint already reflects
-// the session. Degrades to null when Supabase isn't configured.
-async function getInitialUser() {
-  try {
-    const u = await getCurrentUser();
-    return toSessionUser(u);
-  } catch {
-    return null;
-  }
-}
-
-export default async function RootLayout({
+// Root layout is intentionally free of any server-side session read. Resolving
+// the user here (cookies() + Supabase getUser()) would opt the ENTIRE route
+// tree out of ISR/static rendering. Auth state is hydrated on the client by
+// AuthProvider (Supabase getUser + onAuthStateChange), so public pages stay
+// cacheable and auth only runs where it's actually needed.
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const initialUser = await getInitialUser();
-
   return (
     <html
       lang="pl"
@@ -78,7 +68,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased">
-        <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

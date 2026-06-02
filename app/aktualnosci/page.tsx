@@ -16,7 +16,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = "force-dynamic";
+// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
+export const revalidate = 300;
 
 export default function AktualnostiPage() {
   return (

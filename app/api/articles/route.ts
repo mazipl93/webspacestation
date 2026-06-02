@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 import {
   createArticle,
@@ -6,6 +7,7 @@ import {
   getArticlesForAdmin,
   getPublishedArticles,
 } from "@/lib/server/articles";
+import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import { forbidden, isValidSlug, jsonError, mapPrismaError, readJson } from "@/lib/server/http";
 import { isArticleStatus, parseArticleCreate } from "@/lib/server/validation";
 import { requireCmsAccess, requirePermission } from "@/lib/auth/guard";
@@ -81,6 +83,12 @@ export async function POST(request: NextRequest) {
         : parsed.value;
 
     const article = await createArticle(payload, guard.user.id);
+
+    // Bust the public ISR cache so a freshly published article appears at once.
+    revalidateTag(ARTICLES_TAG);
+    revalidateTag(articleTag(article.slug));
+    revalidateTag(categoryTag(article.category.slug));
+
     return NextResponse.json({ data: article }, { status: 201 });
   } catch (error) {
     const mapped = mapPrismaError(error);

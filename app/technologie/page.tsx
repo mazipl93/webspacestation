@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     "Innowacje w technologiach kosmicznych — rakiety wielokrotnego użytku, silniki kosmiczne, materiały i systemy startowe.",
 };
 
-export const dynamic = "force-dynamic";
+// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
+export const revalidate = 300;
 
 export default function TechnologiePage() {
   return (

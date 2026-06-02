@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 import {
   archiveArticle,
@@ -6,6 +7,7 @@ import {
   getPublishedArticleBySlug,
   updateArticle,
 } from "@/lib/server/articles";
+import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import {
   forbidden,
   isValidId,
@@ -82,6 +84,12 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
 
     const article = await updateArticle(id, parsed.value);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
+
+    // Refresh both the global feeds and this article's detail page.
+    revalidateTag(ARTICLES_TAG);
+    revalidateTag(articleTag(article.slug));
+    revalidateTag(categoryTag(article.category.slug));
+
     return NextResponse.json({ data: article });
   } catch (error) {
     const mapped = mapPrismaError(error);
@@ -102,6 +110,12 @@ export async function DELETE(_request: NextRequest, { params }: Ctx) {
     }
     const article = await archiveArticle(id);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
+
+    // Archiving removes it from public feeds — invalidate the same surfaces.
+    revalidateTag(ARTICLES_TAG);
+    revalidateTag(articleTag(article.slug));
+    revalidateTag(categoryTag(article.category.slug));
+
     return NextResponse.json({ data: article });
   } catch (error) {
     const mapped = mapPrismaError(error);

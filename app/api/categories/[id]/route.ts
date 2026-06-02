@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 import { getCategoryById, updateCategory } from "@/lib/server/categories";
+import { ARTICLES_TAG, CATEGORIES_TAG } from "@/lib/cache/tags";
 import { isValidId, jsonError, mapPrismaError, readJson } from "@/lib/server/http";
 import { parseCategoryUpdate } from "@/lib/server/validation";
 import { requireCmsAccess, requirePermission } from "@/lib/auth/guard";
@@ -48,6 +50,11 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
 
     const category = await updateCategory(id, parsed.value);
     if (!category) return jsonError(404, "NOT_FOUND", "Category not found.");
+
+    // Category name/colour is rendered inside article cards, so refresh both.
+    revalidateTag(CATEGORIES_TAG);
+    revalidateTag(ARTICLES_TAG);
+
     return NextResponse.json({ data: category });
   } catch (error) {
     const mapped = mapPrismaError(error);
