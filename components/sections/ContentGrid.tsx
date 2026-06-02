@@ -23,7 +23,7 @@ const CATEGORY_META: Record<
     color: string;
     href: string;
     description: string;
-    variant: "hero-strip" | "accent-bar" | "split" | "banner" | "minimal";
+    variant: "hero-strip" | "accent-bar" | "banner" | "minimal";
   }
 > = {
   misje: {
@@ -31,7 +31,7 @@ const CATEGORY_META: Record<
     color: "#2f6dff",
     href: "/misje",
     description: "Eksploracja Księżyca, Marsa i głębokiej przestrzeni kosmicznej.",
-    variant: "hero-strip",
+    variant: "banner",
   },
   astronomia: {
     label: "Astronomia",
@@ -45,7 +45,7 @@ const CATEGORY_META: Record<
     color: "#38bdf8",
     href: "/technologie",
     description: "Rakiety, satelity i innowacje napędzające erę kosmiczną.",
-    variant: "split",
+    variant: "hero-strip",
   },
   "ziemia-z-kosmosu": {
     label: "Ziemia z kosmosu",
@@ -167,19 +167,37 @@ function CategorySection({
 
   if (meta.variant === "hero-strip") {
     const [lead, ...rest] = articles;
+    const prominent = slug === "technologie";
     return (
       <section
-        className="overflow-hidden rounded-2xl border border-hairline p-5 sm:p-6"
+        className={cn(
+          "overflow-hidden rounded-2xl border p-5 sm:p-6",
+          prominent && "sm:p-7"
+        )}
         style={{
-          background: `linear-gradient(135deg, ${meta.color}12 0%, transparent 55%), var(--space-card)`,
+          borderColor: prominent ? `${meta.color}44` : undefined,
+          background: prominent
+            ? `linear-gradient(135deg, ${meta.color}28 0%, ${meta.color}12 38%, transparent 72%), var(--space-card)`
+            : `linear-gradient(135deg, ${meta.color}12 0%, transparent 55%), var(--space-card)`,
+          boxShadow: prominent ? `0 0 48px -20px ${meta.color}55` : undefined,
         }}
       >
         {header}
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-5",
+            prominent
+              ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+              : "lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]"
+          )}
+        >
           {lead && (
             <Link
               href={`/aktualnosci/${lead.slug}`}
-              className="surface-interactive group relative min-h-[240px] overflow-hidden rounded-xl border border-hairline"
+              className={cn(
+                "surface-interactive group relative overflow-hidden rounded-xl border border-hairline",
+                prominent ? "min-h-[280px] sm:min-h-[320px]" : "min-h-[240px]"
+              )}
             >
               <Image
                 src={lead.imageUrl}
@@ -191,23 +209,48 @@ function CategorySection({
               <div
                 className="absolute inset-0"
                 style={{
-                  background:
-                    "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
+                  background: prominent
+                    ? "linear-gradient(to top, rgba(5,7,9,0.94) 0%, rgba(5,7,9,0.35) 55%, transparent 100%)"
+                    : "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
                 }}
               />
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-[18px] font-bold leading-snug text-text-primary sm:text-[20px]">
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                <span
+                  className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+                  style={{ color: meta.color }}
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: meta.color }}
+                  />
+                  {meta.label}
+                </span>
+                <p
+                  className={cn(
+                    "font-bold leading-snug text-text-primary",
+                    prominent ? "text-[20px] sm:text-[22px]" : "text-[18px] sm:text-[20px]"
+                  )}
+                >
                   {lead.title}
                 </p>
-                <p className="mt-2 line-clamp-2 text-[15px] text-text-tertiary">
+                <p className="mt-2 line-clamp-2 text-[15px] leading-relaxed text-text-tertiary">
                   {lead.excerpt}
                 </p>
               </div>
             </Link>
           )}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-4",
+              prominent ? "lg:gap-3" : "sm:grid-cols-2 lg:grid-cols-1"
+            )}
+          >
             {rest.map((article) => (
-              <ArticleCard key={article.id} article={article} />
+              <ArticleCard
+                key={article.id}
+                article={article}
+                compact={prominent}
+              />
             ))}
           </div>
         </div>
@@ -229,42 +272,6 @@ function CategorySection({
               <ArticleCard key={article.id} article={article} />
             ))}
           </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (meta.variant === "split") {
-    return (
-      <section className="grid grid-cols-1 gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <div
-          className="flex flex-col justify-center rounded-2xl border border-hairline p-5"
-          style={{ background: `${meta.color}10` }}
-        >
-          <span
-            className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em]"
-            style={{ color: meta.color }}
-          >
-            Sekcja
-          </span>
-          <h2 className="text-[1.35rem] font-extrabold text-text-primary">
-            {meta.label}
-          </h2>
-          <p className="mt-3 text-[15px] leading-relaxed text-text-tertiary sm:text-[14px]">
-            {meta.description}
-          </p>
-          <a
-            href={meta.href}
-            className="mt-5 inline-flex min-h-[44px] items-center text-[14px] font-semibold transition-colors hover:text-accent-cyan"
-            style={{ color: meta.color }}
-          >
-            Przejdź do sekcji →
-          </a>
-        </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
         </div>
       </section>
     );
