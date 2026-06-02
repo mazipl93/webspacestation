@@ -1,199 +1,244 @@
-# WSS — Handoff na następny czat (deploy + FAQ)
+# WSS — Handoff na następny czat (deploy + CMS + prod)
 
-**Data:** 2 czerwca 2026  
+**Data:** 2 czerwca 2026 (wieczór — sesja deploy + naprawa prod + CMS RSS)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** News Engine (RSS + OpenAI + CMS moderacja) — push na GitHub, deploy Vercel w toku / do weryfikacji
+**Domena prod:** https://webspacestation.pl  
+**Ostatni commit:** `5428d61` — CMS: widoczny przycisk „Zobacz przed publikacją”
+
+**Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
 ---
 
-## STARTING PROMPT — SKOPIUJ CAŁOŚĆ DO NOWEGO CZATU
+## STARTING PROMPT — SKOPIUJ DO NOWEGO CZATU
 
 ```
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
 Przeczytaj:
-- docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — sesja deploy + FAQ)
-- docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura techniczna)
+- docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — stan po sesji 2.06.2026)
+- docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Pytania użytkownika (odpowiedz konkretnie po audycie kodu / Vercel)
+## Stan po ostatniej sesji (skrót)
 
-1. Czy po deployu wszystko będzie działać end-to-end? (cron, AI, admin, frontend tylko PUBLISHED)
-2. Ile mniej więcej artykułów dziennie spłynie z RSS? (9 feedów, domyślnie 8 pozycji/feed na run, cron co 30 min, dedupe po URL)
-3. Czy user ma DODATKOWO pisać własne artykuły redakcyjne w CMS? (tak — to osobna ścieżka)
-4. Czy ma dopisywać własną treść / komentarz do artykułów RSS w adminie? (co jest auto, co ręcznie)
-5. Czy „ChatGPT wgrany” = automatyczne tłumaczenie? (wyjaśnij: OpenAI API z .env, nie aplikacja ChatGPT; co robi cron)
+PROD DZIAŁA (admin + API + front):
+- Naprawiono Vercel DATABASE_URL: port 6543 + ?pgbouncer=true&connection_limit=1
+  (błąd był: prepared statement "s0" already exists — Prisma + PgBouncer)
+- Migracje Prisma na prod: OK (6 migracji, schema up to date)
+- CMS RSS: karta „Artykuł RSS”, Popraw z AI, linki do źródła, podpis okładki, podgląd przed publikacją
 
-## Stan techniczny (skrót)
+Pipeline (bez zmian):
+DRAFT → OpenAI gpt-5.4-mini → REVIEW → ręczny PUBLISHED → frontend
 
-Pipeline — NIGDY auto-publish:
-DRAFT (surowe EN z RSS) → OpenAI gpt-5.4-mini (enrich) → REVIEW → admin PUBLISHED → frontend
+## Co user robi na co dzień
 
-- OpenAI only: lib/rss/enrich-drafts.ts (tytuł PL, streszczenie, tagi, kategoria, czas czytania)
-- lib/rss/process-drafts.ts — max 10 szkiców AI na jeden run (RSS_PROCESS_BATCH_SIZE)
-- Cron: GET /api/cron/rss co 30 min (vercel.json), wymaga CRON_SECRET w env
-- Frontend: tylko status=PUBLISHED
-- Article.tags w Prisma (nie w subtitle)
-- Admin: /admin/articles, filtr Do akceptacji, Ponów AI (OpenAI), Opublikuj/Odrzuć
-- Push na main zrobiony; Vercel env: DATABASE_URL, Supabase, OPENAI_*, CRON_SECRET
+1. /admin/articles → filtr „Do akceptacji”
+2. Edycja → Popraw z AI (opcjonalnie) → Zobacz przed publikacją → Opublikuj
+3. RSS ręcznie (Hobby cron max 1×/dzień): npm run rss:ingest && npm run rss:process
 
-## Do sprawdzenia na prod
+## Otwarte
 
-- npm run db:deploy na bazie prod (migracje: RSS fields, score, tags)
-- DATABASE_URL na Vercel = pooler :6543 + ?pgbouncer=true
-- Redeploy po ustawieniu env
-- Kolejka REVIEW (~175?) — publikować ręcznie
+- Opublikować wybrane z ~175 REVIEW (nie wszystko naraz)
+- Cron co 30 min na Hobby NIE działa — vercel.json ustawiony na 0 6 * * * (raz dziennie)
+  → albo Vercel Pro, albo zewnętrzny cron z Bearer CRON_SECRET na GET /api/cron/rss
+- npm run rss:clean-subtitles — stare podtytuły „agregat WSS” → „Ze świata · źródło”
+- Preview env: DATABASE_URL tylko Production (Preview może nie mieć DB)
 
-NEXTAUTH_* w Vercel — nieużywane w kodzie (auth = Supabase). Można zignorować.
-
-Zacznij od odpowiedzi na 5 pytań powyżej, potem ewentualna weryfikacja deployu / logów cron.
+Zacznij od tego, co user chce dalej (publikacja, cron, SEO, redakcja).
 ```
 
 ---
 
-## Co zrobiliśmy w tej sesji (chronologia)
+## 1. Co naprawiono na produkcji (krytyczne)
 
-1. **News Engine pipeline:** ingest → DRAFT, AI → REVIEW, publish tylko w CMS  
-2. **OpenAI only** — usunięto DeepL; model `gpt-5.4-mini` (`OPENAI_TRANSLATION_MODEL`)  
-3. **Enrichment:** tytuł PL, streszczenie (nie kopia tytułu — walidacja), tagi w `Article.tags`, kategoria, `readingTime`  
-4. **CMS UI:** lista z streszczeniem/tagami, podgląd AI, **Ponów AI** dla pojedynczego wpisu  
-5. **Subtitle:** `Ze świata · SpaceNews` (bez „agregat WSS / tłumaczenie automatyczne”)  
-6. **Stabilizacja:** tylko DRAFT do AI, idempotencja, `PUBLISHED_ARTICLE_WHERE`  
-7. **Deploy:** `npm run build` OK, commit + `git push origin main`  
-8. **Vercel env:** użytkownik uzupełnia OPENAI_*, CRON_SECRET, DATABASE_URL itd.  
-9. **CRON_SECRET** wpisany w `.env` (lokalnie) — ta sama wartość co na Vercel  
+### Błąd: Application error na /admin (digest 42P05)
 
----
+**Przyczyna:** `DATABASE_URL` na Vercel wskazywał pooler **:5432** bez `pgbouncer=true` → Prisma + Supavisor transaction mode = `prepared statement "s0" already exists`.
 
-## FAQ — odpowiedzi na Twoje pytania (możesz skopiować do czatu)
+**Fix (zrobione przez agenta na Vercel):**
+```
+postgresql://postgres.[PROJECT]:[PASSWORD]@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1
+```
+- `DIRECT_URL` (5432) — **tylko lokalnie** do `npm run db:deploy`
+- Po zmianie env: **redeploy** Production
 
-### Czy teraz wszystko będzie działać?
+### Migracje bazy
 
-**Tak, pod warunkiem że:**
+- `npm run db:deploy` — wykonane / schema **up to date** (6 migracji, w tym `tags`, score, RSS fields)
+- Bez tego: brak kolumny `tags`, błędy Prisma
 
-| Krok | Status |
-|------|--------|
-| Kod na `main` + deploy Vercel **Ready** | sprawdź dashboard |
-| `npm run db:deploy` na **produkcyjnej** bazie | **konieczne** (kolumna `tags`, pola RSS) |
-| `DATABASE_URL` na Vercel = **pooler 6543** + `?pgbouncer=true` | nie `:5432` |
-| `OPENAI_API_KEY` + `OPENAI_TRANSLATION_MODEL=gpt-5.4-mini` | tak |
-| `CRON_SECRET` ustawiony | tak (Vercel cron + opcjonalnie Bearer) |
-| **Redeploy** po zmianie env | tak |
+### Deploy Vercel
 
-Bez `db:deploy` na prod — błędy Prisma / brak `tags`.
+- Projekt: `mazipl93s-projects/wss`
+- `vercel link` w repo (folder `.vercel`)
+- GitHub `main` → auto-deploy
+- **`vercel deploy --prod` z CLI** może failować na Hobby przez cron `*/30` — deploy z GitHub/redeploy OK
+- Cron w `vercel.json`: **`0 6 * * *`** (raz dziennie 06:00 UTC) — limit planu Hobby
 
 ---
 
-### Ile artykułów dziennie z RSS?
+## 2. CMS — co jest w panelu (po commitach 3784aa7…5428d61)
 
-**Nie ma stałej liczby** — zależy od tego, ile feedów publikuje **nowe** linki.
+### Lista `/admin/articles`
 
-Ustawienia:
+- Kolumna **„Źródło zewnętrzne”** — nazwa wydawcy + **klikalny link** (domena)
+- Badge **„Ze świata”** przy wpisach RSS
+- Filtry: Do akceptacji (REVIEW), Szkice RSS (DRAFT), Opublikowane, Wszystkie
 
-- **9 feedów** (TechCrunch, Verge, Wired, Ars, NASA, ESA, SpaceNews, Phys.org ×2)  
-- **Co 30 min** cron: ingest + AI  
-- **`RSS_ITEMS_PER_FEED=8`** — max 8 pozycji **na feed na jeden run** (nie 8 łącznie)  
-- **Dedupe** po `originalUrl` — ten sam news **nie wchodzi drugi raz**  
-- **AI max 10 szkiców** na run (`RSS_PROCESS_BATCH_SIZE=10`) — reszta czeka na kolejny cron  
+### Edycja artykułu RSS (`source` + `originalUrl` lub stary podtytuł „agregat WSS”)
 
-**Szacunek realny:** zwykle **kilka–kilkadziesiąt nowych pozycji dziennie** łącznie z 9 źródeł (nie setki), bo większość runów to duplikaty. Przy pełnych feedach teoretyczny sufit ingest to ~9×8 = **72 pozycje na run**, ale tylko **nowe URL** trafiają do bazy.
+- Niebieska karta **„Artykuł RSS — zewnętrzne źródło (SpaceNews)”**
+- **Popraw z AI** — OpenAI: tytuł PL, zajawka, tagi, `Ze świata · źródło` (działa też po PUBLISHED)
+- **Zobacz przed publikacją** — turkusowy przycisk w karcie RSS + u góry (przed Opublikuj)
+- Link pełny URL do artykułu u wydawcy
+- Pola: **Tytuł (PL, AI)**, **Etykieta CMS** (`Ze świata · …`), **Streszczenie (AI)**
+- **Treść** pusta przy RSS — zamierzone
+- Pod okładką: **podpis zdjęcia** (wydawca + strona)
 
----
+### Podgląd przed publikacją
 
-### Czy mam dodatkowo dodawać własne artykuły?
+- URL: `/admin/articles/[id]/preview`
+- Wymaga logowania CMS
+- Pokazuje: hero, podpis zdjęcia, tytuł, zajawkę, blok SourceAttribution — **bez** wrzucania na publiczny portal
+- Po **Opublikuj**: przycisk u góry → `/aktualnosci/[slug]`
 
-**Tak, jeśli chcesz redakcję WSS** — to **osobna ścieżka**:
+### Strona publiczna (tylko PUBLISHED)
 
-- **Nowy artykuł** w `/admin/articles/new` → pełna treść, zdjęcia, Twoja redakcja → publikujesz ręcznie  
-- **RSS** → tylko skrót + link do źródła (agregator „Ze świata”), **bez** pełnego artykułu  
+- Chip **„Ze świata”**
+- `SourceAttribution` — „Materiał z zewnętrznego źródła” + **Czytaj u {wydawca}**
+- Podpis na zdjęciu hero (`lib/rss/image-credit.ts`)
 
-Oba typy mogą być na stronie po **PUBLISHED**.
+### Wykrywanie starych wpisów RSS
 
----
-
-### Czy dopisywać treść / komentarz do RSS w adminie?
-
-**Nie ma osobnego pola „komentarz redakcji”.** Dla RSS:
-
-| Pole | Auto (OpenAI) | Ty w CMS |
-|------|----------------|----------|
-| Tytuł | tak (PL) | możesz poprawić przed publikacją |
-| Streszczenie (excerpt) | tak (1–2 zdania) | **warto sprawdzić** — czasem słabe; edytuj lub **Ponów AI** |
-| Tagi | tak (opcjonalnie) | tylko w DB, brak osobnego edytora tagów w formularzu |
-| Treść (content) | **pusta** (zamierzone) | **nie** wklejasz pełnego artykułu — na stronie jest blok „Czytaj u SpaceNews” + link |
-| Publikacja | **nie** | **Ty** klikasz **Opublikuj** |
-
-**Nie** generujemy pełnych artykułów ani komentarzy redakcyjnych — tylko metadane PL ze skrótu RSS.
+- `lib/rss/is-aggregator.ts` — także podtytuły typu `The Verge - agregat WSS - tłumaczenie automatyczne`
+- `inferRssSource()` — wyciąga nazwę wydawcy ze starego podtytułu
 
 ---
 
-### Czy to automatycznie tłumaczy ChatGPT (API)?
+## 3. Pipeline News Engine (bez zmian merytorycznych)
 
-- To **nie jest** aplikacja ChatGPT w przeglądarce.  
-- To **OpenAI API** (`OPENAI_API_KEY` z platform.openai.com) — model **`gpt-5.4-mini`**.  
-- **Cron co 30 min** (na Vercel): pobiera RSS → zapis **DRAFT** → wywołanie API → **REVIEW**.  
-- **Nic nie trafia na stronę publiczną** bez Twojego **Opublikuj** w adminie.
+```
+INGEST (lib/rss/ingest.ts)     → DRAFT, dedupe originalUrl
+AI (process-drafts + enrich)   → REVIEW (max 10/run)
+CMS                          → PUBLISHED ręcznie
+FRONT                        → tylko PUBLISHED
+```
 
-Lokalnie: `npm run rss:ingest` + `npm run rss:process` robi to samo ręcznie.
-
----
-
-### NEXTAUTH / webspacestation.pl
-
-W kodzie WSS **nie ma** NextAuth — logowanie CMS to **Supabase**.  
-`NEXTAUTH_URL` / `NEXTAUTH_SECRET` na Vercel **nie są używane** — możesz zostawić lub usunąć.  
-Domena prod: opcjonalnie `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl` (feed/RSS URL).
+- **NIGDY** auto-publish
+- OpenAI: `OPENAI_API_KEY`, `OPENAI_TRANSLATION_MODEL=gpt-5.4-mini`
+- Cron: `GET /api/cron/rss` + `CRON_SECRET` lub header `x-vercel-cron: 1`
+- ~175 artykułów po `rss:demote-backfill` w **REVIEW** — front był pusty do ręcznej publikacji (zamierzone)
 
 ---
 
-## Env — checklist
+## 4. FAQ (potwierdzone w sesji)
+
+| Pytanie | Odpowiedź |
+|---------|-----------|
+| Czy wszystko działa? | **Tak** po fixie DATABASE_URL + deploy; admin OK; front tylko PUBLISHED |
+| Ile RSS dziennie? | Kilka–kilkadziesiąt **nowych** URL/dzień; dedupe; max 8/feed/run, 10 AI/run |
+| Własne artykuły? | **Tak** — `/admin/articles/new`, pełna treść, obok RSS |
+| Komentarz do RSS? | **Nie** — tylko AI: tytuł + zajawka + link; Ty: Opublikuj / popraw ręcznie |
+| ChatGPT? | **OpenAI API**, nie aplikacja; cron/process → REVIEW, nie na stronę |
+| Push na Vercel? | **Nie trzeba** jeśli `main` zsynchronizowany — agent pushował commity CMS |
+
+---
+
+## 5. Env (checklist)
+
+**Vercel Production (krytyczne):**
+- `DATABASE_URL` = transaction pooler **:6543** + `?pgbouncer=true` (+ `connection_limit=1`)
+- `OPENAI_API_KEY`, `OPENAI_TRANSLATION_MODEL=gpt-5.4-mini`
+- `CRON_SECRET`
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXTAUTH_*` — **nieużywane** (auth = Supabase)
 
 **Lokalnie `.env`:**
+- `DIRECT_URL` / `DATABASE_URL` do dev i `db:deploy`
+- Ten sam `CRON_SECRET` co Vercel
 
-- `DATABASE_URL`, `DIRECT_URL`, Supabase keys  
-- `OPENAI_API_KEY`, `OPENAI_TRANSLATION_MODEL=gpt-5.4-mini`  
-- `CRON_SECRET=...` (zgodny z Vercel)  
-
-**Vercel (Production + Preview):**
-
-- to samo + **pooler 6543** dla `DATABASE_URL`  
-- **bez** commitowania `.env`  
+**Nie commitować:** `.env`, klucze API
 
 ---
 
-## Komendy
+## 6. Komendy
 
 ```bash
-npm run db:deploy              # migracje na prod (DIRECT_URL w .env)
-npm run rss:ingest             # lokalnie: surowe DRAFT
-npm run rss:process            # lokalnie: AI → REVIEW
-npm run rss:clean-subtitles    # podtytuły Ze świata · źródło
+npm run db:deploy              # migracje (DIRECT_URL)
+npm run rss:ingest             # DRAFT z RSS
+npm run rss:process              # AI → REVIEW
+npm run rss:clean-subtitles      # stare podtytuły → Ze świata · źródło
+npm run rss:demote-backfill      # jednorazowo (już zrobione ~175)
+npm run cache:revalidate         # po bulk zmianach w DB
 npm run dev
+
+# Vercel (z repo z .vercel)
+npx vercel ls
+npx vercel logs --level error --since 1h
+npx vercel redeploy <deployment-url>   # po zmianie env bez nowego kodu
 ```
 
 ---
 
-## Pliki kluczowe (nowe / zmienione)
+## 7. Commity z tej sesji (main)
 
 ```
-lib/rss/enrich-drafts.ts          # jedyny worker OpenAI
-lib/rss/process-drafts.ts
-lib/rss/reprocess-rss-article.ts  # Ponów AI
-app/api/cron/rss/route.ts
-app/api/articles/[slug]/reprocess-rss/route.ts
+5428d61 CMS: widoczny przycisk Zobacz przed publikacją w RSS i u góry
+e87321c CMS: przycisk Podgląd także przed publikacją (preview redakcyjny)
+5654c35 CMS: rozpoznaj stare RSS (agregat WSS), cron Hobby 1x/dzień
+0376363 CMS RSS: linki, Popraw z AI, podpis okładki wydawcy
+3784aa7 CMS: linki RSS w liście i przycisk Popraw z AI
+```
+
+(Wcześniej: News Engine eaae2d7, handoff ad6169c)
+
+---
+
+## 8. Pliki kluczowe (nowe / zmienione w sesji)
+
+```
+lib/rss/is-aggregator.ts           # wykrywanie RSS + inferRssSource
+lib/rss/image-credit.ts            # podpis okładki RSS
+lib/news/is-external-article.ts    # używa is-aggregator
 components/admin/ArticleEditor.tsx
 components/admin/ArticlesTable.tsx
-prisma/migrations/20260602150000_article_tags/
-docs/WSS_NEWS_ENGINE_HANDOFF.md
+components/admin/ArticleLivePreview.tsx
+components/article/CoverImageCredit.tsx
+app/admin/articles/[id]/preview/page.tsx
+app/admin/articles/[id]/preview/layout.tsx
+app/aktualnosci/[slug]/page.tsx    # podpis na hero
+vercel.json                        # cron 0 6 * * * (Hobby)
 ```
 
----
-
-## Otwarte po deployu
-
-- Opublikować kolejkę **REVIEW** (~175?)  
-- Sprawdzić logi cron na Vercel po 30–60 min  
-- Ewentualnie `NEXT_PUBLIC_SITE_URL` na prod  
+Istniejące (News Engine): `lib/rss/enrich-drafts.ts`, `process-drafts.ts`, `reprocess-rss-article.ts`, `app/api/cron/rss/route.ts`, `components/article/SourceAttribution.tsx`
 
 ---
 
-*Koniec — użyj bloku STARTING PROMPT na górze w nowym czacie.*
+## 9. Problemy znane / następne kroki
+
+| Temat | Status / akcja |
+|-------|----------------|
+| Kolejka ~175 REVIEW | User publikuje **wybrane** ręcznie |
+| Cron co 30 min | **Nie na Hobby** — 1×/dzień w vercel.json lub zewnętrzny cron / Pro |
+| Stare podtytuły w DB | `npm run rss:clean-subtitles` |
+| Preview Vercel env | `DATABASE_URL` może brakować na **Preview** |
+| `article_likes` 404 | `supabase/article_likes.sql` w Supabase SQL Editor |
+| Pełny artykuł z RSS | **Nie planowane** — agregator + link |
+| Launch „na ludzi” | Technicznie OK; treść = po publikacji z REVIEW |
+
+---
+
+## 10. Workflow redakcyjny (dla usera)
+
+1. Wejdź `/admin/articles` → **Do akceptacji**
+2. Otwórz artykuł → sprawdź kartę RSS, zajawkę
+3. **Popraw z AI** jeśli słabe streszczenie
+4. **Zobacz przed publikacją** (turkusowy) — sprawdź jak na stronie
+5. Wybierz **kategorię** jeśli puste
+6. **Opublikuj** — dopiero wtedy widać na webspacestation.pl
+
+Ręczny podgląd (zawsze działa):
+`https://webspacestation.pl/admin/articles/[ID]/preview`
+
+---
+
+*Koniec handoff — użyj bloku STARTING PROMPT na górze w nowym czacie.*
