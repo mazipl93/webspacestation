@@ -2,21 +2,41 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CATEGORY_INFO } from "@/lib/categories";
+import { SITE_CONTAINER } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import ArticleCard from "@/components/article/ArticleCard";
+import CoverImage from "@/components/article/CoverImage";
 import HeroArticle from "@/components/sections/HeroArticle";
 import TopStoriesList from "@/components/sections/TopStoriesList";
 import HomeSidebar from "@/components/sections/HomeSidebar";
 
-// ─── Wide homepage container (globals.css frozen — local utility) ─────────────
-
-const HOME_CONTAINER =
-  "mx-auto w-full max-w-[min(95vw,1720px)] px-5 md:px-8 xl:px-10";
-
 // ─── Category presentation ────────────────────────────────────────────────────
 
-const CATEGORY_META: Record<
+const CATEGORY_LAYOUT: Record<
+  string,
+  {
+    variant: "hero-strip" | "accent-bar" | "banner" | "minimal";
+    prominent?: boolean;
+  }
+> = {
+  technologie: { variant: "hero-strip", prominent: true },
+  misje: { variant: "hero-strip" },
+  astronomia: { variant: "accent-bar" },
+  "ziemia-z-kosmosu": { variant: "banner" },
+  iss: { variant: "accent-bar" },
+};
+
+const CATEGORY_META = Object.fromEntries(
+  Object.entries(CATEGORY_INFO).map(([slug, info]) => [
+    slug,
+    {
+      ...info,
+      ...CATEGORY_LAYOUT[slug],
+    },
+  ])
+) as Record<
   string,
   {
     label: string;
@@ -24,44 +44,9 @@ const CATEGORY_META: Record<
     href: string;
     description: string;
     variant: "hero-strip" | "accent-bar" | "banner" | "minimal";
+    prominent?: boolean;
   }
-> = {
-  misje: {
-    label: "Misje",
-    color: "#2f6dff",
-    href: "/misje",
-    description: "Eksploracja Księżyca, Marsa i głębokiej przestrzeni kosmicznej.",
-    variant: "banner",
-  },
-  astronomia: {
-    label: "Astronomia",
-    color: "#a855f7",
-    href: "/astronomia",
-    description: "Odkrycia teleskopów, galaktyki i tajemnice Wszechświata.",
-    variant: "accent-bar",
-  },
-  technologie: {
-    label: "Technologie",
-    color: "#38bdf8",
-    href: "/technologie",
-    description: "Rakiety, satelity i innowacje napędzające erę kosmiczną.",
-    variant: "hero-strip",
-  },
-  "ziemia-z-kosmosu": {
-    label: "Ziemia z kosmosu",
-    color: "#22c55e",
-    href: "/ziemia-z-kosmosu",
-    description: "Zdjęcia i obserwacje naszej planety z orbity.",
-    variant: "banner",
-  },
-  iss: {
-    label: "ISS",
-    color: "#ffb830",
-    href: "/iss",
-    description: "Życie i badania na Międzynarodowej Stacji Kosmicznej.",
-    variant: "minimal",
-  },
-};
+>;
 
 const CATEGORY_ORDER = [
   "technologie",
@@ -94,7 +79,7 @@ function SectionHeader({
         <h2
           className={cn(
             "font-bold uppercase tracking-[0.14em] text-text-secondary",
-            large ? "text-[13px] sm:text-[14px]" : "overline"
+            large ? "text-[15px] md:text-[14px]" : "text-[13px] md:text-[12px]"
           )}
         >
           {label}
@@ -103,7 +88,7 @@ function SectionHeader({
       {href && (
         <a
           href={href}
-          className="group flex min-h-[44px] items-center gap-1 text-[13px] font-medium text-text-tertiary transition-colors duration-300 hover:text-text-primary sm:text-[12px]"
+          className="group flex min-h-[44px] items-center gap-1 text-[14px] font-medium text-text-tertiary transition-colors duration-300 hover:text-text-primary md:text-[13px]"
         >
           {cta}
           <ChevronRight
@@ -135,17 +120,17 @@ function CategorySection({
             className="group inline-flex items-center gap-2 transition-colors hover:text-accent-cyan"
           >
             <h2
-              className="text-[1.5rem] font-extrabold uppercase tracking-[0.06em] text-text-primary sm:text-[1.75rem]"
+              className="text-[1.75rem] font-extrabold uppercase tracking-[0.06em] text-text-primary md:text-[1.75rem] lg:text-[1.875rem]"
               style={{ letterSpacing: "-0.02em" }}
             >
               {meta.label}
             </h2>
             <ChevronRight
-              size={20}
-              className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-cyan"
+              size={22}
+              className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-cyan md:h-5 md:w-5"
             />
           </Link>
-          <p className="mt-2 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary sm:text-[14px]">
+          <p className="mt-2 max-w-none text-[16px] leading-relaxed text-text-tertiary md:max-w-[720px] md:text-[14px]">
             {meta.description}
           </p>
         </div>
@@ -167,7 +152,7 @@ function CategorySection({
 
   if (meta.variant === "hero-strip") {
     const [lead, ...rest] = articles;
-    const prominent = slug === "technologie";
+    const prominent = meta.prominent ?? false;
     return (
       <section
         className={cn(
@@ -199,7 +184,7 @@ function CategorySection({
                 prominent ? "min-h-[280px] sm:min-h-[320px]" : "min-h-[240px]"
               )}
             >
-              <Image
+              <CoverImage
                 src={lead.imageUrl}
                 alt={lead.title}
                 fill
@@ -228,12 +213,12 @@ function CategorySection({
                 <p
                   className={cn(
                     "font-bold leading-snug text-text-primary",
-                    prominent ? "text-[20px] sm:text-[22px]" : "text-[18px] sm:text-[20px]"
+                    prominent ? "text-[22px] md:text-[22px]" : "text-[20px] md:text-[20px]"
                   )}
                 >
                   {lead.title}
                 </p>
-                <p className="mt-2 line-clamp-2 text-[15px] leading-relaxed text-text-tertiary">
+                <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
                   {lead.excerpt}
                 </p>
               </div>
@@ -321,42 +306,11 @@ const IMG = {
     linear-gradient(180deg, #060b14 0%, #08111f 100%)`,
 };
 
-function LiveBadge() {
+function PreviewBadge() {
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="live-dot" />
-      <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-accent-live">
-        Na żywo
-      </span>
-    </div>
-  );
-}
-
-function Countdown({ h, m, s }: { h: string; m: string; s: string }) {
-  return (
-    <div className="flex items-end gap-1.5">
-      {[
-        { v: h, l: "godz." },
-        { v: m, l: "min." },
-        { v: s, l: "sek." },
-      ].map(({ v, l }, i) => (
-        <div key={l} className="flex items-end gap-1.5">
-          {i > 0 && (
-            <span className="pb-2 text-[18px] font-light leading-none text-text-muted">
-              :
-            </span>
-          )}
-          <div className="flex flex-col items-center">
-            <span className="tabular-nums text-[26px] font-bold leading-none text-text-primary">
-              {v}
-            </span>
-            <span className="mt-1 text-[8px] uppercase tracking-[0.12em] text-text-muted">
-              {l}
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-glass px-2 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
+      Podgląd
+    </span>
   );
 }
 
@@ -364,28 +318,30 @@ function LiveMissionCenter() {
   return (
     <section className="card-surface flex flex-col gap-3 p-5">
       <SectionHeader label="Centrum misji na żywo" accent="#ff453a" />
-      <div className="-mt-3 flex items-center gap-1.5">
-        <span className="live-breathe h-1.5 w-1.5 rounded-full bg-accent-cyan" />
-        <span className="text-[10px] text-text-tertiary">
-          Zaktualizowano przed chwilą · strumień na żywo
-        </span>
-      </div>
+      <p className="-mt-3 text-[10px] text-text-muted">
+        Integracja ze strumieniem na żywo — wkrótce
+      </p>
       <div className="well flex-1 p-3.5">
         <div className="mb-2">
-          <LiveBadge />
+          <PreviewBadge />
         </div>
         <h3 className="text-[15px] font-bold text-text-primary">ISS nad Europą</h3>
-        <p className="mt-2 text-[11px] text-text-tertiary">7 astronautów na pokładzie</p>
+        <p className="mt-2 text-[11px] text-text-tertiary">7 astronautów na pokładzie · przelot za ~90 min</p>
       </div>
       <div className="well flex-1 p-3.5">
         <div className="mb-2">
-          <LiveBadge />
+          <PreviewBadge />
         </div>
-        <h3 className="mb-1 text-[15px] font-bold text-text-primary">Start Falcon 9</h3>
-        <p className="mb-2.5 text-[9px] font-bold uppercase tracking-[0.14em] text-text-muted">
-          Start za
+        <h3 className="text-[15px] font-bold text-text-primary">Nadchodzący start Falcon 9</h3>
+        <p className="mt-2 text-[11px] text-text-tertiary">
+          SLC-40, Cape Canaveral · szczegóły w sekcji startów
         </p>
-        <Countdown h="02" m="31" s="12" />
+        <Link
+          href="/starty"
+          className="mt-3 inline-flex text-[11px] font-medium text-accent-cyan transition-colors hover:text-accent-cyan/80"
+        >
+          Zobacz odliczanie →
+        </Link>
       </div>
     </section>
   );
@@ -516,7 +472,7 @@ function NadchodzaceStarty() {
         accent="#38bdf8"
         href="/starty"
       />
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
         {LAUNCHES.map((l) => (
           <LaunchCard key={l.mission} {...l} />
         ))}
@@ -547,7 +503,7 @@ function AktyweneMisje() {
       <div
         className="relative overflow-hidden rounded-xl border border-hairline-faint"
         style={{
-          height: 182,
+          height: 240,
           background:
             "radial-gradient(ellipse at 92% 50%, rgba(255,165,35,0.16) 0%, transparent 36%), #060a12",
         }}
@@ -658,11 +614,11 @@ function TimelineWydarzen() {
 
 function DashboardWidgets() {
   return (
-    <section className="reveal mt-4 space-y-4 border-t border-hairline pt-10">
+    <section className="reveal mt-4 space-y-4 rounded-2xl border border-hairline bg-space-card/40 px-5 py-10 sm:px-6">
       <div className="mb-2">
         <p className="overline text-text-muted">Centrum operacyjne</p>
         <p className="mt-1 text-[14px] text-text-tertiary sm:text-[13px]">
-          Starty, misje i wydarzenia — dane na żywo wkrótce
+          Podgląd startów, misji i wydarzeń — pełne dane na żywo wkrótce
         </p>
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
@@ -687,7 +643,7 @@ export default async function ContentGrid() {
 
   if (articles.length === 0) {
     return (
-      <div className={cn(HOME_CONTAINER, "py-20")}>
+      <div className={cn(SITE_CONTAINER, "py-20")}>
         <div className="card-surface px-8 py-16 text-center">
           <p className="text-[15px] text-text-secondary">
             Brak opublikowanych artykułów.
@@ -723,9 +679,9 @@ export default async function ContentGrid() {
   const excludeForSidebar = [...usedSlugs];
 
   return (
-    <div className={HOME_CONTAINER}>
+    <div className={SITE_CONTAINER}>
       {/* 1. Hero + Ważne teraz — side-by-side on desktop */}
-      <div className="grid grid-cols-1 items-stretch gap-4 pt-20 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-5">
+      <div className="grid grid-cols-1 items-stretch gap-5 pt-[4.5rem] sm:pt-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <HeroArticle article={lead} />
         <div className="hidden lg:block">
           <TopStoriesList articles={topStories} />
@@ -733,31 +689,36 @@ export default async function ContentGrid() {
       </div>
 
       {/* Mobile: Ważne teraz below hero */}
-      <div className="mt-4 lg:hidden">
+      <div className="mt-5 lg:hidden">
         <TopStoriesList articles={topStories} />
       </div>
 
       {/* Main editorial + sticky sidebar */}
-      <div className="mt-8 grid grid-cols-1 gap-8 pb-14 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
-        <div className="min-w-0 space-y-12 sm:space-y-14">
+      <div className="mt-8 grid grid-cols-1 gap-8 pb-14 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="min-w-0 space-y-14 md:space-y-14">
           {/* 2. Latest — largest section, 4-col grid */}
           {latest.length > 0 && (
-            <section>
+            <section className="border-t border-hairline pt-8 md:pt-12">
               <SectionHeader
                 label="Najnowsze wiadomości"
                 href="/aktualnosci"
                 large
               />
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                {latest.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-5 xl:grid-cols-4 xl:gap-6">
+                {latest.map((article, i) => (
+                  <ArticleCard
+                    key={article.id}
+                    article={article}
+                    featured={i === 0}
+                    className={i === 0 ? "sm:col-span-2" : undefined}
+                  />
                 ))}
               </div>
             </section>
           )}
 
           {/* 3. Categories — visually distinct blocks */}
-          <div className="space-y-10 sm:space-y-12">
+          <div className="space-y-12 md:space-y-14">
             {categoryArticles.map(({ slug, articles: catArticles }) => (
               <CategorySection key={slug} slug={slug} articles={catArticles} />
             ))}

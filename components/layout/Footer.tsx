@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { SITE_CONTAINER } from "@/lib/site-layout";
 
 const FOOTER_NAV = {
   Nawigacja: [
@@ -54,7 +56,7 @@ export default function Footer() {
             "radial-gradient(ellipse 60% 100% at 15% 0%, rgba(47,109,255,0.1) 0%, transparent 60%)",
         }}
       >
-        <div className="container-site">
+        <div className={SITE_CONTAINER}>
           <div className="card-surface flex flex-col items-start justify-between gap-6 px-7 py-7 sm:flex-row sm:items-center">
             <div>
               <h3 className="mb-1.5 text-[20px] font-bold text-text-primary" style={{ letterSpacing: "-0.02em" }}>
@@ -123,7 +125,7 @@ export default function Footer() {
       </div>
 
       {/* Links grid */}
-      <div className="container-site pb-12 pt-4">
+      <div className={cn(SITE_CONTAINER, "pb-12 pt-4")}>
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <div className="mb-4 flex items-center gap-2.5">

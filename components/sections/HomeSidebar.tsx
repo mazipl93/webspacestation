@@ -3,22 +3,12 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Flame, MessageCircle, Sparkles, TrendingUp } from "lucide-react";
+import { Flame, TrendingUp } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { cn } from "@/lib/cn";
+import { getCategoryInfo } from "@/lib/categories";
 import { createClient } from "@/lib/supabase/client";
 import type { NewsArticle } from "@/types";
-
-const CATEGORY_META: Record<string, { label: string; color: string }> = {
-  misje: { label: "Misje", color: "#2f6dff" },
-  astronomia: { label: "Astronomia", color: "#a855f7" },
-  technologie: { label: "Technologie", color: "#38bdf8" },
-  "ziemia-z-kosmosu": { label: "Ziemia z kosmosu", color: "#22c55e" },
-  iss: { label: "ISS", color: "#ffb830" },
-};
-
-function catMeta(c: string) {
-  return CATEGORY_META[c] ?? { label: c, color: "#2f6dff" };
-}
 
 function SidebarBlock({
   icon: Icon,
@@ -52,11 +42,13 @@ function SidebarBlock({
 function CompactArticleRow({
   article,
   rank,
+  likes,
 }: {
   article: NewsArticle;
   rank?: number;
+  likes?: number;
 }) {
-  const meta = catMeta(article.category);
+  const meta = getCategoryInfo(article.category);
 
   return (
     <Link
@@ -91,11 +83,21 @@ function CompactArticleRow({
         <p className="line-clamp-2 text-[13.5px] font-semibold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan">
           {article.title}
         </p>
-        <span className="mt-1 block text-[11px] text-text-muted">{article.timeLabel}</span>
+        <div className="mt-1 flex items-center gap-2 text-[11px] text-text-muted">
+          <span>{article.timeLabel}</span>
+          {likes != null && likes > 0 && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{likes} {likes === 1 ? "polubienie" : likes < 5 ? "polubienia" : "polubień"}</span>
+            </>
+          )}
+        </div>
       </div>
     </Link>
   );
 }
+
+type FeedTab = "trending" | "recent";
 
 interface Props {
   articles: NewsArticle[];
@@ -104,6 +106,7 @@ interface Props {
 
 export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
   const [likeCounts, setLikeCounts] = useState<Map<string, number> | null>(null);
+  const [feedTab, setFeedTab] = useState<FeedTab>("trending");
   const exclude = useMemo(() => new Set(excludeSlugs), [excludeSlugs]);
 
   useEffect(() => {
@@ -179,6 +182,8 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
     [pool]
   );
 
+  const feedItems = feedTab === "trending" ? trending : recentlyAdded;
+
   return (
     <aside className="sticky top-20 hidden flex-col gap-4 lg:flex">
       <SidebarBlock icon={TrendingUp} label="Popularne" accent="#38bdf8">
@@ -193,35 +198,48 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
         ) : (
           <div>
             {popular.map((article, i) => (
-              <CompactArticleRow key={article.id} article={article} rank={i + 1} />
+              <CompactArticleRow
+                key={article.id}
+                article={article}
+                rank={i + 1}
+                likes={likeCounts.get(article.slug)}
+              />
             ))}
           </div>
         )}
       </SidebarBlock>
 
-      <SidebarBlock icon={MessageCircle} label="Najnowsze komentarze" accent="#a855f7">
-        <p className="text-[13px] leading-relaxed text-text-tertiary">
-          Komentarze pod artykułami pojawią się tutaj, gdy czytelnicy zaczną dyskusję.
-        </p>
-        <Link
-          href="/aktualnosci"
-          className="mt-3 inline-flex min-h-[44px] items-center text-[13px] font-medium text-accent-cyan transition-colors hover:text-accent-cyan/80"
+      <SidebarBlock icon={Flame} label="Redakcyjny feed" accent="#ff453a">
+        <div
+          className="mb-3 flex gap-1 rounded-lg border border-hairline-faint p-1"
+          role="tablist"
+          aria-label="Filtr feedu"
         >
-          Przejdź do artykułów →
-        </Link>
-      </SidebarBlock>
-
-      <SidebarBlock icon={Flame} label="Na czasie" accent="#ff453a">
-        <div>
-          {trending.map((article) => (
-            <CompactArticleRow key={article.id} article={article} />
+          {(
+            [
+              { id: "trending" as const, label: "Na czasie" },
+              { id: "recent" as const, label: "Najnowsze" },
+            ] as const
+          ).map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={feedTab === id}
+              onClick={() => setFeedTab(id)}
+              className={cn(
+                "flex-1 rounded-md px-2 py-1.5 text-[11px] font-semibold transition-colors duration-200",
+                feedTab === id
+                  ? "bg-accent-blue text-white"
+                  : "text-text-tertiary hover:text-text-primary"
+              )}
+            >
+              {label}
+            </button>
           ))}
         </div>
-      </SidebarBlock>
-
-      <SidebarBlock icon={Sparkles} label="Ostatnio dodane" accent="#22c55e">
-        <div>
-          {recentlyAdded.map((article) => (
+        <div role="tabpanel">
+          {feedItems.map((article) => (
             <CompactArticleRow key={article.id} article={article} />
           ))}
         </div>

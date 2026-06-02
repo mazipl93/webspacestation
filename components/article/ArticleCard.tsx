@@ -1,77 +1,60 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import BookmarkButton from "@/components/article/BookmarkButton";
-
-const CATEGORY_META: Record<string, { label: string; color: string }> = {
-  misje:              { label: "Misje",            color: "#2f6dff" },
-  astronomia:         { label: "Astronomia",        color: "#a855f7" },
-  technologie:        { label: "Technologie",       color: "#38bdf8" },
-  "ziemia-z-kosmosu": { label: "Ziemia z kosmosu", color: "#22c55e" },
-  iss:                { label: "ISS",               color: "#ffb830" },
-};
-
-const CATEGORY_FALLBACK: Record<string, string> = {
-  misje: `
-    radial-gradient(ellipse at 50% 92%, rgba(255,130,30,0.72) 0%, rgba(225,70,0,0.34) 15%, transparent 40%),
-    linear-gradient(180deg, #060c16 0%, #0a1320 52%, #07090c 100%)`,
-  astronomia: `
-    radial-gradient(ellipse at 56% 46%, rgba(168,20,240,0.46) 0%, rgba(90,10,205,0.22) 28%, transparent 56%),
-    linear-gradient(135deg, #05070f 0%, #0b0514 100%)`,
-  technologie: `
-    radial-gradient(ellipse at 50% 94%, rgba(90,140,255,0.34) 0%, transparent 36%),
-    linear-gradient(160deg, #050a13 0%, #070e1a 100%)`,
-  "ziemia-z-kosmosu": `
-    radial-gradient(circle at 66% 44%, rgba(40,108,225,0.58) 0%, rgba(14,52,150,0.28) 32%, transparent 56%),
-    linear-gradient(135deg, #04101f 0%, #061224 100%)`,
-  iss: `
-    radial-gradient(circle at 66% 44%, rgba(40,108,225,0.58) 0%, rgba(14,52,150,0.28) 32%, transparent 56%),
-    linear-gradient(135deg, #04101f 0%, #061224 100%)`,
-};
-
-function catMeta(c: string) {
-  return CATEGORY_META[c] ?? { label: c, color: "#2f6dff" };
-}
-function catFallback(c: string) {
-  return CATEGORY_FALLBACK[c] ?? CATEGORY_FALLBACK.technologie;
-}
+import CoverImage from "@/components/article/CoverImage";
 
 export default function ArticleCard({
   article,
   compact = false,
+  featured = false,
+  className,
 }: {
   article: NewsArticle;
   compact?: boolean;
+  featured?: boolean;
+  className?: string;
 }) {
-  const meta = catMeta(article.category);
+  const meta = getCategoryInfo(article.category);
 
   return (
     <Link
       href={`/aktualnosci/${article.slug}`}
-      className="surface-interactive group relative flex flex-col overflow-hidden rounded-xl border border-hairline"
+      className={cn(
+        "surface-interactive group relative flex flex-col overflow-hidden rounded-xl border border-hairline",
+        featured && "sm:flex-row sm:items-stretch",
+        className
+      )}
     >
-      {/* Image */}
       <div
         className={cn(
           "img-sheen relative shrink-0 overflow-hidden",
-          compact ? "h-[140px]" : "h-[176px] sm:h-[190px]"
+          featured
+            ? "h-[240px] sm:h-auto sm:min-h-[240px] sm:w-[44%] lg:min-h-[260px]"
+            : compact
+              ? "h-[168px] sm:h-[150px]"
+              : "h-[220px] sm:h-[200px] lg:h-[190px]"
         )}
-        style={{ background: catFallback(article.category) }}
+        style={{ background: categoryFallbackBg(article.category) }}
       >
-        <Image
+        <CoverImage
           src={article.imageUrl}
           alt={article.title}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes={
+            featured
+              ? "(max-width: 640px) 100vw, 44vw"
+              : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          }
           className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
         />
 
         {article.isBreaking && (
           <div className="absolute left-3 top-3 z-10">
-            <span className="flex items-center gap-1.5 rounded-md bg-accent-live px-2 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+            <span className="flex items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white sm:text-[9px]">
               <span className="live-dot" style={{ background: "#fff" }} />
               Ważne
             </span>
@@ -87,25 +70,33 @@ export default function ArticleCard({
         <BookmarkButton slug={article.slug} />
       </div>
 
-      {/* Content */}
-      <div className="-mt-px flex flex-1 flex-col border-t border-hairline bg-space-card px-4 pb-4 pt-3.5">
-        <div className="mb-2 flex items-center justify-between">
+      <div
+        className={cn(
+          "-mt-px flex flex-1 flex-col border-t border-hairline bg-space-card px-4 pb-5 pt-4 sm:px-4 sm:pb-4 sm:pt-3.5",
+          featured && "sm:mt-0 sm:border-l sm:border-t-0 sm:justify-center sm:py-6 sm:pl-6 sm:pr-5"
+        )}
+      >
+        <div className="mb-2.5 flex items-center justify-between gap-2">
           <span
-            className="flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-[0.14em]"
+            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] sm:text-[10px]"
             style={{ color: meta.color }}
           >
-            <span className="h-1 w-1 rounded-full" style={{ background: meta.color }} />
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
             {meta.label}
           </span>
-          <span className="text-[10px] text-text-muted">{article.timeLabel}</span>
+          <span className="shrink-0 text-[12px] text-text-muted sm:text-[11px]">
+            {article.timeLabel}
+          </span>
         </div>
 
         <h3
           className={cn(
-            "mb-2 line-clamp-2 font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan",
-            compact
-              ? "text-[16px] sm:text-[15px]"
-              : "text-[18px] sm:text-[var(--text-title-sm)]"
+            "mb-2.5 line-clamp-2 font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan",
+            featured
+              ? "text-[21px] sm:text-[22px] sm:line-clamp-3 lg:text-[21px]"
+              : compact
+                ? "text-[18px] sm:text-[16px]"
+                : "text-[20px] sm:text-[18px] lg:text-[17px]"
           )}
         >
           {article.title}
@@ -113,15 +104,19 @@ export default function ArticleCard({
 
         <p
           className={cn(
-            "mb-auto line-clamp-2 leading-relaxed text-text-tertiary",
-            compact ? "text-[14px]" : "text-[15px] sm:text-[12px]"
+            "mb-auto line-clamp-3 leading-relaxed text-text-tertiary sm:line-clamp-2",
+            featured
+              ? "text-[16px] sm:text-[15px] sm:line-clamp-3"
+              : compact
+                ? "text-[15px] sm:text-[14px]"
+                : "text-[16px] sm:text-[14px] lg:text-[13px]"
           )}
         >
           {article.excerpt}
         </p>
 
-        <div className="mt-3 flex items-center gap-1 text-[12px] text-text-muted sm:text-[10px]">
-          <Clock size={10} />
+        <div className="mt-3.5 flex items-center gap-1.5 text-[13px] text-text-muted sm:mt-3 sm:text-[11px]">
+          <Clock size={12} className="sm:h-[10px] sm:w-[10px]" />
           {article.readTime ?? 3} min czytania
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, Bell, ChevronDown, Menu, X, Loader2, CornerDownLeft, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { SITE_CONTAINER } from "@/lib/site-layout";
 import { matchesArticle } from "@/lib/search";
 import type { AdminArticle } from "@/lib/admin/types";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -231,23 +232,23 @@ export default function Navbar() {
           WebkitBackdropFilter: "blur(20px) saturate(180%)",
         }}
       >
-        <div className="container-site flex h-16 items-center gap-4 xl:gap-5">
+        <div className={cn(SITE_CONTAINER, "flex h-[4.25rem] items-center gap-3 sm:h-16 sm:gap-4 xl:gap-5")}>
           {/* ── Logo + brand ───────────────────────────────────── */}
           <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent-blue to-[#1a4fd0] shadow-[0_4px_16px_-4px_rgba(47,109,255,0.7)] transition-transform duration-500 group-hover:scale-105">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent-blue to-[#1a4fd0] shadow-[0_4px_16px_-4px_rgba(47,109,255,0.7)] transition-transform duration-500 group-hover:scale-105 sm:h-9 sm:w-9">
               <RocketIcon />
               <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
             </div>
             <div className="leading-none">
               <span className="flex items-baseline gap-1.5">
-                <span className="text-[14px] font-extrabold uppercase tracking-[0.12em] text-text-primary">
+                <span className="text-[15px] font-extrabold uppercase tracking-[0.12em] text-text-primary sm:text-[14px]">
                   WSS
                 </span>
                 <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary xl:inline">
                   Web Space Station
                 </span>
               </span>
-              <span className="mt-1 hidden text-[9.5px] font-medium tracking-[0.04em] text-accent-cyan sm:block">
+              <span className="mt-1 block text-[10px] font-medium tracking-[0.04em] text-accent-cyan sm:text-[9.5px]">
                 Wiadomości kosmiczne na żywo
               </span>
             </div>
@@ -261,9 +262,9 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
+                    "relative whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
                     isActive(link.href)
-                      ? "text-text-primary"
+                      ? "text-text-primary after:absolute after:inset-x-2.5 after:-bottom-[1px] after:h-[2px] after:rounded-full after:bg-accent-blue xl:after:inset-x-3"
                       : "text-text-secondary"
                   )}
                 >
@@ -551,14 +552,14 @@ export default function Navbar() {
             WebkitBackdropFilter: "blur(24px)",
           }}
         >
-          <nav className="container-site flex flex-col py-3">
+          <nav className={cn(SITE_CONTAINER, "flex flex-col py-3")}>
             {[...NAV_LINKS, ...CATEGORY_LINKS, ...MORE_LINKS].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "flex min-h-[44px] items-center border-b border-hairline-faint text-[15px] font-medium transition-colors last:border-0 hover:text-text-primary sm:text-[16px]",
+                  "flex min-h-[48px] items-center border-b border-hairline-faint text-[17px] font-medium transition-colors last:border-0 hover:text-text-primary md:text-[16px]",
                   isActive(link.href) ? "text-text-primary" : "text-text-secondary"
                 )}
               >
