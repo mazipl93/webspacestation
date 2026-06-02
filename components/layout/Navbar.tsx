@@ -17,6 +17,9 @@ const NAV_LINKS = [
   { label: "Misje", href: "/misje" },
   { label: "Astronomia", href: "/astronomia" },
   { label: "Technologie", href: "/technologie" },
+] as const;
+
+const CATEGORY_LINKS = [
   { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },
   { label: "ISS", href: "/iss" },
 ] as const;
@@ -57,6 +60,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 
 export default function Navbar() {
   const [moreOpen, setMoreOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   // searchOpen = mounted; searchShown = animated-in. Splitting them lets us
@@ -140,11 +144,15 @@ export default function Navbar() {
 
   useEffect(() => {
     setMoreOpen(false);
+    setCategoriesOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setMoreOpen(false);
+      if (e.key === "Escape") {
+        setMoreOpen(false);
+        setCategoriesOpen(false);
+      }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -217,7 +225,7 @@ export default function Navbar() {
           WebkitBackdropFilter: "blur(20px) saturate(180%)",
         }}
       >
-        <div className="container-site flex h-16 items-center gap-7">
+        <div className="container-site flex h-16 items-center gap-4 xl:gap-5">
           {/* ── Logo + brand ───────────────────────────────────── */}
           <Link href="/" className="group flex shrink-0 items-center gap-2.5">
             <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent-blue to-[#1a4fd0] shadow-[0_4px_16px_-4px_rgba(47,109,255,0.7)] transition-transform duration-500 group-hover:scale-105">
@@ -229,7 +237,7 @@ export default function Navbar() {
                 <span className="text-[14px] font-extrabold uppercase tracking-[0.12em] text-text-primary">
                   WSS
                 </span>
-                <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary sm:inline">
+                <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary xl:inline">
                   Web Space Station
                 </span>
               </span>
@@ -240,33 +248,89 @@ export default function Navbar() {
           </Link>
 
           {/* ── Desktop nav ────────────────────────────────────── */}
-          <nav className="ml-2 hidden items-center gap-0.5 lg:flex">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary",
-                  isActive(link.href)
-                    ? "text-text-primary"
-                    : "text-text-secondary"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="ml-1 hidden min-w-0 flex-1 items-center lg:flex">
+            <div className="flex min-w-0 items-center">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
+                    isActive(link.href)
+                      ? "text-text-primary"
+                      : "text-text-secondary"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
 
-            <div className="relative">
-              <button
-                onClick={() => setMoreOpen((v) => !v)}
-                className="flex items-center gap-1 rounded-lg px-3 py-2 text-[13px] font-medium text-text-secondary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary"
-              >
-                Więcej
-                <ChevronDown
-                  size={14}
-                  className={cn("transition-transform duration-300", moreOpen && "rotate-180")}
-                />
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setCategoriesOpen((v) => !v);
+                    setMoreOpen(false);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
+                    CATEGORY_LINKS.some((l) => isActive(l.href))
+                      ? "text-text-primary"
+                      : "text-text-secondary"
+                  )}
+                >
+                  Kategorie
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "transition-transform duration-300",
+                      categoriesOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                {categoriesOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setCategoriesOpen(false)}
+                    />
+                    <div
+                      className="absolute left-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-hairline p-1.5 shadow-2xl"
+                      style={{
+                        background: "rgba(12,16,24,0.92)",
+                        backdropFilter: "blur(24px) saturate(180%)",
+                        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                      }}
+                    >
+                      {CATEGORY_LINKS.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={() => setCategoriesOpen(false)}
+                          className="block whitespace-nowrap rounded-lg px-3 py-2.5 text-[13px] text-text-secondary transition-colors duration-200 hover:bg-glass-hover hover:text-text-primary"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setMoreOpen((v) => !v);
+                    setCategoriesOpen(false);
+                  }}
+                  className="flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium text-text-secondary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]"
+                >
+                  Więcej
+                  <ChevronDown
+                    size={14}
+                    className={cn("transition-transform duration-300", moreOpen && "rotate-180")}
+                  />
+                </button>
 
               {moreOpen && (
                 <>
@@ -292,13 +356,12 @@ export default function Navbar() {
                   </div>
                 </>
               )}
+              </div>
             </div>
           </nav>
 
-          <div className="flex-1" />
-
           {/* ── Right actions ──────────────────────────────────── */}
-          <div className="flex items-center gap-1.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5">
             <div className="relative">
               <button
                 aria-label="Szukaj"
@@ -466,13 +529,13 @@ export default function Navbar() {
           }}
         >
           <nav className="container-site flex flex-col py-3">
-            {[...NAV_LINKS, ...MORE_LINKS].map((link) => (
+            {[...NAV_LINKS, ...CATEGORY_LINKS, ...MORE_LINKS].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "border-b border-hairline-faint py-3 text-[14px] font-medium transition-colors last:border-0 hover:text-text-primary",
+                  "flex min-h-[44px] items-center border-b border-hairline-faint text-[15px] font-medium transition-colors last:border-0 hover:text-text-primary sm:text-[16px]",
                   isActive(link.href) ? "text-text-primary" : "text-text-secondary"
                 )}
               >

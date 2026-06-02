@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock } from "lucide-react";
+import { cn } from "@/lib/cn";
 import type { NewsArticle } from "@/types";
 import BookmarkButton from "@/components/article/BookmarkButton";
 
@@ -37,7 +38,13 @@ function catFallback(c: string) {
   return CATEGORY_FALLBACK[c] ?? CATEGORY_FALLBACK.technologie;
 }
 
-export default function ArticleCard({ article }: { article: NewsArticle }) {
+export default function ArticleCard({
+  article,
+  compact = false,
+}: {
+  article: NewsArticle;
+  compact?: boolean;
+}) {
   const meta = catMeta(article.category);
 
   return (
@@ -47,7 +54,10 @@ export default function ArticleCard({ article }: { article: NewsArticle }) {
     >
       {/* Image */}
       <div
-        className="img-sheen relative h-[176px] shrink-0 overflow-hidden"
+        className={cn(
+          "img-sheen relative shrink-0 overflow-hidden",
+          compact ? "h-[140px]" : "h-[176px] sm:h-[190px]"
+        )}
         style={{ background: catFallback(article.category) }}
       >
         <Image
@@ -91,17 +101,26 @@ export default function ArticleCard({ article }: { article: NewsArticle }) {
         </div>
 
         <h3
-          className="mb-2 line-clamp-2 font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan"
-          style={{ fontSize: "var(--text-title-sm)" }}
+          className={cn(
+            "mb-2 line-clamp-2 font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan",
+            compact
+              ? "text-[16px] sm:text-[15px]"
+              : "text-[18px] sm:text-[var(--text-title-sm)]"
+          )}
         >
           {article.title}
         </h3>
 
-        <p className="mb-auto line-clamp-2 text-[12px] leading-relaxed text-text-tertiary">
+        <p
+          className={cn(
+            "mb-auto line-clamp-2 leading-relaxed text-text-tertiary",
+            compact ? "text-[14px]" : "text-[15px] sm:text-[12px]"
+          )}
+        >
           {article.excerpt}
         </p>
 
-        <div className="mt-3 flex items-center gap-1 text-[10px] text-text-muted">
+        <div className="mt-3 flex items-center gap-1 text-[12px] text-text-muted sm:text-[10px]">
           <Clock size={10} />
           {article.readTime ?? 3} min czytania
         </div>

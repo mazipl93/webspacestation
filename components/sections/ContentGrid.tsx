@@ -7,27 +7,60 @@ import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import ArticleCard from "@/components/article/ArticleCard";
 import HeroArticle from "@/components/sections/HeroArticle";
 import TopStoriesList from "@/components/sections/TopStoriesList";
-import PopularArticles from "@/components/sections/PopularArticles";
+import HomeSidebar from "@/components/sections/HomeSidebar";
+
+// ─── Wide homepage container (globals.css frozen — local utility) ─────────────
+
+const HOME_CONTAINER =
+  "mx-auto w-full max-w-[min(95vw,1720px)] px-5 md:px-8 xl:px-10";
 
 // ─── Category presentation ────────────────────────────────────────────────────
 
 const CATEGORY_META: Record<
   string,
-  { label: string; color: string; href: string }
+  {
+    label: string;
+    color: string;
+    href: string;
+    description: string;
+    variant: "hero-strip" | "accent-bar" | "split" | "banner" | "minimal";
+  }
 > = {
-  misje: { label: "Misje", color: "#2f6dff", href: "/misje" },
-  astronomia: { label: "Astronomia", color: "#a855f7", href: "/astronomia" },
+  misje: {
+    label: "Misje",
+    color: "#2f6dff",
+    href: "/misje",
+    description: "Eksploracja Księżyca, Marsa i głębokiej przestrzeni kosmicznej.",
+    variant: "hero-strip",
+  },
+  astronomia: {
+    label: "Astronomia",
+    color: "#a855f7",
+    href: "/astronomia",
+    description: "Odkrycia teleskopów, galaktyki i tajemnice Wszechświata.",
+    variant: "accent-bar",
+  },
   technologie: {
     label: "Technologie",
     color: "#38bdf8",
     href: "/technologie",
+    description: "Rakiety, satelity i innowacje napędzające erę kosmiczną.",
+    variant: "split",
   },
   "ziemia-z-kosmosu": {
     label: "Ziemia z kosmosu",
     color: "#22c55e",
     href: "/ziemia-z-kosmosu",
+    description: "Zdjęcia i obserwacje naszej planety z orbity.",
+    variant: "banner",
   },
-  iss: { label: "ISS", color: "#ffb830", href: "/iss" },
+  iss: {
+    label: "ISS",
+    color: "#ffb830",
+    href: "/iss",
+    description: "Życie i badania na Międzynarodowej Stacji Kosmicznej.",
+    variant: "minimal",
+  },
 };
 
 const CATEGORY_ORDER = [
@@ -43,29 +76,38 @@ function SectionHeader({
   accent = "#2f6dff",
   href,
   cta = "Zobacz wszystkie",
+  large = false,
 }: {
   label: string;
   accent?: string;
   href?: string;
   cta?: string;
+  large?: boolean;
 }) {
   return (
     <div className="mb-5 flex items-center justify-between">
       <div className="flex items-center gap-2.5">
         <span
-          className="h-3.5 w-[3px] shrink-0 rounded-full"
+          className="h-4 w-[3px] shrink-0 rounded-full"
           style={{ background: accent, boxShadow: `0 0 10px ${accent}66` }}
         />
-        <h2 className="overline text-text-secondary">{label}</h2>
+        <h2
+          className={cn(
+            "font-bold uppercase tracking-[0.14em] text-text-secondary",
+            large ? "text-[13px] sm:text-[14px]" : "overline"
+          )}
+        >
+          {label}
+        </h2>
       </div>
       {href && (
         <a
           href={href}
-          className="group flex items-center gap-1 text-[12px] font-medium text-text-tertiary transition-colors duration-300 hover:text-text-primary"
+          className="group flex min-h-[44px] items-center gap-1 text-[13px] font-medium text-text-tertiary transition-colors duration-300 hover:text-text-primary sm:text-[12px]"
         >
           {cta}
           <ChevronRight
-            size={13}
+            size={14}
             className="transition-transform duration-300 group-hover:translate-x-0.5"
           />
         </a>
@@ -74,7 +116,7 @@ function SectionHeader({
   );
 }
 
-function CategoryRow({
+function CategorySection({
   slug,
   articles,
 }: {
@@ -84,16 +126,177 @@ function CategoryRow({
   const meta = CATEGORY_META[slug];
   if (!meta || articles.length === 0) return null;
 
-  return (
-    <section>
-      <SectionHeader
-        label={meta.label}
-        accent={meta.color}
-        href={meta.href}
+  const header = (
+    <div className="mb-5">
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <Link
+            href={meta.href}
+            className="group inline-flex items-center gap-2 transition-colors hover:text-accent-cyan"
+          >
+            <h2
+              className="text-[1.5rem] font-extrabold uppercase tracking-[0.06em] text-text-primary sm:text-[1.75rem]"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              {meta.label}
+            </h2>
+            <ChevronRight
+              size={20}
+              className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-cyan"
+            />
+          </Link>
+          <p className="mt-2 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary sm:text-[14px]">
+            {meta.description}
+          </p>
+        </div>
+        <a
+          href={meta.href}
+          className="hidden min-h-[44px] items-center text-[13px] font-medium text-text-tertiary transition-colors hover:text-text-primary sm:flex"
+        >
+          Zobacz wszystkie →
+        </a>
+      </div>
+      <div
+        className="h-1 w-full rounded-full"
+        style={{
+          background: `linear-gradient(90deg, ${meta.color} 0%, ${meta.color}44 55%, transparent 100%)`,
+        }}
       />
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    </div>
+  );
+
+  if (meta.variant === "hero-strip") {
+    const [lead, ...rest] = articles;
+    return (
+      <section
+        className="overflow-hidden rounded-2xl border border-hairline p-5 sm:p-6"
+        style={{
+          background: `linear-gradient(135deg, ${meta.color}12 0%, transparent 55%), var(--space-card)`,
+        }}
+      >
+        {header}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          {lead && (
+            <Link
+              href={`/aktualnosci/${lead.slug}`}
+              className="surface-interactive group relative min-h-[240px] overflow-hidden rounded-xl border border-hairline"
+            >
+              <Image
+                src={lead.imageUrl}
+                alt={lead.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
+                }}
+              />
+              <div className="absolute inset-x-0 bottom-0 p-5">
+                <p className="text-[18px] font-bold leading-snug text-text-primary sm:text-[20px]">
+                  {lead.title}
+                </p>
+                <p className="mt-2 line-clamp-2 text-[15px] text-text-tertiary">
+                  {lead.excerpt}
+                </p>
+              </div>
+            </Link>
+          )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            {rest.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (meta.variant === "accent-bar") {
+    return (
+      <section className="relative overflow-hidden rounded-2xl border border-hairline">
+        <div
+          className="absolute inset-y-0 left-0 w-1.5"
+          style={{ background: meta.color, boxShadow: `0 0 20px ${meta.color}66` }}
+        />
+        <div className="py-5 pl-6 pr-5 sm:py-6 sm:pl-8 sm:pr-6">
+          {header}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (meta.variant === "split") {
+    return (
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <div
+          className="flex flex-col justify-center rounded-2xl border border-hairline p-5"
+          style={{ background: `${meta.color}10` }}
+        >
+          <span
+            className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em]"
+            style={{ color: meta.color }}
+          >
+            Sekcja
+          </span>
+          <h2 className="text-[1.35rem] font-extrabold text-text-primary">
+            {meta.label}
+          </h2>
+          <p className="mt-3 text-[15px] leading-relaxed text-text-tertiary sm:text-[14px]">
+            {meta.description}
+          </p>
+          <a
+            href={meta.href}
+            className="mt-5 inline-flex min-h-[44px] items-center text-[14px] font-semibold transition-colors hover:text-accent-cyan"
+            style={{ color: meta.color }}
+          >
+            Przejdź do sekcji →
+          </a>
+        </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {articles.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (meta.variant === "banner") {
+    return (
+      <section
+        className="overflow-hidden rounded-2xl border border-hairline"
+        style={{
+          background: `linear-gradient(180deg, ${meta.color}18 0%, transparent 100%)`,
+        }}
+      >
+        <div className="border-b border-hairline-faint px-5 py-4 sm:px-6">
+          {header}
+        </div>
+        <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-4">
+          {articles.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // minimal (ISS)
+  return (
+    <section className="border-y border-hairline py-8">
+      {header}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {articles.map((article) => (
-          <ArticleCard key={article.id} article={article} />
+          <ArticleCard key={article.id} article={article} compact />
         ))}
       </div>
     </section>
@@ -448,10 +651,10 @@ function TimelineWydarzen() {
 
 function DashboardWidgets() {
   return (
-    <section className="reveal mt-10 space-y-4 border-t border-hairline pt-10">
+    <section className="reveal mt-4 space-y-4 border-t border-hairline pt-10">
       <div className="mb-2">
         <p className="overline text-text-muted">Centrum operacyjne</p>
-        <p className="mt-1 text-[13px] text-text-tertiary">
+        <p className="mt-1 text-[14px] text-text-tertiary sm:text-[13px]">
           Starty, misje i wydarzenia — dane na żywo wkrótce
         </p>
       </div>
@@ -477,14 +680,14 @@ export default async function ContentGrid() {
 
   if (articles.length === 0) {
     return (
-      <div className="container-site py-20">
+      <div className={cn(HOME_CONTAINER, "py-20")}>
         <div className="card-surface px-8 py-16 text-center">
-          <p className="text-[14px] text-text-secondary">
+          <p className="text-[15px] text-text-secondary">
             Brak opublikowanych artykułów.
           </p>
           <Link
             href="/aktualnosci"
-            className="mt-4 inline-flex items-center gap-2 text-[12.5px] font-medium text-accent-cyan hover:underline"
+            className="mt-4 inline-flex min-h-[44px] items-center gap-2 text-[14px] font-medium text-accent-cyan hover:underline"
           >
             Przejdź do aktualności
           </Link>
@@ -498,67 +701,67 @@ export default async function ContentGrid() {
 
   const topStories = articles
     .filter((a) => !usedSlugs.has(a.slug))
-    .slice(0, 4);
+    .slice(0, 6);
   topStories.forEach((a) => usedSlugs.add(a.slug));
 
   const latest = articles
     .filter((a) => !usedSlugs.has(a.slug))
-    .slice(0, 9);
+    .slice(0, 12);
 
   const categoryArticles = CATEGORY_ORDER.map((slug, i) => ({
     slug,
-    articles: (categoryBuckets[i] ?? []).slice(0, 3),
+    articles: (categoryBuckets[i] ?? []).slice(0, 4),
   }));
 
-  const excludeForPopular = [...usedSlugs];
+  const excludeForSidebar = [...usedSlugs];
 
   return (
-    <>
-      {/* 1. Hero article + 2. Top stories (desktop rail overlays hero scrim) */}
-      <div className="relative">
+    <div className={HOME_CONTAINER}>
+      {/* 1. Hero + Top stories — side-by-side on desktop */}
+      <div className="grid grid-cols-1 items-stretch gap-4 pt-20 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-5">
         <HeroArticle article={lead} />
-        <div className="pointer-events-none absolute inset-x-0 top-0 hidden xl:block">
-          <div className="container-site flex justify-end pt-24">
-            <div className="pointer-events-auto w-[300px]">
-              <TopStoriesList articles={topStories} />
-            </div>
-          </div>
+        <div className="hidden lg:block">
+          <TopStoriesList articles={topStories} />
         </div>
       </div>
 
-      <div className="container-site mt-4 xl:hidden">
+      {/* Mobile: Top stories below hero */}
+      <div className="mt-4 lg:hidden">
         <TopStoriesList articles={topStories} />
       </div>
 
-      <div className="container-site space-y-10 pb-14 pt-8 sm:space-y-12">
-        {/* 3. Latest */}
-        {latest.length > 0 && (
-          <section>
-            <SectionHeader label="Najnowsze" href="/aktualnosci" />
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {latest.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-            </div>
-          </section>
-        )}
+      {/* Main editorial + sticky sidebar */}
+      <div className="mt-8 grid grid-cols-1 gap-8 pb-14 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8">
+        <div className="min-w-0 space-y-12 sm:space-y-14">
+          {/* 2. Latest — largest section, 4-col grid */}
+          {latest.length > 0 && (
+            <section>
+              <SectionHeader
+                label="Najnowsze wiadomości"
+                href="/aktualnosci"
+                large
+              />
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                {latest.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+            </section>
+          )}
 
-        {/* 4. Categories */}
-        <div className="space-y-10">
-          {categoryArticles.map(({ slug, articles: catArticles }) => (
-            <CategoryRow key={slug} slug={slug} articles={catArticles} />
-          ))}
+          {/* 3. Categories — visually distinct blocks */}
+          <div className="space-y-10 sm:space-y-12">
+            {categoryArticles.map(({ slug, articles: catArticles }) => (
+              <CategorySection key={slug} slug={slug} articles={catArticles} />
+            ))}
+          </div>
+
+          {/* 4. Space widgets — demoted */}
+          <DashboardWidgets />
         </div>
 
-        {/* 5. Popular */}
-        <PopularArticles
-          articles={articles}
-          excludeSlugs={excludeForPopular}
-        />
-
-        {/* 6. Widgets */}
-        <DashboardWidgets />
+        <HomeSidebar articles={articles} excludeSlugs={excludeForSidebar} />
       </div>
-    </>
+    </div>
   );
 }
