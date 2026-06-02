@@ -273,8 +273,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {currentId && form.slug.trim() ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {currentId ? (
             <Link
               href={
                 publishedSlug
@@ -283,15 +283,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-badge border border-hairline px-3 py-2 text-meta font-medium text-text-secondary transition-colors hover:border-white/15 hover:text-text-primary"
-              title={
+              className={
                 publishedSlug
-                  ? "Podgląd na żywo na portalu"
-                  : "Podgląd redakcyjny (wpis jeszcze nie na portalu)"
+                  ? "inline-flex items-center gap-1.5 rounded-badge border border-hairline bg-glass px-3.5 py-2 text-meta font-semibold text-text-secondary transition-colors hover:text-text-primary"
+                  : "inline-flex items-center gap-1.5 rounded-badge border border-accent-cyan/40 bg-accent-cyan/15 px-3.5 py-2 text-meta font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/25"
               }
             >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Podgląd
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              {publishedSlug ? "Podgląd na portalu" : "Zobacz przed publikacją"}
             </Link>
           ) : null}
           <Button variant="ghost" onClick={() => persist()} disabled={saving}>
@@ -323,21 +322,34 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 return label ? ` (${label})` : null;
               })()}
             </p>
-            <Button
-              type="button"
-              disabled={reprocessing || saving}
-              onClick={handleReprocessAi}
-              title="OpenAI (gpt-5.4-mini): ponownie tytuł PL, zajawka, tagi i etykieta Ze świata"
-            >
-              {reprocessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                  Poprawianie…
-                </>
-              ) : (
-                "Popraw z AI"
-              )}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {currentId && status !== "PUBLISHED" ? (
+                <Link
+                  href={`/admin/articles/${currentId}/preview`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-badge border border-accent-cyan/40 bg-accent-cyan/15 px-3.5 py-2 text-meta font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/25"
+                >
+                  <ExternalLink className="h-4 w-4 shrink-0" />
+                  Zobacz przed publikacją
+                </Link>
+              ) : null}
+              <Button
+                type="button"
+                disabled={reprocessing || saving}
+                onClick={handleReprocessAi}
+                title="OpenAI (gpt-5.4-mini): ponownie tytuł PL, zajawka, tagi i etykieta Ze świata"
+              >
+                {reprocessing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    Poprawianie…
+                  </>
+                ) : (
+                  "Popraw z AI"
+                )}
+              </Button>
+            </div>
           </div>
           <ArticleEnrichmentPreview
             view={toAdminEnrichmentView({
