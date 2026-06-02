@@ -30,6 +30,11 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = pathname.startsWith("/admin");
   const isUsersAdminRoute = pathname.startsWith("/admin/users");
 
+  // Let the logout route clear cookies — do not refresh the session here.
+  if (pathname === "/logout") {
+    return NextResponse.next({ request });
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
