@@ -26,7 +26,7 @@ export default function TopStoriesList({ articles }: { articles: NewsArticle[] }
           style={{ boxShadow: "0 0 10px rgba(255,69,58,0.55)" }}
         />
         <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
-          Top stories
+          Ważne teraz
         </h2>
       </div>
 

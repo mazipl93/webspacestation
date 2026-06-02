@@ -717,7 +717,7 @@ export default async function ContentGrid() {
 
   return (
     <div className={HOME_CONTAINER}>
-      {/* 1. Hero + Top stories — side-by-side on desktop */}
+      {/* 1. Hero + Ważne teraz — side-by-side on desktop */}
       <div className="grid grid-cols-1 items-stretch gap-4 pt-20 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-5">
         <HeroArticle article={lead} />
         <div className="hidden lg:block">
@@ -725,7 +725,7 @@ export default async function ContentGrid() {
         </div>
       </div>
 
-      {/* Mobile: Top stories below hero */}
+      {/* Mobile: Ważne teraz below hero */}
       <div className="mt-4 lg:hidden">
         <TopStoriesList articles={topStories} />
       </div>
