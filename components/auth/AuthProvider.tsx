@@ -16,7 +16,7 @@ export type { SessionUser };
 
 interface AuthContextValue {
   user: SessionUser | null;
-  /** True only during the (rare) window before the first auth check resolves. */
+  /** True until the first server + client auth check resolves. */
   loading: boolean;
   signOut: (next?: string) => void;
   /** Reload user from Supabase (e.g. after avatar upload). */
@@ -25,13 +25,25 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function fetchServerUser(): Promise<SessionUser | null> {
+  try {
+    const res = await fetch("/api/auth/session", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { user: SessionUser | null };
+    return json.user ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Single source of truth for public auth state. The user is hydrated entirely
- * on the client (Supabase auth.getUser + onAuthStateChange) so the root layout
- * stays free of server-side session reads and public pages remain cacheable.
- * `loading` stays true until that first client check resolves, which lets
- * auth-gated screens (e.g. /profil) wait instead of redirecting prematurely.
- * `initialUser` is accepted for completeness but defaults to null.
+ * Public auth state. Bootstraps from `/api/auth/session` (server cookies) so UI
+ * matches middleware/RSC guards without making the root layout dynamic. Listens
+ * to onAuthStateChange using the session argument — never calls getUser() inside
+ * that callback (avoids races when middleware refreshes cookies on navigation).
  */
 export function AuthProvider({
   initialUser = null,
@@ -43,7 +55,6 @@ export function AuthProvider({
   const [user, setUser] = useState<SessionUser | null>(initialUser);
   const [loading, setLoading] = useState(true);
   const clientRef = useRef<SupabaseClient | null>(null);
-  const syncUserRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -57,41 +68,67 @@ export function AuthProvider({
     })();
     clientRef.current = supabase;
 
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+    async function bootstrap() {
+      const [serverUser, clientSession] = await Promise.all([
+        fetchServerUser(),
+        supabase
+          ? supabase.auth.getSession().then(({ data }) => data.session)
+          : Promise.resolve(null),
+      ]);
 
-    async function syncUser() {
-      if (!supabase) return;
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      if (active) setUser(toSessionUser(authUser));
-    }
-    syncUserRef.current = syncUser;
-
-    // Resolve the initial auth check, then drop the loading flag exactly once.
-    void syncUser().finally(() => {
-      if (active) setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async () => {
       if (!active) return;
-      await syncUser();
+
+      const clientUser = toSessionUser(clientSession?.user ?? null);
+      setUser(serverUser ?? clientUser);
+
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!active) return;
+
+        if (session?.user) {
+          setUser(toSessionUser(session.user));
+          setLoading(false);
+          return;
+        }
+
+        // Client lost session (often after middleware cookie refresh on navigation).
+        // Confirm with the server before clearing UI state.
+        void fetchServerUser().then((serverUser) => {
+          if (!active) return;
+          setUser(serverUser);
+          setLoading(false);
+        });
+      });
+
       setLoading(false);
+
+      return subscription;
+    }
+
+    let subscription: { unsubscribe: () => void } | undefined;
+    void bootstrap().then((sub) => {
+      subscription = sub;
     });
 
     return () => {
       active = false;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
   const refreshUser = useCallback(async () => {
-    await syncUserRef.current?.();
+    const supabase = clientRef.current;
+    if (!supabase) return;
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    setUser(toSessionUser(authUser));
   }, []);
 
   const signOut = useCallback((next = "/") => {

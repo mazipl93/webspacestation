@@ -11,6 +11,8 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import AccountMenu from "@/components/auth/AccountMenu";
 import LogoutButton from "@/components/auth/LogoutButton";
 import Avatar from "@/components/profile/Avatar";
+import NotificationsPopover from "@/components/notifications/NotificationsPopover";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const NAV_LINKS = [
   { label: "Aktualności", href: "/aktualnosci" },
@@ -67,6 +69,7 @@ export default function Navbar() {
   // play both an open AND a close transition instead of an instant unmount.
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchShown, setSearchShown] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [catalogue, setCatalogue] = useState<AdminArticle[] | null>(null);
@@ -75,7 +78,8 @@ export default function Navbar() {
   const closeTimer = useRef<number | null>(null);
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { hasUnread: hasUnreadNotifications } = useNotifications();
 
   // Preserve where the user is so login/register can return them here.
   const redirectQuery =
@@ -93,6 +97,7 @@ export default function Navbar() {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = null;
     }
+    setNotificationsOpen(false);
     setSearchOpen(true);
     // Next frame: flip to the shown state so the transition actually animates.
     requestAnimationFrame(() => setSearchShown(true));
@@ -145,6 +150,7 @@ export default function Navbar() {
   useEffect(() => {
     setMoreOpen(false);
     setCategoriesOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -471,22 +477,39 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link
-              href="/notifications"
-              aria-label="Powiadomienia"
-              title="Powiadomienia"
-              className="relative flex h-9 w-9 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary"
-            >
-              <Bell size={18} strokeWidth={2} />
-              {user && (
-                <span
-                  aria-hidden="true"
-                  className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent-blue ring-2 ring-[#05070d]"
-                />
-              )}
-            </Link>
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="Powiadomienia"
+                aria-expanded={notificationsOpen}
+                onClick={() => {
+                  setSearchOpen(false);
+                  setSearchShown(false);
+                  setNotificationsOpen((v) => !v);
+                }}
+                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary"
+              >
+                <Bell size={18} strokeWidth={2} />
+                {hasUnreadNotifications && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent-blue ring-2 ring-[#05070d]"
+                  />
+                )}
+              </button>
+              <NotificationsPopover
+                open={notificationsOpen}
+                onClose={() => setNotificationsOpen(false)}
+                loginHref={loginHref}
+              />
+            </div>
 
-            {user ? (
+            {authLoading ? (
+              <div
+                aria-hidden="true"
+                className="ml-1.5 hidden h-9 w-[148px] animate-pulse rounded-lg bg-glass sm:block"
+              />
+            ) : user ? (
               <div className="ml-1.5 hidden sm:block">
                 <AccountMenu />
               </div>
@@ -560,14 +583,6 @@ export default function Navbar() {
                 >
                   <User size={16} />
                   Profil
-                </Link>
-                <Link
-                  href="/notifications"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-hairline-strong hover:text-text-primary"
-                >
-                  <Bell size={16} />
-                  Powiadomienia
                 </Link>
                 <LogoutButton
                   next="/"

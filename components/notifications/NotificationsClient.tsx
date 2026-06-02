@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   CalendarClock,
@@ -8,62 +9,18 @@ import {
   MessageCircle,
   Rocket,
   Sparkles,
+  type LucideIcon,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { useSessionUser } from "@/hooks/useSessionUser";
+import { useNotifications } from "@/hooks/useNotifications";
 
-type PlaceholderNotification = {
-  id: string;
-  icon: LucideIcon;
-  accent: string;
-  title: string;
-  body: string;
-  time: string;
-  href: string;
-  unread?: boolean;
+const ICONS: Record<string, LucideIcon> = {
+  rocket: Rocket,
+  sparkles: Sparkles,
+  message: MessageCircle,
+  calendar: CalendarClock,
 };
-
-// Placeholder feed — real notifications will be Supabase-backed later.
-const NOTIFICATIONS: PlaceholderNotification[] = [
-  {
-    id: "n1",
-    icon: Rocket,
-    accent: "#38bdf8",
-    title: "Start Falcon 9 już za 2 godziny",
-    body: "Misja Starlink Group 12-4 startuje z SLC-40 na Cape Canaveral.",
-    time: "12 min temu",
-    href: "/starty",
-    unread: true,
-  },
-  {
-    id: "n2",
-    icon: Sparkles,
-    accent: "#a855f7",
-    title: "Nowy artykuł w kategorii Astronomia",
-    body: "JWST uchwycił nowe szczegóły mgławicy w gwiazdozbiorze Oriona.",
-    time: "1 godz. temu",
-    href: "/aktualnosci/jwst-kosmiczna-meduza",
-    unread: true,
-  },
-  {
-    id: "n3",
-    icon: MessageCircle,
-    accent: "#2f6dff",
-    title: "Odpowiedź na Twój komentarz",
-    body: "Ktoś odpowiedział w dyskusji pod artykułem o misji Artemis II.",
-    time: "5 godz. temu",
-    href: "/aktualnosci/starship-flight-14-pelny-sukces",
-  },
-  {
-    id: "n4",
-    icon: CalendarClock,
-    accent: "#ffb830",
-    title: "Przypomnienie o wydarzeniu",
-    body: "Starship Flight 14 — okno startowe otwiera się jutro o 14:00.",
-    time: "wczoraj",
-    href: "/starty",
-  },
-];
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
@@ -83,6 +40,8 @@ function PageShell({ children }: { children: React.ReactNode }) {
 
 export default function NotificationsClient() {
   const { user, loading } = useSessionUser();
+  const router = useRouter();
+  const { items, markRead, markAllRead, hasUnread } = useNotifications();
 
   if (loading) {
     return (
@@ -136,29 +95,42 @@ export default function NotificationsClient() {
 
   return (
     <PageShell>
-      <div className="mb-7 flex items-center gap-2.5">
-        <Bell size={18} className="text-accent-cyan" />
-        <h1
-          className="font-extrabold text-text-primary"
-          style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", letterSpacing: "-0.03em" }}
-        >
-          Powiadomienia
-        </h1>
+      <div className="mb-7 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <Bell size={18} className="text-accent-cyan" />
+          <h1
+            className="font-extrabold text-text-primary"
+            style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", letterSpacing: "-0.03em" }}
+          >
+            Powiadomienia
+          </h1>
+        </div>
+        {hasUnread && (
+          <button
+            type="button"
+            onClick={markAllRead}
+            className="text-[13px] font-medium text-text-tertiary transition-colors hover:text-accent-cyan"
+          >
+            Oznacz wszystkie jako przeczytane
+          </button>
+        )}
       </div>
 
       <ul className="flex flex-col gap-3">
-        {NOTIFICATIONS.map((n) => {
-          const Icon = n.icon;
+        {items.map((n) => {
+          const Icon = ICONS[n.icon] ?? Bell;
           return (
             <li key={n.id}>
-              <Link
-                href={n.href}
-                className="card-surface group flex items-start gap-3.5 p-4 transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover sm:p-5"
-                style={
-                  n.unread
-                    ? { borderColor: "rgba(47,109,255,0.28)" }
-                    : undefined
-                }
+              <button
+                type="button"
+                onClick={() => {
+                  markRead(n.id);
+                  router.push(n.href);
+                }}
+                className={cn(
+                  "card-surface group flex w-full items-start gap-3.5 p-4 text-left transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover sm:p-5",
+                  n.isUnread && "border-accent-blue/30"
+                )}
               >
                 <span
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-hairline"
@@ -171,7 +143,7 @@ export default function NotificationsClient() {
                     <p className="text-[13.5px] font-semibold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan">
                       {n.title}
                     </p>
-                    {n.unread && (
+                    {n.isUnread && (
                       <span
                         aria-label="Nieprzeczytane"
                         className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent-blue"
@@ -183,7 +155,7 @@ export default function NotificationsClient() {
                   </p>
                   <span className="mt-2 block text-[11px] text-text-muted">{n.time}</span>
                 </div>
-              </Link>
+              </button>
             </li>
           );
         })}

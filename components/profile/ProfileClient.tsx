@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Bookmark, Heart, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import LogoutButton from "@/components/auth/LogoutButton";
@@ -72,16 +71,10 @@ function ArticleGrid({
 
 export default function ProfileClient() {
   const { user, loading } = useAuth();
-  const router = useRouter();
   const { slugs: bookmarkSlugs } = useBookmarks();
 
   const [catalogue, setCatalogue] = useState<AdminArticle[] | null>(null);
   const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
-
-  // Signed-out (e.g. after logout from this page) — return home.
-  useEffect(() => {
-    if (!loading && !user) router.replace("/");
-  }, [loading, user, router]);
 
   // Load the published catalogue once so we can resolve saved/liked slugs.
   useEffect(() => {
@@ -128,12 +121,31 @@ export default function ProfileClient() {
     [likedSlugs, cardBySlug]
   );
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <PageShell>
         <div className="mx-auto max-w-[920px] space-y-6">
           <div className="h-32 animate-pulse rounded-2xl border border-hairline bg-glass" />
           <div className="h-48 animate-pulse rounded-2xl border border-hairline bg-glass" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  // Server page already verified the session; if client state lags, offer re-login.
+  if (!user) {
+    return (
+      <PageShell>
+        <div className="mx-auto max-w-[920px] rounded-2xl border border-hairline bg-glass px-6 py-10 text-center">
+          <p className="text-[15px] text-text-secondary">
+            Nie udało się wczytać sesji w przeglądarce.
+          </p>
+          <Link
+            href="/logowanie?redirectTo=%2Fprofil"
+            className="mt-4 inline-flex min-h-[44px] items-center rounded-xl bg-accent-blue px-5 py-2.5 text-[14px] font-semibold text-white"
+          >
+            Zaloguj się ponownie
+          </Link>
         </div>
       </PageShell>
     );
