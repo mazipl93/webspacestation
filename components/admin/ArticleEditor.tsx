@@ -274,11 +274,21 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </div>
 
         <div className="flex items-center gap-2">
-          {publishedSlug ? (
+          {currentId && form.slug.trim() ? (
             <Link
-              href={`/aktualnosci/${publishedSlug}`}
+              href={
+                publishedSlug
+                  ? `/aktualnosci/${publishedSlug}`
+                  : `/admin/articles/${currentId}/preview`
+              }
               target="_blank"
-              className="inline-flex items-center gap-1.5 text-meta text-text-tertiary transition-colors hover:text-text-primary"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-badge border border-hairline px-3 py-2 text-meta font-medium text-text-secondary transition-colors hover:border-white/15 hover:text-text-primary"
+              title={
+                publishedSlug
+                  ? "Podgląd na żywo na portalu"
+                  : "Podgląd redakcyjny (wpis jeszcze nie na portalu)"
+              }
             >
               <ExternalLink className="h-3.5 w-3.5" />
               Podgląd
