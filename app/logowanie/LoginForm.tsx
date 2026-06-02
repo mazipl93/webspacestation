@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  provisionSessionUser,
+  redirectAfterAuth,
+  safeRedirectPath,
+} from "@/lib/auth/login-redirect";
 import { Banner, Button, Field, TextInput } from "@/components/admin/primitives";
 
 // Maps Supabase auth errors to Polish, user-facing copy.
@@ -19,9 +24,8 @@ function mapError(message: string): string {
 }
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,9 +66,8 @@ export default function LoginForm() {
       return;
     }
 
-    // Sync the new session into Server Components, then continue.
-    router.replace(redirectTo);
-    router.refresh();
+    await provisionSessionUser();
+    redirectAfterAuth(redirectTo);
   };
 
   return (

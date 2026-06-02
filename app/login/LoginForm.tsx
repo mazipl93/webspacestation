@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  provisionSessionUser,
+  redirectAfterAuth,
+  safeRedirectPath,
+} from "@/lib/auth/login-redirect";
 import { Banner, Button, Field, TextInput } from "@/components/admin/primitives";
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/admin";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"), "/admin");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,10 +41,8 @@ export default function LoginForm() {
       return;
     }
 
-    await fetch("/api/auth/provision", { method: "POST" });
-
-    router.replace(redirectTo);
-    router.refresh();
+    await provisionSessionUser();
+    redirectAfterAuth(redirectTo);
   };
 
   return (

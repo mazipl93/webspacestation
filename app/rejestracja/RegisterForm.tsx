@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Loader2, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  provisionSessionUser,
+  redirectAfterAuth,
+  safeRedirectPath,
+} from "@/lib/auth/login-redirect";
 import { Banner, Button, Field, TextInput } from "@/components/admin/primitives";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,9 +26,8 @@ function mapError(message: string): string {
 }
 
 export default function RegisterForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/";
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"));
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -95,10 +99,8 @@ export default function RegisterForm() {
       return;
     }
 
-    await fetch("/api/auth/provision", { method: "POST" });
-
-    router.replace(redirectTo);
-    router.refresh();
+    await provisionSessionUser();
+    redirectAfterAuth(redirectTo);
   };
 
   if (confirmSent) {
