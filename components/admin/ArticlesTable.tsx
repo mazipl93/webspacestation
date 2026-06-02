@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, Archive, CheckCircle, XCircle } from "lucide-react";
+import {
+  Pencil,
+  Archive,
+  CheckCircle,
+  XCircle,
+  ExternalLink,
+  Globe2,
+} from "lucide-react";
 import type { AdminArticle } from "@/lib/admin/types";
 import {
   formatReadingTimeLabel,
   getAdminDisplaySummary,
   getAdminDisplayTitle,
   getAdminArticleTags,
+  getRssSourceHostname,
   isAiEnrichedRssArticle,
   isRawRssDraftArticle,
   isRssAggregatorArticle,
@@ -52,7 +60,7 @@ export default function ArticlesTable({
           <tr className="border-b border-hairline text-text-tertiary">
             <th className="px-5 py-3 text-overline font-semibold">Tytuł / streszczenie</th>
             <th className="hidden px-5 py-3 text-overline font-semibold md:table-cell">
-              Źródło
+              Źródło zewnętrzne
             </th>
             <th className="hidden px-5 py-3 text-overline font-semibold lg:table-cell">
               Kategoria / tagi
@@ -100,6 +108,12 @@ export default function ArticlesTable({
                     </p>
                   ) : null}
                   <div className="mt-1.5 flex flex-wrap gap-1">
+                    {rss ? (
+                      <span className="inline-flex items-center gap-0.5 rounded-badge border border-accent-cyan/25 bg-accent-cyan/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent-cyan">
+                        <Globe2 className="h-2.5 w-2.5" aria-hidden />
+                        Ze świata
+                      </span>
+                    ) : null}
                     {raw ? (
                       <span className="rounded-badge border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-200">
                         Surowy RSS
@@ -111,9 +125,45 @@ export default function ArticlesTable({
                       </span>
                     ) : null}
                   </div>
+                  {rss && a.originalUrl ? (
+                    <a
+                      href={a.originalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex max-w-full items-center gap-1 truncate text-caption text-accent-cyan hover:underline md:hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+                      {getRssSourceHostname(a.originalUrl)}
+                    </a>
+                  ) : null}
                 </td>
-                <td className="hidden px-5 py-3.5 text-meta text-text-tertiary md:table-cell">
-                  {a.source ?? "—"}
+                <td className="hidden px-5 py-3.5 md:table-cell">
+                  {rss ? (
+                    <div className="max-w-[14rem]">
+                      <p className="text-meta font-medium text-text-secondary">
+                        {a.source ?? "RSS"}
+                      </p>
+                      {a.originalUrl ? (
+                        <a
+                          href={a.originalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-caption text-accent-cyan hover:underline"
+                          title={a.originalUrl}
+                        >
+                          <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+                          {getRssSourceHostname(a.originalUrl)}
+                        </a>
+                      ) : (
+                        <p className="mt-1 text-caption text-amber-200/80">
+                          Brak linku w bazie
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-meta text-text-muted">Redakcja WSS</span>
+                  )}
                 </td>
                 <td className="hidden px-5 py-3.5 lg:table-cell">
                   <span className="inline-flex items-center gap-1.5 text-meta text-text-secondary">

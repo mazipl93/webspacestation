@@ -298,7 +298,27 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       ) : null}
 
       {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
-        <div className="mb-5">
+        <Card className="mb-5 border-accent-cyan/20 bg-accent-cyan/[0.04]">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-overline font-semibold uppercase tracking-wide text-accent-cyan">
+              Artykuł RSS — zewnętrzne źródło
+            </p>
+            <Button
+              type="button"
+              disabled={reprocessing || saving}
+              onClick={handleReprocessAi}
+              title="OpenAI (gpt-5.4-mini): ponownie tytuł PL, zajawka, tagi i etykieta Ze świata"
+            >
+              {reprocessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Poprawianie…
+                </>
+              ) : (
+                "Popraw z AI"
+              )}
+            </Button>
+          </div>
           <ArticleEnrichmentPreview
             view={toAdminEnrichmentView({
               ...loadedArticle,
@@ -310,32 +330,31 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               subtitle: form.subtitle || loadedArticle.subtitle,
             })}
           />
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {loadedArticle.originalUrl ? (
+          {loadedArticle.originalUrl ? (
+            <div className="mt-4 rounded-[0.5rem] border border-hairline bg-white/[0.03] px-3 py-2.5">
               <p className="text-caption text-text-muted">
-                Źródło RSS:{" "}
-                <a
-                  href={loadedArticle.originalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-accent-cyan hover:underline"
-                >
-                  {loadedArticle.originalUrl}
-                </a>
+                Materiał z zewnętrznego źródła — na stronie publicznej link „Czytaj u{" "}
+                {loadedArticle.source ?? "wydawcy"}”.
               </p>
-            ) : null}
-            {status !== "PUBLISHED" ? (
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={reprocessing || saving}
-                onClick={handleReprocessAi}
+              <a
+                href={loadedArticle.originalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1.5 break-all text-meta font-medium text-accent-cyan hover:underline"
               >
-                {reprocessing ? "AI…" : "Ponów AI (OpenAI)"}
-              </Button>
-            ) : null}
-          </div>
-        </div>
+                <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                {loadedArticle.originalUrl}
+              </a>
+            </div>
+          ) : (
+            <div className="mt-4">
+              <Banner tone="error">
+                Brak linku do oryginału w bazie — na stronie nie będzie przycisku „Czytaj u
+                źródła”. Uruchom ingest RSS lub uzupełnij URL.
+              </Banner>
+            </div>
+          )}
+        </Card>
       ) : null}
 
       {/* ── Layout: main + sidebar ── */}

@@ -60,6 +60,15 @@ export function formatReadingTimeLabel(
   return `${Math.round(minutes)} min`;
 }
 
+/** Short label for admin links (e.g. spacenews.com). */
+export function getRssSourceHostname(url: string): string {
+  try {
+    return new URL(url.trim()).hostname.replace(/^www\./i, "");
+  } catch {
+    return url.trim().slice(0, 48) || "link";
+  }
+}
+
 export type AdminArticleEnrichmentView = {
   title: string;
   summary: string;
