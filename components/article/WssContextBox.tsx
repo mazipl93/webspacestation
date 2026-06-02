@@ -16,10 +16,6 @@ export default function WssContextBox({ text }: { text: string }) {
         </p>
       </div>
       <p className="text-[15px] leading-relaxed text-text-secondary">{text}</p>
-      <p className="mt-3 text-[11px] text-text-muted">
-        Ramowanie redakcyjne Web Space Station — ogólny kontekst branżowy, nie
-        cytat ze źródła zewnętrznego.
-      </p>
     </aside>
   );
 }
