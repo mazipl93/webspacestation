@@ -15,6 +15,7 @@ import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 import ArticleEditButton from "@/components/article/ArticleEditButton";
 import SourceAttribution from "@/components/article/SourceAttribution";
+import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
@@ -131,12 +132,26 @@ function ArticleHero({ article }: { article: NewsArticle }) {
       >
         <Image
           src={article.imageUrl}
-          alt=""
+          alt={
+            article.imageCredit ??
+            (article.source
+              ? `Ilustracja — materiał ${article.source}`
+              : article.title)
+          }
           fill
           priority
           sizes="100vw"
           className="object-cover"
         />
+        {article.imageCredit ? (
+          <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[rgba(5,7,9,0.92)] to-transparent px-4 pb-3 pt-10 sm:px-6">
+            <CoverImageCredit
+              credit={article.imageCredit}
+              source={article.source}
+              originalUrl={article.originalUrl}
+            />
+          </div>
+        ) : null}
       </div>
 
       {/* Layer 2 — cinematic depth scrims */}

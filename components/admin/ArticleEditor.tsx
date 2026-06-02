@@ -29,6 +29,11 @@ import {
   isRssAggregatorArticle,
   toAdminEnrichmentView,
 } from "@/lib/admin/rss-display";
+import {
+  buildRssImageCredit,
+  getRssImageCreditForArticle,
+} from "@/lib/rss/image-credit";
+import CoverImageCredit from "@/components/article/CoverImageCredit";
 
 const EMPTY_FORM: ArticleFormValues = {
   title: "",
@@ -505,7 +510,11 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.coverImage}
-                alt="Podgląd okładki"
+                alt={
+                  loadedArticle && isRssAggregatorArticle(loadedArticle)
+                    ? getRssImageCreditForArticle(loadedArticle) ?? "Okładka RSS"
+                    : "Podgląd okładki"
+                }
                 className="aspect-video w-full rounded-[0.6rem] border border-hairline object-cover"
               />
             ) : (
@@ -513,6 +522,17 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 Brak okładki
               </div>
             )}
+            {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
+              <CoverImageCredit
+                variant="compact"
+                credit={
+                  getRssImageCreditForArticle(loadedArticle) ??
+                  buildRssImageCredit(loadedArticle.source ?? "")
+                }
+                source={loadedArticle.source ?? undefined}
+                originalUrl={loadedArticle.originalUrl ?? undefined}
+              />
+            ) : null}
           </Card>
         </div>
       </div>

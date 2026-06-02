@@ -13,6 +13,7 @@ import {
 } from "@/lib/news/score-thresholds";
 import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
+import { getRssImageCreditForArticle } from "@/lib/rss/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
 import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
 import type { NewsArticle, NewsCategory } from "@/types";
@@ -81,6 +82,12 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     readTime: a.readingTime ?? undefined,
     source: a.source ?? undefined,
     originalUrl: a.originalUrl ?? undefined,
+    imageCredit: external
+      ? getRssImageCreditForArticle({
+          source: a.source,
+          originalUrl: a.originalUrl,
+        }) ?? undefined
+      : undefined,
   };
 }
 

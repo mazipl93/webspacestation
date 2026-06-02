@@ -27,6 +27,8 @@ export interface NewsArticle {
   /** External publisher when ingested by News Engine */
   source?: string;
   originalUrl?: string;
+  /** RSS cover caption (publisher + site) */
+  imageCredit?: string;
 }
 
 // ─── Rocket Launches ───────────────────────────────────────────────────────
