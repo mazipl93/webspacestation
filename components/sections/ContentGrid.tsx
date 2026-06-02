@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
-import { SITE_CONTAINER } from "@/lib/site-layout";
+import { HOMEPAGE_MAIN_SIDEBAR_GRID, SITE_CONTAINER } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import ArticleCard from "@/components/article/ArticleCard";
@@ -681,7 +681,12 @@ export default async function ContentGrid() {
   return (
     <div className={SITE_CONTAINER}>
       {/* 1. Hero + Ważne teraz — side-by-side on desktop */}
-      <div className="grid grid-cols-1 items-stretch gap-5 pt-[4.5rem] sm:pt-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div
+        className={cn(
+          "grid grid-cols-1 items-stretch gap-5 pt-[4.5rem] sm:pt-24 lg:gap-6",
+          HOMEPAGE_MAIN_SIDEBAR_GRID
+        )}
+      >
         <HeroArticle article={lead} />
         <div className="hidden lg:block">
           <TopStoriesList articles={topStories} />
@@ -694,7 +699,12 @@ export default async function ContentGrid() {
       </div>
 
       {/* Main editorial + sticky sidebar */}
-      <div className="mt-8 grid grid-cols-1 gap-8 pb-14 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div
+        className={cn(
+          "mt-8 grid grid-cols-1 gap-8 pb-14 lg:gap-8",
+          HOMEPAGE_MAIN_SIDEBAR_GRID
+        )}
+      >
         <div className="min-w-0 space-y-14 md:space-y-14">
           {/* 2. Latest — largest section, 4-col grid */}
           {latest.length > 0 && (
