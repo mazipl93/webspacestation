@@ -10,7 +10,8 @@
 
 ```
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Tailwind v4). Przeczytaj:
-- docs/WSS_NEWS_ENGINE_HANDOFF.md (ten plik — pełny kontekst sesji)
+- docs/WSS_NEXT_CHAT_HANDOFF.md (deploy, FAQ, pytania użytkownika — ZACZNIJ TU)
+- docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura techniczna)
 - docs/WSS_PHASE_13_HANDOFF.md (UI, jeśli potrzeba)
 
 ## Architektura News Engine (OBOWIĄZKOWA)
