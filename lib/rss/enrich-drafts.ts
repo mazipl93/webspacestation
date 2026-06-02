@@ -5,8 +5,11 @@ import { editorialCategoryToSlug } from "@/lib/rss/categorize";
 import type { RssEditorialCategory } from "@/lib/rss/types";
 import { getOpenAIEnrichmentModel } from "@/lib/rss/openai-config";
 import {
+  parseBodyParagraphs,
+  resolveContextText,
+  resolveLeadText,
+  resolveTitleText,
   sanitizeLeadPl,
-  splitContentToParagraphs,
 } from "@/lib/rss/apply-enrichment";
 import { polishTypography, requireOpenAIKey } from "@/lib/rss/translate";
 
@@ -44,6 +47,8 @@ export type RawOpenAiRssItem = {
   body_pl?: string[] | string;
   context?: string;
   context_pl?: string;
+  content?: string[] | string;
+  paragraphs?: string[] | string;
   category?: string;
   tags?: string[];
   reading_time_min?: number;
@@ -113,33 +118,17 @@ export function mapAiCategoryToSlug(category: string | undefined): string | null
 }
 
 function normalizeBodyParagraphs(raw: unknown, fallback: string): string[] {
-  if (Array.isArray(raw)) {
-    return raw.map((p) => String(p).trim()).filter(Boolean);
-  }
-  if (typeof raw === "string" && raw.trim()) {
-    return splitContentToParagraphs(raw);
-  }
+  const parsed = parseBodyParagraphs(raw);
+  if (parsed.length > 0) return parsed;
   return fallback.trim() ? [fallback.trim()] : [];
 }
 
-function coalesceRawItem(raw: RawOpenAiRssItem): {
-  title_pl: string;
-  lead_pl: string;
-  body_pl: unknown;
-  context_pl: string;
-  category?: string;
-  tags?: string[];
-  reading_time_min?: number;
-} {
+function coalesceRawItem(raw: RawOpenAiRssItem) {
   return {
-    title_pl: raw.title_pl?.trim() || raw.title?.trim() || "",
-    lead_pl:
-      raw.lead?.trim() ||
-      raw.lead_pl?.trim() ||
-      raw.summary_pl?.trim() ||
-      "",
-    body_pl: raw.body ?? raw.body_pl,
-    context_pl: raw.context?.trim() || raw.context_pl?.trim() || "",
+    title_pl: resolveTitleText(raw),
+    lead_pl: resolveLeadText(raw),
+    body_pl: raw.body ?? raw.body_pl ?? raw.content ?? raw.paragraphs,
+    context_pl: resolveContextText(raw),
     category: raw.category?.trim() || undefined,
     tags: raw.tags,
     reading_time_min: raw.reading_time_min,
@@ -236,7 +225,13 @@ async function enrichBatchOpenAI(
     throw new Error("OpenAI: invalid enrichment JSON");
   }
 
-  const items = payload.items ?? [];
+  let items = payload.items ?? [];
+  if (items.length !== batch.length && batch.length === 1) {
+    const root = payload as OpenAIEnrichmentPayload & RawOpenAiRssItem;
+    if (root.lead || root.body || root.context || root.lead_pl || root.body_pl) {
+      items = [root];
+    }
+  }
   if (items.length !== batch.length) {
     throw new Error(
       `OpenAI: expected ${batch.length} items, got ${items.length}`

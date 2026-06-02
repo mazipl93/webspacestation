@@ -7,6 +7,24 @@ export const MIN_BODY_PARAGRAPH_LENGTH = 40;
 export const MIN_CONTEXT_PL_LENGTH = 60;
 export const MIN_BODY_PARAGRAPHS = 2;
 
+/** OpenAI B+ JSON keys (lead / body / context) + legacy *_pl aliases. */
+export type BPlusRawFields = {
+  title?: string;
+  title_pl?: string;
+  lead?: string;
+  lead_pl?: string;
+  summary_pl?: string;
+  body?: unknown;
+  body_pl?: unknown;
+  content?: unknown;
+  paragraphs?: unknown;
+  context?: string;
+  context_pl?: string;
+  category?: string;
+  tags?: string[];
+  reading_time_min?: number;
+};
+
 export function joinBodyParagraphs(body: string[]): string {
   return body.map((p) => p.trim()).filter(Boolean).join("\n\n");
 }
@@ -19,6 +37,94 @@ export function splitContentToParagraphs(
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
+}
+
+/** Parse AI `body` (array, string, JSON string, or { paragraphs: [] }). */
+export function parseBodyParagraphs(raw: unknown): string[] {
+  if (raw == null) return [];
+
+  if (Array.isArray(raw)) {
+    return raw.flatMap((item) => {
+      if (typeof item === "string") {
+        const t = item.trim();
+        return t ? [t] : [];
+      }
+      if (item && typeof item === "object" && "text" in item) {
+        const t = String((item as { text?: unknown }).text ?? "").trim();
+        return t ? [t] : [];
+      }
+      const t = String(item).trim();
+      return t && t !== "[object Object]" ? [t] : [];
+    });
+  }
+
+  if (typeof raw === "string") {
+    const t = raw.trim();
+    if (!t) return [];
+    if (t.startsWith("[")) {
+      try {
+        return parseBodyParagraphs(JSON.parse(t) as unknown);
+      } catch {
+        /* fall through to paragraph split */
+      }
+    }
+    return splitContentToParagraphs(t);
+  }
+
+  if (typeof raw === "object") {
+    const o = raw as Record<string, unknown>;
+    if ("paragraphs" in o) return parseBodyParagraphs(o.paragraphs);
+    if ("body" in o) return parseBodyParagraphs(o.body);
+  }
+
+  return [];
+}
+
+export function resolveLeadText(raw: BPlusRawFields | RssDraftEnrichment): string {
+  const r = raw as BPlusRawFields;
+  return (
+    r.lead?.trim() ||
+    r.lead_pl?.trim() ||
+    r.summary_pl?.trim() ||
+    (raw as RssDraftEnrichment).lead_pl?.trim() ||
+    ""
+  );
+}
+
+export function resolveContextText(
+  raw: BPlusRawFields | RssDraftEnrichment
+): string {
+  const r = raw as BPlusRawFields;
+  return (
+    r.context?.trim() ||
+    r.context_pl?.trim() ||
+    (raw as RssDraftEnrichment).context_pl?.trim() ||
+    ""
+  );
+}
+
+export function resolveBodyParagraphs(
+  raw: BPlusRawFields | RssDraftEnrichment
+): string[] {
+  const r = raw as BPlusRawFields;
+  const fromRaw = parseBodyParagraphs(
+    r.body ?? r.body_pl ?? r.content ?? r.paragraphs
+  );
+  if (fromRaw.length > 0) return fromRaw;
+  return parseBodyParagraphs((raw as RssDraftEnrichment).body_pl);
+}
+
+export function resolveTitleText(
+  raw: BPlusRawFields | RssDraftEnrichment,
+  fallback = ""
+): string {
+  const r = raw as BPlusRawFields;
+  return (
+    r.title_pl?.trim() ||
+    r.title?.trim() ||
+    (raw as RssDraftEnrichment).title_pl?.trim() ||
+    fallback
+  );
 }
 
 /** Lead: max 2 sentences (public hero). */
@@ -76,24 +182,27 @@ export type EnrichmentValidationResult =
 
 /** Strict validation for new RSS → AI pipeline (B+). */
 export function validateRssEnrichment(
-  e: RssDraftEnrichment
+  e: RssDraftEnrichment | BPlusRawFields
 ): EnrichmentValidationResult {
-  if (!e.title_pl?.trim()) {
+  const title = resolveTitleText(e);
+  const lead = resolveLeadText(e);
+  const body = resolveBodyParagraphs(e).map((p) => p.trim()).filter(Boolean);
+  const context = resolveContextText(e);
+
+  if (!title) {
     return { ok: false, error: "pusty tytuł" };
   }
-  if (!e.lead_pl?.trim()) {
+  if (!lead) {
     return { ok: false, error: "pusty lead" };
   }
 
-  const lead = e.lead_pl.trim();
   if (lead.length < MIN_LEAD_PL_LENGTH) {
     return { ok: false, error: `lead za krótki (${lead.length} zn.)` };
   }
-  if (isSummaryDuplicateOfTitle(e.title_pl, lead)) {
+  if (isSummaryDuplicateOfTitle(title, lead)) {
     return { ok: false, error: "lead powtarza tytuł" };
   }
 
-  const body = (e.body_pl ?? []).map((p) => p.trim()).filter(Boolean);
   if (body.length < MIN_BODY_PARAGRAPHS) {
     return {
       ok: false,
@@ -109,31 +218,36 @@ export function validateRssEnrichment(
     }
   }
 
-  const ctx = e.context_pl?.trim();
-  if (!ctx || ctx.length < MIN_CONTEXT_PL_LENGTH) {
+  if (!context || context.length < MIN_CONTEXT_PL_LENGTH) {
     return { ok: false, error: "kontekst WSS za krótki lub pusty" };
   }
 
   return { ok: true };
 }
 
+/**
+ * Map B+ OpenAI output → Prisma Article fields.
+ * excerpt = lead, content = body (joined), contextNote = context
+ */
 export function enrichmentToArticleFields(
-  e: RssDraftEnrichment,
+  e: RssDraftEnrichment | BPlusRawFields,
   source?: string | null
 ) {
-  const body = (e.body_pl ?? [])
+  const title = polishTypography(resolveTitleText(e));
+  const lead = polishTypography(sanitizeLeadPl(resolveLeadText(e), source));
+  const body = resolveBodyParagraphs(e)
     .map((p) => polishTypography(p.trim()))
     .filter(Boolean);
-  const lead = polishTypography(sanitizeLeadPl(e.lead_pl, source));
-  const contextRaw = e.context_pl?.trim();
+  const contextRaw = resolveContextText(e);
 
   return {
-    title: polishTypography(e.title_pl.trim()),
+    title,
     excerpt: lead,
     content: joinBodyParagraphs(body),
     contextNote: contextRaw ? polishTypography(contextRaw) : null,
-    readingTime: e.reading_time_min,
-    tags: e.tags,
-    category: e.category,
+    readingTime: (e as RssDraftEnrichment).reading_time_min,
+    tags: (e as RssDraftEnrichment).tags ?? (e as BPlusRawFields).tags,
+    category:
+      (e as RssDraftEnrichment).category ?? (e as BPlusRawFields).category,
   };
 }

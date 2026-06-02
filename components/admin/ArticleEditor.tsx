@@ -67,7 +67,14 @@ function toForm(a: AdminArticle): ArticleFormValues {
   };
 }
 
-function toPayload(form: ArticleFormValues): ArticleWritePayload {
+function toPayload(form: ArticleFormValues, isRss: boolean): ArticleWritePayload {
+  if (isRss) {
+    // RSS: AI fields live in DB via reprocess/process — never wipe via autosave.
+    return {
+      categoryId: form.categoryId,
+      featured: form.featured,
+    };
+  }
   return {
     title: form.title,
     slug: form.slug,
@@ -154,7 +161,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setError(null);
 
       try {
-        const payload = toPayload(form);
+        const payload = toPayload(form, isRss);
         if (opts.publish) payload.status = "PUBLISHED";
 
         let saved: AdminArticle;
