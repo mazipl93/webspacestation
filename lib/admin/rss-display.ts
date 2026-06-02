@@ -1,11 +1,18 @@
 import { RSS_RAW_SUBTITLE_MARKER } from "@/lib/rss/pipeline";
+import {
+  inferRssSource,
+  isRssAggregatorArticle as detectRssAggregator,
+} from "@/lib/rss/is-aggregator";
 import type { AdminArticle } from "@/lib/admin/types";
+
+export { inferRssSource };
 
 export function isRssAggregatorArticle(article: {
   source?: string | null;
   originalUrl?: string | null;
+  subtitle?: string | null;
 }): boolean {
-  return Boolean(article.source?.trim() && article.originalUrl?.trim());
+  return detectRssAggregator(article);
 }
 
 export function isRawRssDraftArticle(article: {

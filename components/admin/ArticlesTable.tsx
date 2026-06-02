@@ -18,6 +18,7 @@ import {
   getRssSourceHostname,
   isAiEnrichedRssArticle,
   isRawRssDraftArticle,
+  inferRssSource,
   isRssAggregatorArticle,
 } from "@/lib/admin/rss-display";
 import StatusBadge from "@/components/admin/StatusBadge";
@@ -80,6 +81,7 @@ export default function ArticlesTable({
             const canModerate =
               a.status === "REVIEW" || a.status === "DRAFT";
             const rss = isRssAggregatorArticle(a);
+            const sourceLabel = inferRssSource(a) ?? a.source;
             const raw = isRawRssDraftArticle(a);
             const enriched = isAiEnrichedRssArticle(a);
             const summary = getAdminDisplaySummary(a);
@@ -142,7 +144,7 @@ export default function ArticlesTable({
                   {rss ? (
                     <div className="max-w-[14rem]">
                       <p className="text-meta font-medium text-text-secondary">
-                        {a.source ?? "RSS"}
+                        {sourceLabel ?? "RSS"}
                       </p>
                       {a.originalUrl ? (
                         <a

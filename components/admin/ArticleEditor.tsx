@@ -26,6 +26,7 @@ import ArticleEnrichmentPreview from "@/components/admin/ArticleEnrichmentPrevie
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
 import {
+  inferRssSource,
   isRssAggregatorArticle,
   toAdminEnrichmentView,
 } from "@/lib/admin/rss-display";
@@ -307,6 +308,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p className="text-overline font-semibold uppercase tracking-wide text-accent-cyan">
               Artykuł RSS — zewnętrzne źródło
+              {(() => {
+                const label = inferRssSource(loadedArticle);
+                return label ? ` (${label})` : null;
+              })()}
             </p>
             <Button
               type="button"
@@ -339,7 +344,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <div className="mt-4 rounded-[0.5rem] border border-hairline bg-white/[0.03] px-3 py-2.5">
               <p className="text-caption text-text-muted">
                 Materiał z zewnętrznego źródła — na stronie publicznej link „Czytaj u{" "}
-                {loadedArticle.source ?? "wydawcy"}”.
+                {inferRssSource(loadedArticle) ?? "wydawcy"}”.
               </p>
               <a
                 href={loadedArticle.originalUrl}
@@ -529,7 +534,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   getRssImageCreditForArticle(loadedArticle) ??
                   buildRssImageCredit(loadedArticle.source ?? "")
                 }
-                source={loadedArticle.source ?? undefined}
+                source={inferRssSource(loadedArticle) ?? undefined}
                 originalUrl={loadedArticle.originalUrl ?? undefined}
               />
             ) : null}

@@ -50,6 +50,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
   const external = isExternalAggregatorArticle({
     source: a.source,
     originalUrl: a.originalUrl,
+    subtitle: a.subtitle,
   });
 
   const paragraphs = a.content
@@ -86,6 +87,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
       ? getRssImageCreditForArticle({
           source: a.source,
           originalUrl: a.originalUrl,
+          subtitle: a.subtitle,
         }) ?? undefined
       : undefined,
   };

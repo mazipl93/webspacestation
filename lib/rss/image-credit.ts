@@ -22,10 +22,15 @@ export function buildRssImageCredit(
   return `Ilustracja: materiał redakcyjny ${publisher}. Autor zdjęcia: według materiału u wydawcy.`;
 }
 
+import { inferRssSource, isRssAggregatorArticle } from "@/lib/rss/is-aggregator";
+
 export function getRssImageCreditForArticle(article: {
   source?: string | null;
   originalUrl?: string | null;
+  subtitle?: string | null;
 }): string | null {
-  if (!article.source?.trim() || !article.originalUrl?.trim()) return null;
-  return buildRssImageCredit(article.source, article.originalUrl);
+  if (!isRssAggregatorArticle(article)) return null;
+  const source = inferRssSource(article);
+  if (!source) return null;
+  return buildRssImageCredit(source, article.originalUrl);
 }
