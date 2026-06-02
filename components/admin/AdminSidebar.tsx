@@ -120,7 +120,7 @@ export default function AdminSidebar({
               {roleLabel}
             </span>
           </div>
-          <form action="/logout" method="post" className="ml-auto">
+          <form action="/logout?next=/login" method="post" className="ml-auto">
             <button
               type="submit"
               aria-label="Wyloguj"
