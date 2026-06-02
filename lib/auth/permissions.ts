@@ -1,45 +1,57 @@
-// Client-safe RBAC rules. No server-only / Prisma imports here so these
-// helpers can run in both API routes and client components.
+// Client-safe RBAC — role is the single source of truth for access decisions.
 
-export type UserRole = "ADMIN" | "EDITOR" | "AUTHOR";
+export type UserRole =
+  | "USER"
+  | "AUTHOR"
+  | "EDITOR"
+  | "MODERATOR"
+  | "ADMIN";
 
 export interface PermissionUser {
   role: UserRole;
 }
 
 function hasRole(
-  user: PermissionUser | null | undefined,
-  roles: UserRole[]
+  role: UserRole | null | undefined,
+  allowed: UserRole[]
 ): boolean {
-  return Boolean(user && roles.includes(user.role));
+  return Boolean(role && allowed.includes(role));
 }
 
-// ─── Article permissions ─────────────────────────────────────────────────────
-// ADMIN  → full access
-// EDITOR → create + edit + publish (no delete)
-// AUTHOR → create drafts only
-
-export function canCreateArticle(user: PermissionUser | null | undefined): boolean {
-  return hasRole(user, ["ADMIN", "EDITOR", "AUTHOR"]);
+/** Portal-only account (read, comments) — no CMS. */
+export function isUserRole(role: UserRole | null | undefined): boolean {
+  return role === "USER";
 }
 
-export function canEditArticle(user: PermissionUser | null | undefined): boolean {
-  return hasRole(user, ["ADMIN", "EDITOR"]);
+/** Any CMS panel access (not USER). */
+export function canAccessCms(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["AUTHOR", "EDITOR", "MODERATOR", "ADMIN"]);
 }
 
-export function canPublishArticle(user: PermissionUser | null | undefined): boolean {
-  return hasRole(user, ["ADMIN", "EDITOR"]);
+export function canCreateArticle(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["AUTHOR", "EDITOR", "ADMIN"]);
 }
 
-export function canDeleteArticle(user: PermissionUser | null | undefined): boolean {
-  return hasRole(user, ["ADMIN"]);
+export function canEditArticle(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["EDITOR", "MODERATOR", "ADMIN"]);
 }
 
-// ─── Category permissions ────────────────────────────────────────────────────
-// ADMIN only.
+export function canPublishArticle(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["EDITOR", "ADMIN"]);
+}
 
-export function canManageCategories(
-  user: PermissionUser | null | undefined
-): boolean {
-  return hasRole(user, ["ADMIN"]);
+export function canDeleteArticle(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["ADMIN"]);
+}
+
+export function canModerateComments(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["MODERATOR", "ADMIN"]);
+}
+
+export function canManageUsers(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["ADMIN"]);
+}
+
+export function canManageCategories(role: UserRole | null | undefined): boolean {
+  return hasRole(role, ["ADMIN"]);
 }

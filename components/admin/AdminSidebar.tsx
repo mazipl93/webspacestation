@@ -10,14 +10,22 @@ import {
   PlusCircle,
   ExternalLink,
   LogOut,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { UserRole } from "@/lib/auth/permissions";
+import {
+  canCreateArticle,
+  canManageCategories,
+  canManageUsers,
+} from "@/lib/auth/permissions";
 
 const ROLE_LABEL: Record<UserRole, string> = {
-  ADMIN: "Administrator",
-  EDITOR: "Redaktor",
+  USER: "Użytkownik",
   AUTHOR: "Autor",
+  EDITOR: "Redaktor",
+  MODERATOR: "Moderator",
+  ADMIN: "Administrator",
 };
 
 const NAV = [
@@ -25,18 +33,23 @@ const NAV = [
   { href: "/admin/articles", label: "Artykuły", icon: Newspaper },
   { href: "/admin/categories", label: "Kategorie", icon: FolderTree },
   { href: "/admin/media", label: "Media", icon: ImageIcon },
-];
+  { href: "/admin/users", label: "Użytkownicy", icon: Users, adminOnly: true },
+] as const;
 
 export default function AdminSidebar({
   email,
   role,
 }: {
   email: string;
-  role: UserRole | null;
+  role: UserRole;
 }) {
   const pathname = usePathname();
   const initial = (email.trim()[0] || "?").toUpperCase();
-  const roleLabel = role ? ROLE_LABEL[role] : "Brak roli";
+  const roleLabel = ROLE_LABEL[role];
+  const showNewArticle = canCreateArticle(role);
+  const navItems = NAV.filter(
+    (item) => !("adminOnly" in item && item.adminOnly) || canManageUsers(role)
+  ).filter((item) => item.href !== "/admin/categories" || canManageCategories(role));
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
@@ -53,18 +66,20 @@ export default function AdminSidebar({
         </div>
       </div>
 
-      <div className="px-3">
-        <Link
-          href="/admin/articles/new"
-          className="flex items-center gap-2 rounded-[0.6rem] bg-accent-blue px-3 py-2.5 text-meta font-semibold text-white transition-colors hover:bg-accent-blue-hover"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Nowy artykuł
-        </Link>
-      </div>
+      {showNewArticle && (
+        <div className="px-3">
+          <Link
+            href="/admin/articles/new"
+            className="flex items-center gap-2 rounded-[0.6rem] bg-accent-blue px-3 py-2.5 text-meta font-semibold text-white transition-colors hover:bg-accent-blue-hover"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Nowy artykuł
+          </Link>
+        </div>
+      )}
 
       <nav className="mt-4 flex flex-1 flex-col gap-1 px-3">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
           return (
             <Link
@@ -101,14 +116,7 @@ export default function AdminSidebar({
             <span className="truncate text-meta font-medium text-text-primary">
               {email || "Zalogowano"}
             </span>
-            <span
-              className={cn(
-                "mt-0.5 inline-flex w-fit items-center rounded-badge border px-1.5 py-0.5 text-overline font-semibold",
-                role
-                  ? "border-accent-blue/30 bg-accent-blue/10 text-accent-cyan"
-                  : "border-hairline text-text-muted"
-              )}
-            >
+            <span className="mt-0.5 inline-flex w-fit items-center rounded-badge border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-overline font-semibold text-accent-cyan">
               {roleLabel}
             </span>
           </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/user";
+import { canAccessCms } from "@/lib/auth/permissions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { AdminAuthProvider } from "@/components/admin/AdminAuthProvider";
 
@@ -9,7 +10,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Prisma auth lookup — runtime only (Vercel build has no DB).
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({
@@ -17,12 +17,12 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Primary gate is middleware; this is server-side defense-in-depth.
   const { authenticated, email, user } = await getAuthContext();
   if (!authenticated) redirect("/login");
+  if (!user || !canAccessCms(user.role)) redirect("/");
 
-  const role = user?.role ?? null;
-  const displayEmail = user?.email ?? email ?? "";
+  const role = user.role;
+  const displayEmail = user.email ?? email ?? "";
 
   return (
     <AdminAuthProvider value={{ email: displayEmail, role }}>

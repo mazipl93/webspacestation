@@ -8,8 +8,11 @@ import {
 } from "@/lib/server/articles";
 import { forbidden, isValidSlug, jsonError, mapPrismaError, readJson } from "@/lib/server/http";
 import { isArticleStatus, parseArticleCreate } from "@/lib/server/validation";
-import { requirePermission } from "@/lib/auth/guard";
-import { canCreateArticle, canPublishArticle } from "@/lib/auth/permissions";
+import { requireCmsAccess, requirePermission } from "@/lib/auth/guard";
+import {
+  canCreateArticle,
+  canPublishArticle,
+} from "@/lib/auth/permissions";
 
 // GET /api/articles
 //   (public)  → published articles, optional ?category=slug
@@ -24,8 +27,10 @@ export async function GET(request: NextRequest) {
       return jsonError(400, "INVALID_PARAM", "Invalid 'category' parameter.");
     }
 
-    // Admin view: any status. Triggered by the ?status param.
     if (statusParam !== null) {
+      const cmsGuard = await requireCmsAccess();
+      if (!cmsGuard.ok) return cmsGuard.response;
+
       const normalized = statusParam.toUpperCase();
       if (normalized !== "ALL" && !isArticleStatus(normalized)) {
         return jsonError(400, "INVALID_PARAM", "Invalid 'status' parameter.");
@@ -37,7 +42,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: articles });
     }
 
-    // Public view: published only.
     const articles =
       categoryParam !== null
         ? await getArticlesByCategory(categoryParam)
@@ -49,7 +53,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/articles → create a new article (ADMIN / EDITOR / AUTHOR)
 export async function POST(request: NextRequest) {
   try {
     const guard = await requirePermission(canCreateArticle);
@@ -65,12 +68,19 @@ export async function POST(request: NextRequest) {
       return jsonError(400, "VALIDATION_ERROR", parsed.message);
     }
 
-    // Publishing on create requires publish permission (AUTHOR → drafts only).
-    if (parsed.value.status === "PUBLISHED" && !canPublishArticle(guard.user)) {
+    if (
+      parsed.value.status === "PUBLISHED" &&
+      !canPublishArticle(guard.user.role)
+    ) {
       return forbidden();
     }
 
-    const article = await createArticle(parsed.value, guard.user.id);
+    const payload =
+      guard.user.role === "AUTHOR"
+        ? { ...parsed.value, status: "DRAFT" as const }
+        : parsed.value;
+
+    const article = await createArticle(payload, guard.user.id);
     return NextResponse.json({ data: article }, { status: 201 });
   } catch (error) {
     const mapped = mapPrismaError(error);

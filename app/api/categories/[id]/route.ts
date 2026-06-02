@@ -3,14 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCategoryById, updateCategory } from "@/lib/server/categories";
 import { isValidId, jsonError, mapPrismaError, readJson } from "@/lib/server/http";
 import { parseCategoryUpdate } from "@/lib/server/validation";
-import { requirePermission } from "@/lib/auth/guard";
+import { requireCmsAccess, requirePermission } from "@/lib/auth/guard";
 import { canManageCategories } from "@/lib/auth/permissions";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// GET /api/categories/[id] → single category (admin convenience)
 export async function GET(_request: NextRequest, { params }: Ctx) {
   try {
+    const cmsGuard = await requireCmsAccess();
+    if (!cmsGuard.ok) return cmsGuard.response;
+
     const { id } = await params;
     if (!isValidId(id)) {
       return jsonError(400, "INVALID_PARAM", "Invalid category id.");
@@ -24,7 +26,6 @@ export async function GET(_request: NextRequest, { params }: Ctx) {
   }
 }
 
-// PATCH /api/categories/[id] → update a category (ADMIN only)
 export async function PATCH(request: NextRequest, { params }: Ctx) {
   try {
     const guard = await requirePermission(canManageCategories);

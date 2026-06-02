@@ -69,7 +69,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
 
 export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const { role } = useAdminAuth();
-  const mayPublish = canPublishArticle(role ? { role } : null);
+  const mayPublish = canPublishArticle(role);
 
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [form, setForm] = useState<ArticleFormValues>(EMPTY_FORM);

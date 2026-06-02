@@ -29,7 +29,7 @@ type Mode = { kind: "create" } | { kind: "edit"; id: string } | { kind: "idle" }
 
 export default function CategoryManager() {
   const { role } = useAdminAuth();
-  const mayManage = canManageCategories(role ? { role } : null);
+  const mayManage = canManageCategories(role);
 
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [loading, setLoading] = useState(true);

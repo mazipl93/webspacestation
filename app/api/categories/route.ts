@@ -7,7 +7,6 @@ import { parseCategoryCreate } from "@/lib/server/validation";
 import { requirePermission } from "@/lib/auth/guard";
 import { canManageCategories } from "@/lib/auth/permissions";
 
-// GET /api/categories → all categories ordered by orderIndex
 export async function GET() {
   try {
     const categories = await getCategories();
@@ -18,7 +17,6 @@ export async function GET() {
   }
 }
 
-// POST /api/categories → create a category (ADMIN only)
 export async function POST(request: NextRequest) {
   try {
     const guard = await requirePermission(canManageCategories);

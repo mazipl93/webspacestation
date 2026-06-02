@@ -95,6 +95,8 @@ export default function RegisterForm() {
       return;
     }
 
+    await fetch("/api/auth/provision", { method: "POST" });
+
     router.replace(redirectTo);
     router.refresh();
   };

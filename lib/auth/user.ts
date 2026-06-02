@@ -16,10 +16,15 @@ export interface AppUser {
  * email) and returns it with its role. Returns null when there is no session
  * or no matching application user.
  */
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 export async function getCurrentUser(): Promise<AppUser | null> {
   const supaUser = await getSupabaseUser();
-  const email = supaUser?.email;
-  if (!email) return null;
+  const rawEmail = supaUser?.email;
+  if (!rawEmail) return null;
+  const email = normalizeEmail(rawEmail);
 
   const user = await prisma.user.findUnique({
     where: { email },
@@ -43,10 +48,11 @@ export interface AuthContext {
  */
 export async function getAuthContext(): Promise<AuthContext> {
   const supaUser = await getSupabaseUser();
-  const email = supaUser?.email ?? null;
-  if (!email) {
+  const rawEmail = supaUser?.email ?? null;
+  if (!rawEmail) {
     return { authenticated: false, email: null, user: null };
   }
+  const email = normalizeEmail(rawEmail);
 
   const user = await prisma.user.findUnique({
     where: { email },

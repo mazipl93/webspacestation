@@ -15,7 +15,7 @@ import {
   readJson,
 } from "@/lib/server/http";
 import { parseArticleUpdate } from "@/lib/server/validation";
-import { requirePermission } from "@/lib/auth/guard";
+import { requireCmsAccess, requirePermission } from "@/lib/auth/guard";
 import {
   canDeleteArticle,
   canEditArticle,
@@ -24,15 +24,15 @@ import {
 
 type Ctx = { params: Promise<{ slug: string }> };
 
-// GET /api/articles/[slug]
-//   (public) → published article by slug
-//   (admin)  → ?byId=1 resolves the param as an id and returns any status
 export async function GET(request: NextRequest, { params }: Ctx) {
   try {
     const { slug } = await params;
     const byId = request.nextUrl.searchParams.get("byId") !== null;
 
     if (byId) {
+      const cmsGuard = await requireCmsAccess();
+      if (!cmsGuard.ok) return cmsGuard.response;
+
       if (!isValidId(slug)) {
         return jsonError(400, "INVALID_PARAM", "Invalid article id.");
       }
@@ -53,7 +53,6 @@ export async function GET(request: NextRequest, { params }: Ctx) {
   }
 }
 
-// PATCH /api/articles/[id] → update fields and/or status (ADMIN / EDITOR)
 export async function PATCH(request: NextRequest, { params }: Ctx) {
   try {
     const guard = await requirePermission(canEditArticle);
@@ -74,8 +73,10 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       return jsonError(400, "VALIDATION_ERROR", parsed.message);
     }
 
-    // Transitioning to PUBLISHED requires publish permission.
-    if (parsed.value.status === "PUBLISHED" && !canPublishArticle(guard.user)) {
+    if (
+      parsed.value.status === "PUBLISHED" &&
+      !canPublishArticle(guard.user.role)
+    ) {
       return forbidden();
     }
 
@@ -90,7 +91,6 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
   }
 }
 
-// DELETE /api/articles/[id] → soft delete (archive) (ADMIN only)
 export async function DELETE(_request: NextRequest, { params }: Ctx) {
   try {
     const guard = await requirePermission(canDeleteArticle);

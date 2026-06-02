@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/user";
+import { canAccessCms } from "@/lib/auth/permissions";
 import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = {
@@ -10,9 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginPage() {
-  // Already signed in → straight to the panel.
-  const user = await getCurrentUser();
-  if (user) redirect("/admin");
+  // Already signed in as CMS admin → straight to the panel.
+  const { user } = await getAuthContext();
+  if (user && canAccessCms(user.role)) redirect("/admin");
 
   return (
     <div className="grid min-h-dvh place-items-center bg-space-bg px-6">

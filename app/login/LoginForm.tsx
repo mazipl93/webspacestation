@@ -37,7 +37,8 @@ export default function LoginForm() {
       return;
     }
 
-    // Sync the new session into Server Components, then enter the panel.
+    await fetch("/api/auth/provision", { method: "POST" });
+
     router.replace(redirectTo);
     router.refresh();
   };
