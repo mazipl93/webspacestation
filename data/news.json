@@ -205,5 +205,243 @@
       "NOAA Space Weather Prediction Center wydało ostrzeżenie dla operatorów systemów satelitarnych, sieci energetycznych i systemów GPS. Kilka z 6 000 satelitów Starlink zarejestrowało zwiększony opór atmosferyczny wywołany rozszerzaniem górnych warstw atmosfery, lecz SpaceX potwierdził, że żaden z satelitów nie został trwale uszkodzony. Burzę odczuły również systemy nawigacji radiowej na kursach transatlantyckich.",
       "Aktualna faza słoneczna — maksimum 25. cyklu słonecznego — sprzyja powstawaniu silnych wyrzutów masy koronalnej. Naukowcy z NOAA przewidują, że podobne zdarzenia będą powtarzać się z częstotliwością kilku razy w roku aż do około 2027, gdy aktywność Słońca stopniowo zacznie maleć. Dla miłośników astronomii to wyjątkowa okazja do obserwacji zorzy na niskich szerokościach."
     ]
+  },
+  {
+    "id": "chang-e6-samples",
+    "title": "Chang'e-6 dostarczyła próbki z odległej strony Księżyca na Ziemię",
+    "excerpt": "Chińska misja powrotna zakończyła się sukcesem — po raz pierwszy w historii materiał z południowego bieguna Księżyca trafił do laboratoriów.",
+    "category": "misje",
+    "publishedAt": "2026-05-31T14:00:00Z",
+    "timeLabel": "wczoraj",
+    "imageUrl": "https://images.unsplash.com/photo-1522030299830-16b8b3e6f183?auto=format&fit=crop&w=1000&q=70",
+    "slug": "change-6-probki-ksiezyc",
+    "isBreaking": false,
+    "readTime": 4,
+    "content": [
+      "Kapsuła powrotna misji Chang'e-6 wylądowała w Mongolii Wewnętrznej, kończąc 53-dniową ekspedycję z odległej strony Księżyca. Łazik i sonda kopalniana zebrały około 2 kilogramów regolitu z okolic krateru Apollo na południowym biegunie — regionu, który nigdy wcześniej nie był bezpośrednio badany przez misje próbkowe.",
+      "Próbki mogą zawierać materiał wyniesiony z głębokiego płaszcza Księżyca przez starożytne uderzenia asteroid, co pozwoli datować historię bombardowania w Układzie Słonecznym z większą precyzją niż próbki Apollo. Chiński Narodowy Urząd Kosmiczny ogłosił, że część materiału zostanie udostępniona międzynarodowym zespołom badawczym po wstępnej analizie w Pekinie.",
+      "Sukces Chang'e-6 umacnia pozycję Chin w programie eksploracji Księżyca przed planowanymi misjami załogowymi na przełomie lat 2030. NASA i ESA monitorują wyniki analiz mineralogicznych pod kątem synergii z programem Artemis i przyszłymi lądowaniami w podobnych szerokościach geograficznych."
+    ]
+  },
+  {
+    "id": "parker-solar-close",
+    "title": "Parker Solar Probe zbliżył się do Słońca na rekordowe 6,1 mln km",
+    "excerpt": "Sonda NASA przeleciała w najbliższym dotąd punkcie orbity, zbierając dane o koronie w warunkach ekstremalnego gorąca.",
+    "category": "misje",
+    "publishedAt": "2026-05-30T09:30:00Z",
+    "timeLabel": "2 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1532693322450-1cb5c6c8fc76?auto=format&fit=crop&w=1000&q=70",
+    "slug": "parker-solar-probe-rekord",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Parker Solar Probe osiągnął peryhelium na odległości zaledwie 6,1 miliona kilometrów od powierzchni fotosfery — bliżej Słońca niż jakikolwiek obiekt stworzony przez człowieka. Tarcza termiczna Carbon-Carbon Composite utrzymała instrumenty w temperaturze operacyjnej, podczas gdy zewnętrzna powierzchnia osłony osiągnęła około 1370°C.",
+      "Podczas przelotu zarejestrowano gwałtowne przyspieszenie wiatru słonecznego w pasie równikowym oraz krótkotrwałe rozbłyski typu switchback, które według modeli mogą być związane z rekonekcją linii magnetycznych w koronie. Dane FIELDS i SWEAP zostaną połączone z obserwacjami teleskopu Daniel K. Inouye w celu zbudowania trójwymiarowego obrazu wybrzuszeń koronalnych.",
+      "Kolejne peryhelium w 2027 roku zbliży sondę jeszcze bardziej — do około 6 milionów kilometrów — co powinno pozwolić na bezpośrednie próbkowanie cząstek korony. Misja ma fundamentalne znaczenie dla zrozumienia mechanizmów nagrzewania plazmy i przewidywania burz geomagnetycznych wpływających na Ziemię."
+    ]
+  },
+  {
+    "id": "gw-triple-merger",
+    "title": "LIGO wykryło potrójne scalenie czarnych dziur w odległej galaktyce",
+    "excerpt": "Sygnatura fal grawitacyjnych sugeruje sekwencyjne łączenie trzech obiektów w ciągu 200 milionów lat — rzadki scenariusz kosmiczny.",
+    "category": "astronomia",
+    "publishedAt": "2026-05-31T11:45:00Z",
+    "timeLabel": "wczoraj",
+    "imageUrl": "https://images.unsplash.com/photo-1464802686167-b939a6920692?auto=format&fit=crop&w=1000&q=70",
+    "slug": "ligo-potrojne-scalenie-czarnych-dziur",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Detektory LIGO Hanford i Livingston oraz Virgo zarejestrowały falę grawitacyjną GW260521, której analiza wskazuje na sekwencyjne scalenie trzech czarnych dziur o masach około 28, 42 i 65 mas Słońca. Zdarzenie miało miejsce około 5 miliardów lat temu i jest jednym z najbardziej złożonych sygnałów wykrytych od uruchomienia obserwacji w 2015 roku.",
+      "Modelowanie numeryczne sugeruje, że pierwsze dwie czarne dziury połączyły się w układzie podwójnym, a powstały obiekt w ciągu kolejnych 200 milionów lat scalił się z trzecią, znacznie masywniejszą czarną dziurą. Taki scenariusz wymaga gęstego środowiska galaktycznego lub obecności w gromadzie gwiazdowej.",
+      "Odkrycie potwierdza, że po modernizacji detektory O4 są w stanie rozróżniać subtelne cechy sygnału związane z wieloetapowymi procesami. Kolejna fala obserwacji obejmie współpracę z KAGRA w Japonii, co zwiększy lokalizację źródeł na niebie."
+    ]
+  },
+  {
+    "id": "jwst-protoplanetary",
+    "title": "JWST uchwycił dysk protoplanetarny z „mostami” pyłu wokół młodej gwiazdy",
+    "excerpt": "Obrazy w podczerwieni ukazują pierścienie i szczeliny, w których mogą formować się planety skaliste.",
+    "category": "astronomia",
+    "publishedAt": "2026-05-29T16:20:00Z",
+    "timeLabel": "3 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1506443432602-ac2fcd6f54e0?auto=format&fit=crop&w=1000&q=70",
+    "slug": "jwst-dysk-protoplanetarny",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Teleskop Jamesa Webba wykonał spektroskopię i obrazowanie dysku protoplanetarnego wokół gwiazdy V960 Mon w mgławicy Oriona. Struktury w kształcie pierścieni i promieni — określane przez zespół jako „mosty pyłu” — wskazują na miejsca, gdzie planety mogą wyciskać materiał z orbity, tworząc charakterystyczne szczeliny.",
+      "Analiza średniej podczerwieni wykazała obecność kryształów krzemianów i wody w postaci lodu w zewnętrznych strefach dysku, co sprzyja formowaniu się planet skalistych na podobieństwo Ziemi. Temperatura w wewnętrznej szczelinie odpowiada strefie, w której teoretycznie mogłyby istnieć oceany ciekłej wody na formujących się ciałach.",
+      "Obserwacje są częścią programu COSMIC-DISK, który obejmie 40 podobnych systemów w ciągu dwóch lat. Wyniki pomogą skalibrować modele migracji planet i wyjaśnić, dlaczego układy takie jak nasz są stosunkowo rzadkie w Drodze Mlecznej."
+    ]
+  },
+  {
+    "id": "raptor-3-static-fire",
+    "title": "Silnik Raptor 3 przeszedł test statyczny — moc na poziomie 280 ton",
+    "excerpt": "SpaceX testuje trzecią generację silników metanowych pod Starship. Uproszczona konstrukcja ma obniżyć masę i koszt produkcji.",
+    "category": "technologie",
+    "publishedAt": "2026-05-31T08:15:00Z",
+    "timeLabel": "wczoraj",
+    "imageUrl": "https://images.unsplash.com/photo-1516849841032-87cbac4d4f06?auto=format&fit=crop&w=1000&q=70",
+    "slug": "raptor-3-test-statyczny",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "SpaceX przeprowadziło pierwszy pełny test statyczny silnika Raptor 3 na stanowisku w McGregor w Teksasie. Silnik osiągnął cią około 280 ton siły (2,75 MN) przez pełne 85 sekund, co potwierdza parametry projektowe trzeciej generacji napędu metanowego dla Starship.",
+      "Raptor 3 eliminuje wiele zewnętrznych przewodów na rzecz zintegrowanej komory spalania i turbopomp, co redukuje masę o szacunkowe 15 procent w porównaniu z Raptor 2. Elon Musk zapowiedział, że docelowa produkcja ma sięgać 1000 silników rocznie, gdy fabryka w Starbase osiągnie pełną wydajność.",
+      "Sukces testu przyspiesza plan montażu Starship Block 3, który ma wynosić większe ładunki na orbitę niż wersja Block 2. NASA śledzi postępy w kontekście kontraktu HLS — niezawodność Raptorów jest kluczowa dla lądowania załogi na Księżycu w ramach Artemis III."
+    ]
+  },
+  {
+    "id": "new-glenn-flight-2",
+    "title": "New Glenn wykonuje drugi lot — Blue Origin testuje odzyskiwanie stopnia",
+    "excerpt": "Ciężka rakieta wyniosła satelitę komunikacyjny na orbitę średnią. Pierwszy stopień próbował lądowania na statku w Atlantyku.",
+    "category": "technologie",
+    "publishedAt": "2026-05-30T19:00:00Z",
+    "timeLabel": "2 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?auto=format&fit=crop&w=1000&q=70",
+    "slug": "new-glenn-drugi-lot",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Blue Origin pomyślnie wyniosła satelitę komunikacyjny na orbitę średnią Ziemi podczas drugiego lotu orbitalnego rakiety New Glenn. Misja NG-2 z Cape Canaveral trwała nieco ponad 12 minut do separacji ładunku; pierwszy stopień wykonał kontrolowane zejście w kierunku platformy lądowej Jacklyn na Atlantyku.",
+      "Lądowanie zakończyło się twardym dotknięciem platformy — Blue Origin potwierdziło uszkodzenia jednego z czterech silników BE-4, ale zebrało 90 procent planowanych danych telemetrycznych. Firma planuje trzeci lot z pełnym odzyskiem stopnia jeszcze w 2026 roku, co jest warunkiem kontraktów z Amazon Kuiper i Departamentem Obrony USA.",
+      "New Glenn o udźwigu około 45 ton na LEO pozycjonuje Blue Origin jako bezpośredniego konkurenta Falcona 9 i Falcon Heavy w segmencie rządowym i komercyjnym. Program Blue Moon dla NASA również korzysta z tej samej rodziny silników BE-4."
+    ]
+  },
+  {
+    "id": "esa-themis-reusable",
+    "title": "ESA rozpoczyna program Themis — europejski demonstrator rakiety wielokrotnego użytku",
+    "excerpt": "Testowy pierwszy stopień z silnikami Prometheus ma wykonać skoki hop i pionowe lądowania w Kourou przed 2028 rokiem.",
+    "category": "technologie",
+    "publishedAt": "2026-05-28T10:00:00Z",
+    "timeLabel": "4 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1454789548928-9efd52dc4031?auto=format&fit=crop&w=1000&q=70",
+    "slug": "esa-themis-demonstrator",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Europejska Agencja Kosmiczna oficjalnie uruchomiła fazę integracji demonstratora Themis — pełnowymiarowego pierwszego stopnia z trzema silnikami Prometheus na tlen i metan. Platforma ma wykonywać serie testów hop w Guyana Space Centre, ucząc się procedur pionowego lądowania analogicznych do Falcona 9.",
+      "Silnik Prometheus, rozwijany przez ArianeGroup, ma być dziesięć razy tańszy w produkcji niż Vulcain 2.1 dzięki drukowi 3D i uproszczonej architekturze. Themis nie wyniesie ładunku na orbitę, ale dostarczy danych niezbędnych do decyzji o ewentualnym wielokrotnie używalnym następcy Ariane 6 w latach 2030.",
+      "Program finansowany jest z budżetu ESA na innowacje transportu kosmicznego w wysokości 330 milionów euro. Partnerzy obejmują CNES, ArianeGroup oraz kilka firm start-upowych dostarczających systemy sterowania i lądowania."
+    ]
+  },
+  {
+    "id": "iss-crew-11-docking",
+    "title": "Załoga Crew-11 zadokowała do ISS — sześciu astronautów na orbicie",
+    "excerpt": "Kapsuła Dragon połączyła się z węzłem Harmony. Nowi członkowie ekspedycji 73 rozpoczynają sześciomiesięczną misję naukową.",
+    "category": "iss",
+    "publishedAt": "2026-05-31T16:30:00Z",
+    "timeLabel": "wczoraj",
+    "imageUrl": "https://images.unsplash.com/photo-1614728894747-a83421e2d03f?auto=format&fit=crop&w=1000&q=70",
+    "slug": "crew-11-dokowanie-iss",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Kapsuła Crew Dragon Endurance z misją Crew-11 autonomicznie zadokowała do Międzynarodowej Stacji Kosmicznej, podnosząc liczebność stałej załogi do sześciu astronautów. Ekspedycja 73 obejmuje eksperymenty z biologii regeneracyjnej, materiałoznawstwa i monitoringu radiacji w głębokiej przestrzeni kosmicznej.",
+      "Załoga przejęła od poprzedników eksperyment OSAM-1 dotyczący serwisowania satelitów na orbicie oraz kontynuuje testy systemu recyklingu wody o wydajności 98 procent. NASA podkreśla, że harmonogram ISS pozostaje napięty przed planowanym przybyciem modułu Axiom w 2027 roku.",
+      "Crew-11 powróci na Ziemię w listopadzie 2026 roku. W międzyczasie zaplanowano dwa spacery kosmiczne i trzy wizyty statków załogowych — w tym Progress z zaopatrzeniem i Cygnus z ładunkiem naukowym."
+    ]
+  },
+  {
+    "id": "iss-microgravity-cancer",
+    "title": "Na ISS zakończono eksperyment nad komórkami nowotworowymi w mikrograwitacji",
+    "excerpt": "Organoidy raka piersi reagowały inaczej na leki w stanie nieważkości — wyniki mogą przyspieszyć testy terapii celowanych.",
+    "category": "iss",
+    "publishedAt": "2026-05-30T11:00:00Z",
+    "timeLabel": "2 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1446776653963-20c1fec3e34d?auto=format&fit=crop&w=1000&q=70",
+    "slug": "iss-eksperyment-rak-mikrograwitacja",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Eksperyment Micro-12 na pokładzie ISS zakończył 28-dniową hodowlę organoidów raka piersi w mikrograwitacji. Komórki tworzyły struktury trójwymiarowe bez sztucznych rusztowań, a profil ekspresji genów różnił się od próbek hodowanych na Ziemi — szczególnie w ścieżkach odpowiedzialnych za oporność na leki.",
+      "Zespół z MD Anderson i ESA wykazał, że dwa inhibitory kinazy reagowały silniej na organoidy z ISS niż na kontrole laboratoryjne. Autorzy ostrożnie podkreślają, że wyniki wymagają replikacji, ale sugerują, że mikrograwitacja może być narzędziem do szybszego screeningu leków przed badaniami klinicznymi.",
+      "Próbki wróciły na Ziemię w kapsule Dragon i trafią do laboratoriów w Houston. Kolejna iteracja eksperymentu Micro-13 planowana jest na jesień 2026 roku z organoidami raka jelita."
+    ]
+  },
+  {
+    "id": "iss-axiom-hd-stream",
+    "title": "ISS transmituje pierwszy stały strumień 4K z zewnętrznych kamer",
+    "excerpt": "Nowy moduł transmisji umożliwia obserwację Ziemi i aktywności na pokładzie w rozdzielczości Ultra HD dla edukacji i nauki obywatelskiej.",
+    "category": "iss",
+    "publishedAt": "2026-05-29T08:45:00Z",
+    "timeLabel": "3 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1457364887197-9150188c107b?auto=format&fit=crop&w=1000&q=70",
+    "slug": "iss-stream-4k-kamery",
+    "isBreaking": false,
+    "readTime": 2,
+    "content": [
+      "NASA i partner Axiom Space uruchomili stały strumień wideo 4K z kamer zamontowanych na zewnętrznym rusztowaniu ISS, dostępny publicznie przez platformę edukacyjną agencji. Obraz obejmuje rotującą Ziemię, przejścia terminatora oraz okazjonalne widoki astronautów podczas prac na zewnątrz stacji.",
+      "Transmisja wykorzystuje łącze laserowe przez satelity relay, co pozwala utrzymać stabilne 15–20 Mbps mimo prędkości orbitalnej 7,66 km/s. Materiał ma służyć programom STEM w szkołach w USA, Europie i Japonii.",
+      "Strumień nie zastępuje archiwalnych nagrań EVA, ale uzupełnia je o ciągły widok planety — popularny wśród społeczności obserwatorów amatorskich śledzących przeloty ISS nad miastami."
+    ]
+  },
+  {
+    "id": "sentinel-6-sea-level",
+    "title": "Sentinel-6B potwierdza przyspieszenie wzrostu poziomu mórz",
+    "excerpt": "Sonda altimetryczna ESA i NASA wskazuje na tempo około 4,8 mm rocznie w latach 2020–2026 — szybciej niż w poprzedniej dekadzie.",
+    "category": "ziemia-z-kosmosu",
+    "publishedAt": "2026-05-31T07:00:00Z",
+    "timeLabel": "wczoraj",
+    "imageUrl": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1000&q=70",
+    "slug": "sentinel-6b-poziom-morz",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Misja Sentinel-6B, kontynuująca pomiary rozpoczęte przez satelity Jason i Sentinel-6 Michael Freilich, dostarczyła zaktualizowane dane o globalnym poziomie mórz. Średni wzrost w latach 2020–2026 wynosi około 4,8 milimetra rocznie — wyraźne przyspieszenie względem 3,3 mm z dekady 2000–2010.",
+      "Altimetria radarowa z dokładnością centymetrową pokazuje, że regiony Zatoki Meksykańskiej, Południowo-Wschodniej Azji i wybrzeży Pacyfiku doświadczają wzrostu przekraczającego średnią globalną o 20–30 procent z powodu lokalnych warunków oceanograficznych i osiadania gruntów.",
+      "Dane Sentinel-6 są włączone do modeli IPCC i służą planowaniu infrastruktury przybrzeżnej. ESA zapowiedziała przekazanie otwartego dostępu do produktów Level-2 dla naukowców i agencji zarządzania kryzysowego."
+    ]
+  },
+  {
+    "id": "landsat-wildfires",
+    "title": "Landsat 9 mapuje pożary w czasie rzeczywistym dla służb ratowniczych",
+    "excerpt": "Połączenie danych termicznych i optycznych pozwala prognozować kierunek frontu ognia z wyprzedzeniem 12 godzin.",
+    "category": "ziemia-z-kosmosu",
+    "publishedAt": "2026-05-30T06:30:00Z",
+    "timeLabel": "2 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1472214103451-93784bdef8e2?auto=format&fit=crop&w=1000&q=70",
+    "slug": "landsat-9-pozary-mapowanie",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Zespół USGS i NASA opublikował nowy produkt łączący obrazy Landsat 9 w pasmach termicznych i bliskiej podczerwieni z modelami wiatru, umożliwiając służbom ratowniczym prognozę rozchodzenia się pożarów lasów z wyprzedzeniem do 12 godzin. System testowano podczas sezonu pożarowego w Kanadzie i na południu Europy.",
+      "Algorytm wykrywa tzw. hot spots o rozdzielczości 30 metrów, co pozwala rozróżnić pojedyncze fronty od wielu ognisk w kompleksach leśnych. Dane są przesyłane do europejskiego systemu Copernicus EMS i kanadyjskiego CIFFC w czasie zbliżonym do rzeczywistego po ponownym przelocie satelity.",
+      "Landsat 9 uzupełnia szybsze satelity geostacjonarne GOES, które oferują częstsze obrazy, lecz niższą rozdzielczość przestrzenną. Połączenie obu źródeł stało się standardem w walkach z katastrofami naturalnymi wywołanymi suszą i ekstremalnymi temperaturami."
+    ]
+  },
+  {
+    "id": "dragonfly-titan-delay",
+    "title": "Dragonfly na Tytanie: NASA przesuwa start sondy na 2029 rok",
+    "excerpt": "Helikopterowy dron jądrowy potrzebuje dodatkowych testów RTG i aerodynamiki w gęstej atmosferze Saturna.",
+    "category": "misje",
+    "publishedAt": "2026-05-29T09:00:00Z",
+    "timeLabel": "3 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1614732414448-09645d1228a5?auto=format&fit=crop&w=1000&q=70",
+    "slug": "dragonfly-titan-2029",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "NASA ogłosiła przesunięcie startu misji Dragonfly — jądrowego helikoptera mającego badać organiczną chemię na Tytanie — na okno 2029 roku. Opóźnienie wynika z dodatkowych testów generatora termoelektrycznego RTG oraz symulacji lotów w gęstej atmosferze azotowej Księżyca Saturna.",
+      "Dragonfly ma wykonać dziesiątki skoków po powierzchni, badając kratery zawierające materiał organiczny podobny do wczesnej Ziemi. Misja jest klasyfikowana jako New Frontiers i ma koszt około 3,3 miliarda dolarów.",
+      "Mimo opóźnienia zespół podkreśla, że integracja instrumentów masowych i spektrometrów przebiega zgodnie z planem. Start w 2029 roku nadal pozwoli na dotarcie na Tytana w 2036 roku z wykorzystaniem grawitacji asystującej."
+    ]
+  },
+  {
+    "id": "rubin-observatory-first-light",
+    "title": "Obserwatorium Vera C. Rubin rozpoczęło naukę — pierwsze zdjęcie całego nieba",
+    "excerpt": "Teleskop w Chile będzie skanował połowę nieba co kilka dni, szukając supernowych, asteroid i ciemnej materii.",
+    "category": "astronomia",
+    "publishedAt": "2026-05-28T12:00:00Z",
+    "timeLabel": "4 dni temu",
+    "imageUrl": "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=1000&q=70",
+    "slug": "vera-rubin-pierwsze-swiatlo",
+    "isBreaking": false,
+    "readTime": 3,
+    "content": [
+      "Obserwatorium Vera C. Rubin w Chile wykonało pierwsze pełne zdjęcie testowe pasma nieba o polu widzenia 3,5 stopnia — największym wśród teleskopów optycznych na świecie. Kamera LSST o rozdzielczości 3,2 gigapiksela zarejestrowała miliony galaktyk w jednej ekspozycji.",
+      "W ciągu dziesięciu lat Legacy Survey of Space and Time ma zebrać ponad 20 terabajtów danych rocznie, rewolucjonizując astronomię czasową. Pierwsze cele obejmą mapowanie ciemnej materii metodą soczewkowania grawitacyjnego oraz wykrywanie obiektów bliskoziemskich.",
+      "Rubin Observatory współpracuje z alertami LIGO i neutrinowymi, dostarczając szybkich obserwacji optycznych zjawisk wysokoenergetycznych. Pełny start operacji naukowych planowany jest na III kwartał 2026 roku."
+    ]
   }
 ]
