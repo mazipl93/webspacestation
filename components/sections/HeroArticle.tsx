@@ -80,7 +80,7 @@ export default function HeroArticle({ article }: { article: NewsArticle }) {
           <div className="mb-3" style={fadeIn(0.04)}>
             <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-live px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white sm:text-[11px]">
               <span className="live-dot" style={{ background: "#fff" }} />
-              {article.isBreaking ? "Breaking news" : "Główny temat"}
+              {article.isBreaking ? "Pilne" : "Główny temat"}
             </span>
           </div>
 

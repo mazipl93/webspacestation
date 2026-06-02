@@ -248,7 +248,7 @@ export default function Navbar() {
                 </span>
               </span>
               <span className="mt-1 hidden text-[9.5px] font-medium tracking-[0.04em] text-accent-cyan sm:block">
-                Live space &amp; science intelligence
+                Wiadomości kosmiczne na żywo
               </span>
             </div>
           </Link>

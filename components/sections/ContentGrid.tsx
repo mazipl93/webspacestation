@@ -319,7 +319,7 @@ function LiveBadge() {
     <div className="flex items-center gap-1.5">
       <span className="live-dot" />
       <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-accent-live">
-        Live
+        Na żywo
       </span>
     </div>
   );
@@ -356,7 +356,7 @@ function Countdown({ h, m, s }: { h: string; m: string; s: string }) {
 function LiveMissionCenter() {
   return (
     <section className="card-surface flex flex-col gap-3 p-5">
-      <SectionHeader label="Live Mission Center" accent="#ff453a" />
+      <SectionHeader label="Centrum misji na żywo" accent="#ff453a" />
       <div className="-mt-3 flex items-center gap-1.5">
         <span className="live-breathe h-1.5 w-1.5 rounded-full bg-accent-cyan" />
         <span className="text-[10px] text-text-tertiary">
@@ -601,7 +601,7 @@ function TimelineWydarzen() {
   return (
     <section className="card-surface p-5">
       <SectionHeader
-        label="Timeline wydarzeń"
+        label="Oś czasu wydarzeń"
         href="/kalendarz"
         cta="Zobacz kalendarz"
       />

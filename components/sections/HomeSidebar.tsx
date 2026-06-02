@@ -211,7 +211,7 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
         </Link>
       </SidebarBlock>
 
-      <SidebarBlock icon={Flame} label="Trending" accent="#ff453a">
+      <SidebarBlock icon={Flame} label="Na czasie" accent="#ff453a">
         <div>
           {trending.map((article) => (
             <CompactArticleRow key={article.id} article={article} />

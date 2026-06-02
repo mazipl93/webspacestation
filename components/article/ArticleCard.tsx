@@ -73,7 +73,7 @@ export default function ArticleCard({
           <div className="absolute left-3 top-3 z-10">
             <span className="flex items-center gap-1.5 rounded-md bg-accent-live px-2 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
               <span className="live-dot" style={{ background: "#fff" }} />
-              Najważniejsze
+              Pilne
             </span>
           </div>
         )}
