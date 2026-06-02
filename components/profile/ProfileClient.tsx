@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bookmark, Heart, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import LogoutButton from "@/components/auth/LogoutButton";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { getLikedSlugs, LIKES_CHANGE_EVENT } from "@/lib/likes";
 import { toNewsCard } from "@/lib/search";
@@ -70,7 +71,7 @@ function ArticleGrid({
 }
 
 export default function ProfileClient() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const { slugs: bookmarkSlugs } = useBookmarks();
 
@@ -127,12 +128,6 @@ export default function ProfileClient() {
     [likedSlugs, cardBySlug]
   );
 
-  async function handleSignOut() {
-    await signOut();
-    router.replace("/");
-    router.refresh();
-  }
-
   if (loading || !user) {
     return (
       <PageShell>
@@ -162,14 +157,13 @@ export default function ProfileClient() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSignOut}
+            <LogoutButton
+              next="/"
               className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline px-4 py-2.5 text-[13px] font-semibold text-text-secondary transition-colors duration-300 hover:border-accent-live/60 hover:text-accent-live"
             >
               <LogOut size={15} />
               Wyloguj się
-            </button>
+            </LogoutButton>
           </div>
         </section>
 

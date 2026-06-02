@@ -18,7 +18,7 @@ interface AuthContextValue {
   user: SessionUser | null;
   /** True only during the (rare) window before the first auth check resolves. */
   loading: boolean;
-  signOut: () => Promise<void>;
+  signOut: (next?: string) => void;
   /** Reload user from Supabase (e.g. after avatar upload). */
   refreshUser: () => Promise<void>;
 }
@@ -92,13 +92,9 @@ export function AuthProvider({
     await syncUserRef.current?.();
   }, []);
 
-  const signOut = useCallback(async () => {
-    const supabase = clientRef.current;
-    try {
-      if (supabase) await supabase.auth.signOut();
-    } finally {
-      setUser(null);
-    }
+  const signOut = useCallback((next = "/") => {
+    const target = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    window.location.assign(`/logout?next=${encodeURIComponent(target)}`);
   }, []);
 
   return (

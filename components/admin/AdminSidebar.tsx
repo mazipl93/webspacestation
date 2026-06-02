@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import LogoutButton from "@/components/auth/LogoutButton";
 import type { UserRole } from "@/lib/auth/permissions";
 import {
   canCreateArticle,
@@ -120,15 +121,14 @@ export default function AdminSidebar({
               {roleLabel}
             </span>
           </div>
-          <form action="/logout?next=/login" method="post" className="ml-auto">
-            <button
-              type="submit"
-              aria-label="Wyloguj"
-              className="grid h-8 w-8 place-items-center rounded-[0.5rem] text-text-tertiary transition-colors hover:bg-accent-live/10 hover:text-accent-live"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </form>
+          <LogoutButton
+            next="/login"
+            formClassName="ml-auto"
+            aria-label="Wyloguj"
+            className="grid h-8 w-8 place-items-center rounded-[0.5rem] text-text-tertiary transition-colors hover:bg-accent-live/10 hover:text-accent-live"
+          >
+            <LogOut className="h-4 w-4" />
+          </LogoutButton>
         </div>
       </div>
     </aside>

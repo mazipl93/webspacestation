@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Bell, ChevronDown, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/components/auth/AuthProvider";
+import LogoutButton from "@/components/auth/LogoutButton";
 import Avatar from "@/components/profile/Avatar";
 
 /**
@@ -14,9 +15,8 @@ import Avatar from "@/components/profile/Avatar";
  * Navbar can render the "Zaloguj się" CTA instead.
  */
 export default function AccountMenu() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
 
   // Close on navigation and on Escape.
@@ -33,13 +33,6 @@ export default function AccountMenu() {
   }, []);
 
   if (!user) return null;
-
-  async function handleSignOut() {
-    setOpen(false);
-    await signOut();
-    router.replace("/");
-    router.refresh();
-  }
 
   return (
     <div className="relative">
@@ -96,15 +89,15 @@ export default function AccountMenu() {
               Powiadomienia
             </Link>
 
-            <button
-              type="button"
-              role="menuitem"
-              onClick={handleSignOut}
+            <LogoutButton
+              next="/"
+              formClassName="w-full"
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[13px] text-text-secondary transition-colors duration-200 hover:bg-accent-live/10 hover:text-accent-live"
+              onClick={() => setOpen(false)}
             >
               <LogOut size={15} />
               Wyloguj się
-            </button>
+            </LogoutButton>
           </div>
         </>
       )}

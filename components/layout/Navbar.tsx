@@ -9,6 +9,7 @@ import { matchesArticle } from "@/lib/search";
 import type { AdminArticle } from "@/lib/admin/types";
 import { useAuth } from "@/components/auth/AuthProvider";
 import AccountMenu from "@/components/auth/AccountMenu";
+import LogoutButton from "@/components/auth/LogoutButton";
 import Avatar from "@/components/profile/Avatar";
 
 const NAV_LINKS = [
@@ -70,20 +71,13 @@ export default function Navbar() {
   const closeTimer = useRef<number | null>(null);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   // Preserve where the user is so login/register can return them here.
   const redirectQuery =
     pathname && pathname !== "/" ? `?redirectTo=${encodeURIComponent(pathname)}` : "";
   const loginHref = `/logowanie${redirectQuery}`;
   const registerHref = `/rejestracja${redirectQuery}`;
-
-  async function handleMobileSignOut() {
-    setMobileOpen(false);
-    await signOut();
-    router.replace("/");
-    router.refresh();
-  }
 
   function isActive(href: string) {
     // Aktualności is active both on /aktualnosci and on any article page
@@ -512,14 +506,15 @@ export default function Navbar() {
                   <Bell size={16} />
                   Powiadomienia
                 </Link>
-                <button
-                  type="button"
-                  onClick={handleMobileSignOut}
-                  className="flex items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-accent-live/60 hover:text-accent-live"
+                <LogoutButton
+                  next="/"
+                  formClassName="w-full"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-accent-live/60 hover:text-accent-live"
+                  onClick={() => setMobileOpen(false)}
                 >
                   <LogOut size={16} />
                   Wyloguj się
-                </button>
+                </LogoutButton>
               </div>
             ) : (
               <div className="mt-3 flex flex-col gap-2">
