@@ -42,6 +42,13 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    types: {
+      "application/rss+xml": [
+        { url: "/feed.xml", title: "Web Space Station — wszystkie aktualności" },
+      ],
+    },
+  },
 };
 
 export const viewport: Viewport = {

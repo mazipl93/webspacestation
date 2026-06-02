@@ -4,8 +4,16 @@ import {
   getPublishedArticles,
   getPublishedArticleBySlug,
   getArticlesByCategory as dbGetArticlesByCategory,
+  getRankedPublishedArticles,
   type ArticleWithRelations,
 } from "@/lib/server/articles";
+import {
+  isBreakingScore,
+  isTopPriorityScore,
+} from "@/lib/news/score-thresholds";
+import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
+import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
+import { polishTypography } from "@/lib/rss/translate";
 import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
 import type { NewsArticle, NewsCategory } from "@/types";
 
@@ -38,29 +46,52 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
   // `when` may arrive as a Date (direct Prisma) or an ISO string (after the
   // unstable_cache Data Cache round-trips the value), so coerce defensively.
   const when = new Date(a.publishedAt ?? a.createdAt);
+  const external = isExternalAggregatorArticle({
+    source: a.source,
+    originalUrl: a.originalUrl,
+  });
+
   const paragraphs = a.content
     ? a.content
         .split(/\n\s*\n/)
         .map((p) => p.trim())
         .filter(Boolean)
     : [];
+
+  const cover =
+    a.coverImage?.trim() ||
+    (external
+      ? pickCategoryCoverFallback(a.category.slug, a.slug)
+      : SEARCH_FALLBACK_IMAGE);
+
   return {
     id: a.id,
     slug: a.slug,
-    title: a.title,
-    excerpt: a.excerpt ?? "",
+    title: polishTypography(a.title),
+    excerpt: polishTypography(a.excerpt ?? ""),
     category: a.category.slug as NewsCategory,
     publishedAt: when.toISOString(),
     timeLabel: relativeLabel(when),
-    imageUrl: a.coverImage || SEARCH_FALLBACK_IMAGE,
-    isBreaking: a.featured,
+    imageUrl: cover,
+    isBreaking:
+      !external && (isBreakingScore(a.score ?? 0) || Boolean(a.featured)),
+    isTopPriority: !external && isTopPriorityScore(a.score ?? 0),
+    score: a.score,
     content: paragraphs.length > 0 ? paragraphs : undefined,
     readTime: a.readingTime ?? undefined,
+    source: a.source ?? undefined,
+    originalUrl: a.originalUrl ?? undefined,
   };
 }
 
 export async function getAllArticles(): Promise<NewsArticle[]> {
   const articles = await getPublishedArticles();
+  return articles.map(toNewsArticle);
+}
+
+/** Homepage / newsroom — top N by score, then recency. */
+export async function getRankedArticles(limit = 20): Promise<NewsArticle[]> {
+  const articles = await getRankedPublishedArticles(limit);
   return articles.map(toNewsArticle);
 }
 

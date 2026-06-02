@@ -48,9 +48,12 @@ export interface AdminArticle {
   status: ArticleStatus;
   featured: boolean;
   readingTime: number | null;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  source?: string | null;
+  originalUrl?: string | null;
   category: AdminArticleCategory;
   author: AdminArticleAuthor;
 }

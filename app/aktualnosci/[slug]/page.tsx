@@ -14,6 +14,8 @@ import Footer from "@/components/layout/Footer";
 import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 import ArticleEditButton from "@/components/article/ArticleEditButton";
+import SourceAttribution from "@/components/article/SourceAttribution";
+import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
 // DB access during `next build`; the page is rendered on first request, cached,
@@ -34,6 +36,7 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   technologie:        { label: "Technologie",       color: "#38bdf8" },
   "ziemia-z-kosmosu": { label: "Ziemia z kosmosu", color: "#22c55e" },
   iss:                { label: "ISS",               color: "#ffb830" },
+  ai:                 { label: "AI",                color: "#e879f9" },
 };
 
 const CATEGORY_FALLBACK: Record<string, string> = {
@@ -52,6 +55,9 @@ const CATEGORY_FALLBACK: Record<string, string> = {
   iss: `
     radial-gradient(circle at 66% 44%, rgba(40,108,225,0.58) 0%, rgba(14,52,150,0.28) 32%, transparent 56%),
     linear-gradient(135deg, #04101f 0%, #061224 100%)`,
+  ai: `
+    radial-gradient(ellipse at 40% 50%, rgba(232,121,249,0.4) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0612 0%, #12081a 100%)`,
 };
 
 function catMeta(c: string) {
@@ -186,14 +192,21 @@ function ArticleHero({ article }: { article: NewsArticle }) {
             </span>
           </div>
         )}
+        {!article.isBreaking && article.originalUrl && article.source && (
+          <div className="mb-4" style={fadeIn(0.08)}>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-glass px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-text-secondary">
+              Ze świata
+            </span>
+          </div>
+        )}
 
         {/* Headline */}
         <h1
-          className="mb-5 max-w-[820px] font-extrabold text-text-primary"
+          className="mb-5 max-w-[820px] break-words text-balance font-extrabold text-text-primary"
           style={{
-            fontSize: "clamp(1.75rem, 4vw, 3.25rem)",
-            lineHeight: 1.06,
-            letterSpacing: "-0.03em",
+            fontSize: "clamp(1.375rem, 3.5vw, 2.5rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.025em",
             textShadow: "0 2px 40px rgba(0,0,0,0.6)",
             ...fadeIn(0.12),
           }}
@@ -362,7 +375,10 @@ function ArticleBody({
     year: "numeric",
   });
 
-  const [lead, ...rest] = article.content ?? [article.excerpt];
+  const bodyParagraphs = getArticleBodyParagraphs(article);
+  const isExternal = Boolean(article.originalUrl && article.source);
+  const lead = bodyParagraphs[0] ?? (isExternal ? null : article.excerpt);
+  const rest = isExternal ? [] : bodyParagraphs.slice(lead ? 1 : 0);
 
   return (
     <div id="article-body" className="container-site py-10 reveal">
@@ -377,17 +393,22 @@ function ArticleBody({
             on wide screens — intentional whitespace, not wasted space.
           */}
           <div className="max-w-[72ch]">
-            {/* Lead — category-accented left rule, slightly heavier weight */}
-            <p
-              className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
-              style={{
-                fontSize: "var(--text-body)",
-                lineHeight: 1.78,
-                borderColor: meta.color,
-              }}
-            >
-              {lead}
-            </p>
+            {isExternal ? (
+              <SourceAttribution article={article} />
+            ) : (
+              lead && (
+                <p
+                  className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
+                  style={{
+                    fontSize: "var(--text-body)",
+                    lineHeight: 1.78,
+                    borderColor: meta.color,
+                  }}
+                >
+                  {lead}
+                </p>
+              )
+            )}
 
             {/* Body paragraphs — comfortable 1.8 leading, slightly cooler tone */}
             {rest.map((paragraph, i) => (

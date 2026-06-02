@@ -92,6 +92,12 @@ export const adminApi = {
     return request<AdminArticle>(`/api/articles/${id}`, { method: "DELETE" });
   },
 
+  reprocessRssArticle(id: string) {
+    return request<AdminArticle>(`/api/articles/${id}/reprocess-rss`, {
+      method: "POST",
+    });
+  },
+
   // ─── Categories ─────────────────────────────────────────────────────────--
 
   listCategories() {

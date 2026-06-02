@@ -28,6 +28,12 @@ export const CATEGORY_INFO: Record<CategorySlug, CategoryInfo> = {
     href: "/technologie",
     description: "Rakiety, satelity i innowacje napędzające erę kosmiczną.",
   },
+  ai: {
+    label: "AI",
+    color: "#e879f9",
+    href: "/ai",
+    description: "Sztuczna inteligencja, modele językowe i technologie ML.",
+  },
   "ziemia-z-kosmosu": {
     label: "Ziemia z kosmosu",
     color: "#22c55e",
@@ -64,6 +70,9 @@ export const CATEGORY_FALLBACK_BG: Record<string, string> = {
   technologie: `
     radial-gradient(ellipse at 50% 94%, rgba(90,140,255,0.34) 0%, transparent 36%),
     linear-gradient(160deg, #050a13 0%, #070e1a 100%)`,
+  ai: `
+    radial-gradient(ellipse at 40% 50%, rgba(232,121,249,0.4) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0612 0%, #12081a 100%)`,
   "ziemia-z-kosmosu": `
     radial-gradient(circle at 66% 44%, rgba(40,108,225,0.58) 0%, rgba(14,52,150,0.28) 32%, transparent 56%),
     linear-gradient(135deg, #04101f 0%, #061224 100%)`,

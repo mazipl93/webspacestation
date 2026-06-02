@@ -12,10 +12,12 @@ const FOOTER_NAV = {
     { label: "Misje", href: "/misje" },
     { label: "Astronomia", href: "/astronomia" },
     { label: "Technologie", href: "/technologie" },
+    { label: "AI", href: "/ai" },
     { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },
     { label: "ISS", href: "/iss" },
   ],
   Popularne: [
+    { label: "Kanały RSS", href: "/rss" },
     { label: "Starty rakiet", href: "/starty" },
     { label: "Kalendarz misji", href: "/kalendarz" },
     { label: "Aktywne misje", href: "/misje" },

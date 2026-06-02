@@ -12,37 +12,48 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "db:migrate-article-tags": "tsx scripts/migrate-article-tags.ts",
+    "rss:clean-subtitles": "tsx scripts/clean-rss-subtitles.ts",
+    "db:prisma-generate": "powershell -ExecutionPolicy Bypass -File scripts/prisma-generate.ps1",
     "db:studio": "prisma studio",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "rss:ingest": "tsx scripts/rss-ingest.ts",
+    "rss:retranslate": "tsx scripts/rss-retranslate.ts",
+    "rss:process": "tsx scripts/rss-process.ts",
+    "rss:demote-backfill": "tsx scripts/rss-demote-backfill.ts",
+    "cache:revalidate": "tsx scripts/cache-revalidate.ts",
+    "rss:cleanup-db": "tsx scripts/rss-cleanup-db.ts",
+    "scores:recalculate": "tsx scripts/recalculate-scores.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.0",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "geist": "^1.4.2",
+    "lucide-react": "^0.511.0",
     "next": "^15.3.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "geist": "^1.4.2",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.3.0",
-    "lucide-react": "^0.511.0",
-    "@prisma/client": "^6.9.0",
-    "bcryptjs": "^2.4.3",
-    "@supabase/supabase-js": "^2.45.0",
-    "@supabase/ssr": "^0.5.2"
+    "rss-parser": "^3.13.0",
+    "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@tailwindcss/postcss": "^4.1.8",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.2",
-    "@types/bcryptjs": "^2.4.6",
-    "typescript": "^5.8.3",
-    "tailwindcss": "^4.1.8",
-    "@tailwindcss/postcss": "^4.1.8",
     "eslint": "^9.28.0",
     "eslint-config-next": "^15.3.3",
-    "@eslint/eslintrc": "^3.3.1",
     "prisma": "^6.9.0",
-    "tsx": "^4.19.0"
+    "tailwindcss": "^4.1.8",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.3"
   }
 }

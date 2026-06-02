@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
+import { categoryFallbackBg } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import BookmarkButton from "@/components/article/BookmarkButton";
 import CoverImage from "@/components/article/CoverImage";
+import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 
 export default function ArticleCard({
   article,
@@ -17,13 +18,13 @@ export default function ArticleCard({
   featured?: boolean;
   className?: string;
 }) {
-  const meta = getCategoryInfo(article.category);
-
   return (
     <Link
       href={`/aktualnosci/${article.slug}`}
       className={cn(
         "surface-interactive group relative flex flex-col overflow-hidden rounded-xl border border-hairline",
+        article.isTopPriority &&
+          "ring-1 ring-[rgba(255,69,58,0.45)] shadow-[0_8px_32px_-8px_rgba(255,69,58,0.35)]",
         featured && "sm:flex-row sm:items-stretch",
         className
       )}
@@ -52,15 +53,6 @@ export default function ArticleCard({
           style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
         />
 
-        {article.isBreaking && (
-          <div className="absolute left-3 top-3 z-10">
-            <span className="flex items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white sm:text-[9px]">
-              <span className="live-dot" style={{ background: "#fff" }} />
-              Ważne
-            </span>
-          </div>
-        )}
-
         <div
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-1/3"
@@ -76,14 +68,8 @@ export default function ArticleCard({
           featured && "sm:mt-0 sm:border-l sm:border-t-0 sm:justify-center sm:py-6 sm:pl-6 sm:pr-5"
         )}
       >
-        <div className="mb-2.5 flex items-center justify-between gap-2">
-          <span
-            className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] sm:text-[10px]"
-            style={{ color: meta.color }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
-            {meta.label}
-          </span>
+        <div className="mb-2.5 flex items-start justify-between gap-2">
+          <ArticleMetaChips article={article} />
           <span className="shrink-0 text-[12px] text-text-muted sm:text-[11px]">
             {article.timeLabel}
           </span>

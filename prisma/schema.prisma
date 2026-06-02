@@ -71,7 +71,16 @@ model Article {
   coverImage  String?
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
+  /// News Engine ranking — higher appears first on homepage.
+  score       Int           @default(0)
   readingTime Int?
+  /// Editorial / AI tags (max ~5 from RSS enrichment).
+  tags        String[]      @default([])
+
+  /// RSS / external publisher name (e.g. NASA, TechCrunch). Null for editorial.
+  source      String?
+  /// Canonical URL at the publisher — dedupe key for News Engine ingest.
+  originalUrl String?       @unique
 
   categoryId  String
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
@@ -87,7 +96,9 @@ model Article {
   @@index([categoryId])
   @@index([authorId])
   @@index([featured])
+  @@index([score])
   @@index([publishedAt])
+  @@index([source])
   @@map("articles")
 }
 

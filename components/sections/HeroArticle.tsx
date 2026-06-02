@@ -5,6 +5,10 @@ import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
 
+function isExternalArticle(article: NewsArticle): boolean {
+  return Boolean(article.source && article.originalUrl);
+}
+
 function fadeIn(delay = 0, duration = 0.75): CSSProperties {
   return {
     animation: `reveal-fade ${duration}s cubic-bezier(0.22,1,0.36,1) ${delay}s both`,
@@ -12,7 +16,13 @@ function fadeIn(delay = 0, duration = 0.75): CSSProperties {
 }
 
 /** Lead-story hero — editorial cover + headline within the news grid. */
-export default function HeroArticle({ article }: { article: NewsArticle }) {
+export default function HeroArticle({
+  article,
+  topPriority = false,
+}: {
+  article: NewsArticle;
+  topPriority?: boolean;
+}) {
   const meta = getCategoryInfo(article.category);
   const date = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
     day: "numeric",
@@ -21,7 +31,18 @@ export default function HeroArticle({ article }: { article: NewsArticle }) {
   });
 
   return (
-    <section className="flex min-h-[min(68vh,640px)] flex-col overflow-hidden rounded-xl border border-hairline sm:rounded-2xl lg:min-h-[540px]">
+    <section
+      className="flex min-h-[min(68vh,640px)] flex-col overflow-hidden rounded-xl border sm:rounded-2xl lg:min-h-[540px]"
+      style={
+        topPriority
+          ? {
+              borderColor: "rgba(255,69,58,0.55)",
+              boxShadow:
+                "0 0 0 1px rgba(255,149,0,0.25), 0 12px 48px -12px rgba(255,69,58,0.35)",
+            }
+          : { borderColor: "var(--hairline)" }
+      }
+    >
       <div
         className="img-sheen relative min-h-[44vh] flex-1 overflow-hidden sm:min-h-[38vh] lg:min-h-[360px]"
         style={{ background: categoryFallbackBg(article.category) }}
@@ -45,14 +66,30 @@ export default function HeroArticle({ article }: { article: NewsArticle }) {
 
         <div className="absolute inset-x-0 bottom-0 p-4 sm:p-7">
           <div className="mb-3" style={fadeIn(0.04)}>
-            {article.isBreaking ? (
+            {topPriority || article.isTopPriority ? (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #ff453a 0%, #ff9500 100%)",
+                  boxShadow: "0 0 16px rgba(255,69,58,0.5)",
+                }}
+              >
+                <span className="live-dot" style={{ background: "#fff" }} />
+                Główny temat
+              </span>
+            ) : article.isBreaking ? (
               <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-live px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white sm:text-[11px]">
                 <span className="live-dot" style={{ background: "#fff" }} />
                 Ważne
               </span>
+            ) : isExternalArticle(article) ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-glass px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary sm:text-[11px]">
+                Ze świata
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-blue/90 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white sm:text-[11px]">
-                Główny temat
+                Redakcja WSS
               </span>
             )}
           </div>
@@ -97,11 +134,11 @@ export default function HeroArticle({ article }: { article: NewsArticle }) {
             style={fadeIn(0.12)}
           >
             <h1
-              className="font-extrabold text-text-primary transition-colors duration-300 group-hover:text-accent-cyan"
+              className="line-clamp-4 max-w-[min(100%,42rem)] break-words text-balance font-extrabold text-text-primary transition-colors duration-300 group-hover:text-accent-cyan sm:line-clamp-3"
               style={{
-                fontSize: "clamp(1.875rem, 6vw, 3.75rem)",
-                lineHeight: 1.05,
-                letterSpacing: "-0.03em",
+                fontSize: "clamp(1.25rem, 3.5vw, 2.125rem)",
+                lineHeight: 1.12,
+                letterSpacing: "-0.025em",
                 textShadow: "0 2px 40px rgba(0,0,0,0.6)",
               }}
             >

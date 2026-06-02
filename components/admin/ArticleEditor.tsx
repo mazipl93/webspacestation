@@ -22,8 +22,13 @@ import {
   Toggle,
 } from "@/components/admin/primitives";
 import StatusBadge from "@/components/admin/StatusBadge";
+import ArticleEnrichmentPreview from "@/components/admin/ArticleEnrichmentPreview";
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
+import {
+  isRssAggregatorArticle,
+  toAdminEnrichmentView,
+} from "@/lib/admin/rss-display";
 
 const EMPTY_FORM: ArticleFormValues = {
   title: "",
@@ -77,11 +82,13 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
 
   const [currentId, setCurrentId] = useState<string | null>(articleId ?? null);
+  const [loadedArticle, setLoadedArticle] = useState<AdminArticle | null>(null);
   const [loading, setLoading] = useState(Boolean(articleId));
   const [saving, setSaving] = useState(false);
   const [savingLabel, setSavingLabel] = useState<string>("");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reprocessing, setReprocessing] = useState(false);
 
   const slugTouched = useRef(Boolean(articleId));
   const dirty = useRef(false);
@@ -98,6 +105,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         if (articleId) {
           const article = await adminApi.getArticle(articleId);
           if (!active) return;
+          setLoadedArticle(article);
           setForm(toForm(article));
           setStatus(article.status);
           setPublishedSlug(article.status === "PUBLISHED" ? article.slug : null);
@@ -150,6 +158,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         }
 
         dirty.current = false;
+        setLoadedArticle(saved);
         setStatus(saved.status);
         setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
         setLastSavedAt(new Date());
@@ -178,6 +187,33 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
   }, [form, persist]);
+
+  const handleReprocessAi = async () => {
+    if (!currentId || !loadedArticle || !isRssAggregatorArticle(loadedArticle)) return;
+    if (
+      !window.confirm(
+        "Ponownie uruchomić OpenAI (gpt-5.4-mini)? Tytuł, streszczenie i tagi zostaną nadpisane."
+      )
+    ) {
+      return;
+    }
+    setReprocessing(true);
+    setError(null);
+    try {
+      const saved = await adminApi.reprocessRssArticle(currentId);
+      setLoadedArticle(saved);
+      setForm(toForm(saved));
+      setStatus(saved.status);
+    } catch (e) {
+      setError(
+        e instanceof ApiError
+          ? e.message
+          : "Nie udało się ponowić przetwarzania AI."
+      );
+    } finally {
+      setReprocessing(false);
+    }
+  };
 
   const update = <K extends keyof ArticleFormValues>(
     key: K,
@@ -261,11 +297,59 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </div>
       ) : null}
 
+      {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
+        <div className="mb-5">
+          <ArticleEnrichmentPreview
+            view={toAdminEnrichmentView({
+              ...loadedArticle,
+              title: form.title,
+              excerpt: form.excerpt,
+              readingTime: form.readingTime,
+              tags: loadedArticle.tags,
+              category: loadedArticle.category,
+              subtitle: form.subtitle || loadedArticle.subtitle,
+            })}
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {loadedArticle.originalUrl ? (
+              <p className="text-caption text-text-muted">
+                Źródło RSS:{" "}
+                <a
+                  href={loadedArticle.originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent-cyan hover:underline"
+                >
+                  {loadedArticle.originalUrl}
+                </a>
+              </p>
+            ) : null}
+            {status !== "PUBLISHED" ? (
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={reprocessing || saving}
+                onClick={handleReprocessAi}
+              >
+                {reprocessing ? "AI…" : "Ponów AI (OpenAI)"}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       {/* ── Layout: main + sidebar ── */}
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <div className="flex flex-col gap-5">
           <Card className="flex flex-col gap-4">
-            <Field label="Tytuł" htmlFor="title">
+            <Field
+              label={
+                status === "REVIEW" && loadedArticle && isRssAggregatorArticle(loadedArticle)
+                  ? "Tytuł (PL, AI)"
+                  : "Tytuł"
+              }
+              htmlFor="title"
+            >
               <TextInput
                 id="title"
                 value={form.title}
@@ -273,14 +357,29 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 onChange={(e) => update("title", e.target.value)}
               />
             </Field>
-            <Field label="Podtytuł" htmlFor="subtitle">
-              <TextInput
-                id="subtitle"
-                value={form.subtitle}
-                placeholder="Krótki dek pod tytułem"
-                onChange={(e) => update("subtitle", e.target.value)}
-              />
-            </Field>
+            {loadedArticle && isRssAggregatorArticle(loadedArticle) ? (
+              <Field
+                label="Etykieta CMS (opcjonalnie)"
+                htmlFor="subtitle"
+                hint="Na stronie publicznej widać blok „Ze świata” i link do źródła — nie ten tekst."
+              >
+                <TextInput
+                  id="subtitle"
+                  value={form.subtitle}
+                  placeholder="Ze świata · SpaceNews"
+                  onChange={(e) => update("subtitle", e.target.value)}
+                />
+              </Field>
+            ) : (
+              <Field label="Podtytuł" htmlFor="subtitle">
+                <TextInput
+                  id="subtitle"
+                  value={form.subtitle}
+                  placeholder="Krótki dek pod tytułem"
+                  onChange={(e) => update("subtitle", e.target.value)}
+                />
+              </Field>
+            )}
             <Field
               label="Slug"
               htmlFor="slug"
@@ -296,12 +395,19 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 }}
               />
             </Field>
-            <Field label="Zajawka" htmlFor="excerpt">
+            <Field
+              label={
+                status === "REVIEW" && loadedArticle && isRssAggregatorArticle(loadedArticle)
+                  ? "Streszczenie (AI)"
+                  : "Zajawka"
+              }
+              htmlFor="excerpt"
+            >
               <TextArea
                 id="excerpt"
                 rows={3}
                 value={form.excerpt}
-                placeholder="Streszczenie wyświetlane na listach."
+                placeholder="Streszczenie wyświetlane na listach i w podglądzie moderacji."
                 onChange={(e) => update("excerpt", e.target.value)}
               />
             </Field>

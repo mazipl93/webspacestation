@@ -13,9 +13,10 @@ import { canDeleteArticle } from "@/lib/auth/permissions";
 import { cn } from "@/lib/cn";
 
 const FILTERS = [
-  { id: "all", label: "Wszystkie", status: "ALL" },
+  { id: "review", label: "Do akceptacji", status: "REVIEW" },
+  { id: "draft", label: "Szkice RSS", status: "DRAFT" },
   { id: "published", label: "Opublikowane", status: "PUBLISHED" },
-  { id: "draft", label: "Szkice", status: "DRAFT" },
+  { id: "all", label: "Wszystkie", status: "ALL" },
 ] as const;
 
 type FilterId = (typeof FILTERS)[number]["id"];
@@ -24,7 +25,7 @@ export default function ArticlesListPage() {
   const { role } = useAdminAuth();
   const mayDelete = canDeleteArticle(role);
 
-  const [filter, setFilter] = useState<FilterId>("all");
+  const [filter, setFilter] = useState<FilterId>("review");
   const [articles, setArticles] = useState<AdminArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +49,31 @@ export default function ArticlesListPage() {
     load(filter);
   }, [filter, load]);
 
+  const handlePublish = async (article: AdminArticle) => {
+    setBusyId(article.id);
+    try {
+      await adminApi.updateArticle(article.id, { status: "PUBLISHED" });
+      await load(filter);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Nie udało się opublikować.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReject = async (article: AdminArticle) => {
+    if (!window.confirm(`Odrzucić „${article.title}” (archiwum)?`)) return;
+    setBusyId(article.id);
+    try {
+      await adminApi.archiveArticle(article.id);
+      await load(filter);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Nie udało się odrzucić.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleArchive = async (article: AdminArticle) => {
     if (!window.confirm(`Zarchiwizować „${article.title}”?`)) return;
     setBusyId(article.id);
@@ -66,7 +92,7 @@ export default function ArticlesListPage() {
       <PageHeader
         overline="Treści"
         title="Artykuły"
-        description="Twórz, edytuj i publikuj materiały redakcyjne."
+        description="RSS trafia do szkiców i kolejki „Do akceptacji”. Na stronę trafia tylko to, co opublikujesz ręcznie."
         actions={
           <Link
             href="/admin/articles/new"
@@ -110,6 +136,8 @@ export default function ArticlesListPage() {
         <ArticlesTable
           articles={articles}
           busyId={busyId}
+          onPublish={handlePublish}
+          onReject={handleReject}
           onArchive={handleArchive}
           canDelete={mayDelete}
         />

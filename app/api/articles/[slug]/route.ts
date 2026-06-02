@@ -5,8 +5,10 @@ import {
   archiveArticle,
   getArticleById,
   getPublishedArticleBySlug,
+  refreshArticleRanking,
   updateArticle,
 } from "@/lib/server/articles";
+import { ArticleStatus } from "@prisma/client";
 import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import {
   forbidden,
@@ -85,10 +87,19 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
     const article = await updateArticle(id, parsed.value);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
 
-    // Refresh both the global feeds and this article's detail page.
-    revalidateTag(ARTICLES_TAG);
-    revalidateTag(articleTag(article.slug));
-    revalidateTag(categoryTag(article.category.slug));
+    const wasPublished =
+      parsed.value.status === ArticleStatus.PUBLISHED ||
+      article.status === ArticleStatus.PUBLISHED;
+
+    if (parsed.value.status === ArticleStatus.PUBLISHED) {
+      await refreshArticleRanking(article.id);
+    }
+
+    if (wasPublished || parsed.value.status === ArticleStatus.PUBLISHED) {
+      revalidateTag(ARTICLES_TAG);
+      revalidateTag(articleTag(article.slug));
+      revalidateTag(categoryTag(article.category.slug));
+    }
 
     return NextResponse.json({ data: article });
   } catch (error) {

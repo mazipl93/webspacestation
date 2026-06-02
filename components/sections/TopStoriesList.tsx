@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { getCategoryInfo } from "@/lib/categories";
+import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 import type { NewsArticle } from "@/types";
 
 /** Vertical headline rail with thumbnails — sits beside the hero on desktop. */
@@ -22,9 +22,7 @@ export default function TopStoriesList({ articles }: { articles: NewsArticle[] }
       </div>
 
       <ol className="flex flex-1 flex-col gap-0 divide-y divide-hairline-faint">
-        {items.map((article, i) => {
-          const meta = getCategoryInfo(article.category);
-          return (
+        {items.map((article, i) => (
             <li key={article.id}>
               <Link
                 href={`/aktualnosci/${article.slug}`}
@@ -40,23 +38,14 @@ export default function TopStoriesList({ articles }: { articles: NewsArticle[] }
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 flex items-center gap-2">
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
                     <span
                       className="tabular-nums text-[13px] font-bold text-text-muted sm:text-[11px]"
                       aria-hidden="true"
                     >
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span
-                      className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] sm:text-[9px]"
-                      style={{ color: meta.color }}
-                    >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full sm:h-1 sm:w-1"
-                        style={{ background: meta.color }}
-                      />
-                      {meta.label}
-                    </span>
+                    <ArticleMetaChips article={article} compact />
                   </div>
                   <p className="line-clamp-3 text-[17px] font-semibold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan sm:text-[14px] sm:line-clamp-2">
                     {article.title}
@@ -67,8 +56,7 @@ export default function TopStoriesList({ articles }: { articles: NewsArticle[] }
                 </div>
               </Link>
             </li>
-          );
-        })}
+        ))}
       </ol>
 
       <Link

@@ -7,12 +7,16 @@ import type {
   ArticleCreateInput,
   ArticleUpdateInput,
 } from "@/lib/server/validation";
+import { calculateScore } from "@/lib/news/calculateScore";
+import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
+import { isBreakingScore } from "@/lib/news/score-thresholds";
 import {
   ARTICLES_TAG,
   CATEGORIES_TAG,
   articleTag,
   categoryTag,
 } from "@/lib/cache/tags";
+import { PUBLISHED_ARTICLE_WHERE } from "@/lib/server/published-only";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -25,10 +29,14 @@ const articleSelect = {
   coverImage: true,
   status: true,
   featured: true,
+  score: true,
   readingTime: true,
+  tags: true,
   createdAt: true,
   updatedAt: true,
   publishedAt: true,
+  source: true,
+  originalUrl: true,
   category: {
     select: {
       id: true,
@@ -75,8 +83,8 @@ export function getPublishedArticles(): Promise<ArticleWithRelations[]> {
     async (): Promise<ArticleWithRelations[]> => {
       try {
         return await prisma.article.findMany({
-          where: { status: ArticleStatus.PUBLISHED },
-          orderBy: { publishedAt: "desc" },
+          where: PUBLISHED_ARTICLE_WHERE,
+          orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
           select: articleSelect,
         });
       } catch (error) {
@@ -97,7 +105,7 @@ export function getPublishedArticleBySlug(
     async (): Promise<ArticleWithRelations | null> => {
       try {
         return await prisma.article.findFirst({
-          where: { slug, status: ArticleStatus.PUBLISHED },
+          where: { slug, ...PUBLISHED_ARTICLE_WHERE },
           select: articleSelect,
         });
       } catch (error) {
@@ -119,10 +127,10 @@ export function getArticlesByCategory(
       try {
         return await prisma.article.findMany({
           where: {
-            status: ArticleStatus.PUBLISHED,
+            ...PUBLISHED_ARTICLE_WHERE,
             category: { slug: categorySlug },
           },
-          orderBy: { publishedAt: "desc" },
+          orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
           select: articleSelect,
         });
       } catch (error) {
@@ -132,6 +140,29 @@ export function getArticlesByCategory(
     },
     ["category-articles", categorySlug],
     { tags: [ARTICLES_TAG, categoryTag(categorySlug)] }
+  )();
+}
+
+/** Top published articles by News Engine score (homepage newsroom). */
+export function getRankedPublishedArticles(
+  limit = 20
+): Promise<ArticleWithRelations[]> {
+  return unstable_cache(
+    async (): Promise<ArticleWithRelations[]> => {
+      try {
+        return await prisma.article.findMany({
+          where: PUBLISHED_ARTICLE_WHERE,
+          orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
+          take: limit,
+          select: articleSelect,
+        });
+      } catch (error) {
+        console.error("[getRankedPublishedArticles]", error);
+        return [];
+      }
+    },
+    ["ranked-articles", String(limit)],
+    { tags: [ARTICLES_TAG] }
   )();
 }
 
@@ -293,6 +324,37 @@ export async function updateArticle(
     where: { id },
     data,
     select: articleSelect,
+  });
+}
+
+/** Recompute score/featured after manual publish (CMS moderation). */
+export async function refreshArticleRanking(articleId: string): Promise<void> {
+  const row = await prisma.article.findUnique({
+    where: { id: articleId },
+    select: {
+      id: true,
+      status: true,
+      title: true,
+      excerpt: true,
+      source: true,
+      originalUrl: true,
+      publishedAt: true,
+    },
+  });
+  if (!row || row.status !== ArticleStatus.PUBLISHED) return;
+
+  const score = calculateScore({
+    title: row.title,
+    excerpt: row.excerpt,
+    source: row.source,
+    publishedAt: row.publishedAt,
+  });
+  const featured =
+    !isExternalAggregatorArticle(row) && isBreakingScore(score);
+
+  await prisma.article.update({
+    where: { id: articleId },
+    data: { score, featured },
   });
 }
 

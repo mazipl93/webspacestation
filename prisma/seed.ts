@@ -43,17 +43,24 @@ const CATEGORIES = [
     description: "Rakiety, napędy i inżynieria kosmiczna.",
   },
   {
+    slug: "ai",
+    name: "AI",
+    colorTheme: "#e879f9",
+    orderIndex: 3,
+    description: "Sztuczna inteligencja i uczenie maszynowe.",
+  },
+  {
     slug: "iss",
     name: "ISS",
     colorTheme: "#ffb830",
-    orderIndex: 3,
+    orderIndex: 4,
     description: "Międzynarodowa Stacja Kosmiczna.",
   },
   {
     slug: "ziemia-z-kosmosu",
     name: "Ziemia z kosmosu",
     colorTheme: "#22c55e",
-    orderIndex: 4,
+    orderIndex: 5,
     description: "Obserwacja Ziemi i pogoda kosmiczna.",
   },
 ] as const;

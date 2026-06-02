@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
+import { ChevronRight, Rss } from "lucide-react";
+import { getArticlesByCategory, getRankedArticles } from "@/lib/articles";
+
+const NEWSROOM_RANK_LIMIT = 20;
 import { getCategoryInfo } from "@/lib/categories";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import ArticleCard from "@/components/article/ArticleCard";
@@ -12,6 +14,7 @@ const FEED_FILTERS = [
   { label: "Misje",            href: "/misje",            key: "misje"            },
   { label: "Astronomia",       href: "/astronomia",       key: "astronomia"       },
   { label: "Technologie",      href: "/technologie",      key: "technologie"      },
+  { label: "AI",               href: "/ai",               key: "ai"               },
   { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu", key: "ziemia-z-kosmosu" },
   { label: "ISS",              href: "/iss",              key: "iss"              },
 ] as const;
@@ -24,15 +27,15 @@ type Props = {
 export default async function ArticleFeedSection({ category }: Props) {
   const articles = category
     ? await getArticlesByCategory(category)
-    : await getAllArticles();
+    : await getRankedArticles(NEWSROOM_RANK_LIMIT);
 
   const meta   = category ? getCategoryInfo(category) : null;
   const accent = meta?.color ?? "#2f6dff";
-  const title  = meta?.label ?? "Aktualności";
+  const title  = meta?.label ?? "Ważne teraz";
 
   const subtitle = category
     ? meta?.description ?? `Wszystkie artykuły z kategorii ${meta?.label}`
-    : "Najnowsze informacje ze świata kosmosu i astronomii";
+    : `Ranking newsroomu WSS — top ${NEWSROOM_RANK_LIMIT} wg ważności (score), nie chronologia.`;
 
   const featured = category && articles.length > 0 ? articles[0] : null;
   const rest = category && articles.length > 0 ? articles.slice(1) : articles;
@@ -95,17 +98,29 @@ export default async function ArticleFeedSection({ category }: Props) {
               </p>
             </div>
 
-            <div
-              className="flex w-fit shrink-0 items-center gap-1.5 rounded-full border border-hairline px-3.5 py-1.5"
-              style={{ background: "var(--glass-fill)" }}
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: accent }}
-              />
-              <span className="text-[12px] font-medium text-text-secondary">
-                {articles.length} {articles.length === 1 ? "artykuł" : "artykułów"}
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={category ? `/feed/${category}` : "/feed.xml"}
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-hairline px-3.5 py-1.5 text-[12px] font-medium text-text-secondary transition-colors hover:border-[#ff9500]/40 hover:text-text-primary"
+                style={{ background: "var(--glass-fill)" }}
+                title="Subskrybuj ten dział w czytniku RSS"
+              >
+                <Rss size={14} className="text-[#ff9500]" aria-hidden />
+                RSS
+              </Link>
+              <div
+                className="flex w-fit shrink-0 items-center gap-1.5 rounded-full border border-hairline px-3.5 py-1.5"
+                style={{ background: "var(--glass-fill)" }}
+              >
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: accent }}
+                />
+                <span className="text-[12px] font-medium text-text-secondary">
+                  {articles.length}{" "}
+                  {articles.length === 1 ? "artykuł" : "artykułów"}
+                </span>
+              </div>
             </div>
           </div>
         </div>

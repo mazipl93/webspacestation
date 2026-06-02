@@ -5,7 +5,9 @@ import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
 import { HOMEPAGE_MAIN_SIDEBAR_GRID, SITE_CONTAINER } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
-import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
+import { getRankedArticles, getArticlesByCategory } from "@/lib/articles";
+
+const HOMEPAGE_RANK_LIMIT = 20;
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
 import HeroArticle from "@/components/sections/HeroArticle";
@@ -636,12 +638,12 @@ function DashboardWidgets() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default async function ContentGrid() {
-  const [articles, ...categoryBuckets] = await Promise.all([
-    getAllArticles(),
+  const [ranked, ...categoryBuckets] = await Promise.all([
+    getRankedArticles(HOMEPAGE_RANK_LIMIT),
     ...CATEGORY_ORDER.map((slug) => getArticlesByCategory(slug)),
   ]);
 
-  if (articles.length === 0) {
+  if (ranked.length === 0) {
     return (
       <div className={cn(SITE_CONTAINER, "py-20")}>
         <div className="card-surface px-8 py-16 text-center">
@@ -659,17 +661,20 @@ export default async function ContentGrid() {
     );
   }
 
-  const lead = articles.find((a) => a.isBreaking) ?? articles[0];
+  const isEditorial = (a: NewsArticle) => !a.source || !a.originalUrl;
+
+  const lead =
+    ranked.find((a) => isEditorial(a) && a.isTopPriority) ??
+    ranked.find((a) => isEditorial(a)) ??
+    ranked[0];
   const usedSlugs = new Set<string>([lead.slug]);
 
-  const topStories = articles
+  const topStories = ranked
     .filter((a) => !usedSlugs.has(a.slug))
     .slice(0, 6);
   topStories.forEach((a) => usedSlugs.add(a.slug));
 
-  const latest = articles
-    .filter((a) => !usedSlugs.has(a.slug))
-    .slice(0, 12);
+  const rankedRest = ranked.filter((a) => !usedSlugs.has(a.slug));
 
   const categoryArticles = CATEGORY_ORDER.map((slug, i) => ({
     slug,
@@ -687,7 +692,7 @@ export default async function ContentGrid() {
           HOMEPAGE_MAIN_SIDEBAR_GRID
         )}
       >
-        <HeroArticle article={lead} />
+        <HeroArticle article={lead} topPriority={lead.isTopPriority} />
         <div className="hidden lg:block">
           <TopStoriesList articles={topStories} />
         </div>
@@ -706,22 +711,17 @@ export default async function ContentGrid() {
         )}
       >
         <div className="min-w-0 space-y-14 md:space-y-14">
-          {/* 2. Latest — largest section, 4-col grid */}
-          {latest.length > 0 && (
+          {/* 2. Ranked newsroom grid (top 20 by score) */}
+          {rankedRest.length > 0 && (
             <section className="border-t border-hairline pt-8 md:pt-12">
               <SectionHeader
-                label="Najnowsze wiadomości"
+                label="Ważne teraz — ranking"
                 href="/aktualnosci"
                 large
               />
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-5 xl:grid-cols-4 xl:gap-6">
-                {latest.map((article, i) => (
-                  <ArticleCard
-                    key={article.id}
-                    article={article}
-                    featured={i === 0}
-                    className={i === 0 ? "sm:col-span-2" : undefined}
-                  />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 xl:gap-5">
+                {rankedRest.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
                 ))}
               </div>
             </section>
@@ -738,7 +738,7 @@ export default async function ContentGrid() {
           <DashboardWidgets />
         </div>
 
-        <HomeSidebar articles={articles} excludeSlugs={excludeForSidebar} />
+        <HomeSidebar articles={ranked} excludeSlugs={excludeForSidebar} />
       </div>
     </div>
   );

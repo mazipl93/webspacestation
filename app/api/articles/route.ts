@@ -17,8 +17,8 @@ import {
 } from "@/lib/auth/permissions";
 
 // GET /api/articles
-//   (public)  → published articles, optional ?category=slug
-//   (admin)   → ?status=ALL|DRAFT|REVIEW|PUBLISHED|ARCHIVED returns any status
+//   (public)  → PUBLISHED only, optional ?category=slug (never ?status without CMS auth)
+//   (admin)   → ?status=ALL|DRAFT|REVIEW|PUBLISHED|ARCHIVED requires CMS auth
 export async function GET(request: NextRequest) {
   try {
     const params = request.nextUrl.searchParams;
@@ -84,10 +84,11 @@ export async function POST(request: NextRequest) {
 
     const article = await createArticle(payload, guard.user.id);
 
-    // Bust the public ISR cache so a freshly published article appears at once.
-    revalidateTag(ARTICLES_TAG);
-    revalidateTag(articleTag(article.slug));
-    revalidateTag(categoryTag(article.category.slug));
+    if (article.status === "PUBLISHED") {
+      revalidateTag(ARTICLES_TAG);
+      revalidateTag(articleTag(article.slug));
+      revalidateTag(categoryTag(article.category.slug));
+    }
 
     return NextResponse.json({ data: article }, { status: 201 });
   } catch (error) {

@@ -4,6 +4,7 @@ export type NewsCategory =
   | "misje"
   | "astronomia"
   | "technologie"
+  | "ai"
   | "ziemia-z-kosmosu"
   | "iss";
 
@@ -17,8 +18,15 @@ export interface NewsArticle {
   imageUrl: string;
   slug: string;
   isBreaking?: boolean;
+  /** score >= 10 — hero / card top emphasis */
+  isTopPriority?: boolean;
+  /** News Engine importance (homepage ranking) */
+  score?: number;
   content?: string[];  // article body paragraphs
   readTime?: number;   // estimated reading time in minutes
+  /** External publisher when ingested by News Engine */
+  source?: string;
+  originalUrl?: string;
 }
 
 // ─── Rocket Launches ───────────────────────────────────────────────────────
