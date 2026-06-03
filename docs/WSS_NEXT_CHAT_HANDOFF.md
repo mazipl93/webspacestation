@@ -1,8 +1,8 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 25 start — **P0 Prisma naprawione lokalnie**, WIP bez commita)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 25 — push `4ca8d46` na `main`)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `3e7139b` · Vercel auto-deploy z `main`
+**Ostatni commit remote:** `4ca8d46` · Vercel auto-deploy z `main` (w toku)
 
 **Następne:** user QA UI czatu 24 + CMS pole **Autor** → commit WIP · prod: `db:deploy` przy deploy (migracja `20260604200000` już applied na Supabase pooler)
 

@@ -2,7 +2,7 @@
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 25 — Prisma OK lokalnie)  
-**Deploy remote:** `3e7139b` (UI czatu 24 **nie** na prod)
+**Deploy remote:** `4ca8d46` (UI czatu 24 + authorByline — Vercel build w toku)
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
