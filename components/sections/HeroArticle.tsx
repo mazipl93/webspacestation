@@ -4,6 +4,7 @@ import { ArrowRight, Calendar, Clock } from "lucide-react";
 import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
+import HeroMetaChip from "@/components/article/HeroMetaChip";
 
 function fadeIn(delay = 0, duration = 0.75): CSSProperties {
   return {
@@ -56,7 +57,7 @@ export default function HeroArticle({
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to top, rgba(5,7,9,0.95) 0%, rgba(5,7,9,0.35) 45%, rgba(5,7,9,0.15) 100%)",
+              "linear-gradient(to top, rgba(5,7,9,0.98) 0%, rgba(5,7,9,0.72) 38%, rgba(5,7,9,0.28) 68%, rgba(5,7,9,0.12) 100%)",
           }}
         />
 
@@ -83,12 +84,16 @@ export default function HeroArticle({
           </div>
 
           <div
-            className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2"
+            className="mb-3 flex flex-wrap items-center gap-2"
             style={fadeIn(0.08)}
           >
             <span
-              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] sm:text-[11px]"
-              style={{ color: meta.color }}
+              className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-md"
+              style={{
+                color: meta.color,
+                borderColor: `${meta.color}55`,
+                background: "rgba(0,0,0,0.55)",
+              }}
             >
               <span
                 className="h-1.5 w-1.5 rounded-full"
@@ -96,24 +101,10 @@ export default function HeroArticle({
               />
               {meta.label}
             </span>
-            <span
-              aria-hidden="true"
-              className="hidden h-3 w-px sm:block"
-              style={{ background: "var(--hairline-strong)" }}
-            />
-            <span className="flex items-center gap-1.5 text-[14px] text-text-tertiary sm:text-[14px]">
-              <Calendar size={14} className="sm:h-3 sm:w-3" />
-              {date}
-            </span>
-            <span
-              aria-hidden="true"
-              className="hidden h-3 w-px sm:block"
-              style={{ background: "var(--hairline-strong)" }}
-            />
-            <span className="flex items-center gap-1.5 text-[14px] text-text-tertiary sm:text-[14px]">
-              <Clock size={14} className="sm:h-3 sm:w-3" />
+            <HeroMetaChip icon={Calendar}>{date}</HeroMetaChip>
+            <HeroMetaChip icon={Clock}>
               {article.readTime ?? 3} min czytania
-            </span>
+            </HeroMetaChip>
           </div>
 
           <Link

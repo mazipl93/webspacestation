@@ -1,10 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (sesja 16 — P0-SCHED cron co 1 min, panel Archiwum + trwałe usuwanie)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (koniec sesji 17 — 9 kart Najnowsze, hero meta, handoff pod kolejny czat)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** `5fde7d4` — scheduler co 1 min, archiwum w Artykułach CMS  
-**Lokalnie:** zsynchronizowane z `main`
+**Ostatni commit na remote:** *(po push tej sesji — patrz `git log -1`)*
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)  
 **Backlog v3 (checkboxy):** `docs/WSS_ROADMAP_BACKLOG_V3.md`
@@ -32,48 +31,68 @@ Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
 Przeczytaj ZAWSZE najpierw:
 - docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik)
-- docs/WSS_ROADMAP_BACKLOG_V3.md (tracker planów v3 — checkboxy)
-- docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
+- docs/WSS_ROADMAP_BACKLOG_V3.md — sekcja „Priorytety teraz”
+- docs/WSS_NEWS_ENGINE_HANDOFF.md
 
-## PRIORYTET #1 — zaplanowana publikacja O DOKŁADNEJ GODZINIE
+## REGUŁA PRACY (OBOWIĄZKOWA — user)
 
-User wymaga: termin w CMS (np. 22:06) → artykuł sam przechodzi na PUBLISHED o tej minucie.
+Pracujemy PUNKT PO PUNKCIE z tabeli „Priorytety teraz” w roadmap v3.
+- Zrób TYLKO jeden punkt na raz.
+- Na końcu: krótko napisz CO zrobiłeś, CO user ma przetestować.
+- CZEKAJ na odpowiedź usera (OK / poprawki).
+- Dopiero po „możemy dalej” / „kolejny punkt” — następny punkt z listy.
+- NIE łącz kilku priorytetów w jednej sesji bez zgody.
 
-**Sesja 16 (kod):**
-- `vercel.json`: `/api/cron/publish-scheduled` → `* * * * *` (co minutę)
-- `runScheduledPublish()` → `publishedAt = publishAt` (termin planu)
-- Dev: `npm run publish:scheduled:watch` (poll co 60 s)
-- **Do QA na prod:** Vercel Hobby może nadal ograniczać crony — jeśli minuta nie działa, zewnętrzny ping co 1 min do `/api/cron/publish-scheduled` + `CRON_SECRET`
+## Kolejność priorytetów (następny czat — od #1)
 
-Workaroundy CMS (zostają jako awaryjne):
-- POST /api/articles/publish-scheduled
-- „Opublikuj przeterminowane” na liście Zaplanowane
+1. P0-SCHED-QA — smoke zaplanowana publikacja na prod (CMS otwarty / termin +2 min)
+2. P1-6 — upload okładek (pro): drag&drop, WEBP, Supabase/S3
+3. P1-7 — domknięcie QA live preview / okładka CMS
+4. P6-24 — SEO: canonical, OG, schema NewsArticle, sitemap
+5. P0-5 — smoke mobile CMS (edytor)
+6. P6-25 — RODO / cookies
+7. P2-13 — Popularne / engagement (views, likes)
+8. INFRA — article_likes 404 (Supabase)
+9. OPS — publikacja ~175 REVIEW + cache:revalidate
 
-## Stan lokalny (nie na remote)
+(P1-9 hero meta i 9 kart Najnowsze — zrobione w sesji 17, patrz git log.)
 
-Remote: b2e6ea6. Wszystko poniżej lokalnie — commit + push przed prod.
+## Zamknięte (nie powtarzać)
 
-Zrobione lokalnie (sesje 14–15):
-- Preview CMS = tylko URL okładki (bez fallback RSS w podglądzie)
-- Najnowsze: sort publishedAt desc; /aktualnosci → getLatestArticles; homepage rankLatest
-- publishedAt tylko przy Opublikuj; timeLabel od publishedAt (nowe OK; stare mogą być „23 min temu” po backfill — OK dla usera)
-- Zaplanuj: UI 24h (dzień + miesiąc PL + rok + godz + min), lib/admin/schedule-datetime.ts
-- Autosave nie kasuje publishAtLocal
+- Najnowsze homepage: 9 kart (3×3), chronologia = Aktualności, #1 każdy nowy artykuł
+- Hero: HeroMetaChip (data + czas czytania na zdjęciu)
+- Scheduler + archiwum CMS (sesje 16–17)
 
 ## Komendy
 
-npm run publish:scheduled          # ręcznie: due SCHEDULED → PUBLISHED
-npm run publish:scheduled:watch    # dev: poll co 60 s
-npm run db:fix-published-at        # jednorazowy backfill publishedAt (lokalnie 39 szt.)
+npm run publish:scheduled:watch
 npm run cache:revalidate
 npm run test:ui && npm run test:articles && npm run type-check
 
-Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md i docs/WSS_ROADMAP_BACKLOG_V3.md.
+Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md i docs/WSS_ROADMAP_BACKLOG_V3.md.
+Zacznij od punktu 1 (P0-SCHED-QA) — jeden punkt, potem czekaj na test usera.
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (czat 17, koniec) — 9× Najnowsze, hero, handoff pod punktowy workflow
+
+| Obszar | Stan |
+|--------|------|
+| Homepage Najnowsze | 9 kart (`LATEST_LIMIT = 9`), siatka 3×3 bez pustego slotu |
+| Chronologia | `pickHomepageLatest` = jak Aktualności — user potwierdził |
+| Hero meta | `HeroMetaChip` — user OK |
+| Następny czat | Reguła: 1 priorytet → raport → test usera → pytanie o kolejny |
+
+### Sesja 3.06.2026 (czat 17) — Najnowsze + hero meta
+
+| Obszar | Stan |
+|--------|------|
+| Homepage Najnowsze | `pickHomepageLatest` — bez wykluczania hero; `revalidatePath('/')` |
+| Aktualności + Najnowsze | Ten sam porządek `publishedAt` — user potwierdził |
+| Roadmap v3 | Priorytety teraz + statusy S16–S17 |
 
 ### Sesja 3.06.2026 (czat 16) — P0-SCHED + Archiwum CMS
 

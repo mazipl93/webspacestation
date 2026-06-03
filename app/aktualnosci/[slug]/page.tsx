@@ -18,6 +18,7 @@ import ArticleEditButton from "@/components/article/ArticleEditButton";
 import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import HeroMetaChip from "@/components/article/HeroMetaChip";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 
@@ -240,41 +241,27 @@ function ArticleHero({ article }: { article: NewsArticle }) {
 
         {/* Meta row */}
         <div
-          className="flex flex-wrap items-center gap-3"
+          className="flex flex-wrap items-center gap-2"
           style={fadeIn(0.28)}
         >
           <span
-            className="flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]"
-            style={{ color: meta.color }}
+            className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-md"
+            style={{
+              color: meta.color,
+              borderColor: `${meta.color}55`,
+              background: "rgba(0,0,0,0.55)",
+            }}
           >
             <span
-              className="h-1 w-1 rounded-full"
+              className="h-1.5 w-1.5 rounded-full"
               style={{ background: meta.color }}
             />
             {meta.label}
           </span>
-
-          <span
-            aria-hidden="true"
-            className="h-3 w-px"
-            style={{ background: "var(--hairline-strong)" }}
-          />
-
-          <span className="flex items-center gap-1.5 text-[12px] text-text-tertiary">
-            <Calendar size={11} />
-            {date}
-          </span>
-
-          <span
-            aria-hidden="true"
-            className="h-3 w-px"
-            style={{ background: "var(--hairline-strong)" }}
-          />
-
-          <span className="flex items-center gap-1.5 text-[12px] text-text-tertiary">
-            <Clock size={11} />
+          <HeroMetaChip icon={Calendar}>{date}</HeroMetaChip>
+          <HeroMetaChip icon={Clock}>
             {article.readTime ?? 3} min czytania
-          </span>
+          </HeroMetaChip>
         </div>
       </div>
     </section>

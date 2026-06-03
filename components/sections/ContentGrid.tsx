@@ -25,7 +25,8 @@ import PopularArticles from "@/components/sections/PopularArticles";
 
 const IMPORTANT_POOL = 14;
 const IMPORTANT_SIDEBAR_LIMIT = 6;
-const LATEST_LIMIT = 8;
+/** Homepage „Najnowsze” — 3×3 grid (9 kart, bez pustego slotu przy 8). */
+const LATEST_LIMIT = 9;
 
 function pickHeroLead(important: NewsArticle[]): NewsArticle {
   const editorial = (a: NewsArticle) => !isRssArticle(a.contentOrigin);

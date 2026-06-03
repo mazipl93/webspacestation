@@ -6,6 +6,7 @@ import type { NewsArticle } from "@/types";
 import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import HeroMetaChip from "@/components/article/HeroMetaChip";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 import { resolveHeroDisplayUrl } from "@/lib/articles/resolve-image";
 import {
@@ -181,10 +182,14 @@ export default function ArticlePublicPreview({
             </p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <span
-              className="flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]"
-              style={{ color: meta.color }}
+              className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-md"
+              style={{
+                color: meta.color,
+                borderColor: `${meta.color}55`,
+                background: "rgba(0,0,0,0.55)",
+              }}
             >
               <span
                 className="inline-block h-1.5 w-1.5 rounded-full"
@@ -192,15 +197,9 @@ export default function ArticlePublicPreview({
               />
               {meta.label}
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
-              <Calendar size={12} aria-hidden />
-              {date}
-            </span>
+            <HeroMetaChip icon={Calendar}>{date}</HeroMetaChip>
             {article.readTime ? (
-              <span className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
-                <Clock size={12} aria-hidden />
-                {article.readTime} min
-              </span>
+              <HeroMetaChip icon={Clock}>{article.readTime} min czytania</HeroMetaChip>
             ) : null}
           </div>
         </div>
