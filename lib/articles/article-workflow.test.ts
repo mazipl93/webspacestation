@@ -89,6 +89,12 @@ describe("article workflow (status-only lifecycle)", () => {
     );
     assert.ok(toPublished.publishedAt instanceof Date);
 
+    const republish = publishedAtPatchForStatusTransition(
+      ArticleStatus.PUBLISHED,
+      { status: ArticleStatus.PUBLISHED, publishedAt: new Date("2020-06-01") }
+    );
+    assert.deepEqual(republish, {});
+
     const fromPublished = publishedAtPatchForStatusTransition(
       ArticleStatus.DRAFT,
       { status: ArticleStatus.PUBLISHED, publishedAt: new Date() }

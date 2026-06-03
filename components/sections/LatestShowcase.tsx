@@ -150,7 +150,6 @@ export default function LatestShowcase({
           href="/aktualnosci"
           accent={ACCENT}
           prominent
-          subtitle="Świeże publikacje redakcji"
         />
         <div className="card-surface divide-y divide-hairline-faint px-4 sm:px-5">
           {articles.map((article, i) => (
@@ -175,7 +174,6 @@ export default function LatestShowcase({
         href="/aktualnosci"
         accent={ACCENT}
         prominent={mobileShell}
-        subtitle={mobileShell ? "Świeże publikacje — porządek chronologiczny" : undefined}
       />
       <HorizontalScrollSlider
         ariaLabel="Najnowsze artykuły — przewiń w poziomie"

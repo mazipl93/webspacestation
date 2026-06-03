@@ -721,11 +721,16 @@ export default async function ContentGrid() {
   });
 
   if (process.env.NODE_ENV === "development") {
+    const weekTopicCandidates = allPublished.filter((a) => a.weekTopic);
     console.log("HOMEPAGE INPUT ARTICLES:", allPublished.length);
     console.log(
       "WEEK TOPIC:",
       weekTopicPick.articles.length,
-      "cms"
+      "render",
+      "| flagged:",
+      weekTopicCandidates.length,
+      "| hero slug:",
+      lead.slug
     );
   }
 

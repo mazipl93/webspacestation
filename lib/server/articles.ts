@@ -130,13 +130,16 @@ async function queryPublishedArticlesFromDb(): Promise<ArticleWithRelations[]> {
 /** All published articles, newest first. Cached under the ARTICLES tag. */
 export async function getPublishedArticles(): Promise<ArticleWithRelations[]> {
   const tick = await maybeTickScheduledPublish();
-  // Same request must not read stale unstable_cache right after auto-publish.
-  if (tick && tick.published > 0) {
+  // Dev: zawsze świeże dane (unstable_cache utrudniał QA po toggle weekTopic w CMS).
+  const useLiveQuery =
+    process.env.NODE_ENV === "development" ||
+    (tick && tick.published > 0);
+  if (useLiveQuery) {
     return queryPublishedArticlesFromDb();
   }
   return unstable_cache(
     queryPublishedArticlesFromDb,
-    ["published-articles"],
+    ["published-articles", "v2-week-topic"],
     { tags: [ARTICLES_TAG] }
   )();
 }
@@ -333,6 +336,9 @@ function buildPrismaContentUpdateInput(
   if (input.source !== undefined) data.source = input.source;
   if (input.originalUrl !== undefined) data.originalUrl = input.originalUrl;
 
+  // publishedAt — wyłącznie articleStateTransition (PUBLISH); nigdy z PATCH treści.
+  delete (data as { publishedAt?: unknown }).publishedAt;
+
   return data;
 }
 
@@ -389,15 +395,28 @@ export async function articleStateTransition(
     if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
   }
 
+  // Idempotent PUBLISH — „Zaktualizuj” / PATCH ze statusem PUBLISHED nie cofa daty Najnowsze.
+  if (
+    action === "PUBLISH" &&
+    existing.status === ArticleStatus.PUBLISHED &&
+    existing.publishedAt != null
+  ) {
+    return getArticleById(id);
+  }
+
   const data: Prisma.ArticleUncheckedUpdateInput = {
     status: nextStatus,
   };
 
   if (action === "PUBLISH") {
-    data.publishedAt = publishStampAt ?? new Date();
     data.publishAt = null;
+    if (existing.status !== ArticleStatus.PUBLISHED || !existing.publishedAt) {
+      data.publishedAt = publishStampAt ?? new Date();
+    }
   } else {
-    data.publishedAt = null;
+    if (existing.status === ArticleStatus.PUBLISHED) {
+      data.publishedAt = null;
+    }
     if (action === "SCHEDULE") {
       data.publishAt = publishAt!;
     }

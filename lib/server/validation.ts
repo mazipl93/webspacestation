@@ -116,6 +116,14 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
     return { ok: false, message: "Request body must be a JSON object." };
   }
 
+  if (body.publishedAt !== undefined) {
+    return {
+      ok: false,
+      message:
+        "publishedAt is set only on first publish (Opublikuj). It cannot be sent in the editor payload.",
+    };
+  }
+
   const title = asTrimmedString(body.title);
   if (!title) {
     return { ok: false, message: "'title' is required." };
@@ -170,6 +178,14 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
 export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput> {
   if (!isPlainObject(body)) {
     return { ok: false, message: "Request body must be a JSON object." };
+  }
+
+  if (body.publishedAt !== undefined) {
+    return {
+      ok: false,
+      message:
+        "publishedAt is set only on first publish (Opublikuj). It cannot be sent in the editor payload.",
+    };
   }
 
   const out: ArticleUpdateInput = {};

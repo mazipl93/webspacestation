@@ -16,7 +16,6 @@ const BASE: NewsArticle = {
 
 const CONFIG: WeekTopicConfig = {
   label: "Test",
-  subtitle: "",
   limit: 5,
   accent: "#a855f7",
 };
@@ -35,4 +34,11 @@ test("pickWeekTopicArticles returns only weekTopic flag", () => {
 test("pickWeekTopicArticles empty when none flagged", () => {
   const pick = pickWeekTopicArticles([{ ...BASE, weekTopic: false }], new Set(), CONFIG);
   assert.equal(pick.articles.length, 0);
+});
+
+test("pickWeekTopicArticles falls back when only hero is flagged", () => {
+  const hero = { ...BASE, id: "1", slug: "hero", weekTopic: true };
+  const pick = pickWeekTopicArticles([hero], new Set(["hero"]), CONFIG);
+  assert.equal(pick.articles.length, 1);
+  assert.equal(pick.articles[0]?.slug, "hero");
 });

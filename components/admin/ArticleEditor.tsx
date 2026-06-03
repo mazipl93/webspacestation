@@ -73,8 +73,6 @@ const EMPTY_FORM: ArticleFormValues = {
   publishAtLocal: "",
 };
 
-const AUTOSAVE_DELAY = 1500;
-
 function tagsToText(tags: string[] | undefined): string {
   return (tags ?? []).filter((t) => t.trim()).join(", ");
 }
@@ -109,25 +107,18 @@ function toForm(a: AdminArticle): ArticleFormValues {
   };
 }
 
-/** Autosave — content fields only; never status. */
-function toAutosavePayload(form: ArticleFormValues): ArticleWritePayload {
+function toPayload(form: ArticleFormValues): ArticleWritePayload {
   return {
     title: form.title,
+    slug: form.slug,
+    subtitle: form.subtitle || null,
+    excerpt: form.excerpt || null,
     content: form.content || null,
+    contextNote: form.contextNote || null,
     coverImage: form.coverImage.trim() || null,
     coverImageCredit: form.coverImageCredit.trim() || null,
     categoryId: form.categoryId,
     tags: parseTagsText(form.tagsText),
-  };
-}
-
-function toPayload(form: ArticleFormValues): ArticleWritePayload {
-  return {
-    ...toAutosavePayload(form),
-    slug: form.slug,
-    subtitle: form.subtitle || null,
-    excerpt: form.excerpt || null,
-    contextNote: form.contextNote || null,
     featured: form.featured,
     weekTopic: form.weekTopic,
     readingTime: form.readingTime,
@@ -371,13 +362,12 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
   const slugTouched = useRef(Boolean(articleId));
   const dirty = useRef(false);
-  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
-  /** Sync id for persist/autosave — avoids duplicate POST before React re-renders. */
+  /** Sync id for persist — avoids duplicate POST before React re-renders. */
   const articleIdRef = useRef<string | null>(articleId ?? null);
   const createInFlightRef = useRef(false);
-  /** Pause autosave after slug conflict until user changes slug. */
-  const autosaveBlockedRef = useRef(false);
+  /** Pause save after slug conflict until user changes slug. */
+  const slugConflictRef = useRef(false);
 
   const showRefinePanel = Boolean(currentId) && canRefineContent(form);
   const typeLabel = cmsArticleTypeLabel(form.sourceName, form.sourceUrl);
@@ -473,26 +463,25 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         schedule?: boolean;
         review?: boolean;
         draft?: boolean;
-        silent?: boolean;
       } = {}
     ) => {
       if (savingRef.current) return;
       if (!form.title.trim()) {
-        if (!opts.silent) setError("Tytuł jest wymagany.");
+        setError("Tytuł jest wymagany.");
         return;
       }
       if (!form.categoryId) {
-        if (!opts.silent) setError("Wybierz kategorię przed zapisem lub publikacją.");
+        setError("Wybierz kategorię przed zapisem lub publikacją.");
         return;
       }
       if (opts.schedule && !form.publishAtLocal.trim()) {
-        if (!opts.silent) setError("Podaj datę zaplanowanej publikacji.");
+        setError("Podaj datę zaplanowanej publikacji.");
         return;
       }
       if (opts.schedule) {
         const scheduleCheck = validateScheduleLocal(form.publishAtLocal);
         if (!scheduleCheck.ok) {
-          if (!opts.silent) setError(scheduleCheck.message);
+          setError(scheduleCheck.message);
           return;
         }
       }
@@ -501,7 +490,11 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       savingRef.current = true;
       setSaving(true);
       setSavingLabel(
-        opts.publish ? "Publikowanie…" : opts.schedule ? "Planowanie…" : "Zapisywanie…"
+        opts.publish && status !== "PUBLISHED"
+          ? "Publikowanie…"
+          : opts.schedule
+            ? "Planowanie…"
+            : "Zapisywanie…"
       );
       setError(null);
 
@@ -526,12 +519,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           }
           saved = await adminApi.createArticle(createPayload);
           articleIdRef.current = saved.id;
-          autosaveBlockedRef.current = false;
+          slugConflictRef.current = false;
           setCurrentId(saved.id);
           window.history.replaceState(null, "", `/admin/articles/${saved.id}/edit`);
         } else if (opts.publish) {
-          await adminApi.updateArticle(activeId, toPayload(form));
-          saved = await adminApi.updateArticle(activeId, { status: "PUBLISHED" });
+          saved = await adminApi.updateArticle(activeId, toPayload(form));
+          if (status !== "PUBLISHED") {
+            saved = await adminApi.updateArticle(activeId, { status: "PUBLISHED" });
+          }
         } else if (opts.schedule) {
           await adminApi.updateArticle(activeId, toPayload(form));
           saved = await adminApi.updateArticle(activeId, {
@@ -546,8 +541,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           if (saved.status !== "DRAFT" && saved.status !== "PUBLISHED") {
             saved = await adminApi.updateArticle(activeId, { status: "DRAFT" });
           }
-        } else if (opts.silent) {
-          saved = await adminApi.updateArticle(activeId, toAutosavePayload(form));
         } else {
           saved = await adminApi.updateArticle(activeId, toPayload(form));
         }
@@ -557,7 +550,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         setForm(() => {
           const next = toForm(saved);
           if (
-            opts.silent &&
             publishAtLocalDraft.trim() &&
             !next.publishAtLocal.trim()
           ) {
@@ -569,9 +561,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
         setPublishMode(saved.status === "SCHEDULED" ? "schedule" : "now");
         setLastSavedAt(new Date());
+        setEnhanceSuccess("Zapisano zmiany w artykule.");
       } catch (e) {
         if (e instanceof ApiError && e.status === 409 && !articleIdRef.current) {
-          autosaveBlockedRef.current = true;
+          slugConflictRef.current = true;
           setError(
             "Ten slug jest już zajęty. Zmień slug albo otwórz istniejący artykuł z listy."
           );
@@ -585,27 +578,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         setSavingLabel("");
       }
     },
-    [form]
+    [form, status]
   );
-
-  useEffect(() => {
-    if (!dirty.current) return;
-    if (loading) return;
-    if (articleId && !loadedArticle) return;
-    if (!form.categoryId) return;
-    if (!form.title.trim()) return;
-    if (autosaveBlockedRef.current) return;
-    if (createInFlightRef.current) return;
-
-    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-    autosaveTimer.current = setTimeout(() => {
-      persist({ silent: true });
-    }, AUTOSAVE_DELAY);
-
-    return () => {
-      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-    };
-  }, [form, persist, loading, articleId, loadedArticle]);
 
   const handleRefineText = async () => {
     if (!currentId || !canRefineContent(form)) return;
@@ -615,10 +589,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       )
     ) {
       return;
-    }
-    if (autosaveTimer.current) {
-      clearTimeout(autosaveTimer.current);
-      autosaveTimer.current = null;
     }
     setReprocessing(true);
     setError(null);
@@ -648,14 +618,15 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     value: ArticleFormValues[K]
   ) => {
     dirty.current = true;
+    setEnhanceSuccess(null);
     if (key === "slug") {
-      autosaveBlockedRef.current = false;
+      slugConflictRef.current = false;
     }
     setForm((prev) => {
       const next = { ...prev, [key]: value };
       if (key === "title" && !slugTouched.current) {
         next.slug = slugify(String(value));
-        autosaveBlockedRef.current = false;
+        slugConflictRef.current = false;
       }
       return next;
     });
@@ -698,7 +669,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   ? savingLabel
                   : lastSavedAt
                     ? `Zapisano ${lastSavedAt.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}`
-                    : "Niezapisane zmiany zapisują się automatycznie"}
+                    : "Zapisz edycję przyciskiem Zaktualizuj lub Zapisz zmiany"}
               </span>
             </div>
           </div>
@@ -723,6 +694,16 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <ExternalLink className="h-4 w-4 shrink-0" />
               {publishedSlug ? "Podgląd na portalu" : "Preview publikacji"}
             </Link>
+          ) : null}
+          {currentId && status !== "PUBLISHED" ? (
+            <Button
+              variant="primary"
+              onClick={() => persist()}
+              disabled={saving || !form.categoryId}
+              title="Zapisuje wszystkie pola edytora bez zmiany statusu"
+            >
+              Zapisz zmiany
+            </Button>
           ) : null}
           <Button
             variant="ghost"
@@ -761,7 +742,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             </p>
             {mayPublish ? (
               <Button
-                onClick={() => persist({ publish: true })}
+                onClick={() => persist()}
                 disabled={saving || !isFormPublishReady(form)}
                 className="shrink-0"
               >

@@ -99,11 +99,17 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
     if (Object.keys(content).length > 0) {
       const updated = await updateArticle(id, content);
       if (!updated) return jsonError(404, "NOT_FOUND", "Article not found.");
+      if (
+        updated.status === ArticleStatus.PUBLISHED &&
+        (content.weekTopic !== undefined || content.featured !== undefined)
+      ) {
+        revalidatePublicArticleCaches();
+      }
     }
 
     let article = (await getArticleById(id))!;
 
-    if (status !== undefined) {
+    if (status !== undefined && existing.status !== status) {
       const action = statusToAction(status);
       if (!action) {
         return jsonError(400, "VALIDATION_ERROR", "Invalid status transition.");

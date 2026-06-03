@@ -19,39 +19,25 @@ import {
   pickRelatedArticles,
 } from "@/lib/article/related-articles";
 import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
+import {
+  formatRelativePublishLabel,
+  resolvePublicPublishTime,
+} from "@/lib/articles/public-publish-time";
 import type { NewsArticle, NewsCategory } from "@/types";
 
 // Public reads now come from the Prisma DB (single source of truth shared with
 // the admin panel), so edits made in /admin appear on the public site. Content
 // originally in data/news.json is migrated into the DB via prisma/seed.ts.
 
-// Polish relative time label, falling back to an absolute date for older posts.
-function relativeLabel(date: Date): string {
-  const diffMs = Date.now() - date.getTime();
-  const min = Math.floor(diffMs / 60000);
-  if (min < 1) return "przed chwilą";
-  if (min < 60) return `${min} min temu`;
-  const hours = Math.floor(min / 60);
-  if (hours < 24) return `${hours} godz. temu`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "wczoraj";
-  if (days < 7) return `${days} dni temu`;
-  if (days < 14) return "tydzień temu";
-  return date.toLocaleDateString("pl-PL", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 // Map a DB article (with relations) onto the NewsArticle shape the public UI
 // expects. `featured` drives the "Najważniejsze" badge / lead-story pick.
 export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
-  // publishedAt = CMS „Opublikuj” moment only (never RSS ingest / createdAt).
-  const when =
-    a.publishedAt != null
-      ? new Date(a.publishedAt)
-      : new Date(a.updatedAt ?? a.createdAt);
+  const when = resolvePublicPublishTime({
+    status: a.status,
+    publishedAt: a.publishedAt,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+  });
   const isRss = isRssArticle(a.contentOrigin);
 
   const paragraphs = a.content
@@ -75,7 +61,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     excerpt: polishTypography(a.excerpt ?? ""),
     category: a.category.slug as NewsCategory,
     publishedAt: when.toISOString(),
-    timeLabel: relativeLabel(when),
+    timeLabel: formatRelativePublishLabel(when),
     image,
     isBreaking:
       !isRss && (isBreakingScore(a.score ?? 0) || Boolean(a.featured)),

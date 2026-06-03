@@ -75,7 +75,7 @@ export default function WeekTopicSection({ articles, config }: Props) {
         href="/aktualnosci"
         accent={config.accent}
         glow={`0 0 10px ${config.accent}55`}
-        subtitle={config.subtitle}
+        subtitle={config.subtitle?.trim() || undefined}
       />
       <HorizontalScrollSlider
         ariaLabel={`${config.label} — przewiń w poziomie`}
