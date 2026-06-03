@@ -1,10 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (koniec czat 20 — WIP lokalnie, bez commita)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 21 — commit + push sesji 20)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `794d53d`
+**Ostatni commit remote:** `8b447af` (Vercel auto-deploy z `main`)
 
-**Lokalnie (~20+ plików, NIE na GitHubie):** UX-BG v2, logo `WssLogoMark`, layout hero+rail, lajki Krok 1+2, fix hero z-index artykułu, ShareBar, cache:revalidate, kolory
+**Wdrożone w `8b447af`:** UX-BG v2, logo `WssLogoMark`, layout hero+rail, lajki Krok 1+2, fix hero okładki, ShareBar, cache:revalidate, kolory
 
 **Supabase:** user uruchomił `supabase/user_article_likes.sql` (lajki per-user)
 
@@ -48,29 +48,23 @@ Pracujemy PUNKT PO PUNKCIE z tabeli „Priorytety teraz” w roadmap v3.
 
 ## Kolejność priorytetów (następny czat)
 
-0. **COMMIT WIP** — user QA OK lokalnie (tło, logo, layout, lajki, okładki artykułu) → jeden commit (+ ewent. push)
 1. **P1-6** — upload okładek CMS: drag&drop, sharp→WebP, Supabase Storage (~25MB in, skompresowane out)
-2. **OPS** — ~175 REVIEW + cache:revalidate
+2. **OPS** — ~175 REVIEW + `npm run cache:revalidate`; prod: potwierdzić `user_article_likes.sql`
 3. P1-7 → P6-24 → P0-5 → P6-25 (jak w roadmap v3)
 
-## Zamknięte w czacie 20 (lokalnie, czeka commit)
+## Zamknięte w czacie 20 (`8b447af`)
 
 - UX-BG v2 — ciemny newsroom (`SiteBackground`, nie Windows)
 - Logo — `WssLogoMark` + `app/icon.svg` (wektor „okno stacji”, nie zdjęcie)
 - Lajki Krok 1+2 — `user_article_likes`, toggle, login gate, profil z DB (`lib/likes/*`, `useArticleLikes`, `LikeButton`)
-- Fix: okładka artykułu — hero `-z-index` → `isolate` + `CoverImage` (`app/aktualnosci/[slug]/page.tsx`) — **user OK lokalnie**
+- Fix: okładka artykułu — hero `isolate` + `CoverImage` — **user OK**
 - ShareBar — usunięty zduplikowany „Udostępnij”
-
-## Lokalnie WIP (szczegóły)
-
-- Layout: desktop Hero + rail (Najnowsze/Ważne teraz); mobile slidery
-- Kolory: nagłówki działów, navbar, `card-surface`, PopularArticles
+- Layout homepage: desktop Hero + rail; mobile slidery; kolory navbar/kart
 - cache:revalidate → domyślnie webspacestation.pl
 
 ## Komendy
 
 npm run dev · npm run cache:revalidate · npm run type-check
-Przed push: git status (~20 plików WIP)
 
 Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
 Reguła: jeden punkt backlogu → test usera → „kolejny punkt”.
@@ -79,6 +73,14 @@ Reguła: jeden punkt backlogu → test usera → „kolejny punkt”.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 21) — commit + push sesji 20
+
+| Obszar | Stan |
+|--------|------|
+| **Deploy** | `8b447af` → `origin/main`; Vercel auto-deploy |
+| **Hydration** | Fałszywy alarm — `data-cursor-ref` z przeglądarki Cursor, nie bug app |
+| **Następny** | **P1-6** upload okładek |
 
 ### Sesja 3.06.2026 (czat 20, koniec) — lajki Krok 1+2, logo, tło, ShareBar
 

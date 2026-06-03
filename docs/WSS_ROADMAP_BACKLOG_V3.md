@@ -1,17 +1,15 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 3 czerwca 2026 (koniec czat 20)  
-**Deploy remote:** `794d53d` · **WIP lokalnie:** ~20 plików — commit następny krok
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 21 — push `8b447af`)  
+**Deploy remote:** `8b447af`
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
-| 0 | **COMMIT** | Commit WIP sesji 20 po QA usera | **Następne** |
-| 1 | **P1-6** | Upload okładek WebP + Supabase | Po commicie |
+| 0 | **COMMIT** | Commit WIP sesji 20 | `[x]` `8b447af` |
+| 1 | **P1-6** | Upload okładek WebP + Supabase | **Następne** |
 | 2 | **OPS** | ~175 REVIEW + revalidate | |
 | 3+ | P1-7, P6-24… | jak wcześniej | |
-
-**WIP lokalnie:** UX-BG v2, logo, layout rail, lajki 1+2, fix hero artykułu, ShareBar, kolory, cache fix.
 
 **INFRA-LIKES:** `[~]` SQL w repo; user uruchomił na Supabase.
 
