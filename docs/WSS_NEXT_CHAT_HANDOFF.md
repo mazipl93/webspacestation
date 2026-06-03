@@ -1,10 +1,12 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 21 — commit + push sesji 20)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 22 — homepage Temat tygodnia)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `8b447af` (Vercel auto-deploy z `main`)
+**Ostatni commit remote:** `76cf517`
 
-**Wdrożone w `8b447af`:** UX-BG v2, logo `WssLogoMark`, layout hero+rail, lajki Krok 1+2, fix hero okładki, ShareBar, cache:revalidate, kolory
+**BLOCKER (nowy czat):** sekcja **Temat tygodnia** pod hero **nie widać** na stronie (user) — debug render + dane `weekTopic` + cache.
+
+**Wdrożone (czat 21–22):** commit WIP `8b447af`, P1-6 upload okładek `31a5525`, layout homepage (slidery / hero), **Temat tygodnia** `5a5eb77` + fix migracji `76cf517`
 
 **Supabase:** user uruchomił `supabase/user_article_likes.sql` (lajki per-user)
 
@@ -39,40 +41,81 @@ Przeczytaj ZAWSZE najpierw:
 
 ## REGUŁA PRACY (OBOWIĄZKOWA — user)
 
-Pracujemy PUNKT PO PUNKCIE z tabeli „Priorytety teraz” w roadmap v3.
-- Zrób TYLKO jeden punkt na raz.
-- Na końcu: krótko napisz CO zrobiłeś, CO user ma przetestować.
-- CZEKAJ na odpowiedź usera (OK / poprawki).
-- Dopiero po „możemy dalej” / „kolejny punkt” — następny punkt z listy.
-- NIE łącz kilku priorytetów w jednej sesji bez zgody.
+Pracujemy PUNKT PO PUNKCIE z backlogu.
+- Zrób TYLKO jeden punkt na raz (teraz: BLOCKER Temat tygodnia).
+- Na końcu: CO zrobiłeś + CO user ma przetestować → CZEKAJ na OK.
 
-## Kolejność priorytetów (następny czat)
+## BLOCKER — Temat tygodnia nie widać na homepage
 
-1. **P1-6** — upload okładek CMS: drag&drop, sharp→WebP, Supabase Storage (~25MB in, skompresowane out)
-2. **OPS** — ~175 REVIEW + `npm run cache:revalidate`; prod: potwierdzić `user_article_likes.sql`
-3. P1-7 → P6-24 → P0-5 → P6-25 (jak w roadmap v3)
+User: sekcja „Temat tygodnia” **nie wyświetla się w ogóle** pod HERO (miał być kompaktowy **poziomy slider ze strzałkami**, w miejscu dawnego „Ważne teraz”).
 
-## Zamknięte w czacie 20 (`8b447af`)
+### Jak ma działać (kod na `main` / `76cf517`)
 
-- UX-BG v2 — ciemny newsroom (`SiteBackground`, nie Windows)
-- Logo — `WssLogoMark` + `app/icon.svg` (wektor „okno stacji”, nie zdjęcie)
-- Lajki Krok 1+2 — `user_article_likes`, toggle, login gate, profil z DB (`lib/likes/*`, `useArticleLikes`, `LikeButton`)
-- Fix: okładka artykułu — hero `isolate` + `CoverImage` — **user OK**
-- ShareBar — usunięty zduplikowany „Udostępnij”
-- Layout homepage: desktop Hero + rail; mobile slidery; kolory navbar/kart
-- cache:revalidate → domyślnie webspacestation.pl
+- DB: kolumna `articles.weekTopic` (migracja `20260604130000_article_week_topic` — tabela **`articles`**, nie `Article`; fix w `76cf517`).
+- CMS: przełącznik **„Temat tygodnia”** w edytorze (`ArticleEditor.tsx`), obok „Wyróżniony” — zapis w API (`weekTopic: boolean`).
+- Homepage: `ContentGrid.tsx` → `pickWeekTopicArticles()` (`lib/home/week-topic.ts`) — **tylko** `PUBLISHED` + `weekTopic === true`; jeśli **0 artykułów → sekcja się nie renderuje** (`WeekTopicSection` return null).
+- UI: `components/sections/WeekTopicSection.tsx` — pod `HeroArticle`, `mt-8`, `HorizontalScrollSlider` + fioletowa ramka.
+- **Wyróżniony (`featured`)** ≠ Temat tygodnia: featured podbija ranking/hero; weekTopic = osobny slider.
+
+### Hipotezy do sprawdzenia (kolejno)
+
+1. Czy user włączył **Temat tygodnia** u ≥1 **opublikowanego** artykułu i **zapisał** (nie tylko autosave bez weekTopic)?
+2. Czy `npm run db:deploy` na **prod** (kolumna `weekTopic`) — lokalnie user naprawił migrację (`migrate resolve` + deploy OK).
+3. Czy `weekTopic` wraca w API/CMS GET i w `toNewsArticle` (`lib/articles.ts`)?
+4. Cache ISR: `getPublishedArticles` + `revalidate` — stary cache bez pola `weekTopic`?
+5. Dev log: `WEEK TOPIC: N cms` w konsoli serwera przy `npm run dev` na `/`.
+6. Czy deploy Vercel ma commit `5a5eb77`+ (`WeekTopicSection` w bundle)?
+
+### Pliki kluczowe
+
+- `components/sections/ContentGrid.tsx` (warunek renderu)
+- `components/sections/WeekTopicSection.tsx`
+- `lib/home/week-topic.ts`
+- `lib/server/articles.ts` (`articleSelect.weekTopic`)
+- `prisma/schema.prisma` + migracja `20260604130000_*`
+
+### Po fixie
+
+`npm run cache:revalidate` · smoke desktop + mobile (fiolet pod hero, cyan „Najnowsze” na mobile).
+
+## Zamknięte w czatach 21–22 (remote)
+
+- `8b447af` — WIP sesja 20 (tło, logo, lajki, layout, ShareBar, cache)
+- `31a5525` — P1-6 upload okładek WebP (`/api/admin/cover-upload`, `SUPABASE_SERVICE_ROLE_KEY`, `article-covers.sql`)
+- `3d2301d` / `ccaacc5` / `9f5f0c0` — iteracje layoutu homepage (Ważne teraz / hero+2 / duży Temat tygodnia) — **superseded**
+- `5a5eb77` — Temat tygodnia: toggle CMS, kompakt pod hero, bez tagów
+- `76cf517` — fix migracji SQL (`articles.weekTopic`)
+- Hydration Cursor (`data-cursor-ref`) — fałszywy alarm
+
+## Kolejność po BLOCKERze
+
+1. OPS — ~175 REVIEW + revalidate · prod `user_article_likes`
+2. P1-6 QA upload okładek na prod
+3. P1-7 → …
 
 ## Komendy
 
-npm run dev · npm run cache:revalidate · npm run type-check
+npm run dev · npm run db:deploy · npm run cache:revalidate · npm run type-check
 
 Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
-Reguła: jeden punkt backlogu → test usera → „kolejny punkt”.
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 22, koniec) — Temat tygodnia + BLOCKER widoczności
+
+| Obszar | Stan |
+|--------|------|
+| **P1-6** | Upload okładek WebP + Supabase (`31a5525`) — `CoverImageUploader`, sharp, service role |
+| **Homepage iteracje** | Ważne teraz slider → hero+2 → duży Temat tygodnia → **kompakt Temat tygodnia pod hero** (`5a5eb77`) |
+| **Temat tygodnia** | Pole `weekTopic` + toggle CMS (nie tag); `WeekTopicSection` + `lib/home/week-topic.ts` |
+| **Migracja** | Błąd `"Article"` → fix `"articles"` (`76cf517`); user: `db:deploy` OK lokalnie |
+| **BLOCKER** | User: sekcja **nie widać** pod hero — **następny czat** |
+| **Wyróżniony** | Podbija ranking (`featured`), nie to samo co `weekTopic` |
+
+**Commity czat 22:** `31a5525` → `3d2301d` → `ccaacc5` → `9f5f0c0` → `5a5eb77` → `76cf517`
 
 ### Sesja 4.06.2026 (czat 21) — commit + push sesji 20
 
@@ -676,7 +719,8 @@ lib/rss/image-credit.ts
 |-------|--------|
 | **Lajki per-user** | **Krok 1+2 lokalnie** — SQL: `supabase/user_article_likes.sql` |
 | **UX-BG / logo / layout** | WIP lokalnie — commit po QA |
-| **P1-6 upload okładek** | **Następny po commit WIP** |
+| **P1-6 upload okładek** | Kod `[x]` `31a5525`; prod env + bucket SQL |
+| **P2-WEEK-TOPIC** | Toggle CMS `[x]`; **sekcja na froncie nie widać** — BLOCKER |
 | `article_likes` 404 | SQL w Supabase |
 | P1-7 live preview QA | Formalny smoke okładki CMS |
 | P6-24 SEO | Canonical, OG, schema, sitemap |

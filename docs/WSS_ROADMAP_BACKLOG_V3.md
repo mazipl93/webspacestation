@@ -1,15 +1,17 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 21 — push `8b447af`)  
-**Deploy remote:** `8b447af`
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 22)  
+**Deploy remote:** `76cf517`
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
-| 0 | **COMMIT** | Commit WIP sesji 20 | `[x]` `8b447af` |
-| 1 | **P1-6** | Upload okładek WebP + Supabase | **Następne** |
-| 2 | **OPS** | ~175 REVIEW + revalidate | |
+| 0 | **BLOCKER** | Temat tygodnia widoczny pod hero (slider) | **Następne** |
+| 1 | **OPS** | ~175 REVIEW + revalidate + prod db | |
+| 2 | **P1-6-QA** | Upload okładek na prod (env + SQL) | |
 | 3+ | P1-7, P6-24… | jak wcześniej | |
+
+**P2-WEEK-TOPIC:** toggle CMS + `weekTopic` w DB `[x]` `5a5eb77` / `76cf517` · **UI na homepage `[ ]` — user nie widzi sekcji**
 
 **INFRA-LIKES:** `[~]` SQL w repo; user uruchomił na Supabase.
 
@@ -62,7 +64,8 @@
 
 | ID | Zadanie | Status | Uwagi / dowód |
 |----|---------|--------|----------------|
-| P1-6 | Upload zdjęć (pro) | `[ ]` | Okładka = URL; upload tylko avatary — **następny priorytet** |
+| P1-6 | Upload zdjęć (pro) | `[~]` | `31a5525` — API + UI; prod: `SUPABASE_SERVICE_ROLE_KEY` + `article-covers.sql` |
+| P2-16 | Temat tygodnia (homepage) | `[~]` | Toggle CMS + migracja OK; **slider pod hero niewidoczny — BLOCKER** |
 | P1-7 | Live preview editor | `[~]` | Split + hero URL; QA okładki `[ ]` |
 | P1-8 | CMS redesign (The Verge) | `[~]` | Uproszczenie PR7; pełny redesign `[ ]` |
 | P1-9 | Hero article UX — kontrast daty/meta | `[x]` | `HeroMetaChip` — user OK (sesja 17) |
