@@ -3,8 +3,8 @@
 **Ostatnia aktualizacja:** 3 czerwca 2026 (sesja: CMS/API/DB spójność + homepage fallbacks — commit w tej sesji)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit lokalny:** zobacz `git log -1` (fix status + image + ranking)  
-**Na remote po push:** `ef1f754`+ (lokalnie kilka commitów do push — PR9–PR12 + fix sesji)
+**Ostatni commit lokalny:** `928848c` — fix(WSS): CMS status workflow, image DTO, homepage fallbacks  
+**Na remote po push:** `ef1f754`+ (lokalnie **4 commity** do push: PR11/12 + fix sesji)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
