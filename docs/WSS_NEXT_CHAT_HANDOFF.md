@@ -3,7 +3,7 @@
 **Ostatnia aktualizacja:** 3 czerwca 2026 (koniec sesji 17 — 9 kart Najnowsze, hero meta, handoff pod kolejny czat)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** *(po push tej sesji — patrz `git log -1`)*
+**Ostatni commit na remote:** `08760c7` — 9 kart Najnowsze, hero meta, handoff workflow
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)  
 **Backlog v3 (checkboxy):** `docs/WSS_ROADMAP_BACKLOG_V3.md`
