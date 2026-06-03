@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { runNewsEngineIngest } from "@/lib/rss/ingest";
-import { runRssDraftProcessing } from "@/lib/rss/process-drafts";
-import { runScheduledPublish } from "@/lib/server/articles";
 import { revalidateTag } from "next/cache";
+import { runScheduledPublish } from "@/lib/server/articles";
 import { ARTICLES_TAG } from "@/lib/cache/tags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -22,31 +19,27 @@ function isAuthorized(request: Request): boolean {
   return vercelCron === "1" && Boolean(secret);
 }
 
-/** Step 1: raw RSS → DRAFT. Step 2: AI → REVIEW. Step 3: due SCHEDULED → PUBLISHED. Never auto-publishes REVIEW. */
+/** Publish due SCHEDULED articles — idempotent, never auto-publishes RSS/REVIEW. */
 export async function GET(request: Request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const ingest = await runNewsEngineIngest();
-    const process = await runRssDraftProcessing();
-    const scheduled = await runScheduledPublish();
-    if (scheduled.published > 0) {
+    const result = await runScheduledPublish();
+
+    if (result.published > 0) {
       revalidateTag(ARTICLES_TAG);
     }
 
     return NextResponse.json({
       ok: true,
       at: new Date().toISOString(),
-      ingest,
-      process,
-      scheduled,
+      ...result,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[cron/rss]", err);
+    console.error("[cron/publish-scheduled]", err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
-

@@ -1,6 +1,6 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR-H5 + PR7 + PR8)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR10 scheduler publikacji)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
 **Ostatni commit na remote:** `8cc6f8a` — feat(WSS): CMS UX + homepage ranking (PR-H5, PR7, PR8)
@@ -32,53 +32,77 @@ Przeczytaj:
 - docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — ZAWSZE najpierw)
 - docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Stan po sesji 3.06.2026 (czat 2 — PR-H5 / PR7 / PR8)
+## Stan po sesji 3.06.2026 (czat 4 — PR10)
 
-PROD: `0bbfdb5`+ na main po push (wcześniej `10fb880` docs). Migracje contentOrigin+SCHEDULED już na DB.
+PROD: `211ba7e` / feature `8cc6f8a` na main. **Nowa migracja:** `20260603160000_article_publish_at` (`publishAt`) — wymaga `npm run db:deploy`.
 
-### Backend / DB (bez zmian w tym czacie)
+### Backend / DB (PR10)
+
+- **`publishAt`** — data zaplanowanej publikacji (status SCHEDULED)
+- **Scheduler:** `runScheduledPublish()` — SCHEDULED + publishAt ≤ now → PUBLISHED (idempotent `updateMany`)
+- **Cron:** `/api/cron/publish-scheduled` (co godzinę) + hook w `/api/cron/rss` (daily)
+- **Guard:** `validatePublishReady` — brak title/content/category → skip (bez crasha, zostaje SCHEDULED)
+- **CMS:** `scheduleArticle()`, edytor — „Opublikuj teraz” / „Zaplanuj publikację”
+- **Zasada:** RSS/AI nadal nie publikują — tylko explicit PUBLISHED lub scheduler
+
+### Workflow (bez zmian poza PR10)
 
 - **`contentOrigin`:** EDITORIAL | RSS | AI_DRAFT — immutable po create
-- **Workflow:** DRAFT → REVIEW → PUBLISHED → SCHEDULED (+ ARCHIVED)
-- **RSS pipeline:** ingest DRAFT → process REVIEW; CMS publish ręcznie
-- **AI read-only:** `aiScore` w GET API (nie ranking homepage)
+- **Workflow:** DRAFT → REVIEW → PUBLISHED | SCHEDULED (+ ARCHIVED)
+- **RSS pipeline:** ingest DRAFT → process REVIEW; CMS publish ręcznie lub zaplanowanie
 
-### CMS / UI (PR-H5, PR7 — UX only)
+### Strona artykułu (PR9 — bez zmian w tym czacie)
 
-- Typ w CMS: **Artykuł** | **Źródło zewnętrzne** (`source` + `url`) — zero RSS/AI/contentOrigin w copy
-- Edytor: „Dopracuj tekst”, „Źródło (opcjonalne)”
-- Public layout RSS: `contentOrigin` w `NewsArticle` (nie w CMS copy)
-
-### Homepage (PR8 — frontend only)
-
-- `lib/home/rank-articles.ts` — `rankImportantNow`, `rankLatest`, `rankPopular`
-- Sekcje: **Ważne teraz** (hero+sidebar) · **Najnowsze** · **Popularne**
-- `NewsArticle`: `featured`, `createdAt` w mapowaniu (bez zmian DB)
+- `lib/article/related-articles.ts` — Powiązane + Czytaj dalej
 
 ### Testy npm
 
-npm run test:ui          # article-kind + rank-articles
-npm run test:content-origin
+npm run test:articles    # workflow + schedule-publisher + content-origin
 npm run test:workflow
-npm run test:articles
-npm run test:ai
+npm run publish:scheduled  # ręczny worker (lokalnie / CI)
+npm run type-check
 
 ## Otwarte / następny czat (priorytet)
 
-1. **Deploy Vercel** — push main (auto) jeśli jeszcze nie na prod
+1. **`db:deploy`** — migracja `publishAt` na prod
 2. **PR-H4:** korekta starych `contentOrigin` (backfill infer)
 3. Kolejka ~175 REVIEW — publikacja ręczna w CMS
-4. Scheduler `SCHEDULED` — nie zaimplementowany
-5. Opcjonalnie: prawdziwe views w DB dla „Popularne” (dziś: likes Supabase + score)
+4. Opcjonalnie: prawdziwe views w DB dla „Popularne”
 
 Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
-
-Zacznij od tego, co user chce (deploy, publikacja REVIEW, PR-H4).
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (czat 4) — PR10 publishing scheduler
+
+**Cel:** auto-publikacja SCHEDULED po `publishAt`; minimalna integracja CMS; bez zmian RSS/AI/front.
+
+| Plik | Rola |
+|------|------|
+| `prisma/migrations/20260603160000_article_publish_at/` | kolumna `publishAt` + indeks |
+| `lib/articles/schedule-publisher.ts` | logika due/skip (pure) |
+| `lib/server/articles.ts` | `scheduleArticle`, `runScheduledPublish` |
+| `app/api/cron/publish-scheduled/route.ts` | cron worker |
+| `app/api/cron/rss/route.ts` | daily hook schedulera |
+| `components/admin/ArticleEditor.tsx` | Opublikuj teraz / Zaplanuj |
+
+Test: `npm run test:articles` · `npm run type-check`
+
+### Sesja 3.06.2026 (czat 3) — PR9 related articles + read next (presentation only)
+
+**Cel:** Netflix-style UX na stronie artykułu — powiązane treści + „Czytaj dalej”, bez zmian API/DB/CMS.
+
+| Plik | Rola |
+|------|------|
+| `lib/article/related-articles.ts` | `calculateRelatedScore`, `pickRelatedArticles`, `pickReadNext` |
+| `lib/articles.ts` | `tags` w `toNewsArticle`; `getReadNextArticle` |
+| `app/aktualnosci/[slug]/page.tsx` | sekcje Powiązane artykuły + Czytaj dalej |
+| `lib/ui/related-articles.test.ts` | testy scoringu i feed order |
+
+Test: `npm run test:ui` · `npm run type-check`
 
 ### Zamknięcie czatu 2 (3.06.2026) — PR-H5 + PR7 + PR8
 
@@ -386,7 +410,8 @@ npm run test:workflow
 npm run test:articles
 npm run test:ai
 npm run test:ui
-npm run db:deploy              # migracje (contextNote + contentOrigin + SCHEDULED)
+npm run publish:scheduled   # due SCHEDULED → PUBLISHED (manual)
+npm run db:deploy              # migracje (contextNote + contentOrigin + SCHEDULED + publishAt)
 npm run rss:ingest
 npm run rss:process
 npm run rss:clean-subtitles
@@ -423,10 +448,12 @@ lib/rss/image-credit.ts
 
 | Temat | Status |
 |-------|--------|
-| **Commit + deploy** sesji 3.06 | **Zamknięte** w tej sesji |
-| `db:deploy` prod | **Zamknięte** po push (migracje contentOrigin + SCHEDULED) |
+| **PR10 scheduler SCHEDULED** | **Zamknięte** w tej sesji — wymaga `db:deploy` publishAt |
+| **PR9 related + read next** | **Zamknięte** wcześniej |
+| **Commit + deploy** sesji 3.06 PR-H5–PR8 | **Zamknięte** wcześniej |
+| `db:deploy` prod (contentOrigin + SCHEDULED enum) | **Zamknięte** wcześniej |
 | PR-H4 korekta `contentOrigin` | Stare rekordy po inferze source+url |
-| Scheduler `SCHEDULED` | Enum jest; cron/publish-at — nie zrobione |
+| Scheduler `SCHEDULED` | **Zamknięte** (PR10) |
 | Kolejka ~175 REVIEW | Publikuj w CMS |
 | Front/ranking po `contentOrigin` | Opcjonalnie (heurystyka source+url nadal) |
 | `db:backfill-content-origin` | Wyłączyć infer z pól źródła |

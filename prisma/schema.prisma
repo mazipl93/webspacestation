@@ -103,6 +103,8 @@ model Article {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   publishedAt DateTime?
+  /// When status is SCHEDULED — auto-publish at or after this time (scheduler).
+  publishAt   DateTime?
 
   @@index([status])
   @@index([categoryId])
@@ -112,6 +114,7 @@ model Article {
   @@index([publishedAt])
   @@index([source])
   @@index([contentOrigin])
+  @@index([status, publishAt])
   @@map("articles")
 }
 

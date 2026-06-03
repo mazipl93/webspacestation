@@ -46,9 +46,24 @@ const EMPTY_FORM: ArticleFormValues = {
   tagsText: "",
   sourceName: "",
   sourceUrl: "",
+  publishAtLocal: "",
 };
 
 const AUTOSAVE_DELAY = 1500;
+
+function toDatetimeLocalValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function datetimeLocalToIso(local: string): string | null {
+  if (!local.trim()) return null;
+  const d = new Date(local);
+  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+}
 
 function tagsToText(tags: string[] | undefined): string {
   return (tags ?? []).filter((t) => t.trim()).join(", ");
@@ -78,6 +93,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     tagsText: tagsToText(a.tags),
     sourceName: a.source ?? "",
     sourceUrl: a.originalUrl ?? "",
+    publishAtLocal: toDatetimeLocalValue(a.publishAt),
   };
 }
 
@@ -111,6 +127,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const [form, setForm] = useState<ArticleFormValues>(EMPTY_FORM);
   const [status, setStatus] = useState<ArticleStatus>("DRAFT");
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+  const [publishMode, setPublishMode] = useState<"now" | "schedule">("now");
 
   const [currentId, setCurrentId] = useState<string | null>(articleId ?? null);
   const [loadedArticle, setLoadedArticle] = useState<AdminArticle | null>(null);
@@ -143,6 +160,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           setForm(toForm(article));
           setStatus(article.status);
           setPublishedSlug(article.status === "PUBLISHED" ? article.slug : null);
+          setPublishMode(article.status === "SCHEDULED" ? "schedule" : "now");
         }
       } catch (e) {
         if (active) {
@@ -158,7 +176,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   }, [articleId]);
 
   const persist = useCallback(
-    async (opts: { publish?: boolean; silent?: boolean } = {}) => {
+    async (opts: { publish?: boolean; schedule?: boolean; silent?: boolean } = {}) => {
       if (savingRef.current) return;
       if (!form.title.trim()) {
         if (!opts.silent) setError("Tytuł jest wymagany.");
@@ -168,15 +186,25 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         if (!opts.silent) setError("Wybierz kategorię przed zapisem lub publikacją.");
         return;
       }
+      if (opts.schedule && !form.publishAtLocal.trim()) {
+        if (!opts.silent) setError("Podaj datę zaplanowanej publikacji.");
+        return;
+      }
 
       savingRef.current = true;
       setSaving(true);
-      setSavingLabel(opts.publish ? "Publikowanie…" : "Zapisywanie…");
+      setSavingLabel(
+        opts.publish ? "Publikowanie…" : opts.schedule ? "Planowanie…" : "Zapisywanie…"
+      );
       setError(null);
 
       try {
         const payload = toPayload(form);
         if (opts.publish) payload.status = "PUBLISHED";
+        if (opts.schedule) {
+          payload.status = "SCHEDULED";
+          payload.publishAt = datetimeLocalToIso(form.publishAtLocal);
+        }
 
         let saved: AdminArticle;
         if (!currentId) {
@@ -192,6 +220,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         setForm(toForm(saved));
         setStatus(saved.status);
         setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
+        setPublishMode(saved.status === "SCHEDULED" ? "schedule" : "now");
         setLastSavedAt(new Date());
       } catch (e) {
         setError(e instanceof ApiError ? e.message : "Zapis nie powiódł się.");
@@ -311,7 +340,44 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-end gap-3">
+          {mayPublish && status !== "PUBLISHED" ? (
+            <div className="flex min-w-[220px] flex-col gap-2 rounded-[0.55rem] border border-hairline bg-white/[0.02] px-3 py-2.5">
+              <fieldset className="flex flex-col gap-1.5">
+                <legend className="sr-only">Tryb publikacji</legend>
+                <label className="flex cursor-pointer items-center gap-2 text-meta text-text-secondary">
+                  <input
+                    type="radio"
+                    name="publishMode"
+                    checked={publishMode === "now"}
+                    onChange={() => setPublishMode("now")}
+                    className="accent-accent-blue"
+                  />
+                  Opublikuj teraz
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-meta text-text-secondary">
+                  <input
+                    type="radio"
+                    name="publishMode"
+                    checked={publishMode === "schedule"}
+                    onChange={() => setPublishMode("schedule")}
+                    className="accent-accent-blue"
+                  />
+                  Zaplanuj publikację
+                </label>
+              </fieldset>
+              {publishMode === "schedule" ? (
+                <Field label="Zaplanowana publikacja (publishAt)">
+                  <TextInput
+                    type="datetime-local"
+                    value={form.publishAtLocal}
+                    onChange={(e) => update("publishAtLocal", e.target.value)}
+                  />
+                </Field>
+              ) : null}
+            </div>
+          ) : null}
+
           {currentId ? (
             <Link
               href={
@@ -334,19 +400,33 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           <Button variant="ghost" onClick={() => persist()} disabled={saving}>
             Zapisz szkic
           </Button>
-          <Button
-            onClick={() => persist({ publish: true })}
-            disabled={saving || !mayPublish || !form.categoryId}
-            title={
-              !form.categoryId
-                ? "Wybierz kategorię przed publikacją"
-                : mayPublish
-                  ? undefined
-                  : "Twoja rola nie pozwala na publikację"
-            }
-          >
-            {status === "PUBLISHED" ? "Zaktualizuj" : "Opublikuj"}
-          </Button>
+          {mayPublish ? (
+            publishMode === "schedule" && status !== "PUBLISHED" ? (
+              <Button
+                onClick={() => persist({ schedule: true })}
+                disabled={saving || !form.categoryId || !form.content.trim()}
+                title={
+                  !form.content.trim()
+                    ? "Treść jest wymagana przed zaplanowaniem publikacji"
+                    : undefined
+                }
+              >
+                {status === "SCHEDULED" ? "Zaktualizuj plan" : "Zaplanuj"}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => persist({ publish: true })}
+                disabled={saving || !form.categoryId || !form.content.trim()}
+                title={
+                  !form.content.trim()
+                    ? "Treść jest wymagana przed publikacją"
+                    : undefined
+                }
+              >
+                {status === "PUBLISHED" ? "Zaktualizuj" : "Opublikuj"}
+              </Button>
+            )
+          ) : null}
         </div>
       </div>
 

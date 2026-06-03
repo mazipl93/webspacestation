@@ -15,6 +15,10 @@ import { isRssArticle } from "@/lib/ui/article-kind";
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
 import { getRssImageCreditForArticle } from "@/lib/rss/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
+import {
+  pickReadNext,
+  pickRelatedArticles,
+} from "@/lib/article/related-articles";
 import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
 import type { NewsArticle, NewsCategory } from "@/types";
 
@@ -92,6 +96,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
           subtitle: a.subtitle,
         }) ?? undefined
       : undefined,
+    tags: a.tags?.length ? a.tags : undefined,
   };
 }
 
@@ -124,19 +129,20 @@ export async function getArticlesByCategory(
 }
 
 /**
- * Up to `count` related articles: same category first, then fill from others.
- * The source article itself is excluded.
+ * Up to `count` related articles — tag overlap, category, score similarity (PR9).
  */
 export async function getRelatedArticles(
   article: NewsArticle,
-  count = 3
+  count = 6
 ): Promise<NewsArticle[]> {
   const all = await getAllArticles();
-  const sameCategory = all.filter(
-    (a) => a.id !== article.id && a.category === article.category
-  );
-  const otherCategory = all.filter(
-    (a) => a.id !== article.id && a.category !== article.category
-  );
-  return [...sameCategory, ...otherCategory].slice(0, count);
+  return pickRelatedArticles(article, all, { min: 3, max: count });
+}
+
+/** Next article in feed (newest-first), popular fallback when oldest (PR9). */
+export async function getReadNextArticle(
+  article: NewsArticle
+): Promise<NewsArticle | null> {
+  const all = await getAllArticles();
+  return pickReadNext(article, all);
 }

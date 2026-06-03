@@ -61,6 +61,7 @@ export interface AdminArticle {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  publishAt: string | null;
   source?: string | null;
   originalUrl?: string | null;
   contentOrigin: ArticleContentOrigin;
@@ -85,6 +86,8 @@ export interface ArticleFormValues {
   tagsText: string;
   sourceName: string;
   sourceUrl: string;
+  /** ISO datetime-local value for scheduled publish. */
+  publishAtLocal: string;
 }
 
 export interface CategoryFormValues {

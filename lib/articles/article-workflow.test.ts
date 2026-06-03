@@ -7,6 +7,7 @@ import {
   publishedAtPatchForStatusTransition,
   resolveCreateStatus,
   validatePublishReady,
+  validateScheduleTime,
   WORKFLOW_STATUSES,
 } from "@/lib/articles/workflow";
 
@@ -88,6 +89,18 @@ describe("article workflow (status-only lifecycle)", () => {
         publishedAt: null,
       }),
       {}
+    );
+  });
+
+  it("validateScheduleTime rejects past publishAt", () => {
+    const now = new Date("2026-06-03T12:00:00.000Z");
+    assert.equal(
+      validateScheduleTime(new Date("2026-06-03T10:00:00.000Z"), now).ok,
+      false
+    );
+    assert.equal(
+      validateScheduleTime(new Date("2026-06-03T14:00:00.000Z"), now).ok,
+      true
     );
   });
 

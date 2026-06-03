@@ -7,6 +7,7 @@ import {
   getPublishedArticleBySlug,
   publishArticle,
   refreshArticleRanking,
+  scheduleArticle,
   updateArticle,
   ArticleWorkflowError,
 } from "@/lib/server/articles";
@@ -82,7 +83,8 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
     }
 
     if (
-      parsed.value.status === "PUBLISHED" &&
+      (parsed.value.status === "PUBLISHED" ||
+        parsed.value.status === "SCHEDULED") &&
       !canPublishArticle(guard.user.role)
     ) {
       return forbidden();
@@ -94,6 +96,12 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       Object.keys(parsed.value).length === 1
     ) {
       article = await publishArticle(id);
+    } else if (
+      parsed.value.status === ArticleStatus.SCHEDULED &&
+      parsed.value.publishAt &&
+      Object.keys(parsed.value).length === 2
+    ) {
+      article = await scheduleArticle(id, parsed.value.publishAt);
     } else {
       if (parsed.value.status === ArticleStatus.PUBLISHED) {
         const existing = await getArticleById(id);

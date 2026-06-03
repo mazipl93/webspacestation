@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
   getArticleBySlug,
+  getReadNextArticle,
   getRelatedArticles,
 } from "@/lib/articles";
 import Navbar from "@/components/layout/Navbar";
@@ -518,7 +519,7 @@ function ArticleBody({
                   className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"
                   style={{ boxShadow: "0 0 10px rgba(47,109,255,0.45)" }}
                 />
-                <h2 className="overline text-text-secondary">Powiązane</h2>
+                <h2 className="overline text-text-secondary">Powiązane artykuły</h2>
               </div>
               <div className="flex flex-col gap-3">
                 {sidebarRelated.map((a) => (
@@ -578,10 +579,79 @@ function ReturnBand({ category }: { category: string }) {
   );
 }
 
-// ─── "Czytaj również" strip ───────────────────────────────────────────────────
+// ─── "Czytaj dalej" — next in feed ───────────────────────────────────────────
+
+function ReadNext({ article }: { article: NewsArticle }) {
+  const meta = catMeta(article.category);
+  return (
+    <div className="container-site pb-8 reveal">
+      <div className="card-surface overflow-hidden p-0">
+        <div className="mb-0 flex items-center gap-2.5 border-b border-hairline px-5 py-4">
+          <span
+            className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"
+            style={{ boxShadow: "0 0 10px rgba(47,109,255,0.45)" }}
+          />
+          <h2 className="overline text-text-secondary">Czytaj dalej</h2>
+        </div>
+
+        <Link
+          href={`/aktualnosci/${article.slug}`}
+          className="surface-interactive group grid grid-cols-1 gap-0 sm:grid-cols-[minmax(0,1fr)_280px]"
+        >
+          <div className="flex flex-col justify-center p-6 sm:p-8">
+            <span
+              className="mb-3 flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]"
+              style={{ color: meta.color }}
+            >
+              <span className="h-1 w-1 rounded-full" style={{ background: meta.color }} />
+              {meta.label}
+            </span>
+            <h3 className="mb-3 text-balance text-[clamp(1.125rem,2.5vw,1.5rem)] font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan">
+              {article.title}
+            </h3>
+            <p className="line-clamp-2 max-w-[56ch] text-[13.5px] leading-relaxed text-text-secondary">
+              {article.excerpt}
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-accent-blue transition-colors duration-300 group-hover:text-accent-cyan">
+              Kontynuuj czytanie
+              <ChevronRight
+                size={14}
+                className="transition-transform duration-300 group-hover:translate-x-0.5"
+              />
+            </span>
+          </div>
+
+          <div
+            className="img-sheen relative min-h-[180px] overflow-hidden sm:min-h-[220px]"
+            style={{ background: catFallback(article.category) }}
+          >
+            <Image
+              src={article.imageUrl}
+              alt={article.title}
+              fill
+              sizes="(max-width: 640px) 100vw, 280px"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+              style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 sm:hidden"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(5,7,9,0.72) 0%, transparent 55%)",
+              }}
+            />
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─── "Powiązane artykuły" strip ───────────────────────────────────────────────
 // Uses `reveal` class so it scroll-animates in — reinforces the spatial loop.
 
-function ReadAlso({ articles }: { articles: NewsArticle[] }) {
+function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null;
   return (
     <div className="container-site pb-14 reveal">
@@ -595,7 +665,7 @@ function ReadAlso({ articles }: { articles: NewsArticle[] }) {
                 boxShadow: "0 0 10px rgba(56,189,248,0.45)",
               }}
             />
-            <h2 className="overline text-text-secondary">Czytaj również</h2>
+            <h2 className="overline text-text-secondary">Powiązane artykuły</h2>
           </div>
           <Link
             href="/aktualnosci"
@@ -609,7 +679,7 @@ function ReadAlso({ articles }: { articles: NewsArticle[] }) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => (
             <RelatedCard key={article.id} article={article} />
           ))}
@@ -626,12 +696,20 @@ export default async function ArticlePage({ params }: Props) {
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
 
-  // Fetch 6 related — sidebar takes 0-2, strip takes 3-5 (different articles
-  // where possible, falls back to same 3 when < 4 related exist).
-  const allRelated = await getRelatedArticles(article, 6);
-  const sidebarRelated = allRelated.slice(0, 3);
-  const stripRelated =
-    allRelated.length > 3 ? allRelated.slice(3, 6) : allRelated.slice(0, 3);
+  const [allRelated, readNext] = await Promise.all([
+    getRelatedArticles(article, 6),
+    getReadNextArticle(article),
+  ]);
+
+  const reservedIds = new Set<string>([article.id]);
+  if (readNext) reservedIds.add(readNext.id);
+
+  const sidebarRelated = allRelated
+    .filter((a) => !reservedIds.has(a.id))
+    .slice(0, 3);
+  for (const a of sidebarRelated) reservedIds.add(a.id);
+
+  const stripRelated = allRelated.filter((a) => !reservedIds.has(a.id));
 
   return (
     <>
@@ -643,7 +721,8 @@ export default async function ArticlePage({ params }: Props) {
         <ArticleBody article={article} sidebarRelated={sidebarRelated} />
         <ArticleInteractions slug={article.slug} title={article.title} />
         <ReturnBand category={article.category} />
-        <ReadAlso articles={stripRelated} />
+        {readNext ? <ReadNext article={readNext} /> : null}
+        <RelatedArticlesStrip articles={stripRelated} />
       </main>
       <Footer />
     </>

@@ -63,6 +63,7 @@ export interface ArticleWritePayload {
   tags?: string[];
   source?: string | null;
   originalUrl?: string | null;
+  publishAt?: string | null;
 }
 
 export const adminApi = {

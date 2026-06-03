@@ -51,7 +51,7 @@ export function validatePublishReady(
 
 /**
  * publishedAt side effects — only when status is explicitly transitioned.
- * SCHEDULED does not stamp publishedAt (scheduler not implemented).
+ * SCHEDULED does not stamp publishedAt (scheduler sets it on auto-publish).
  */
 export function publishedAtPatchForStatusTransition(
   nextStatus: ArticleStatus,
@@ -60,10 +60,42 @@ export function publishedAtPatchForStatusTransition(
   if (nextStatus === ArticleStatus.PUBLISHED) {
     return existing.publishedAt ? {} : { publishedAt: new Date() };
   }
+  if (nextStatus === ArticleStatus.SCHEDULED) {
+    return {};
+  }
   if (existing.status === ArticleStatus.PUBLISHED) {
     return { publishedAt: null };
   }
   return {};
+}
+
+/** SCHEDULED requires a future publishAt. */
+export function validateScheduleTime(
+  publishAt: Date,
+  now: Date = new Date()
+): WorkflowValidation {
+  if (!Number.isFinite(publishAt.getTime())) {
+    return { ok: false, message: "Nieprawidłowa data zaplanowanej publikacji." };
+  }
+  if (publishAt.getTime() <= now.getTime()) {
+    return {
+      ok: false,
+      message: "Data zaplanowanej publikacji musi być w przyszłości.",
+    };
+  }
+  return { ok: true };
+}
+
+/** True when scheduler may attempt auto-publish for this row. */
+export function isScheduledPublishDue(
+  article: { status: ArticleStatus; publishAt: Date | null },
+  now: Date = new Date()
+): boolean {
+  return (
+    article.status === ArticleStatus.SCHEDULED &&
+    article.publishAt != null &&
+    article.publishAt.getTime() <= now.getTime()
+  );
 }
 
 export function isWorkflowListStatus(

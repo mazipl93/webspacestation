@@ -71,6 +71,18 @@ function parseOriginalUrlField(
   return undefined;
 }
 
+function parsePublishAtField(
+  body: Record<string, unknown>
+): Date | null | undefined {
+  if (body.publishAt === undefined) return undefined;
+  if (body.publishAt === null || body.publishAt === "") return null;
+  if (typeof body.publishAt !== "string") {
+    return null;
+  }
+  const d = new Date(body.publishAt);
+  return Number.isFinite(d.getTime()) ? d : null;
+}
+
 // ─── Article inputs ───────────────────────────────────────────────────────--
 
 export interface ArticleCreateInput {
@@ -88,6 +100,7 @@ export interface ArticleCreateInput {
   tags: string[];
   source: string | null;
   originalUrl: string | null;
+  publishAt: Date | null;
 }
 
 export type ArticleUpdateInput = Partial<ArticleCreateInput>;
@@ -141,6 +154,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       tags: parseTagsField(body) ?? [],
       source: parseSourceField(body) ?? null,
       originalUrl: parseOriginalUrlField(body) ?? null,
+      publishAt: parsePublishAtField(body) ?? null,
     },
   };
 }
@@ -195,6 +209,8 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   if (source !== undefined) out.source = source;
   const originalUrl = parseOriginalUrlField(body);
   if (originalUrl !== undefined) out.originalUrl = originalUrl;
+  const publishAt = parsePublishAtField(body);
+  if (publishAt !== undefined) out.publishAt = publishAt;
 
   return { ok: true, value: out };
 }

@@ -28,7 +28,13 @@ import {
   publishedAtPatchForStatusTransition,
   resolveCreateStatus,
   validatePublishReady,
+  validateScheduleTime,
 } from "@/lib/articles/workflow";
+import {
+  evaluateScheduledPublish,
+  summarizeSchedulePublishRun,
+  type SchedulePublishRunResult,
+} from "@/lib/articles/schedule-publisher";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -48,6 +54,7 @@ const articleSelect = {
   createdAt: true,
   updatedAt: true,
   publishedAt: true,
+  publishAt: true,
   source: true,
   originalUrl: true,
   contentOrigin: true,
@@ -302,6 +309,22 @@ export async function createArticle(
     if (!check.ok) throw new ArticleWorkflowError(check.message);
   }
 
+  if (status === ArticleStatus.SCHEDULED) {
+    if (!input.publishAt) {
+      throw new ArticleWorkflowError(
+        "Data zaplanowanej publikacji jest wymagana."
+      );
+    }
+    const pubCheck = validatePublishReady({
+      title: input.title,
+      content: input.content,
+      categoryId: input.categoryId,
+    });
+    if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
+    const timeCheck = validateScheduleTime(input.publishAt);
+    if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
+  }
+
   const publishedAt =
     status === ArticleStatus.PUBLISHED ? new Date() : null;
 
@@ -324,6 +347,7 @@ export async function createArticle(
       authorId: resolvedAuthorId,
       contentOrigin: ArticleContentOrigin.EDITORIAL,
       publishedAt,
+      publishAt: status === ArticleStatus.SCHEDULED ? input.publishAt : null,
     },
     select: articleSelect,
   });
@@ -358,6 +382,23 @@ export async function updateArticle(
     if (!check.ok) throw new ArticleWorkflowError(check.message);
   }
 
+  if (input.status === ArticleStatus.SCHEDULED) {
+    const publishAt = input.publishAt;
+    if (!publishAt) {
+      throw new ArticleWorkflowError(
+        "Data zaplanowanej publikacji jest wymagana."
+      );
+    }
+    const pubCheck = validatePublishReady({
+      title: input.title ?? existing.title,
+      content: input.content !== undefined ? input.content : existing.content,
+      categoryId: input.categoryId ?? existing.categoryId,
+    });
+    if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
+    const timeCheck = validateScheduleTime(publishAt);
+    if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
+  }
+
   // HARD RULE: contentOrigin is immutable after creation (ingest → RSS, CMS create → EDITORIAL).
   const data: Prisma.ArticleUncheckedUpdateInput = { ...input };
   delete (data as { contentOrigin?: unknown }).contentOrigin;
@@ -367,6 +408,9 @@ export async function updateArticle(
       data,
       publishedAtPatchForStatusTransition(input.status, existing)
     );
+    if (input.status === ArticleStatus.PUBLISHED) {
+      data.publishAt = null;
+    }
   }
 
   return prisma.article.update({
@@ -408,12 +452,100 @@ export async function publishArticle(
     data: {
       status: ArticleStatus.PUBLISHED,
       publishedAt: existing.publishedAt ?? new Date(),
+      publishAt: null,
     },
     select: articleSelect,
   });
 
   await refreshArticleRanking(id);
   return article;
+}
+
+/**
+ * Schedule explicit publish — status SCHEDULED + future publishAt.
+ * Requires publish-ready content (same guard as PUBLISHED).
+ */
+export async function scheduleArticle(
+  id: string,
+  publishAt: Date
+): Promise<ArticleWithRelations | null> {
+  const existing = await prisma.article.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      categoryId: true,
+    },
+  });
+  if (!existing) return null;
+
+  const pubCheck = validatePublishReady({
+    title: existing.title,
+    content: existing.content,
+    categoryId: existing.categoryId,
+  });
+  if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
+
+  const timeCheck = validateScheduleTime(publishAt);
+  if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
+
+  return prisma.article.update({
+    where: { id },
+    data: {
+      status: ArticleStatus.SCHEDULED,
+      publishAt,
+    },
+    select: articleSelect,
+  });
+}
+
+/**
+ * Cron worker — publish due SCHEDULED articles idempotently.
+ * Skips invalid rows without throwing (stays SCHEDULED until fixed in CMS).
+ */
+export async function runScheduledPublish(
+  now: Date = new Date()
+): Promise<SchedulePublishRunResult> {
+  const due = await prisma.article.findMany({
+    where: {
+      status: ArticleStatus.SCHEDULED,
+      publishAt: { lte: now },
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      content: true,
+      categoryId: true,
+      status: true,
+      publishAt: true,
+      publishedAt: true,
+    },
+  });
+
+  const results = due.map((row) => evaluateScheduledPublish(row));
+
+  for (let i = 0; i < due.length; i++) {
+    const row = due[i];
+    const decision = results[i];
+    if (!decision?.ok) continue;
+
+    const updated = await prisma.article.updateMany({
+      where: { id: row.id, status: ArticleStatus.SCHEDULED },
+      data: {
+        status: ArticleStatus.PUBLISHED,
+        publishedAt: row.publishedAt ?? now,
+        publishAt: null,
+      },
+    });
+
+    if (updated.count === 0) continue;
+
+    await refreshArticleRanking(row.id);
+  }
+
+  return summarizeSchedulePublishRun(results);
 }
 
 /** Recompute score/featured after manual publish (CMS moderation). */

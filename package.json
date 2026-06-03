@@ -29,7 +29,8 @@
     "rss:demote-backfill": "tsx scripts/rss-demote-backfill.ts",
     "cache:revalidate": "tsx scripts/cache-revalidate.ts",
     "rss:cleanup-db": "tsx scripts/rss-cleanup-db.ts",
-    "scores:recalculate": "tsx scripts/recalculate-scores.ts"
+    "scores:recalculate": "tsx scripts/recalculate-scores.ts",
+    "publish:scheduled": "tsx scripts/publish-scheduled.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
