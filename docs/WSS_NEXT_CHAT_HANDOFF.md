@@ -2,7 +2,7 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25 — push pełny WIP + profil + mobile nav)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `f956ff0`
+**Ostatni commit remote:** `0e85af8` (feat `f956ff0`)
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
