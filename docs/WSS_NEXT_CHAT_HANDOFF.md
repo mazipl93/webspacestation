@@ -3,8 +3,8 @@
 **Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR11 + PR12, commit lokalny)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit lokalny:** (po commit tej sesji — patrz `git log -1`)  
-**Ostatni commit na remote:** `211ba7e` / `ef1f754` po push (PR9–PR12)
+**Ostatni commit lokalny:** `13f9181` — feat(WSS): CMS live preview + collapsible sidebar (PR11, PR12)  
+**Na remote po push:** `13f9181` (prod ma już `ef1f754` — PR9+PR10)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
