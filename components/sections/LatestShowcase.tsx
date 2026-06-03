@@ -5,6 +5,7 @@ import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
 import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 import HomepageSectionHeader from "@/components/sections/HomepageSectionHeader";
+import HorizontalScrollSlider from "@/components/ui/HorizontalScrollSlider";
 
 /** Sekcja 2 — duże karty Najnowsze, przewijane w poziomie. */
 export default function LatestShowcase({ articles }: { articles: NewsArticle[] }) {
@@ -14,9 +15,9 @@ export default function LatestShowcase({ articles }: { articles: NewsArticle[] }
     <section className="mt-6 lg:mt-8" aria-label="Najnowsze artykuły">
       <HomepageSectionHeader label="Najnowsze" href="/aktualnosci" accent="#22d3ee" />
 
-      <div
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-none sm:gap-5"
-        style={{ WebkitOverflowScrolling: "touch" }}
+      <HorizontalScrollSlider
+        ariaLabel="Najnowsze artykuły — przewiń w poziomie"
+        trackClassName="gap-4 sm:gap-5"
       >
         {articles.map((article, i) => {
           const meta = getCategoryInfo(article.category);
@@ -91,7 +92,7 @@ export default function LatestShowcase({ articles }: { articles: NewsArticle[] }
             </Link>
           );
         })}
-      </div>
+      </HorizontalScrollSlider>
     </section>
   );
 }

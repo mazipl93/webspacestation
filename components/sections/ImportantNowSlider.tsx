@@ -4,6 +4,7 @@ import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
 import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 import HomepageSectionHeader from "@/components/sections/HomepageSectionHeader";
+import HorizontalScrollSlider from "@/components/ui/HorizontalScrollSlider";
 
 /** Sekcja 3 — Ważne teraz, slider poziomy (score + featured + recency). */
 export default function ImportantNowSlider({
@@ -22,9 +23,10 @@ export default function ImportantNowSlider({
         glow="0 0 10px rgba(255,69,58,0.55)"
       />
 
-      <div
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 scrollbar-none sm:gap-4"
-        style={{ WebkitOverflowScrolling: "touch" }}
+      <HorizontalScrollSlider
+        ariaLabel="Ważne teraz — przewiń w poziomie"
+        trackClassName="gap-3 sm:gap-4"
+        stepRatio={0.92}
       >
         {articles.map((article, i) => (
           <Link
@@ -68,7 +70,7 @@ export default function ImportantNowSlider({
             </div>
           </Link>
         ))}
-      </div>
+      </HorizontalScrollSlider>
     </section>
   );
 }
