@@ -2,7 +2,7 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25 — push pełny WIP + profil + mobile nav)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** _(po push tej sesji — patrz `git log -1`)_
+**Ostatni commit remote:** `f956ff0`
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -44,8 +44,8 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **CMS `authorByline`** | `4ca8d46` | Pole w edytorze, API, walidacja, migracja `20260604200000` |
 | **Prisma P0** | czat 25 dev | `prisma generate` + `db:deploy` (kolumna na Supabase) |
 | **Subskrypcje UI** | `06e2d4d` | Usunięte: stopka „Subskrypcje”, przycisk „Subskrybuj” na `/aktualnosci` (`/rss` nadal istnieje) |
-| **Profil UX** | _(ten push)_ | Hero, statystyki, sekcje, empty state CTA, `ProfileSectionHeading` |
-| **Mobile nav** | _(ten push)_ | Lupa + powiadomienia: panele `fixed inset-x-4` (`nav-overlay-panel.ts`) — nie wychodzą w lewo |
+| **Profil UX** | `f956ff0` | Hero, statystyki, sekcje, empty state CTA, `ProfileSectionHeading` |
+| **Mobile nav** | `f956ff0` | Lupa + powiadomienia: panele `fixed inset-x-4` (`nav-overlay-panel.ts`) — nie wychodzą w lewo |
 | **CMS daty** | `3e7139b` | Brak autosave; **Zaktualizuj** nie zmienia `publishedAt` |
 | **Temat tygodnia** | `3e7139b` + UI `4ca8d46` | Toggle CMS, sekcja pod hero |
 | **Deploy Vercel** | `4868232` | Build prod naprawiony (JSX `//`) |
@@ -767,7 +767,7 @@ lib/rss/image-credit.ts
 
 ### Commity czat 24–25 (referencja)
 
-`3e7139b` → `4ca8d46` → `48acd18` → `4868232` → `06e2d4d` → _(profil + mobile + docs)_
+`3e7139b` → `4ca8d46` → `48acd18` → `4868232` → `06e2d4d` → `f956ff0`
 
 ### Pliki kluczowe (czat 24–25)
 
