@@ -18,12 +18,16 @@ import { isRssArticle } from "@/lib/ui/article-kind";
 
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
-import HeroEditorialCluster from "@/components/sections/HeroEditorialCluster";
+import HeroArticle from "@/components/sections/HeroArticle";
 import LatestShowcase from "@/components/sections/LatestShowcase";
+import WeekTopicSection from "@/components/sections/WeekTopicSection";
 import PopularArticles from "@/components/sections/PopularArticles";
+import {
+  getWeekTopicConfig,
+  pickWeekTopicArticles,
+} from "@/lib/home/week-topic";
 
 const IMPORTANT_POOL = 14;
-const HERO_SECONDARY_COUNT = 2;
 /** Slider mobile — duże karty w poziomie. */
 const LATEST_SLIDER_LIMIT = 10;
 /** Panel boczny desktop — pionowa lista. */
@@ -691,11 +695,14 @@ export default async function ContentGrid() {
   const usedSlugs = new Set<string>();
   markSlugsUsed([lead], usedSlugs);
 
-  const heroSecondary = excludeBySlugs(importantRanked, usedSlugs).slice(
-    0,
-    HERO_SECONDARY_COUNT
+  const weekTopicConfig = getWeekTopicConfig();
+  const weekTopicPick = pickWeekTopicArticles(
+    allPublished,
+    usedSlugs,
+    importantRanked,
+    weekTopicConfig
   );
-  markSlugsUsed(heroSecondary, usedSlugs);
+  markSlugsUsed(weekTopicPick.articles, usedSlugs);
 
   const latest = pickHomepageLatest(
     excludeBySlugs(allPublished, usedSlugs),
@@ -716,7 +723,11 @@ export default async function ContentGrid() {
 
   if (process.env.NODE_ENV === "development") {
     console.log("HOMEPAGE INPUT ARTICLES:", allPublished.length);
-    console.log("HERO SECONDARY:", heroSecondary.length);
+    console.log(
+      "WEEK TOPIC:",
+      weekTopicPick.articles.length,
+      weekTopicPick.fromTag ? "tag" : "fallback"
+    );
   }
 
   const excludeForPopular = [...usedSlugs];
@@ -732,19 +743,30 @@ export default async function ContentGrid() {
           )}
         >
           <div className="min-w-0">
-            <HeroEditorialCluster
-              lead={lead}
-              secondary={heroSecondary}
-              topPriority={lead.isTopPriority}
-            />
-            <div className="mt-8 lg:hidden">
-              <LatestShowcase articles={latest} variant="slider" />
-            </div>
+            <HeroArticle article={lead} topPriority={lead.isTopPriority} />
           </div>
 
           <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
             <LatestShowcase articles={latestRail} variant="rail" />
           </aside>
+        </div>
+
+        {weekTopicPick.articles.length > 0 ? (
+          <div className="mt-8 sm:mt-10">
+            <WeekTopicSection
+              articles={weekTopicPick.articles}
+              config={weekTopicConfig}
+              fromTag={weekTopicPick.fromTag}
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-8 border-t border-hairline pt-8 lg:hidden">
+          <LatestShowcase
+            articles={latest}
+            variant="slider"
+            mobileShell
+          />
         </div>
       </div>
 

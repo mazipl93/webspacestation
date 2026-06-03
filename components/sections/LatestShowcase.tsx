@@ -133,9 +133,12 @@ function LatestRailRow({
 export default function LatestShowcase({
   articles,
   variant = "slider",
+  mobileShell = false,
 }: {
   articles: NewsArticle[];
   variant?: "slider" | "rail";
+  /** Wyraźna ramka na mobile — odróżnienie od Tematu tygodnia. */
+  mobileShell?: boolean;
 }) {
   if (articles.length === 0) return null;
 
@@ -159,11 +162,25 @@ export default function LatestShowcase({
   }
 
   return (
-    <section className="mt-2 lg:mt-0" aria-label="Najnowsze artykuły">
-      <HomepageSectionHeader label="Najnowsze" href="/aktualnosci" accent={ACCENT} />
+    <section
+      className={
+        mobileShell
+          ? "mt-2 rounded-2xl border border-[#22d3ee44] bg-[#22d3ee0c] p-4 pt-5 lg:mt-0 lg:border-0 lg:bg-transparent lg:p-0"
+          : "mt-2 lg:mt-0"
+      }
+      aria-label="Najnowsze artykuły"
+    >
+      <HomepageSectionHeader
+        label="Najnowsze"
+        href="/aktualnosci"
+        accent={ACCENT}
+        prominent={mobileShell}
+        subtitle={mobileShell ? "Świeże publikacje — porządek chronologiczny" : undefined}
+      />
       <HorizontalScrollSlider
         ariaLabel="Najnowsze artykuły — przewiń w poziomie"
         trackClassName="gap-4"
+        className={mobileShell ? "sm:px-11" : undefined}
       >
         {articles.map((article, i) => (
           <LatestSliderCard key={article.id} article={article} isLead={i === 0} />
