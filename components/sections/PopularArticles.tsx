@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { rankImportantNow, rankLatest, rankPopular } from "@/lib/home/rank-articles";
 import type { NewsArticle } from "@/types";
 import ArticleCard from "@/components/article/ArticleCard";
 
@@ -54,18 +55,16 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
 
   const popular = useMemo(() => {
     const pool = articles.filter((a) => !exclude.has(a.slug));
-    if (likeCounts === null) return pool.slice(0, 6);
+    if (pool.length === 0) return [];
 
-    return [...pool]
-      .sort((a, b) => {
-        const diff = (likeCounts.get(b.slug) ?? 0) - (likeCounts.get(a.slug) ?? 0);
-        if (diff !== 0) return diff;
-        if (a.isBreaking !== b.isBreaking) return a.isBreaking ? -1 : 1;
-        return (
-          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-        );
-      })
-      .slice(0, 6);
+    if (likeCounts === null) {
+      return rankPopular(pool, { limit: 6 });
+    }
+
+    return rankPopular(pool, {
+      limit: 6,
+      engagementBySlug: likeCounts,
+    });
   }, [articles, exclude, likeCounts]);
 
   if (popular.length === 0) return null;

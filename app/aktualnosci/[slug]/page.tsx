@@ -18,6 +18,7 @@ import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
+import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
 // DB access during `next build`; the page is rendered on first request, cached,
@@ -385,9 +386,9 @@ function ArticleBody({
   });
 
   const bodyParagraphs = getArticleBodyParagraphs(article);
-  const isExternal = Boolean(article.originalUrl && article.source);
-  const lead = isExternal ? null : bodyParagraphs[0] ?? article.excerpt;
-  const rest = isExternal ? bodyParagraphs : bodyParagraphs.slice(lead ? 1 : 0);
+  const isRss = isRssArticle(article.contentOrigin);
+  const lead = isRss ? null : bodyParagraphs[0] ?? article.excerpt;
+  const rest = isRss ? bodyParagraphs : bodyParagraphs.slice(lead ? 1 : 0);
 
   return (
     <div id="article-body" className="container-site py-10 reveal">
@@ -402,7 +403,7 @@ function ArticleBody({
             on wide screens — intentional whitespace, not wasted space.
           */}
           <div className="max-w-[72ch]">
-            {!isExternal && lead ? (
+            {!isRss && lead ? (
               <p
                 className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
                 style={{
@@ -425,11 +426,11 @@ function ArticleBody({
               </p>
             ))}
 
-            {isExternal && article.contextNote ? (
+            {isRss && article.contextNote ? (
               <WssContextBox text={article.contextNote} />
             ) : null}
 
-            {isExternal ? (
+            {hasSourceAttribution(article.originalUrl) ? (
               <SourceAttribution article={article} />
             ) : null}
           </div>

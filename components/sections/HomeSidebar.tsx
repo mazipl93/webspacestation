@@ -7,6 +7,7 @@ import { Flame, TrendingUp } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cn } from "@/lib/cn";
 import { getCategoryInfo } from "@/lib/categories";
+import { rankImportantNow, rankLatest, rankPopular } from "@/lib/home/rank-articles";
 import { createClient } from "@/lib/supabase/client";
 import type { NewsArticle } from "@/types";
 
@@ -146,41 +147,17 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
   );
 
   const popular = useMemo(() => {
+    if (pool.length === 0) return [];
     if (likeCounts === null) return pool.slice(0, 5);
-    return [...pool]
-      .sort((a, b) => {
-        const diff = (likeCounts.get(b.slug) ?? 0) - (likeCounts.get(a.slug) ?? 0);
-        if (diff !== 0) return diff;
-        return (
-          new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-        );
-      })
-      .slice(0, 5);
+    return rankPopular(pool, { limit: 5, engagementBySlug: likeCounts });
   }, [pool, likeCounts]);
 
   const trending = useMemo(
-    () =>
-      [...pool]
-        .sort((a, b) => {
-          if (a.isBreaking !== b.isBreaking) return a.isBreaking ? -1 : 1;
-          return (
-            new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-          );
-        })
-        .slice(0, 5),
+    () => rankImportantNow(pool, 5),
     [pool]
   );
 
-  const recentlyAdded = useMemo(
-    () =>
-      [...pool]
-        .sort(
-          (a, b) =>
-            new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-        )
-        .slice(0, 5),
-    [pool]
-  );
+  const recentlyAdded = useMemo(() => rankLatest(pool, 5), [pool]);
 
   const feedItems = feedTab === "trending" ? trending : recentlyAdded;
 
@@ -209,7 +186,7 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
         )}
       </SidebarBlock>
 
-      <SidebarBlock icon={Flame} label="Redakcyjny feed" accent="#ff453a">
+      <SidebarBlock icon={Flame} label="Ważne teraz" accent="#ff453a">
         <div
           className="mb-3 flex gap-1 rounded-lg border border-hairline-faint p-1"
           role="tablist"
@@ -217,7 +194,7 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
         >
           {(
             [
-              { id: "trending" as const, label: "Na czasie" },
+              { id: "trending" as const, label: "Ważne" },
               { id: "recent" as const, label: "Najnowsze" },
             ] as const
           ).map(({ id, label }) => (

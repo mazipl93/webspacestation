@@ -93,7 +93,7 @@ export default function ArticlesListPage() {
       <PageHeader
         overline="Treści"
         title="Artykuły"
-        description="Szkice redakcyjne i z zewnętrznego źródła trafiają do kolejki. Na stronę trafia tylko to, co opublikujesz."
+        description="Szkice trafiają do kolejki. Na stronę trafia tylko to, co opublikujesz."
         actions={
           <Link
             href="/admin/articles/new"

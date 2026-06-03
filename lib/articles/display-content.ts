@@ -1,5 +1,5 @@
 import type { NewsArticle } from "@/types";
-import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
+import { isRssArticle } from "@/lib/ui/article-kind";
 
 const BOILERPLATE_SNIPPETS = [
   "zebrany automatycznie przez wss news engine",
@@ -22,7 +22,7 @@ export function getArticleBodyParagraphs(article: NewsArticle): string[] {
   const raw = article.content ?? [];
   const paragraphs = raw.filter((p) => !isBoilerplateParagraph(p));
 
-  if (isExternalAggregatorArticle(article)) {
+  if (isRssArticle(article.contentOrigin)) {
     return paragraphs;
   }
 

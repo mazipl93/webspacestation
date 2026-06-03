@@ -29,11 +29,7 @@ import {
   getRssImageCreditForArticle,
 } from "@/lib/rss/image-credit";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
-import {
-  EXTERNAL_SOURCE_LABEL,
-  articleKindLabel,
-  hasExternalSource,
-} from "@/lib/ui/article-kind";
+import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 
 const EMPTY_FORM: ArticleFormValues = {
@@ -103,8 +99,8 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
   };
 }
 
-function canEnhanceExternalContent(form: ArticleFormValues): boolean {
-  return hasExternalSource(form.sourceName, form.sourceUrl);
+function canRefineContent(form: ArticleFormValues): boolean {
+  return hasCitationFields(form.sourceName, form.sourceUrl);
 }
 
 export default function ArticleEditor({ articleId }: { articleId?: string }) {
@@ -131,9 +127,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
 
-  const showExternalEnhancePanel =
-    loadedArticle !== null && canEnhanceExternalContent(form);
-  const kindLabel = articleKindLabel(form.sourceName, form.sourceUrl);
+  const showRefinePanel = Boolean(currentId) && canRefineContent(form);
+  const typeLabel = cmsArticleTypeLabel(form.sourceName, form.sourceUrl);
 
   useEffect(() => {
     let active = true;
@@ -224,11 +219,11 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     };
   }, [form, persist]);
 
-  const handleReprocessAi = async () => {
-    if (!currentId || !loadedArticle || !canEnhanceExternalContent(form)) return;
+  const handleRefineText = async () => {
+    if (!currentId || !canRefineContent(form)) return;
     if (
       !window.confirm(
-        "Dopracować treść artykułu? Zajawka, treść, kontekst WSS i tagi zostaną nadpisane."
+        "Dopracować tekst artykułu? Zajawka i treść zostaną uzupełnione ponownie."
       )
     ) {
       return;
@@ -248,12 +243,12 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setStatus(saved.status);
       setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
       setLastSavedAt(new Date());
-      setEnhanceSuccess("Treść artykułu została odświeżona.");
+      setEnhanceSuccess("Tekst artykułu został odświeżony.");
     } catch (e) {
       setError(
         e instanceof ApiError
           ? e.message
-          : "Nie udało się poprawić treści."
+          : "Nie udało się dopracować tekstu."
       );
     } finally {
       setReprocessing(false);
@@ -303,7 +298,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <div className="mt-1 flex flex-wrap items-center gap-2.5">
               <StatusBadge status={status} />
               <span className="rounded-badge border border-hairline bg-white/5 px-2 py-0.5 text-caption text-text-muted">
-                {kindLabel}
+                {typeLabel}
               </span>
               <span className="text-caption text-text-muted">
                 {saving
@@ -366,28 +361,25 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </div>
       ) : null}
 
-      {showExternalEnhancePanel && loadedArticle ? (
+      {showRefinePanel ? (
         <Card className="mb-5 border-accent-cyan/20 bg-accent-cyan/[0.04]">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-meta font-medium text-text-secondary">
-              {EXTERNAL_SOURCE_LABEL}
-              {sourceLabel ? (
-                <span className="text-text-muted"> · {sourceLabel}</span>
-              ) : null}
+            <p className="text-meta text-text-secondary">
+              Uzupełnij zajawkę i treść na podstawie linku źródła.
             </p>
             <Button
               type="button"
               disabled={reprocessing || saving}
-              onClick={handleReprocessAi}
-              title="Ponownie uzupełnij zajawkę, treść i kontekst artykułu"
+              onClick={handleRefineText}
+              title="Ponownie uzupełnij zajawkę i treść artykułu"
             >
               {reprocessing ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                  Poprawianie…
+                  Dopracowywanie…
                 </>
               ) : (
-                "Popraw treść"
+                "Dopracuj tekst"
               )}
             </Button>
           </div>
@@ -533,7 +525,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
           <Card className="flex flex-col gap-4">
             <p className="text-meta font-semibold text-text-primary">
-              Źródło artykułu
+              Źródło (opcjonalne)
             </p>
             <Field label="Wydawca" htmlFor="sourceName">
               <TextInput

@@ -16,7 +16,11 @@ import {
   getAdminArticleTags,
   getRssSourceHostname,
 } from "@/lib/admin/rss-display";
-import { articleKindLabel, hasExternalSource } from "@/lib/ui/article-kind";
+import {
+  cmsArticleTypeLabel,
+  hasCitationFields,
+  hasSourceAttribution,
+} from "@/lib/ui/article-kind";
 import StatusBadge from "@/components/admin/StatusBadge";
 
 function formatDate(iso: string): string {
@@ -60,6 +64,9 @@ export default function ArticlesTable({
         <thead>
           <tr className="border-b border-hairline text-text-tertiary">
             <th className="px-5 py-3 text-overline font-semibold">Tytuł / streszczenie</th>
+            <th className="hidden px-5 py-3 text-overline font-semibold md:table-cell">
+              Typ
+            </th>
             <th className="hidden px-5 py-3 text-overline font-semibold lg:table-cell">
               Kategoria / tagi
             </th>
@@ -76,9 +83,9 @@ export default function ArticlesTable({
         <tbody>
           {articles.map((a) => {
             const canModerate = canModerateStatus(a.status);
-            const external = hasExternalSource(a.source, a.originalUrl);
-            const kind = articleKindLabel(a.source, a.originalUrl);
+            const typeLabel = cmsArticleTypeLabel(a.source, a.originalUrl);
             const sourceLabel = a.source?.trim();
+            const showAttribution = hasSourceAttribution(a.originalUrl);
             const summary = getAdminDisplaySummary(a);
             const tags = getAdminArticleTags(a);
             const readingLabel = formatReadingTimeLabel(a.readingTime);
@@ -104,16 +111,28 @@ export default function ArticlesTable({
                       Brak streszczenia — uzupełnij w edytorze
                     </p>
                   ) : null}
-                  <p className="mt-1.5 text-caption font-medium text-text-muted">
-                    {kind}
-                  </p>
-                  {external && a.originalUrl ? (
+                  {showAttribution && a.originalUrl ? (
                     <a
                       href={a.originalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-2 inline-flex max-w-full items-center gap-1 truncate text-caption text-accent-cyan hover:underline md:hidden"
                       onClick={(e) => e.stopPropagation()}
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+                      {sourceLabel ?? getRssSourceHostname(a.originalUrl)}
+                    </a>
+                  ) : null}
+                </td>
+                <td className="hidden px-5 py-3.5 md:table-cell">
+                  <p className="text-meta font-medium text-text-secondary">{typeLabel}</p>
+                  {hasCitationFields(a.source, a.originalUrl) && a.originalUrl ? (
+                    <a
+                      href={a.originalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-caption text-accent-cyan hover:underline"
+                      title={a.originalUrl}
                     >
                       <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
                       {sourceLabel ?? getRssSourceHostname(a.originalUrl)}

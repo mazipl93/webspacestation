@@ -11,7 +11,7 @@ import {
   isBreakingScore,
   isTopPriorityScore,
 } from "@/lib/news/score-thresholds";
-import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
+import { isRssArticle } from "@/lib/ui/article-kind";
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
 import { getRssImageCreditForArticle } from "@/lib/rss/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
@@ -47,11 +47,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
   // `when` may arrive as a Date (direct Prisma) or an ISO string (after the
   // unstable_cache Data Cache round-trips the value), so coerce defensively.
   const when = new Date(a.publishedAt ?? a.createdAt);
-  const external = isExternalAggregatorArticle({
-    source: a.source,
-    originalUrl: a.originalUrl,
-    subtitle: a.subtitle,
-  });
+  const isRss = isRssArticle(a.contentOrigin);
 
   const paragraphs = a.content
     ? a.content
@@ -62,7 +58,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
 
   const cover =
     a.coverImage?.trim() ||
-    (external
+    (isRss
       ? pickCategoryCoverFallback(a.category.slug, a.slug)
       : SEARCH_FALLBACK_IMAGE);
 
@@ -76,17 +72,20 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     timeLabel: relativeLabel(when),
     imageUrl: cover,
     isBreaking:
-      !external && (isBreakingScore(a.score ?? 0) || Boolean(a.featured)),
-    isTopPriority: !external && isTopPriorityScore(a.score ?? 0),
+      !isRss && (isBreakingScore(a.score ?? 0) || Boolean(a.featured)),
+    isTopPriority: !isRss && isTopPriorityScore(a.score ?? 0),
     score: a.score,
+    featured: a.featured,
+    createdAt: new Date(a.createdAt).toISOString(),
     content: paragraphs.length > 0 ? paragraphs : undefined,
     readTime: a.readingTime ?? undefined,
     contextNote: a.contextNote?.trim()
       ? polishTypography(a.contextNote)
       : undefined,
+    contentOrigin: a.contentOrigin,
     source: a.source ?? undefined,
     originalUrl: a.originalUrl ?? undefined,
-    imageCredit: external
+    imageCredit: isRss
       ? getRssImageCreditForArticle({
           source: a.source,
           originalUrl: a.originalUrl,

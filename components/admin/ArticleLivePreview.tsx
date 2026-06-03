@@ -5,7 +5,7 @@ import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
-import { hasExternalSource } from "@/lib/ui/article-kind";
+import { hasSourceAttribution } from "@/lib/ui/article-kind";
 
 export default function ArticleLivePreview({
   article,
@@ -14,7 +14,6 @@ export default function ArticleLivePreview({
   article: NewsArticle;
   status: string;
 }) {
-  const external = hasExternalSource(article.source, article.originalUrl);
   const bodyParagraphs = getArticleBodyParagraphs(article);
 
   return (
@@ -67,7 +66,9 @@ export default function ArticleLivePreview({
             </div>
           ) : null}
 
-          {external ? <SourceAttribution article={article} /> : null}
+          {hasSourceAttribution(article.originalUrl) ? (
+            <SourceAttribution article={article} />
+          ) : null}
         </article>
 
         <p className="mt-8 text-center text-meta text-text-muted">

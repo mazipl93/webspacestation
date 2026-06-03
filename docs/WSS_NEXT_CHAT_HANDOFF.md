@@ -1,10 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (PR6.1 UX lock — terminologia + deploy sesji 3.06)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR-H5 + PR7 + PR8)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** `0bbfdb5` — feat(WSS): unify CMS, contentOrigin, workflow and editorial UX (PR3-PR6.1)  
-**Stan:** sesja 3.06 zacommitowana i wdrożona (contentOrigin, workflow, PR3–PR6.1)
+**Ostatni commit na remote:** _(po push tej sesji — patrz `git log -1`)_
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
@@ -33,60 +32,94 @@ Przeczytaj:
 - docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — ZAWSZE najpierw)
 - docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Stan po sesji 3.06.2026 (wdrożone)
+## Stan po sesji 3.06.2026 (czat 2 — PR-H5 / PR7 / PR8)
 
-PROD: po push + `npm run db:deploy` + redeploy Vercel.
+PROD: `0bbfdb5`+ na main po push (wcześniej `10fb880` docs). Migracje contentOrigin+SCHEDULED już na DB.
 
-### Backend / DB (gotowe lokalnie)
+### Backend / DB (bez zmian w tym czacie)
 
-- **`contentOrigin`:** EDITORIAL | RSS | AI_DRAFT — migracja `20260603120000_article_content_origin`
-  - HARD RULE: immutable po create; ingest/process → RSS; CMS create → EDITORIAL
-  - `updateArticle` stripuje `contentOrigin` z payloadu
+- **`contentOrigin`:** EDITORIAL | RSS | AI_DRAFT — immutable po create
 - **Workflow:** DRAFT → REVIEW → PUBLISHED → SCHEDULED (+ ARCHIVED)
-  - Migracja `20260603140000_article_status_scheduled`
-  - `lib/articles/workflow.ts` + `publishArticle()` + walidacja publish (title+content+category)
-- **RSS pipeline (PR3):** ingest → DRAFT + `contentOrigin: RSS`; process-drafts → REVIEW + utrzymuje RSS
-- **AI read-only (PR intel):** `lib/ai/article-score.ts` → `aiScore` w GET API (nie w DB, nie ranking)
+- **RSS pipeline:** ingest DRAFT → process REVIEW; CMS publish ręcznie
+- **AI read-only:** `aiScore` w GET API (nie ranking homepage)
 
-### CMS / UI (gotowe lokalnie)
+### CMS / UI (PR-H5, PR7 — UX only)
 
-- Jeden `ArticleEditor` — pełna edycja wszystkich pól
-- **UI język (PR6 + PR6.1 UX lock):** tylko „Artykuł redakcyjny” / „Źródło zewnętrzne”
-  - Decyzje wizualne UI: `source` + `originalUrl` (AND) — `lib/ui/article-kind.ts`
-  - **NIE** używać `contentOrigin` w UI (backend nadal tak klasyfikuje)
-  - **PR6.1:** brak kolumn Typ/Jakość/Score w CMS; brak badge „Artykuł redakcyjny” na froncie; edytor „Popraw treść”
-- Edytor: „Popraw treść” gdy oba pola źródła; sekcja „Źródło artykułu”
-- Lista CMS: filtry Szkic / Do sprawdzenia / Opublikowane / Zaplanowane; etykieta rodzaju pod tytułem (tylko 2 koncepcje)
-- Public: tylko „Źródło: [nazwa]” gdy URL; bez systemowych oznaczeń
-- /rss → „Subskrypcje” (bez XML preview)
+- Typ w CMS: **Artykuł** | **Źródło zewnętrzne** (`source` + `url`) — zero RSS/AI/contentOrigin w copy
+- Edytor: „Dopracuj tekst”, „Źródło (opcjonalne)”
+- Public layout RSS: `contentOrigin` w `NewsArticle` (nie w CMS copy)
+
+### Homepage (PR8 — frontend only)
+
+- `lib/home/rank-articles.ts` — `rankImportantNow`, `rankLatest`, `rankPopular`
+- Sekcje: **Ważne teraz** (hero+sidebar) · **Najnowsze** · **Popularne**
+- `NewsArticle`: `featured`, `createdAt` w mapowaniu (bez zmian DB)
 
 ### Testy npm
 
+npm run test:ui          # article-kind + rank-articles
 npm run test:content-origin
 npm run test:workflow
 npm run test:articles
 npm run test:ai
-npm run test:ui
-
-### Migracje prod (wymagane przed deploy kodu)
-
-npm run db:deploy   # DIRECT_URL — contextNote (jeśli brak) + contentOrigin + SCHEDULED
 
 ## Otwarte / następny czat (priorytet)
 
-1. **PR-H4:** korekta starych rekordów `contentOrigin` (backfill infer — wyłączyć/przerobić skrypt)
-2. Kolejka ~175 REVIEW — publikacja ręczna w CMS
-3. Scheduler dla `SCHEDULED` — nie zaimplementowany
-4. Opcjonalnie: front/ranking po `contentOrigin` zamiast source+url heurystyki
+1. **Deploy Vercel** — push main (auto) jeśli jeszcze nie na prod
+2. **PR-H4:** korekta starych `contentOrigin` (backfill infer)
+3. Kolejka ~175 REVIEW — publikacja ręczna w CMS
+4. Scheduler `SCHEDULED` — nie zaimplementowany
+5. Opcjonalnie: prawdziwe views w DB dla „Popularne” (dziś: likes Supabase + score)
 
 Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
 
-Zacznij od tego, co user chce (np. publikacja REVIEW, PR-H4).
+Zacznij od tego, co user chce (deploy, publikacja REVIEW, PR-H4).
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Zamknięcie czatu 2 (3.06.2026) — PR-H5 + PR7 + PR8
+
+**Zrobiono:** semantic fix CMS typ (`contentOrigin` public / source CMS), uproszczenie CMS (PR7), ranking homepage (PR8). Commit + push.
+
+### Sesja 3.06.2026 (cd.) — PR8 homepage ranking (presentation only)
+
+**Cel:** 3 sekcje newsroom — Ważne teraz, Najnowsze, Popularne — bez zmian API/DB.
+
+| Plik | Rola |
+|------|------|
+| `lib/home/rank-articles.ts` | `rankArticles`, `rankImportantNow`, `rankLatest`, `rankPopular` |
+| `ContentGrid.tsx` | dynamiczne sekcje, dedupe slugów, max 6–8 artykułów |
+| `PopularArticles` / `HomeSidebar` | ten sam ranking co główna kolumna |
+
+Test: `npm run test:ui` (w tym `rank-articles.test.ts`)
+
+### Sesja 3.06.2026 (cd.) — PR7 CMS final simplification (UI only)
+
+**Cel:** jeden prosty newsroom — bez RSS/AI/contentOrigin w CMS copy.
+
+| Plik | Zmiana |
+|------|--------|
+| `lib/ui/article-kind.ts` | `cmsArticleTypeLabel(source, url)` → Artykuł / Źródło zewnętrzne |
+| `ArticlesTable` | kolumna Typ; bez contentOrigin |
+| `ArticleEditor` | „Dopracuj tekst”, „Źródło (opcjonalne)”, panel bez terminologii systemowej |
+
+Test: `npm run test:ui`
+
+### Sesja 3.06.2026 (cd.) — PR-H5 UX semantic fix (UI only)
+
+**Cel:** rozdzielić `contentOrigin` (typ) od `source/url` (atrybucja); usunąć heurystyki source+url w UI.
+
+| Plik | Zmiana |
+|------|--------|
+| `lib/ui/article-kind.ts` | `isRssArticle(contentOrigin)`, `RSS` / `Artykuł redakcyjny`; `hasSourceAttribution(url)` |
+| CMS lista / edytor / preview | typ z `contentOrigin`; atrybucja niezależnie |
+| `types` + `lib/articles.ts` | `NewsArticle.contentOrigin` dla public layout |
+| `app/aktualnosci/[slug]` | layout RSS po `contentOrigin`, stopka po URL |
+
+Test: `npm run test:ui`
 
 ### Sesja 3.06.2026 (cd.) — PR6.1 UX terminology lock (UI only)
 

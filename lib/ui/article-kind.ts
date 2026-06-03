@@ -1,23 +1,36 @@
 /**
- * UI-only article kind labels — never use contentOrigin for display decisions.
- * UX lock (PR6.1): only these two concepts may appear in CMS/public copy.
+ * CMS article type (PR7) — from citation fields only; never RSS/contentOrigin in copy.
+ * Public layout helpers — contentOrigin (not shown in CMS UI).
  */
 
-export const EDITORIAL_ARTICLE_LABEL = "Artykuł redakcyjny";
-export const EXTERNAL_SOURCE_LABEL = "Źródło zewnętrzne";
+export const CMS_EDITORIAL_TYPE_LABEL = "Artykuł";
+export const CMS_EXTERNAL_SOURCE_TYPE_LABEL = "Źródło zewnętrzne";
 
-export function hasExternalSource(
+/** CMS Typ column / editor badge — both publisher name and link required. */
+export function hasCitationFields(
   sourceName?: string | null,
   sourceUrl?: string | null
 ): boolean {
   return Boolean(sourceName?.trim() && sourceUrl?.trim());
 }
 
-export function articleKindLabel(
+export function cmsArticleTypeLabel(
   sourceName?: string | null,
   sourceUrl?: string | null
-): typeof EDITORIAL_ARTICLE_LABEL | typeof EXTERNAL_SOURCE_LABEL {
-  return hasExternalSource(sourceName, sourceUrl)
-    ? EXTERNAL_SOURCE_LABEL
-    : EDITORIAL_ARTICLE_LABEL;
+): typeof CMS_EDITORIAL_TYPE_LABEL | typeof CMS_EXTERNAL_SOURCE_TYPE_LABEL {
+  return hasCitationFields(sourceName, sourceUrl)
+    ? CMS_EXTERNAL_SOURCE_TYPE_LABEL
+    : CMS_EDITORIAL_TYPE_LABEL;
+}
+
+/** Public footer / link — URL only, not article type. */
+export function hasSourceAttribution(sourceUrl?: string | null): boolean {
+  return Boolean(sourceUrl?.trim());
+}
+
+/** Public article layout — backend provenance, never shown as CMS label. */
+export function isRssArticle(
+  contentOrigin?: string | null
+): boolean {
+  return contentOrigin === "RSS";
 }
