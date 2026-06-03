@@ -101,6 +101,7 @@ export interface ArticleCreateInput {
   categoryId: string;
   status: ArticleStatus;
   featured: boolean;
+  weekTopic: boolean;
   readingTime: number | null;
   tags: string[];
   source: string | null;
@@ -155,6 +156,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       categoryId,
       status,
       featured: body.featured === true,
+      weekTopic: body.weekTopic === true,
       readingTime:
         typeof body.readingTime === "number" ? body.readingTime : null,
       tags: parseTagsField(body) ?? [],
@@ -207,6 +209,7 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   const coverImage = parseCoverImageForUpdate(body);
   if (coverImage !== undefined) out.coverImage = coverImage;
   if (body.featured !== undefined) out.featured = body.featured === true;
+  if (body.weekTopic !== undefined) out.weekTopic = body.weekTopic === true;
   if (body.readingTime !== undefined) {
     if (body.readingTime !== null && (typeof body.readingTime !== "number" || body.readingTime < 0)) {
       return { ok: false, message: "'readingTime' must be a positive number." };

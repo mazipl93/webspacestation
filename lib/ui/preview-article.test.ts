@@ -33,6 +33,7 @@ const BASE_FORM: ArticleFormValues = {
   coverImageCredit: "",
   categoryId: "cat-misje",
   featured: false,
+  weekTopic: false,
   readingTime: 4,
   tagsText: "SpaceX, Starship",
   sourceName: "SpaceNews",

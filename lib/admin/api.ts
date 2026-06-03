@@ -60,6 +60,7 @@ export interface ArticleWritePayload {
   categoryId?: string;
   status?: ArticleStatus;
   featured?: boolean;
+  weekTopic?: boolean;
   readingTime?: number | null;
   tags?: string[];
   source?: string | null;

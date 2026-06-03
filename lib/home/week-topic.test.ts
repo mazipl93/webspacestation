@@ -17,30 +17,22 @@ const BASE: NewsArticle = {
 const CONFIG: WeekTopicConfig = {
   label: "Test",
   subtitle: "",
-  tag: "starship",
   limit: 5,
   accent: "#a855f7",
 };
 
-test("pickWeekTopicArticles prefers tagged articles", () => {
+test("pickWeekTopicArticles returns only weekTopic flag", () => {
   const all = [
-    { ...BASE, id: "1", slug: "a", tags: ["starship"] },
-    { ...BASE, id: "2", slug: "b", tags: ["starship", "spacex"] },
-    { ...BASE, id: "3", slug: "c", tags: [] },
+    { ...BASE, id: "1", slug: "a", weekTopic: true },
+    { ...BASE, id: "2", slug: "b", weekTopic: true },
+    { ...BASE, id: "3", slug: "c", weekTopic: false },
   ];
-  const pick = pickWeekTopicArticles(all, new Set(), [], CONFIG);
-  assert.equal(pick.fromTag, true);
+  const pick = pickWeekTopicArticles(all, new Set(["hero"]), CONFIG);
   assert.equal(pick.articles.length, 2);
-  assert.ok(pick.articles.every((a) => a.tags?.includes("starship")));
+  assert.ok(pick.articles.every((a) => a.weekTopic));
 });
 
-test("pickWeekTopicArticles falls back when fewer than 2 tagged", () => {
-  const all = [{ ...BASE, slug: "a", tags: ["other"] }];
-  const fallback = [
-    { ...BASE, id: "2", slug: "fb1" },
-    { ...BASE, id: "3", slug: "fb2" },
-  ];
-  const pick = pickWeekTopicArticles(all, new Set(), fallback, CONFIG);
-  assert.equal(pick.fromTag, false);
-  assert.equal(pick.articles.length, 2);
+test("pickWeekTopicArticles empty when none flagged", () => {
+  const pick = pickWeekTopicArticles([{ ...BASE, weekTopic: false }], new Set(), CONFIG);
+  assert.equal(pick.articles.length, 0);
 });

@@ -23,8 +23,10 @@ export interface NewsArticle {
   isTopPriority?: boolean;
   /** News Engine importance (homepage ranking) */
   score?: number;
-  /** CMS highlight — boosts „Ważne teraz” ranking. */
+  /** CMS highlight — boosts ranking / szansa na hero. */
   featured?: boolean;
+  /** CMS „Temat tygodnia” — slider pod hero. */
+  weekTopic?: boolean;
   /** Original create time — editorial metadata; „Najnowsze” uses publishedAt first. */
   createdAt?: string;
   content?: string[];  // article body paragraphs

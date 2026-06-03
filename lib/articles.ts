@@ -82,6 +82,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     isTopPriority: !isRss && isTopPriorityScore(a.score ?? 0),
     score: a.score,
     featured: a.featured,
+    weekTopic: a.weekTopic,
     createdAt: new Date(a.createdAt).toISOString(),
     content: paragraphs.length > 0 ? paragraphs : undefined,
     readTime: a.readingTime ?? undefined,

@@ -57,6 +57,7 @@ export interface AdminArticle {
   coverImageCredit: string | null;
   status: ArticleStatus;
   featured: boolean;
+  weekTopic: boolean;
   readingTime: number | null;
   tags: string[];
   createdAt: string;
@@ -83,6 +84,7 @@ export interface ArticleFormValues {
   coverImageCredit: string;
   categoryId: string;
   featured: boolean;
+  weekTopic: boolean;
   readingTime: number | null;
   /** Comma-separated in the form; normalized to Article.tags on save. */
   tagsText: string;

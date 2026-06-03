@@ -83,6 +83,8 @@ model Article {
   coverImageCredit String?  @db.Text
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
+  /// Homepage „Temat tygodnia” — slider pod hero (ręczny przełącznik CMS).
+  weekTopic   Boolean       @default(false)
   /// News Engine ranking — higher appears first on homepage.
   score       Int           @default(0)
   readingTime Int?
@@ -112,6 +114,7 @@ model Article {
   @@index([categoryId])
   @@index([authorId])
   @@index([featured])
+  @@index([weekTopic])
   @@index([score])
   @@index([publishedAt])
   @@index([source])

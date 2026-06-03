@@ -65,6 +65,7 @@ const EMPTY_FORM: ArticleFormValues = {
   coverImageCredit: "",
   categoryId: "",
   featured: false,
+  weekTopic: false,
   readingTime: null,
   tagsText: "",
   sourceName: "",
@@ -99,6 +100,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     coverImageCredit: a.coverImageCredit ?? "",
     categoryId: a.category.id,
     featured: a.featured,
+    weekTopic: a.weekTopic ?? false,
     readingTime: a.readingTime,
     tagsText: tagsToText(a.tags),
     sourceName: a.source ?? "",
@@ -127,6 +129,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     excerpt: form.excerpt || null,
     contextNote: form.contextNote || null,
     featured: form.featured,
+    weekTopic: form.weekTopic,
     readingTime: form.readingTime,
     source: form.sourceName.trim() || null,
     originalUrl: form.sourceUrl.trim() || null,
@@ -1050,12 +1053,31 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               />
             </Field>
 
-            <div className="flex items-center justify-between border-t border-hairline-faint pt-4">
-              <span className="text-meta text-text-secondary">Wyróżniony</span>
-              <Toggle
-                checked={form.featured}
-                onChange={(v) => update("featured", v)}
-              />
+            <div className="flex flex-col gap-4 border-t border-hairline-faint pt-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-meta text-text-secondary">Wyróżniony</span>
+                  <p className="mt-0.5 text-[10px] leading-snug text-text-muted">
+                    Wyższy ranking — większa szansa na główny hero
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.featured}
+                  onChange={(v) => update("featured", v)}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-meta text-text-secondary">Temat tygodnia</span>
+                  <p className="mt-0.5 text-[10px] leading-snug text-text-muted">
+                    Slider pod hero na stronie głównej
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.weekTopic}
+                  onChange={(v) => update("weekTopic", v)}
+                />
+              </div>
             </div>
           </Card>
 

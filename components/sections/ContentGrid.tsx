@@ -699,7 +699,6 @@ export default async function ContentGrid() {
   const weekTopicPick = pickWeekTopicArticles(
     allPublished,
     usedSlugs,
-    importantRanked,
     weekTopicConfig
   );
   markSlugsUsed(weekTopicPick.articles, usedSlugs);
@@ -726,7 +725,7 @@ export default async function ContentGrid() {
     console.log(
       "WEEK TOPIC:",
       weekTopicPick.articles.length,
-      weekTopicPick.fromTag ? "tag" : "fallback"
+      "cms"
     );
   }
 
@@ -744,29 +743,32 @@ export default async function ContentGrid() {
         >
           <div className="min-w-0">
             <HeroArticle article={lead} topPriority={lead.isTopPriority} />
+            {weekTopicPick.articles.length > 0 ? (
+              <div className="mt-8">
+                <WeekTopicSection
+                  articles={weekTopicPick.articles}
+                  config={weekTopicConfig}
+                />
+              </div>
+            ) : null}
+            <div
+              className={
+                weekTopicPick.articles.length > 0
+                  ? "mt-8 space-y-0 border-t border-hairline pt-8 lg:hidden"
+                  : "mt-8 lg:hidden"
+              }
+            >
+              <LatestShowcase
+                articles={latest}
+                variant="slider"
+                mobileShell
+              />
+            </div>
           </div>
 
           <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
             <LatestShowcase articles={latestRail} variant="rail" />
           </aside>
-        </div>
-
-        {weekTopicPick.articles.length > 0 ? (
-          <div className="mt-8 sm:mt-10">
-            <WeekTopicSection
-              articles={weekTopicPick.articles}
-              config={weekTopicConfig}
-              fromTag={weekTopicPick.fromTag}
-            />
-          </div>
-        ) : null}
-
-        <div className="mt-8 border-t border-hairline pt-8 lg:hidden">
-          <LatestShowcase
-            articles={latest}
-            variant="slider"
-            mobileShell
-          />
         </div>
       </div>
 
