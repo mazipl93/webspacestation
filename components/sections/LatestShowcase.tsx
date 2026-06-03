@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
-import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
+import { categoryFallbackBg } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
 import ArticleMetaChips from "@/components/article/ArticleMetaChips";
@@ -20,7 +20,6 @@ export default function LatestShowcase({ articles }: { articles: NewsArticle[] }
         trackClassName="gap-4 sm:gap-5"
       >
         {articles.map((article, i) => {
-          const meta = getCategoryInfo(article.category);
           const isLead = i === 0;
 
           return (
@@ -57,18 +56,8 @@ export default function LatestShowcase({ articles }: { articles: NewsArticle[] }
                   }}
                 />
                 <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <div className="mb-2">
                     <ArticleMetaChips article={article} compact />
-                    <span
-                      className="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-                      style={{
-                        color: meta.color,
-                        background: `${meta.color}22`,
-                        border: `1px solid ${meta.color}44`,
-                      }}
-                    >
-                      {meta.label}
-                    </span>
                   </div>
                   <h3 className="line-clamp-3 text-balance text-[1.25rem] font-extrabold leading-snug text-text-primary transition-colors group-hover:text-accent-cyan sm:text-[1.35rem]">
                     {article.title}
