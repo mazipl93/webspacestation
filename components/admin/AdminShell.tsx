@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import type { UserRole } from "@/lib/auth/permissions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import ScheduledPublishPoller from "@/components/admin/ScheduledPublishPoller";
 import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
@@ -65,6 +66,7 @@ export default function AdminShell({
 
   return (
     <div className="flex min-h-dvh bg-space-bg">
+      <ScheduledPublishPoller />
       {mobileOpen ? (
         <button
           type="button"

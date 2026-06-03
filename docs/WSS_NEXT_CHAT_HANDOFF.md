@@ -3,9 +3,8 @@
 **Ostatnia aktualizacja:** 3 czerwca 2026 (sesja 16 — P0-SCHED cron co 1 min, panel Archiwum + trwałe usuwanie)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** `b2e6ea6` — hard-lock Article data flow  
-**Lokalnie (NIE commit):** ~25+ plików — sesje 13–15 (patrz sekcja 8 + lista plików poniżej)  
-**Na remote po push:** wymaga `git commit` + `git push` przed prod
+**Ostatni commit na remote:** `5fde7d4` — scheduler co 1 min, archiwum w Artykułach CMS  
+**Lokalnie:** zsynchronizowane z `main`
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)  
 **Backlog v3 (checkboxy):** `docs/WSS_ROADMAP_BACKLOG_V3.md`

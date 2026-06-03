@@ -1,6 +1,6 @@
 import "server-only";
 
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { ArticleContentOrigin, ArticleStatus, Prisma, Role } from "@prisma/client";
 import type {
@@ -110,7 +110,8 @@ export type CategoryRecord = Prisma.CategoryGetPayload<{
 // `revalidateTag` (see app/api/articles & app/api/categories).
 
 /** All published articles, newest first. Cached under the ARTICLES tag. */
-export function getPublishedArticles(): Promise<ArticleWithRelations[]> {
+export async function getPublishedArticles(): Promise<ArticleWithRelations[]> {
+  await maybeTickScheduledPublish();
   return unstable_cache(
     async (): Promise<ArticleWithRelations[]> => {
       try {
@@ -132,9 +133,10 @@ export function getPublishedArticles(): Promise<ArticleWithRelations[]> {
 }
 
 /** A single published article by slug, or null if not found / not published. */
-export function getPublishedArticleBySlug(
+export async function getPublishedArticleBySlug(
   slug: string
 ): Promise<ArticleWithRelations | null> {
+  await maybeTickScheduledPublish();
   return unstable_cache(
     async (): Promise<ArticleWithRelations | null> => {
       try {
@@ -153,9 +155,10 @@ export function getPublishedArticleBySlug(
 }
 
 /** Published articles within a category (by category slug), newest first. */
-export function getArticlesByCategory(
+export async function getArticlesByCategory(
   categorySlug: string
 ): Promise<ArticleWithRelations[]> {
+  await maybeTickScheduledPublish();
   return unstable_cache(
     async (): Promise<ArticleWithRelations[]> => {
       try {
@@ -178,9 +181,10 @@ export function getArticlesByCategory(
 }
 
 /** Top published articles by News Engine score (homepage newsroom). */
-export function getRankedPublishedArticles(
+export async function getRankedPublishedArticles(
   limit = 20
 ): Promise<ArticleWithRelations[]> {
+  await maybeTickScheduledPublish();
   return unstable_cache(
     async (): Promise<ArticleWithRelations[]> => {
       try {
@@ -237,9 +241,10 @@ export interface AdminArticleQuery {
 }
 
 /** Admin listing: any status, optional status + category filters, recently edited first. */
-export function getArticlesForAdmin(
+export async function getArticlesForAdmin(
   query: AdminArticleQuery = {}
 ): Promise<ArticleWithRelations[]> {
+  await maybeTickScheduledPublish();
   const where: Prisma.ArticleWhereInput = {};
   if (query.status && query.status !== "ALL") {
     where.status = query.status;
@@ -557,6 +562,31 @@ export async function runScheduledPublish(
   }
 
   return summarizeSchedulePublishRun(results);
+}
+
+/**
+ * Publish due SCHEDULED rows at most ~once per 55s (Data Cache).
+ * Vercel Hobby cron cannot run every minute — this runs on site/CMS traffic instead.
+ */
+const scheduledPublishTick = unstable_cache(
+  async (): Promise<SchedulePublishRunResult> => {
+    const result = await runScheduledPublish();
+    if (result.published > 0) {
+      revalidateTag(ARTICLES_TAG);
+    }
+    return result;
+  },
+  ["wss-scheduled-publish-tick"],
+  { revalidate: 55 }
+);
+
+export async function maybeTickScheduledPublish(): Promise<SchedulePublishRunResult | null> {
+  try {
+    return await scheduledPublishTick();
+  } catch (error) {
+    console.error("[maybeTickScheduledPublish]", error);
+    return null;
+  }
 }
 
 /** Recompute score/featured after manual publish (CMS moderation). */

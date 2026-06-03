@@ -386,6 +386,37 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     };
   }, [articleId]);
 
+  const reloadArticle = useCallback(async () => {
+    const id = articleIdRef.current;
+    if (!id) return;
+    try {
+      const article = await adminApi.getArticle(id);
+      setLoadedArticle(article);
+      setForm(toForm(article));
+      setStatus(article.status);
+      setPublishedSlug(article.status === "PUBLISHED" ? article.slug : null);
+      setPublishMode(article.status === "SCHEDULED" ? "schedule" : "now");
+    } catch {
+      // ignore — poller / user retry
+    }
+  }, []);
+
+  useEffect(() => {
+    const onPublished = () => void reloadArticle();
+    window.addEventListener("wss:scheduled-published", onPublished);
+    return () => window.removeEventListener("wss:scheduled-published", onPublished);
+  }, [reloadArticle]);
+
+  useEffect(() => {
+    if (!schedulePastDue || !articleIdRef.current) return;
+    void adminApi
+      .publishDueScheduled()
+      .then((result) => {
+        if (result.published > 0) void reloadArticle();
+      })
+      .catch(() => {});
+  }, [schedulePastDue, reloadArticle]);
+
   const persist = useCallback(
     async (
       opts: {
