@@ -18,13 +18,12 @@ import { isRssArticle } from "@/lib/ui/article-kind";
 
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
-import HeroArticle from "@/components/sections/HeroArticle";
+import HeroEditorialCluster from "@/components/sections/HeroEditorialCluster";
 import LatestShowcase from "@/components/sections/LatestShowcase";
-import ImportantNowSlider from "@/components/sections/ImportantNowSlider";
 import PopularArticles from "@/components/sections/PopularArticles";
 
 const IMPORTANT_POOL = 14;
-const IMPORTANT_SLIDER_LIMIT = 10;
+const HERO_SECONDARY_COUNT = 2;
 /** Slider mobile — duże karty w poziomie. */
 const LATEST_SLIDER_LIMIT = 10;
 /** Panel boczny desktop — pionowa lista. */
@@ -692,14 +691,16 @@ export default async function ContentGrid() {
   const usedSlugs = new Set<string>();
   markSlugsUsed([lead], usedSlugs);
 
-  const importantNow = withSectionFallback(
-    excludeBySlugs(importantRanked, usedSlugs).slice(0, IMPORTANT_SLIDER_LIMIT),
-    allPublished,
-    IMPORTANT_SLIDER_LIMIT
+  const heroSecondary = excludeBySlugs(importantRanked, usedSlugs).slice(
+    0,
+    HERO_SECONDARY_COUNT
   );
-  markSlugsUsed(importantNow, usedSlugs);
+  markSlugsUsed(heroSecondary, usedSlugs);
 
-  const latest = pickHomepageLatest(allPublished, LATEST_SLIDER_LIMIT);
+  const latest = pickHomepageLatest(
+    excludeBySlugs(allPublished, usedSlugs),
+    LATEST_SLIDER_LIMIT
+  );
   const latestRail = latest.slice(0, LATEST_RAIL_LIMIT);
   markSlugsUsed(latest, usedSlugs);
 
@@ -715,7 +716,7 @@ export default async function ContentGrid() {
 
   if (process.env.NODE_ENV === "development") {
     console.log("HOMEPAGE INPUT ARTICLES:", allPublished.length);
-    console.log("IMPORTANT NOW RESULT:", importantNow.length);
+    console.log("HERO SECONDARY:", heroSecondary.length);
   }
 
   const excludeForPopular = [...usedSlugs];
@@ -731,19 +732,13 @@ export default async function ContentGrid() {
           )}
         >
           <div className="min-w-0">
-            <HeroArticle article={lead} topPriority={lead.isTopPriority} />
-            {/* Desktop: Ważne teraz — poziomy slider ze strzałkami pod hero */}
-            <div className="mt-8 hidden lg:block">
-              <ImportantNowSlider
-                articles={importantNow}
-                variant="slider"
-                placement="belowHero"
-              />
-            </div>
-            {/* Mobile: oba działy jako slidery pod hero */}
-            <div className="mt-8 space-y-10 lg:hidden">
+            <HeroEditorialCluster
+              lead={lead}
+              secondary={heroSecondary}
+              topPriority={lead.isTopPriority}
+            />
+            <div className="mt-8 lg:hidden">
               <LatestShowcase articles={latest} variant="slider" />
-              <ImportantNowSlider articles={importantNow} variant="slider" />
             </div>
           </div>
 
