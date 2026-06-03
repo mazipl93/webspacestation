@@ -12,7 +12,7 @@ import {
   isTopPriorityScore,
 } from "@/lib/news/score-thresholds";
 import { isRssArticle } from "@/lib/ui/article-kind";
-import { getRssImageCreditForArticle } from "@/lib/rss/image-credit";
+import { resolveArticleImageCredit } from "@/lib/articles/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
 import {
   pickReadNext,
@@ -91,13 +91,13 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     contentOrigin: a.contentOrigin,
     source: a.source ?? undefined,
     originalUrl: a.originalUrl ?? undefined,
-    imageCredit: isRss
-      ? getRssImageCreditForArticle({
-          source: a.source,
-          originalUrl: a.originalUrl,
-          subtitle: a.subtitle,
-        }) ?? undefined
-      : undefined,
+    imageCredit: resolveArticleImageCredit({
+      coverImageCredit: a.coverImageCredit,
+      source: a.source,
+      originalUrl: a.originalUrl,
+      subtitle: a.subtitle,
+      contentOrigin: a.contentOrigin,
+    }),
     tags: a.tags?.length ? a.tags : undefined,
   };
 }

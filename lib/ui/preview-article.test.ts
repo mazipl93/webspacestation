@@ -30,6 +30,7 @@ const BASE_FORM: ArticleFormValues = {
   content: "Pierwszy akapit treści.\n\nDrugi akapit treści.",
   contextNote: "",
   coverImage: "https://example.com/cover.jpg",
+  coverImageCredit: "",
   categoryId: "cat-misje",
   featured: false,
   readingTime: 4,
@@ -96,6 +97,14 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
       categories: CATEGORIES,
     });
     assert.ok(article.imageCredit?.includes("SpaceNews"));
+  });
+
+  it("uses manual coverImageCredit when set", () => {
+    const article = formToPreviewArticle({
+      form: { ...BASE_FORM, coverImageCredit: "NASA / Joel Kowsky" },
+      categories: CATEGORIES,
+    });
+    assert.equal(article.imageCredit, "NASA / Joel Kowsky");
   });
 
   it("previewSubtitle returns trimmed subtitle", () => {

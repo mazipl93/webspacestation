@@ -54,6 +54,7 @@ export interface AdminArticle {
   content: string | null;
   contextNote: string | null;
   coverImage: string | null;
+  coverImageCredit: string | null;
   status: ArticleStatus;
   featured: boolean;
   readingTime: number | null;
@@ -79,6 +80,7 @@ export interface ArticleFormValues {
   content: string;
   contextNote: string;
   coverImage: string;
+  coverImageCredit: string;
   categoryId: string;
   featured: boolean;
   readingTime: number | null;

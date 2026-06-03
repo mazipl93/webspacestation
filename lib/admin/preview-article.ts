@@ -1,7 +1,6 @@
 import type { ArticleFormValues, AdminCategory } from "@/lib/admin/types";
-import { buildRssImageCredit } from "@/lib/rss/image-credit";
+import { resolveImageCreditFromForm } from "@/lib/articles/image-credit";
 import { previewCategorySlug } from "@/lib/ui/article-preview-meta";
-import { hasCitationFields } from "@/lib/ui/article-kind";
 import type { NewsArticle } from "@/types";
 
 export type PreviewArticleInput = {
@@ -47,7 +46,6 @@ export function resolvePreviewImageFromForm(
 export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
   const { form, categories, contentOrigin, articleId } = input;
   const category = previewCategorySlug(form.categoryId, categories);
-  const hasSource = hasCitationFields(form.sourceName, form.sourceUrl);
   const source = form.sourceName.trim() || undefined;
   const originalUrl = form.sourceUrl.trim() || undefined;
   const paragraphs = splitContentParagraphs(form.content);
@@ -56,10 +54,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
   // CMS preview = only the cover URL field (no RSS/category/stock fallbacks).
   const image = resolvePreviewImageFromForm(form) ?? "";
 
-  const imageCredit =
-    hasSource && source
-      ? buildRssImageCredit(source, originalUrl)
-      : undefined;
+  const imageCredit = resolveImageCreditFromForm(form);
 
   return {
     id: articleId ?? "preview-draft",

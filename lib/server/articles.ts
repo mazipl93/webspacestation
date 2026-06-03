@@ -58,6 +58,7 @@ const articleSelect = {
   content: true,
   contextNote: true,
   coverImage: true,
+  coverImageCredit: true,
   status: true,
   featured: true,
   score: true,
@@ -322,6 +323,7 @@ function buildPrismaContentUpdateInput(
   if (input.content !== undefined) data.content = input.content;
   if (input.contextNote !== undefined) data.contextNote = input.contextNote;
   if (input.coverImage !== undefined) data.coverImage = input.coverImage;
+  if (input.coverImageCredit !== undefined) data.coverImageCredit = input.coverImageCredit;
   if (input.categoryId !== undefined) data.categoryId = input.categoryId;
   if (input.featured !== undefined) data.featured = input.featured;
   if (input.readingTime !== undefined) data.readingTime = input.readingTime;
@@ -454,6 +456,7 @@ export async function createArticle(
       content: input.content,
       contextNote: input.contextNote,
       coverImage: input.coverImage,
+      coverImageCredit: input.coverImageCredit,
       status: ArticleStatus.DRAFT,
       featured: input.featured,
       readingTime: input.readingTime,

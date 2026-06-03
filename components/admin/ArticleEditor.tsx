@@ -28,10 +28,7 @@ import {
   hasPublishableBody,
   validatePublishReady,
 } from "@/lib/articles/workflow";
-import {
-  buildRssImageCredit,
-  getRssImageCreditForArticle,
-} from "@/lib/rss/image-credit";
+import { resolveImageCreditFromForm } from "@/lib/articles/image-credit";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
@@ -64,6 +61,7 @@ const EMPTY_FORM: ArticleFormValues = {
   content: "",
   contextNote: "",
   coverImage: "",
+  coverImageCredit: "",
   categoryId: "",
   featured: false,
   readingTime: null,
@@ -97,6 +95,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     content: a.content ?? "",
     contextNote: a.contextNote ?? "",
     coverImage: a.coverImage ?? "",
+    coverImageCredit: a.coverImageCredit ?? "",
     categoryId: a.category.id,
     featured: a.featured,
     readingTime: a.readingTime,
@@ -113,6 +112,7 @@ function toAutosavePayload(form: ArticleFormValues): ArticleWritePayload {
     title: form.title,
     content: form.content || null,
     coverImage: form.coverImage.trim() || null,
+    coverImageCredit: form.coverImageCredit.trim() || null,
     categoryId: form.categoryId,
     tags: parseTagsText(form.tagsText),
   };
@@ -667,6 +667,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   }
 
   const sourceLabel = form.sourceName.trim() || null;
+  const previewCredit = resolveImageCreditFromForm(form);
 
   return (
     <div>
@@ -1099,15 +1100,24 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 onChange={(e) => update("coverImage", e.target.value)}
               />
             </Field>
+            <Field
+              label="Podpis zdjęcia"
+              htmlFor="coverImageCredit"
+              hint="Autor zdjęcia, licencja, źródło ilustracji. Puste = przy RSS auto-podpis z pola Źródło."
+            >
+              <TextArea
+                id="coverImageCredit"
+                rows={3}
+                value={form.coverImageCredit}
+                placeholder="np. NASA / Joel Kowsky · CC BY-NC 2.0"
+                onChange={(e) => update("coverImageCredit", e.target.value)}
+              />
+            </Field>
             {form.coverImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.coverImage}
-                alt={
-                  loadedArticle && getRssImageCreditForArticle(loadedArticle)
-                    ? getRssImageCreditForArticle(loadedArticle)!
-                    : "Podgląd okładki"
-                }
+                alt={previewCredit || "Podgląd okładki"}
                 className="aspect-video w-full rounded-[0.6rem] border border-hairline object-cover"
               />
             ) : (
@@ -1115,17 +1125,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 Brak okładki
               </div>
             )}
-            {loadedArticle &&
-            (form.sourceUrl.trim() || form.sourceName.trim()) ? (
+            {previewCredit ? (
               <CoverImageCredit
                 variant="compact"
-                credit={
-                  getRssImageCreditForArticle({
-                    ...loadedArticle,
-                    source: form.sourceName.trim() || loadedArticle.source,
-                    originalUrl: form.sourceUrl.trim() || loadedArticle.originalUrl,
-                  }) ?? buildRssImageCredit(form.sourceName.trim() || "źródło")
-                }
+                credit={previewCredit}
                 source={sourceLabel ?? undefined}
                 originalUrl={form.sourceUrl.trim() || undefined}
               />

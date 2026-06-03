@@ -97,6 +97,7 @@ export interface ArticleCreateInput {
   content: string | null;
   contextNote: string | null;
   coverImage: string | null;
+  coverImageCredit: string | null;
   categoryId: string;
   status: ArticleStatus;
   featured: boolean;
@@ -150,6 +151,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       content: typeof body.content === "string" ? body.content : null,
       contextNote: asTrimmedString(body.contextNote) ?? null,
       coverImage: parseCoverImageForCreate(body),
+      coverImageCredit: asTrimmedString(body.coverImageCredit) ?? null,
       categoryId,
       status,
       featured: body.featured === true,
@@ -198,6 +200,9 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   }
   if (body.contextNote !== undefined) {
     out.contextNote = asTrimmedString(body.contextNote) ?? null;
+  }
+  if (body.coverImageCredit !== undefined) {
+    out.coverImageCredit = asTrimmedString(body.coverImageCredit) ?? null;
   }
   const coverImage = parseCoverImageForUpdate(body);
   if (coverImage !== undefined) out.coverImage = coverImage;

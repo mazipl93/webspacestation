@@ -79,6 +79,8 @@ model Article {
   /// WSS editorial context for RSS articles (general trend framing, not source facts).
   contextNote String?       @db.Text
   coverImage  String?
+  /// Caption for cover image (photographer, license, source).
+  coverImageCredit String?  @db.Text
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
   /// News Engine ranking — higher appears first on homepage.
