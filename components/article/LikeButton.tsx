@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useArticleLikes } from "@/hooks/useArticleLikes";
@@ -8,26 +9,39 @@ type Props = {
   slug: string;
 };
 
-// Global like button — anyone (including logged-out visitors) can like, and the
-// count is a single shared stat from Supabase. The filled state + disabled click
-// come from the per-device localStorage guard, not from auth.
 export default function LikeButton({ slug }: Props) {
-  const { count, liked, loading, like } = useArticleLikes(slug);
+  const { count, liked, loading, toggling, isAuthed, toggle } = useArticleLikes(slug);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const label = liked ? "Już polubiono" : "Polub ten artykuł";
+  const label = !isAuthed
+    ? "Zaloguj się, aby polubić artykuł"
+    : liked
+      ? "Usuń polubienie"
+      : "Polub ten artykuł";
 
   return (
     <button
       type="button"
-      onClick={like}
-      disabled={liked}
+      onClick={() => {
+        if (!isAuthed) {
+          const dest =
+            pathname && pathname !== "/"
+              ? `/logowanie?redirectTo=${encodeURIComponent(pathname)}`
+              : "/logowanie";
+          router.push(dest);
+          return;
+        }
+        toggle();
+      }}
+      disabled={toggling}
       aria-pressed={liked}
       aria-label={label}
-      title={label}
+      title={!isAuthed ? "Zaloguj się, aby polubić" : label}
       className={cn(
-        "group inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97]",
+        "group inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97] disabled:opacity-70",
         liked
-          ? "cursor-default border-accent-live/40 bg-accent-live/10 text-accent-live"
+          ? "border-accent-live/40 bg-accent-live/10 text-accent-live"
           : "border-hairline bg-glass text-text-secondary hover:border-hairline-strong hover:bg-glass-hover hover:text-text-primary"
       )}
       style={liked ? { boxShadow: "0 0 14px -2px rgba(255,59,71,0.4)" } : undefined}

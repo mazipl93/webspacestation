@@ -1,9 +1,12 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (koniec sesji 17 — 9 kart Najnowsze, hero meta, handoff pod kolejny czat)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (koniec czat 20 — WIP lokalnie, bez commita)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** `08760c7` — 9 kart Najnowsze, hero meta, handoff workflow
+**Ostatni commit remote:** `794d53d`
+
+**Lokalnie (~20+ plików, NIE na GitHubie):** UX-BG v2, logo `WssLogoMark`, layout hero+rail, lajki Krok 1+2, fix hero z-index artykułu, ShareBar, cache:revalidate, kolory
+
+**Supabase:** user uruchomił `supabase/user_article_likes.sql` (lajki per-user)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)  
 **Backlog v3 (checkboxy):** `docs/WSS_ROADMAP_BACKLOG_V3.md`
@@ -43,39 +46,95 @@ Pracujemy PUNKT PO PUNKCIE z tabeli „Priorytety teraz” w roadmap v3.
 - Dopiero po „możemy dalej” / „kolejny punkt” — następny punkt z listy.
 - NIE łącz kilku priorytetów w jednej sesji bez zgody.
 
-## Kolejność priorytetów (następny czat — od #1)
+## Kolejność priorytetów (następny czat)
 
-1. P0-SCHED-QA — smoke zaplanowana publikacja na prod (CMS otwarty / termin +2 min)
-2. P1-6 — upload okładek (pro): drag&drop, WEBP, Supabase/S3
-3. P1-7 — domknięcie QA live preview / okładka CMS
-4. P6-24 — SEO: canonical, OG, schema NewsArticle, sitemap
-5. P0-5 — smoke mobile CMS (edytor)
-6. P6-25 — RODO / cookies
-7. P2-13 — Popularne / engagement (views, likes)
-8. INFRA — article_likes 404 (Supabase)
-9. OPS — publikacja ~175 REVIEW + cache:revalidate
+0. **COMMIT WIP** — user QA OK lokalnie (tło, logo, layout, lajki, okładki artykułu) → jeden commit (+ ewent. push)
+1. **P1-6** — upload okładek CMS: drag&drop, sharp→WebP, Supabase Storage (~25MB in, skompresowane out)
+2. **OPS** — ~175 REVIEW + cache:revalidate
+3. P1-7 → P6-24 → P0-5 → P6-25 (jak w roadmap v3)
 
-(P1-9 hero meta i 9 kart Najnowsze — zrobione w sesji 17, patrz git log.)
+## Zamknięte w czacie 20 (lokalnie, czeka commit)
 
-## Zamknięte (nie powtarzać)
+- UX-BG v2 — ciemny newsroom (`SiteBackground`, nie Windows)
+- Logo — `WssLogoMark` + `app/icon.svg` (wektor „okno stacji”, nie zdjęcie)
+- Lajki Krok 1+2 — `user_article_likes`, toggle, login gate, profil z DB (`lib/likes/*`, `useArticleLikes`, `LikeButton`)
+- Fix: okładka artykułu — hero `-z-index` → `isolate` + `CoverImage` (`app/aktualnosci/[slug]/page.tsx`) — **user OK lokalnie**
+- ShareBar — usunięty zduplikowany „Udostępnij”
 
-- Najnowsze homepage: 9 kart (3×3), chronologia = Aktualności, #1 każdy nowy artykuł
-- Hero: HeroMetaChip (data + czas czytania na zdjęciu)
-- Scheduler + archiwum CMS (sesje 16–17)
+## Lokalnie WIP (szczegóły)
+
+- Layout: desktop Hero + rail (Najnowsze/Ważne teraz); mobile slidery
+- Kolory: nagłówki działów, navbar, `card-surface`, PopularArticles
+- cache:revalidate → domyślnie webspacestation.pl
 
 ## Komendy
 
-npm run publish:scheduled:watch
-npm run cache:revalidate
-npm run test:ui && npm run test:articles && npm run type-check
+npm run dev · npm run cache:revalidate · npm run type-check
+Przed push: git status (~20 plików WIP)
 
-Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md i docs/WSS_ROADMAP_BACKLOG_V3.md.
-Zacznij od punktu 1 (P0-SCHED-QA) — jeden punkt, potem czekaj na test usera.
+Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
+Reguła: jeden punkt backlogu → test usera → „kolejny punkt”.
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (czat 20, koniec) — lajki Krok 1+2, logo, tło, ShareBar
+
+| Obszar | Stan |
+|--------|------|
+| **Lajki Krok 1** | `supabase/user_article_likes.sql` — tabela, widok `article_like_counts`, RPC `toggle_article_like`, `my_liked_article_slugs`; `lib/likes/article-like-counts.ts` |
+| **Lajki Krok 2** | `useArticleLikes` + `LikeButton`: toggle, login gate; profil z DB; wycofany localStorage/`increment_like` w UI |
+| **ShareBar** | Usunięty zduplikowany label „Udostępnij” |
+| **Logo** | `WssLogoMark` — wektor „okno stacji”; `app/icon.svg` |
+| **UX-BG** | Ciemny newsroom (nie Windows) — WIP lokalnie |
+| **Hero artykułu** | Fix z-index okładki — **user OK lokalnie** |
+| **Następny czat** | Commit WIP → **P1-6** upload okładek (WebP, sharp) |
+
+**Supabase:** `user_article_likes.sql` uruchomiony przez usera.
+
+### Sesja 3.06.2026 (czat 20, cd.) — UX-BG v2 + logo Ziemia
+
+| Obszar | Stan |
+|--------|------|
+| **UX-BG v2** | User: v1 za jasne / Windows → **ciemny newsroom**: głęboka baza `#050709`, subtelna mgławica (11% max), gwiazdy, grain, winieta. Bez aurory działów / łuku / horyzontu. |
+| **Logo** | `WssLogo` — okrągła Ziemia (`public/brand/earth.jpg`), WSS + Web Space Station (xl) + „Portal informacyjny o kosmosie”; favicon w `layout.tsx`. |
+| **Pliki** | `SiteBackground.tsx`, `globals.css`, `components/brand/WssLogo.tsx`, `Navbar.tsx`, `public/brand/earth.jpg` |
+| **Następny krok** | User QA tło + logo → OK → commit WIP |
+
+### Sesja 3.06.2026 (czat 20) — UX-BG jaśniejsze tło (v1 — odrzucone)
+
+| Obszar | Stan |
+|--------|------|
+| **UX-BG** | Nowe tło „świt orbitalny”: jaśniejsza baza (#0c1430), aurora w kolorach działów (misje/astronomia/technologie/ziemia/ISS), łuk orbitalny, blask horyzontu, jaśniejsze gwiazdy, delikatna siatka. **Lokalnie — czeka QA usera.** |
+| **Pliki** | `components/layout/SiteBackground.tsx`, `app/globals.css` (`.site-cosmos-*`), `app/layout.tsx` (themeColor) |
+| **Następny krok** | User testuje tło → OK → commit WIP; potem P1-6 |
+
+### Sesja 3.06.2026 (czat 19, koniec) — deploy, layout rail, tło WIP
+
+| Obszar | Stan |
+|--------|------|
+| **P0-DEPLOY** | Vercel Hobby **odmawiał buildu** — cron `publish-scheduled` `* * * * *` w `vercel.json`. Fix: usunięty cron (`794d53d`, user push). Wcześniej prod ~4h bez nowych commitów sesji 18. |
+| **db:deploy / cache** | Migracje OK na prod. `cache:revalidate` naprawiony lokalnie (fallback `webspacestation.pl`). |
+| **Homepage layout v2** | Desktop: Hero + panel boczny (Najnowsze pionowo 5 szt. + Ważne teraz inny styl). Mobile: slidery pod hero, strzałki też na telefonie. **Lokalnie, bez commita.** |
+| **Kolory / tło** | `SiteBackground` — ciemne mgławice, gwiazdy, siatka; mocniejsze nagłówki działów, navbar, karty. **User: za ciemne / mało ciekawe → kolejny czat: jaśniejsze tło.** |
+| **Scheduler** | User: nie priorytet, kod może zostać, nie musi działać ściśle. |
+| **Następny czat** | **UX-BG** (tło jaśniejsze, ciekawsze) → potem P1-6 |
+
+**Commit na remote:** `794d53d` · **WIP lokalnie:** ~17 plików (patrz git status)
+
+### Sesja 3.06.2026 (czat 18, koniec) — scheduler QA, homepage slidery, coverImageCredit
+
+| Obszar | Stan |
+|--------|------|
+| P0-SCHED-QA | Legacy RSS (excerpt bez content) może Zaplanuj/Opublikuj; panel Publikacja (REVIEW → Zaplanuj +2 min); ScheduledPublishPoller co 30 s; cache fix po auto-publish; `publishedAt = publishAt` — **user OK** |
+| Homepage layout | Jedna kolumna: Hero → Najnowsze (`LatestShowcase`) → Ważne teraz (`ImportantNowSlider`) → Popularne (bez duplikatów `HomeSidebar`); `HorizontalScrollSlider` ze strzałkami + scroll kółkiem, bez drag na kartach |
+| Ranking UI | HERO = `pickHeroLead`; Ważne teraz = `rankImportantNow`; Najnowsze = `rankLatest`; Popularne = `rankPopular` (likes×8 + score) |
+| CMS podpis zdjęcia | DB `coverImageCredit`; pole w ArticleEditor; priorytet: ręczny > auto RSS (`lib/articles/image-credit.ts`); **prod wymaga `npm run db:deploy`** |
+| Następny czat | P1-6 upload okładek |
+
+**Commity sesji 18 (chronologicznie):** `b7a0ca6` → `cff809b` → `504c779` → `3994a66` → `241ba6e` → `39c8a9e`
 
 ### Sesja 3.06.2026 (czat 17, koniec) — 9× Najnowsze, hero, handoff pod punktowy workflow
 
@@ -613,16 +672,14 @@ lib/rss/image-credit.ts
 
 | Temat | Status |
 |-------|--------|
-| **BLOCKER: publikacja zaplanowana o dokładnej godzinie** | **Otwarte — P0 następny czat** (cron/infra, nie tylko UI) |
-| **PR10 scheduler SCHEDULED (DB + workflow)** | **Częściowo** — zapis `publishAt` + transition OK; **auto-publish w minucie NIE** |
-| Commit + push sesji 13–15 | **Otwarte** — remote nadal `b2e6ea6`, ~25 plików lokalnie |
-| Audyt planów v3 | **Zamknięte** — `docs/WSS_ROADMAP_BACKLOG_V3.md` |
-| QA preview + Najnowsze (lokalnie) | User potwierdził preview OK; Najnowsze — do smoke po push |
-| Kolejka ~175 REVIEW | Publikuj w CMS (workflow OK) |
+| **Lajki per-user** | **Krok 1+2 lokalnie** — SQL: `supabase/user_article_likes.sql` |
+| **UX-BG / logo / layout** | WIP lokalnie — commit po QA |
+| **P1-6 upload okładek** | **Następny po commit WIP** |
 | `article_likes` 404 | SQL w Supabase |
-| Cron dokładna minuta | **Wymagane** — obecnie `0 * * * *` (co pełną godzinę) + limit Hobby |
-| `npm run publish:scheduled` | Działa ręcznie (dev/staging) |
-| Front/ranking po `contentOrigin` | Opcjonalnie |
+| P1-7 live preview QA | Formalny smoke okładki CMS |
+| P6-24 SEO | Canonical, OG, schema, sitemap |
+| P0-5 mobile CMS | Smoke edytora na telefonie |
+| Scheduler bez otwartego CMS | Vercel Hobby ≠ cron co minutę; poller CMS OK gdy panel otwarty; opcjonalnie zewnętrzny ping |
 | Pełny artykuł RSS na stronie | **Nie** — hybryda B+ (świadomie) |
 
 ### Pliki lokalne do commita (skrót)
@@ -703,13 +760,15 @@ package.json
 | Zapisz szkic → DRAFT (z REVIEW) | ✅ czat 13 |
 | Lista filtry + sort ostatnio edytowany | ✅ |
 | Scheduler SCHEDULED + publishAt (zapis w CMS) | ✅ |
-| Auto-publish w dokładnej minucie `publishAt` | ❌ **BLOCKER** — cron/infra |
+| Auto-publish (ScheduledPublishPoller + cache fix) | ✅ sesja 18 — user OK lokalnie/prod |
+| coverImageCredit (podpis zdjęcia okładki) | ✅ kod; migracja prod — sprawdzić db:deploy |
 | Collapsible admin sidebar (PR12) | ✅ |
 | contentOrigin badge / Popraw z AI tylko RSS | ✅ |
 
 ### Front publiczny
 | Obszar | Status |
 |--------|--------|
+| Homepage layout sesja 18 (slidery Najnowsze + Ważne teraz, bez sidebar duplikatów) | ✅ user OK mobile prod |
 | Homepage sekcje: Ważne teraz / Najnowsze / Popularne (PR8) | ✅ |
 | Fallback pustych sekcji (rank-articles) | ✅ |
 | Related articles + Czytaj dalej (PR9) | ✅ |
@@ -721,23 +780,28 @@ package.json
 PR1–PR2B contentOrigin · PR3 RSS alignment · PR5 UX · PR6/6.1/7 terminology · PR8 ranking · PR9 related · PR10 scheduler · PR11 preview · PR12 sidebar · PR-H4 backfill · PR-H5 semantic · hard-lock czat 12 · CMS polish czat 13
 
 ### Znane otwarte / backlog
-- **P0:** Zaplanowana publikacja o wybranej godzinie (np. 22:06) — musi działać bez ręcznego „Opublikuj”
-- Commit + push sesji 13–15 (~25 plików lokalnych)
+- **P1-6:** Upload okładek (pro) — następny priorytet
+- `db:deploy` na prod dla `coverImageCredit` (jeśli jeszcze nie było)
 - ~175 REVIEW do publikacji ręcznej
 - `article_likes` 404 — SQL w Supabase
 
 ---
 
-## 10. Commity (sesja B+ — chronologicznie)
+## 10. Commity (ostatnie sesje — chronologicznie)
 
+**Sesja 18:**
 ```
-e759397 fix(UI): usun meta-disclaimer z boxu Kontekst WSS
-24f78d3 fix(RSS): zapis body do Article.content (mapowanie B+)
-7c1cc3e feat(RSS): B+ hybryda lead/body/kontekst WSS (contextNote)
-17364cd fix(CMS): Popraw z AI nadpisywane przez autosave, duplikat podgladu
+39c8a9e feat(cms): edytowalny podpis zdjecia okladki (coverImageCredit)
+241ba6e fix(homepage): klik w artykul w sliderze — bez drag mysza na kartach
+3994a66 fix(homepage): usun duplikat chipu kategorii w Najnowsze
+504c779 fix(homepage): strzałki i drag dla sliderów na desktop
+cff809b refactor(homepage): slidery Najnowsze i Ważne teraz, bez duplikatów sidebar
+b7a0ca6 feat(homepage): Najnowsze w railu, Ważne teraz pod hero; fix scheduler QA
 ```
 
-(Wcześniej: `5428d61`…`bbd98b2` prod/CMS, `eaae2d7` News Engine)
+**Sesja 17:** `08760c7` … `6f2882a` · **Sesja 19 remote:** `794d53d`
+
+**Sesja 19 WIP (lokalnie, bez commit):** layout hero+rail, SiteBackground, kolory, cache:revalidate
 
 ---
 

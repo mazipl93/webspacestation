@@ -75,7 +75,7 @@ export default function HorizontalScrollSlider({
   };
 
   const arrowClass =
-    "absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-space-card/95 text-text-primary shadow-lg backdrop-blur-sm transition-all hover:border-accent-cyan/40 hover:text-accent-cyan disabled:pointer-events-none disabled:opacity-0 sm:flex";
+    "absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-space-card/95 text-text-primary shadow-lg backdrop-blur-sm transition-all hover:border-accent-cyan/40 hover:text-accent-cyan disabled:pointer-events-none disabled:opacity-0 sm:h-10 sm:w-10";
 
   return (
     <div className={cn("relative sm:px-11 lg:px-12", className)}>

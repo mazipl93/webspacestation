@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import SiteBackground from "@/components/layout/SiteBackground";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#05070d",
+  themeColor: "#050709",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -75,6 +76,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased">
+        <SiteBackground />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

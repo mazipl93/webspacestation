@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { rankImportantNow, rankLatest, rankPopular } from "@/lib/home/rank-articles";
+import { fetchArticleLikeCounts } from "@/lib/likes/article-like-counts";
+import { rankPopular } from "@/lib/home/rank-articles";
 import type { NewsArticle } from "@/types";
 import ArticleCard from "@/components/article/ArticleCard";
 
@@ -14,8 +15,8 @@ interface Props {
 }
 
 /**
- * Ranks articles by global Supabase like count. Falls back to featured-then-recent
- * order when Supabase is unconfigured or the fetch fails.
+ * Ranks articles by global like count (article_like_counts view, per-user model).
+ * Falls back to legacy article_likes table, then score/readTime when unavailable.
  */
 export default function PopularArticles({ articles, excludeSlugs = [] }: Props) {
   const [likeCounts, setLikeCounts] = useState<Map<string, number> | null>(null);
@@ -33,18 +34,8 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
     }
 
     (async () => {
-      const { data, error } = await supabase!
-        .from("article_likes")
-        .select("slug, count");
+      const map = await fetchArticleLikeCounts(supabase!);
       if (!active) return;
-      if (error || !data) {
-        setLikeCounts(new Map());
-        return;
-      }
-      const map = new Map<string, number>();
-      for (const row of data) {
-        map.set(row.slug as string, (row.count as number) ?? 0);
-      }
       setLikeCounts(map);
     })();
 
@@ -72,13 +63,22 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
 
   return (
     <section className="reveal">
-      <div className="mb-5 flex items-center justify-between">
+      <div
+        className="mb-5 flex items-center justify-between rounded-xl border border-hairline-faint px-4 py-3"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(56,189,248,0.1) 0%, rgba(47,109,255,0.05) 50%, transparent 100%)",
+          borderColor: "rgba(56,189,248,0.15)",
+        }}
+      >
         <div className="flex items-center gap-2.5">
           <span
-            className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-cyan"
-            style={{ boxShadow: "0 0 10px rgba(56,189,248,0.45)" }}
+            className="h-4 w-1 shrink-0 rounded-full bg-accent-cyan"
+            style={{ boxShadow: "0 0 12px rgba(56,189,248,0.65)" }}
           />
-          <h2 className="overline text-text-secondary">Popularne</h2>
+          <h2 className="text-[14px] font-extrabold uppercase tracking-[0.14em] text-text-primary">
+            Popularne
+          </h2>
         </div>
       </div>
 

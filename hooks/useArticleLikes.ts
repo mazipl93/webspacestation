@@ -2,32 +2,71 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
-import { addLikedLocal, hasLikedLocal } from "@/lib/likes";
+import {
+  ARTICLE_LIKE_COUNTS_VIEW,
+  LEGACY_ARTICLE_LIKES_TABLE,
+} from "@/lib/likes/article-like-counts";
+import { LIKES_CHANGE_EVENT } from "@/lib/likes/events";
+import { toggleArticleLike } from "@/lib/likes/supabase-likes";
 
 interface LikesState {
-  /** Global like count from the DB, or null while loading / when unconfigured. */
   count: number | null;
-  /** Whether THIS device has already liked (localStorage guard). */
   liked: boolean;
-  /** True until the first count fetch resolves. */
   loading: boolean;
-  /** Likes are allowed without login but accumulate globally via RPC. */
-  like: () => void;
+  toggling: boolean;
+  isAuthed: boolean;
+  toggle: () => void;
 }
 
-/**
- * Global article-likes counter backed by Supabase. Liking is allowed for
- * logged-out users; the count is a single shared stat (Supabase `article_likes`
- * table + `increment_like` RPC), never per-browser. localStorage only remembers
- * that this device already liked, to prevent spam and show the filled state.
- *
- * Degrades gracefully (no-op, count stays null) when Supabase isn't configured.
- */
+async function fetchLikeCount(
+  supabase: SupabaseClient,
+  slug: string
+): Promise<number> {
+  const modern = await supabase
+    .from(ARTICLE_LIKE_COUNTS_VIEW)
+    .select("count")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!modern.error) {
+    return (modern.data?.count as number | undefined) ?? 0;
+  }
+
+  const legacy = await supabase
+    .from(LEGACY_ARTICLE_LIKES_TABLE)
+    .select("count")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (legacy.error) return 0;
+  return (legacy.data?.count as number | undefined) ?? 0;
+}
+
+async function fetchUserLiked(
+  supabase: SupabaseClient,
+  slug: string
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("user_article_likes")
+    .select("slug")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) return false;
+  return !!data;
+}
+
+/** Per-user likes (auth required to toggle). Count is public aggregate. */
 export function useArticleLikes(slug: string): LikesState {
+  const { user, loading: authLoading } = useAuth();
+  const isAuthed = !!user;
+
   const [count, setCount] = useState<number | null>(null);
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState(false);
 
   const clientRef = useRef<SupabaseClient | null>(null);
   if (clientRef.current === null) {
@@ -39,59 +78,74 @@ export function useArticleLikes(slug: string): LikesState {
   }
 
   useEffect(() => {
-    setLiked(hasLikedLocal(slug));
-  }, [slug]);
-
-  // Fetch the current global count for this slug.
-  useEffect(() => {
     const supabase = clientRef.current;
     if (!supabase) {
       setLoading(false);
       return;
     }
+
     let active = true;
     setLoading(true);
+
     (async () => {
-      const { data, error } = await supabase
-        .from("article_likes")
-        .select("count")
-        .eq("slug", slug)
-        .maybeSingle();
+      const total = await fetchLikeCount(supabase, slug);
       if (!active) return;
-      if (error) {
-        setCount(null);
+      setCount(total);
+
+      if (user) {
+        const mine = await fetchUserLiked(supabase, slug);
+        if (active) setLiked(mine);
       } else {
-        setCount((data?.count as number | undefined) ?? 0);
+        setLiked(false);
       }
-      setLoading(false);
+
+      if (active) setLoading(false);
     })();
+
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, user]);
 
-  const like = useCallback(() => {
-    if (liked) return; // this device already liked
+  const toggle = useCallback(() => {
+    if (!isAuthed || toggling) return;
+
     const supabase = clientRef.current;
+    if (!supabase) return;
 
-    // Optimistic UI: bump locally and mark the device as having liked.
-    setLiked(true);
-    setCount((c) => (c ?? 0) + 1);
-    addLikedLocal(slug);
-
-    if (!supabase) return; // unconfigured — keep optimistic local state only
+    const wasLiked = liked;
+    setToggling(true);
+    setLiked(!wasLiked);
+    setCount((c) => {
+      const base = c ?? 0;
+      return wasLiked ? Math.max(0, base - 1) : base + 1;
+    });
 
     (async () => {
-      const { data, error } = await supabase.rpc("increment_like", { slug });
-      if (error) {
-        // Roll back the optimistic count (keep the local "liked" guard so the
-        // user isn't prompted to retry endlessly on a flaky network).
-        setCount((c) => (c === null ? c : Math.max(0, c - 1)));
+      const { data, error } = await toggleArticleLike(supabase, slug);
+      setToggling(false);
+
+      if (error || !data) {
+        setLiked(wasLiked);
+        setCount((c) => {
+          const base = c ?? 0;
+          return wasLiked ? base + 1 : Math.max(0, base - 1);
+        });
         return;
       }
-      if (typeof data === "number") setCount(data);
-    })();
-  }, [liked, slug]);
 
-  return { count, liked, loading, like };
+      setLiked(data.liked);
+      setCount(data.count);
+      window.dispatchEvent(new Event(LIKES_CHANGE_EVENT));
+    })();
+  }, [isAuthed, liked, slug, toggling]);
+
+  return {
+    count,
+    liked,
+    loading: loading || authLoading,
+    toggling,
+    isAuthed,
+    toggle,
+  };
 }

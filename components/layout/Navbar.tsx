@@ -10,6 +10,7 @@ import { matchesArticle } from "@/lib/search";
 import type { AdminArticle } from "@/lib/admin/types";
 import { useAuth } from "@/components/auth/AuthProvider";
 import AccountMenu from "@/components/auth/AccountMenu";
+import WssLogo from "@/components/brand/WssLogo";
 import LogoutButton from "@/components/auth/LogoutButton";
 import Avatar from "@/components/profile/Avatar";
 import NotificationsPopover from "@/components/notifications/NotificationsPopover";
@@ -226,33 +227,20 @@ export default function Navbar() {
       <div
         className="border-b transition-colors duration-500"
         style={{
-          background: scrolled ? "rgba(5,7,9,0.72)" : "rgba(5,7,9,0.4)",
-          borderColor: scrolled ? "var(--hairline)" : "transparent",
+          background: scrolled
+            ? "linear-gradient(180deg, rgba(8,12,22,0.88) 0%, rgba(5,7,13,0.78) 100%)"
+            : "linear-gradient(180deg, rgba(8,14,28,0.62) 0%, rgba(5,7,9,0.35) 100%)",
+          borderColor: scrolled ? "rgba(56,189,248,0.12)" : "transparent",
+          boxShadow: scrolled
+            ? "0 1px 0 0 rgba(56,189,248,0.08), 0 8px 32px -12px rgba(0,0,0,0.5)"
+            : undefined,
           backdropFilter: "blur(20px) saturate(180%)",
           WebkitBackdropFilter: "blur(20px) saturate(180%)",
         }}
       >
         <div className={cn(SITE_CONTAINER, "flex h-[4.25rem] items-center gap-3 sm:h-16 sm:gap-4 xl:gap-5")}>
           {/* ── Logo + brand ───────────────────────────────────── */}
-          <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent-blue to-[#1a4fd0] shadow-[0_4px_16px_-4px_rgba(47,109,255,0.7)] transition-transform duration-500 group-hover:scale-105 sm:h-9 sm:w-9">
-              <RocketIcon />
-              <span className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20" />
-            </div>
-            <div className="leading-none">
-              <span className="flex items-baseline gap-1.5">
-                <span className="text-[15px] font-extrabold uppercase tracking-[0.12em] text-text-primary sm:text-[14px]">
-                  WSS
-                </span>
-                <span className="hidden text-[11px] font-semibold uppercase tracking-[0.14em] text-text-tertiary xl:inline">
-                  Web Space Station
-                </span>
-              </span>
-              <span className="mt-1 block text-[10px] font-medium tracking-[0.04em] text-accent-cyan sm:text-[9.5px]">
-                Wiadomości kosmiczne na żywo
-              </span>
-            </div>
-          </Link>
+          <WssLogo asLink showFullName showTagline />
 
           {/* ── Desktop nav ────────────────────────────────────── */}
           <nav className="ml-1 hidden min-w-0 flex-1 items-center lg:flex">
@@ -616,16 +604,5 @@ export default function Navbar() {
         </div>
       )}
     </header>
-  );
-}
-
-function RocketIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2C12 2 7 6 7 13H17C17 6 12 2 12 2Z" fill="white" fillOpacity="0.96" />
-      <path d="M9 13V17C9 17 10.5 19 12 19C13.5 19 15 17 15 17V13H9Z" fill="white" fillOpacity="0.72" />
-      <path d="M9 17L7 20M15 17L17 20" stroke="white" strokeOpacity="0.5" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="12" cy="10" r="1.5" fill="#2f6dff" />
-    </svg>
   );
 }

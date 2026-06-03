@@ -118,17 +118,6 @@ export default function ShareBar({ title, slug }: Props) {
     <div className="card-surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-3">
         <LikeButton slug={slug} />
-        <span
-          aria-hidden="true"
-          className="hidden h-6 w-px sm:block"
-          style={{ background: "var(--hairline)" }}
-        />
-        <span className="flex items-center gap-2.5">
-          <Share2 size={15} className="text-accent-cyan" />
-          <span className="text-[13px] font-semibold text-text-primary">
-            Udostępnij
-          </span>
-        </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

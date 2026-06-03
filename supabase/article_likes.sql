@@ -1,11 +1,9 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- WSS — Article likes (global, anonymous-friendly)
--- Run this in the Supabase SQL editor (Dashboard → SQL → New query).
+-- WSS — Article likes (LEGACY — anonymous global counter)
 --
--- Goal: a single GLOBAL like counter per article slug that anonymous (logged-out)
--- visitors can increment. The source of truth is this table; the client only
--- uses localStorage to remember "this device already liked" (spam guard / UI),
--- never to store the count.
+-- ⚠️  SUPERSEDED by supabase/user_article_likes.sql (per-user likes + toggle).
+--     Keep until Krok 2 UX migrates LikeButton off increment_like.
+--     Popularne reads article_like_counts first (lib/likes/article-like-counts.ts).
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- 1. Counter table — one row per article slug.

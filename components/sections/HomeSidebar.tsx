@@ -9,6 +9,7 @@ import { cn } from "@/lib/cn";
 import { getCategoryInfo } from "@/lib/categories";
 import { rankImportantNow, rankLatest, rankPopular } from "@/lib/home/rank-articles";
 import { createClient } from "@/lib/supabase/client";
+import { fetchArticleLikeCounts } from "@/lib/likes/article-like-counts";
 import type { NewsArticle } from "@/types";
 
 function SidebarBlock({
@@ -121,18 +122,8 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
     }
 
     (async () => {
-      const { data, error } = await supabase!
-        .from("article_likes")
-        .select("slug, count");
+      const map = await fetchArticleLikeCounts(supabase!);
       if (!active) return;
-      if (error || !data) {
-        setLikeCounts(new Map());
-        return;
-      }
-      const map = new Map<string, number>();
-      for (const row of data) {
-        map.set(row.slug as string, (row.count as number) ?? 0);
-      }
       setLikeCounts(map);
     })();
 

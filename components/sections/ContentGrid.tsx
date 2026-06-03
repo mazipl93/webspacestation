@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
-import { SITE_CONTAINER } from "@/lib/site-layout";
+import { SITE_CONTAINER, HOMEPAGE_MAIN_SIDEBAR_GRID } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import {
@@ -25,8 +25,11 @@ import PopularArticles from "@/components/sections/PopularArticles";
 
 const IMPORTANT_POOL = 14;
 const IMPORTANT_SLIDER_LIMIT = 10;
-/** Homepage „Najnowsze” — slider z dużymi kartami. */
-const LATEST_LIMIT = 10;
+const IMPORTANT_RAIL_LIMIT = 5;
+/** Slider mobile — duże karty w poziomie. */
+const LATEST_SLIDER_LIMIT = 10;
+/** Panel boczny desktop — pionowa lista. */
+const LATEST_RAIL_LIMIT = 5;
 
 function pickHeroLead(important: NewsArticle[]): NewsArticle {
   const editorial = (a: NewsArticle) => !isRssArticle(a.contentOrigin);
@@ -145,8 +148,8 @@ function CategorySection({
             className="group inline-flex items-center gap-2 transition-colors hover:text-accent-cyan"
           >
             <h2
-              className="text-[1.75rem] font-extrabold uppercase tracking-[0.06em] text-text-primary md:text-[1.75rem] lg:text-[1.875rem]"
-              style={{ letterSpacing: "-0.02em" }}
+              className="text-[1.85rem] font-extrabold uppercase tracking-[0.05em] md:text-[1.9rem] lg:text-[2rem]"
+              style={{ letterSpacing: "-0.02em", color: meta.color }}
             >
               {meta.label}
             </h2>
@@ -187,9 +190,9 @@ function CategorySection({
         style={{
           borderColor: prominent ? `${meta.color}44` : undefined,
           background: prominent
-            ? `linear-gradient(135deg, ${meta.color}28 0%, ${meta.color}12 38%, transparent 72%), var(--space-card)`
-            : `linear-gradient(135deg, ${meta.color}12 0%, transparent 55%), var(--space-card)`,
-          boxShadow: prominent ? `0 0 48px -20px ${meta.color}55` : undefined,
+            ? `linear-gradient(135deg, ${meta.color}38 0%, ${meta.color}16 38%, transparent 72%), var(--space-card)`
+            : `linear-gradient(135deg, ${meta.color}18 0%, transparent 55%), var(--space-card)`,
+          boxShadow: prominent ? `0 0 56px -16px ${meta.color}66` : undefined,
         }}
       >
         {header}
@@ -695,9 +698,11 @@ export default async function ContentGrid() {
     allPublished,
     IMPORTANT_SLIDER_LIMIT
   );
+  const importantRail = importantNow.slice(0, IMPORTANT_RAIL_LIMIT);
   markSlugsUsed(importantNow, usedSlugs);
 
-  const latest = pickHomepageLatest(allPublished, LATEST_LIMIT);
+  const latest = pickHomepageLatest(allPublished, LATEST_SLIDER_LIMIT);
+  const latestRail = latest.slice(0, LATEST_RAIL_LIMIT);
   markSlugsUsed(latest, usedSlugs);
 
   const categoryArticles = CATEGORY_ORDER.map((slug, i) => {
@@ -718,19 +723,31 @@ export default async function ContentGrid() {
   const excludeForPopular = [...usedSlugs];
 
   return (
-    <div className={SITE_CONTAINER}>
-      {/* 1. Hero — pełna szerokość */}
+    <div className={cn(SITE_CONTAINER, "relative z-[1]")}>
+      {/* Hero + panel boczny (desktop) / hero + slidery pod spodem (mobile) */}
       <div className="pt-[4.5rem] sm:pt-24">
-        <HeroArticle article={lead} topPriority={lead.isTopPriority} />
+        <div
+          className={cn(
+            "grid items-start gap-8 lg:gap-8",
+            HOMEPAGE_MAIN_SIDEBAR_GRID,
+          )}
+        >
+          <div className="min-w-0">
+            <HeroArticle article={lead} topPriority={lead.isTopPriority} />
+            <div className="mt-8 space-y-10 lg:hidden">
+              <LatestShowcase articles={latest} variant="slider" />
+              <ImportantNowSlider articles={importantNow} variant="slider" />
+            </div>
+          </div>
+
+          <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
+            <LatestShowcase articles={latestRail} variant="rail" />
+            <ImportantNowSlider articles={importantRail} variant="rail" />
+          </aside>
+        </div>
       </div>
 
-      {/* 2. Najnowsze — duży slider (publishedAt desc) */}
-      <LatestShowcase articles={latest} />
-
-      {/* 3. Ważne teraz — slider (score + featured + recency) */}
-      <ImportantNowSlider articles={importantNow} />
-
-      {/* 4. Popularne (raz) + kategorie + widgety */}
+      {/* Popularne + kategorie + widgety */}
       <div className="mt-10 space-y-14 pb-14 md:mt-12 md:space-y-14">
         <PopularArticles
           articles={allPublished}

@@ -46,7 +46,7 @@ export default async function ArticleFeedSection({ category }: Props) {
       <div
         className="border-b border-hairline"
         style={{
-          background: `radial-gradient(ellipse 70% 140% at 0% 0%, ${accent}12 0%, transparent 56%), var(--color-space-bg)`,
+          background: `radial-gradient(ellipse 70% 140% at 0% 0%, ${accent}22 0%, transparent 58%), transparent`,
         }}
       >
         <div className={cn(SITE_CONTAINER, "pb-5 pt-[96px]")}>

@@ -91,6 +91,10 @@
     letter-spacing: -0.011em;   /* tighten body slightly, Apple-like      */
   }
 
+  body:has(.site-cosmos) {
+    background-color: transparent;
+  }
+
   /* Headings inherit tighter optical tracking */
   h1, h2, h3, h4 {
     letter-spacing: -0.02em;
@@ -149,12 +153,12 @@
   .card-surface {
     position: relative;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0) 38%),
+      linear-gradient(180deg, rgba(56, 189, 248, 0.04) 0%, rgba(255, 255, 255, 0.02) 28%, rgba(255, 255, 255, 0) 42%),
       var(--color-space-card);
     border: 1px solid var(--hairline);
     border-radius: var(--radius-card);
     box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.045),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
       0 1px 2px 0 rgba(0, 0, 0, 0.4),
       0 12px 32px -16px rgba(0, 0, 0, 0.7);
   }
@@ -229,6 +233,81 @@
 
   .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  /* ── Kosmiczne tło portalu — ciemny newsroom (SiteBackground) ─────────── */
+  .site-cosmos {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    background: #050709;
+  }
+
+  /* Bazowa powierzchnia — głęboka, neutralna, bez „Windows blue” */
+  .site-cosmos-base {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        #070a10 0%,
+        #050709 45%,
+        #040608 100%
+      );
+  }
+
+  /* Jedna subtelna mgławica — akcent redakcyjny, nie kolorowa tapeta */
+  .site-cosmos-glow {
+    position: absolute;
+    inset: -15%;
+    background:
+      radial-gradient(ellipse 48% 40% at 82% 8%, rgba(47, 109, 255, 0.11) 0%, transparent 58%),
+      radial-gradient(ellipse 42% 38% at 12% 72%, rgba(168, 85, 247, 0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 36% 32% at 50% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+    animation: cosmos-glow 100s ease-in-out infinite alternate;
+    will-change: transform, opacity;
+  }
+
+  .site-cosmos-stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0.38;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.45), transparent),
+      radial-gradient(1px 1px at 28% 42%, rgba(255, 255, 255, 0.28), transparent),
+      radial-gradient(1.5px 1.5px at 44% 12%, rgba(200, 220, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 58% 58%, rgba(255, 255, 255, 0.25), transparent),
+      radial-gradient(1px 1px at 74% 28%, rgba(255, 255, 255, 0.32), transparent),
+      radial-gradient(1px 1px at 88% 68%, rgba(255, 255, 255, 0.28), transparent),
+      radial-gradient(1px 1px at 8% 62%, rgba(255, 255, 255, 0.22), transparent),
+      radial-gradient(1px 1px at 36% 78%, rgba(255, 255, 255, 0.26), transparent),
+      radial-gradient(1px 1px at 52% 34%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1px 1px at 66% 82%, rgba(255, 255, 255, 0.24), transparent);
+    background-size: 520px 520px;
+    mask-image: radial-gradient(ellipse 100% 90% at 50% 40%, black 25%, transparent 88%);
+    animation: cosmos-twinkle 14s ease-in-out infinite alternate;
+  }
+
+  /* Delikatna tekstura — premium newsroom, nie płaski flat */
+  .site-cosmos-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  /* Winieta skupia uwagę na treści — typowe dla portali newsowych */
+  .site-cosmos-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 88% 78% at 50% 42%,
+      transparent 42%,
+      rgba(2, 4, 8, 0.48) 100%
+    );
+  }
 }
 
 /* ── Legacy white-alpha shorthands (kept so existing markup renders) ──── */
@@ -249,6 +328,16 @@
 /* ════════════════════════════════════════════════════════════════════════
    KEYFRAMES
    ════════════════════════════════════════════════════════════════════════ */
+
+@keyframes cosmos-glow {
+  from { transform: translate3d(0, 0, 0) scale(1); opacity: 0.88; }
+  to   { transform: translate3d(-1.5%, 1%, 0) scale(1.02); opacity: 1; }
+}
+
+@keyframes cosmos-twinkle {
+  from { opacity: 0.32; }
+  to   { opacity: 0.42; }
+}
 
 @keyframes ping-live {
   0%        { transform: scale(1);   opacity: 0.5; }
@@ -373,7 +462,9 @@
   .hero-glow-drift,
   .live-breathe,
   .breaking-pulse,
-  .live-dot::after {
+  .live-dot::after,
+  .site-cosmos-glow,
+  .site-cosmos-stars {
     animation: none !important;
   }
   .img-sheen::after {

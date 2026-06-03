@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="relative z-[1]">
         <ContentGrid />
       </main>
       <Footer />

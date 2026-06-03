@@ -6,7 +6,9 @@ import { Bookmark, Heart, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { getLikedSlugs, LIKES_CHANGE_EVENT } from "@/lib/likes";
+import { LIKES_CHANGE_EVENT } from "@/lib/likes/events";
+import { fetchMyLikedSlugs } from "@/lib/likes/supabase-likes";
+import { createClient } from "@/lib/supabase/client";
 import { toNewsCard } from "@/lib/search";
 import type { AdminArticle } from "@/lib/admin/types";
 import type { NewsArticle } from "@/types";
@@ -75,6 +77,7 @@ export default function ProfileClient() {
 
   const [catalogue, setCatalogue] = useState<AdminArticle[] | null>(null);
   const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
+  const [likesLoading, setLikesLoading] = useState(true);
 
   // Load the published catalogue once so we can resolve saved/liked slugs.
   useEffect(() => {
@@ -94,17 +97,39 @@ export default function ProfileClient() {
     };
   }, []);
 
-  // Device-liked slugs, kept in sync with the LikeButton.
+  // Liked slugs from Supabase (per account), synced after toggle on article page.
   useEffect(() => {
-    const sync = () => setLikedSlugs(getLikedSlugs());
+    if (!user) {
+      setLikedSlugs([]);
+      setLikesLoading(false);
+      return;
+    }
+
+    let active = true;
+    let supabase: ReturnType<typeof createClient> | null = null;
+    try {
+      supabase = createClient();
+    } catch {
+      setLikesLoading(false);
+      return;
+    }
+
+    const sync = async () => {
+      setLikesLoading(true);
+      const slugs = await fetchMyLikedSlugs(supabase!);
+      if (active) {
+        setLikedSlugs(slugs);
+        setLikesLoading(false);
+      }
+    };
+
     sync();
     window.addEventListener(LIKES_CHANGE_EVENT, sync);
-    window.addEventListener("storage", sync);
     return () => {
+      active = false;
       window.removeEventListener(LIKES_CHANGE_EVENT, sync);
-      window.removeEventListener("storage", sync);
     };
-  }, []);
+  }, [user]);
 
   const cardBySlug = useMemo(() => {
     const map = new Map<string, NewsArticle>();
@@ -215,12 +240,12 @@ export default function ProfileClient() {
             <span className="text-[12px] text-text-muted">· {likedArticles.length}</span>
           </div>
           <ArticleGrid
-            loading={catalogueLoading}
+            loading={catalogueLoading || likesLoading}
             articles={likedArticles}
             empty={
               <>
-                Nie polubiłeś jeszcze żadnego artykułu na tym urządzeniu. Użyj przycisku
-                „Lubię to” pod artykułem.
+                Nie polubiłeś jeszcze żadnego artykułu. Użyj „Lubię to” na stronie artykułu —
+                lista synchronizuje się z Twoim kontem.
               </>
             }
           />

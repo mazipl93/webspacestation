@@ -1,0 +1,30 @@
+<svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="24" y1="3" x2="24" y2="45">
+      <stop stop-color="#151c2c"/>
+      <stop stop-color="#090c14"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="6" y1="6" x2="42" y2="42">
+      <stop stop-color="#7dd3fc" stop-opacity="0.65"/>
+      <stop stop-color="#3b82f6" stop-opacity="0.9"/>
+      <stop stop-color="#6366f1" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="limb" x1="24" y1="20" x2="24" y2="42">
+      <stop stop-color="#155e75"/>
+      <stop stop-color="#1e3a5f"/>
+      <stop stop-color="#0f172a"/>
+    </linearGradient>
+    <clipPath id="vp"><circle cx="24" cy="24" r="14.25"/></clipPath>
+  </defs>
+  <rect x="2.5" y="2.5" width="43" height="43" rx="11.5" fill="url(#bg)"/>
+  <rect x="2.5" y="2.5" width="43" height="43" rx="11.5" stroke="url(#edge)" stroke-width="1"/>
+  <g clip-path="url(#vp)">
+    <rect x="8" y="8" width="32" height="32" fill="#060910"/>
+    <path d="M 7 28.5 Q 24 17 41 28.5 V 44 H 7 Z" fill="url(#limb)"/>
+    <path d="M 9.5 28.8 Q 24 19.5 38.5 28.8" stroke="#93c5fd" stroke-width="0.75" stroke-opacity="0.7" fill="none"/>
+  </g>
+  <circle cx="16.5" cy="16.5" r="1.15" fill="#f1f5f9" fill-opacity="0.9"/>
+  <circle cx="24" cy="12.5" r="1.55" fill="#bae6fd"/>
+  <circle cx="31" cy="15.5" r="0.95" fill="#e2e8f0" fill-opacity="0.75"/>
+  <circle cx="36" cy="11" r="0.85" fill="#38bdf8"/>
+</svg>

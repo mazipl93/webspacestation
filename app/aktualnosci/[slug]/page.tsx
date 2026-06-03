@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, Calendar, ChevronRight } from "lucide-react";
@@ -18,6 +17,7 @@ import ArticleEditButton from "@/components/article/ArticleEditButton";
 import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import CoverImage from "@/components/article/CoverImage";
 import HeroMetaChip from "@/components/article/HeroMetaChip";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
@@ -118,23 +118,23 @@ function ArticleHero({ article }: { article: NewsArticle }) {
   });
 
   return (
-    <section className="relative flex min-h-[68vh] items-end overflow-hidden">
-      {/* Layer 0 — deep space base */}
+    <section className="relative isolate flex min-h-[68vh] items-end overflow-hidden">
+      {/* Layer 0 — deep space base (z-0; no negative z — image was hidden behind SiteBackground) */}
       <div
-        className="absolute inset-0 -z-40"
+        className="absolute inset-0 z-0"
         style={{
           background:
             "linear-gradient(160deg, #04080f 0%, #060c18 35%, #050a16 60%, #04080d 100%)",
         }}
       />
 
-      {/* Layer 1 — article photograph (same reveal technique as homepage hero) */}
+      {/* Layer 1 — article photograph */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-30"
+        className="absolute inset-0 z-[1]"
         style={{ background: catFallback(article.category) }}
       >
-        <Image
+        <CoverImage
           src={article.image}
           alt={
             article.imageCredit ??
@@ -161,7 +161,7 @@ function ArticleHero({ article }: { article: NewsArticle }) {
       {/* Layer 2 — cinematic depth scrims */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20"
+        className="pointer-events-none absolute inset-0 z-[2]"
         style={{
           background:
             "linear-gradient(to top, rgba(5,7,9,0.97) 0%, rgba(5,7,9,0.82) 26%, rgba(5,7,9,0.46) 52%, rgba(5,7,9,0.16) 100%)",
@@ -170,15 +170,15 @@ function ArticleHero({ article }: { article: NewsArticle }) {
       {/* Left-side scrim for headline legibility */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 -z-20 w-4/5"
+        className="pointer-events-none absolute inset-y-0 left-0 z-[2] w-4/5"
         style={{
           background:
             "linear-gradient(to right, rgba(4,7,12,0.72) 0%, transparent 100%)",
         }}
       />
 
-      {/* Content — staggered fade-in on entry */}
-      <div className="container-site relative w-full pb-12 pt-28">
+      {/* Content — above scrims */}
+      <div className="container-site relative z-10 w-full pb-12 pt-28">
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"
@@ -296,7 +296,7 @@ function RelatedMiniCard({ article }: { article: NewsArticle }) {
         className="img-sheen relative w-[80px] shrink-0 overflow-hidden"
         style={{ background: catFallback(article.category) }}
       >
-        <Image
+        <CoverImage
           src={article.image}
           alt={article.title}
           fill
@@ -322,7 +322,7 @@ function RelatedCard({ article }: { article: NewsArticle }) {
         className="img-sheen relative h-[148px] shrink-0 overflow-hidden"
         style={{ background: catFallback(article.category) }}
       >
-        <Image
+        <CoverImage
           src={article.image}
           alt={article.title}
           fill
@@ -612,7 +612,7 @@ function ReadNext({ article }: { article: NewsArticle }) {
             className="img-sheen relative min-h-[180px] overflow-hidden sm:min-h-[220px]"
             style={{ background: catFallback(article.category) }}
           >
-            <Image
+            <CoverImage
               src={article.image}
               alt={article.title}
               fill

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
-import { ARTICLES_TAG } from "@/lib/cache/tags";
+import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +17,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  revalidateTag(ARTICLES_TAG);
-  return NextResponse.json({ ok: true, tag: ARTICLES_TAG });
+  revalidatePublicArticleCaches();
+  return NextResponse.json({ ok: true, revalidated: ["/", "/aktualnosci"] });
 }

@@ -1,43 +1,23 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja pliku:** 3 czerwca 2026 (sesja 16–17 — scheduler, Najnowsze, hero meta)  
-**Źródło planu:** Roadmap Backlog v3 (PRODUCTION NEWSROOM SYSTEM) + audyt vs `docs/WSS_NEXT_CHAT_HANDOFF.md`
+**Ostatnia aktualizacja:** 3 czerwca 2026 (koniec czat 20)  
+**Deploy remote:** `794d53d` · **WIP lokalnie:** ~20 plików — commit następny krok
 
----
+| # | ID | Zadanie | Status |
+|---|-----|---------|--------|
+| 0 | **COMMIT** | Commit WIP sesji 20 po QA usera | **Następne** |
+| 1 | **P1-6** | Upload okładek WebP + Supabase | Po commicie |
+| 2 | **OPS** | ~175 REVIEW + revalidate | |
+| 3+ | P1-7, P6-24… | jak wcześniej | |
 
-## Jak czytać statusy
+**WIP lokalnie:** UX-BG v2, logo, layout rail, lajki 1+2, fix hero artykułu, ShareBar, kolory, cache fix.
 
-| Symbol | Znaczenie |
-|--------|-----------|
-| `[x]` | **Zrobione** — pewność ~110% (kod na `main`/prod **lub** testy + potwierdzenie usera / smoke) |
-| `[~]` | **Częściowo** — fundament jest, brakuje domknięcia / QA / prod |
-| `[ ]` | **Nie zrobione** |
-| `[?]` | **W kodzie** — na `main` lub lokalnie, **bez** pełnego zamknięcia QA → nie `[x]` |
+**INFRA-LIKES:** `[~]` SQL w repo; user uruchomił na Supabase.
 
-**Reguła:** nowy `[x]` po weryfikacji (testy + sensowny smoke). Agent aktualizuje ten plik na końcu sesji.
+**P2-13:** `[~]` lajki per-user w kodzie; Popularne z `article_like_counts`.
 
-**Deploy:** remote `6f2882a` (`main`). Lokalnie niezacommitowane: **P1-9** hero meta chips (`HeroMetaChip.tsx`).
-
----
-
-## Priorytety teraz (kolejność pracy)
-
-| # | ID | Zadanie | Dlaczego teraz |
-|---|-----|---------|----------------|
-| 1 | **P0-SCHED-QA** | Weryfikacja zaplanowanej publikacji na prod | Hobby ≠ cron co minutę; poller CMS — **potwierdzić** |
-| 2 | **P1-6** | Upload okładek (pro) | Największy brak w newsroomie vs „tylko URL” |
-| 3 | **OPS** | Publikacja ~175 REVIEW + `cache:revalidate` | Treść na portal |
-| 4 | **P1-7** | Live preview — domknięcie QA okładki CMS | `[~]` — testy OK, brak formalnego smoke |
-| 5 | **P6-24** | SEO (canonical, OG, schema, sitemap) | Widoczność przed skalowaniem ruchu |
-| 6 | **P0-5** | Mobile CMS — pełny smoke edytora | Sidebar OK; edycja na telefonie niezweryfikowana |
-| 7 | **P6-25** | RODO / cookies | Legal przed kampanią / Ads |
-| 8 | **P2-13** | Popularne / engagement | Ranking częściowy |
-| 9 | **INFRA** | `article_likes` 404 (Supabase SQL) | Likes proxy |
-
-**Workflow następnego czatu:** jeden wiersz tabeli na raz → raport → test usera → pytanie „kolejny punkt?”.
-
-**Zrobione przed tą kolejką:** P1-9 hero meta; homepage Najnowsze **9 kart** (3×3).
+**Nie priorytet:** scheduler zaplanowanych artykułów (kod zostaje, user: luźno).
 
 **Nie priorytet na teraz:** P5-22/23 (architektura menu), P4-20 (ulubione kategorie), P6-27 (scaling), pełny pgvector (P3-16).
 
@@ -47,9 +27,11 @@
 
 | ID | Zadanie | Status | Uwagi |
 |----|---------|--------|-------|
-| **P0-SCHED** | Zaplanowana publikacja (`publishAt` → PUBLISHED) | `[~]` | `5fde7d4` + `98b3b99`: tick przy ruchu + **ScheduledPublishPoller** co 30 s w CMS; `publishedAt = publishAt`. Vercel Hobby **nie** uruchamia crona co minutę — bez otwartego CMS / ruchu na stronie może opóźnić. Opcja: zewnętrzny ping `/api/cron/publish-scheduled`. |
-| **P0-HOME-LATEST** | Nowy artykuł = #1 w **Najnowsze** (homepage) i **Aktualności** | `[x]` | `6f2882a`: `pickHomepageLatest` bez wykluczania hero; `revalidatePath('/')`. User potwierdził. |
-| **P0-ARCH** | Archiwum CMS + trwałe usuwanie z DB | `[x]` | Zakładka w `/admin/articles`; `POST /api/articles/permanent-delete`. `5fde7d4`. |
+| **P0-SCHED** | Zaplanowana publikacja (`publishAt` → PUBLISHED) | `[x]` | `b7a0ca6` + wcześniejsze `5fde7d4`, `98b3b99`: legacy RSS excerpt OK; panel Publikacja; ScheduledPublishPoller co 30 s; cache fix; `publishedAt = publishAt`. **User OK** lokalnie/prod (P0-SCHED-QA). Vercel Hobby ≠ cron co minutę — bez otwartego CMS może opóźnić. |
+| **P0-SCHED-QA** | Smoke zaplanowanej publikacji na prod | `[x]` | User potwierdził OK (zaplanowanie + Najnowsze po Ctrl+F5). |
+| **P0-DEPLOY** | Vercel deploy z `main` (Hobby + vercel.json) | `[x]` | Cron `* * * * *` blokował build → usunięty `794d53d` |
+| **P0-HOME-LATEST** | Nowy artykuł = #1 w **Najnowsze** (homepage) i **Aktualności** | `[x]` | `6f2882a` + cache fix sesja 18. User potwierdził. |
+| **P0-ARCH** | Archiwum CMS + trwałe usuwanie z DB | `[x]` | `5fde7d4`. |
 
 ---
 
@@ -82,11 +64,12 @@
 
 | ID | Zadanie | Status | Uwagi / dowód |
 |----|---------|--------|----------------|
-| P1-6 | Upload zdjęć (pro) | `[ ]` | Okładka = URL; upload tylko avatary |
+| P1-6 | Upload zdjęć (pro) | `[ ]` | Okładka = URL; upload tylko avatary — **następny priorytet** |
 | P1-7 | Live preview editor | `[~]` | Split + hero URL; QA okładki `[ ]` |
 | P1-8 | CMS redesign (The Verge) | `[~]` | Uproszczenie PR7; pełny redesign `[ ]` |
 | P1-9 | Hero article UX — kontrast daty/meta | `[x]` | `HeroMetaChip` — user OK (sesja 17) |
-| P1-10 | Zmiana logo / favicon | `[ ]` | Backlog |
+| P1-10 | Zmiana logo / favicon | `[~]` | WssLogo + earth.jpg + favicon metadata (sesja 20 WIP) |
+| P1-11 | Podpis zdjęcia okładki (coverImageCredit) | `[x]` | `39c8a9e`; migracja `20260603200000`; **prod: sprawdzić db:deploy** |
 
 ---
 
@@ -94,10 +77,10 @@
 
 | ID | Zadanie | Status | Uwagi / dowód |
 |----|---------|--------|----------------|
-| P2-11 | Statusy workflow (+ SCHEDULED) | `[~]` | Zapis + auto-publish `[~]` (P0-SCHED); reszta `[x]` |
+| P2-11 | Statusy workflow (+ SCHEDULED) | `[x]` | Zapis + auto-publish via poller — user OK (sesja 18) |
 | P2-12 | Redakcyjny feed | `[~]` | Lista CMS + filtry + archiwum |
-| P2-13 | Popularne / Ważne teraz | `[~]` | PR8 ranking; views/engagement słabe |
-| P2-14 | Homepage layout | `[~]` | Najnowsze chronologia `[x]`; **9 kart 3×3** `[x]`; slider `[ ]` |
+| P2-13 | Popularne / Ważne teraz | `[~]` | PR8 ranking + slidery sesja 18; views/engagement słabe |
+| P2-14 | Homepage layout | `[~]` | Sesja 18 slidery prod; **sesja 19 WIP:** hero + rail desktop / slidery mobile — lokalnie, bez commita |
 | P2-15 | Komentarze fix (mobile) | `[?]` | Pod treścią — mobile nie sprawdzony |
 
 ---
@@ -148,9 +131,29 @@
 |----|---------|--------|-------|
 | UX-1 | Public bez RSS/XML/debug w copy | `[x]` | |
 | UX-2 | CMS bez terminologii pipeline | `[x]` | |
-| UX-3 | Premium newsroom feel | `[~]` | Hero meta + Najnowsze; upload/SEO/RODO zostają |
+| UX-3 | Premium newsroom feel | `[~]` | Kolory WIP; **UX-BG** tło jaśniejsze — następny czat |
 
 ---
+
+## Sesja 19 — czat (WIP / deploy)
+
+| ID | Zadanie | Status | Uwagi |
+|----|---------|--------|-------|
+| S19-1 | Fix deploy Vercel (vercel.json cron) | `[x]` | `794d53d` |
+| S19-2 | db:deploy prod | `[x]` | Wszystkie migracje OK |
+| S19-3 | Homepage hero + panel boczny | `[~]` | Lokalnie, bez commita |
+| S19-4 | SiteBackground (ciemne tło) | `[~]` | WIP — user: przerobić na **jaśniejsze** (UX-BG) |
+| S19-5 | cache:revalidate fix | `[~]` | Lokalnie |
+
+## Sesja 18 — zamknięte w czacie (QA)
+
+| ID | Zadanie | Status | Uwagi |
+|----|---------|--------|-------|
+| S18-1 | P0-SCHED-QA — zaplanowana publikacja | `[x]` | User OK lokalnie/prod |
+| S18-2 | Homepage layout (slidery Najnowsze + Ważne teraz) | `[x]` | `cff809b`…`241ba6e`; bez duplikatów sidebar |
+| S18-3 | HorizontalScrollSlider (strzałki, scroll, klik w artykuł) | `[x]` | `504c779`, `241ba6e` |
+| S18-4 | coverImageCredit — podpis zdjęcia okładki CMS | `[x]` | `39c8a9e`; db:deploy prod — sprawdzić |
+| S18-5 | Scheduler QA (legacy RSS excerpt, cache fix) | `[x]` | `b7a0ca6` |
 
 ## Sesja 16–17 — zamknięte w czacie (QA)
 
@@ -185,10 +188,10 @@
 |-------|--------|-------|
 | Next.js 15 + Vercel deploy z `main` | `[x]` | |
 | Prisma + Supabase | `[x]` | |
-| Migracje: SCHEDULED, publishAt, contentOrigin | `[x]` | |
+| Migracje: SCHEDULED, publishAt, contentOrigin, coverImageCredit | `[x]` kod / `[~]` prod deploy coverImageCredit |
 | Cron RSS 1×/dzień (Hobby) | `[x]` | |
-| Commit + push sesji 16–17 | `[~]` | `6f2882a` na remote; P1-9 lokalnie |
-| Zaplanowana publikacja (bez Pro cron) | `[~]` | Poller CMS + `maybeTickScheduledPublish` |
+| Commit + push sesji 16–19 | `[~]` | `794d53d` remote; layout/kolory/tło **lokalnie** |
+| Zaplanowana publikacja (poller CMS) | `[~]` | Nie priorytet user; kod zostaje |
 | ~175 artykułów REVIEW | `[ ]` | Do ręcznej publikacji |
 | `article_likes` 404 | `[ ]` | Supabase SQL |
 | Pełna treść RSS na stronie | `[x]` NIE (świadomie) | Hybryda B+ + link |
@@ -199,14 +202,14 @@
 
 | Priorytet | `[x]` | `[~]` | `[ ]` |
 |-----------|-------|-------|-------|
-| P0 rdzeń + blockery | 7 | 2 | 0 |
-| P1 | 0 | 2 | 3 |
-| P2 | 1 | 4 | 0 |
+| P0 rdzeń + blockery | 9 | 1 | 0 |
+| P1 | 1 | 2 | 3 |
+| P2 | 2 | 2 | 0 |
 | P3 | 1 | 2 | 0 |
 | P4–P6 | 0 | 4 | 5 |
 | Architektura A1–A6 | 6 | 0 | 0 |
 
-**Szacunek:** rdzeń newsrooma (publish + feed + CMS) ≈ **85%**; pełny backlog v3 ≈ **40–45%**.
+**Szacunek:** rdzeń newsrooma (publish + feed + CMS) ≈ **88%**; pełny backlog v3 ≈ **42–47%**.
 
 ---
 
@@ -217,6 +220,8 @@
 | 3.06.2026 | Utworzenie trackera |
 | 3.06.2026 | Sesja 15: P0-SCHED blocker |
 | 3.06.2026 | Sesja 16–17: P0-HOME-LATEST, P0-ARCH, scheduler poller; P1-9; **Priorytety teraz** |
+| 3.06.2026 | Sesja 18: P0-SCHED-QA, homepage slidery, coverImageCredit |
+| 3.06.2026 | Sesja 19: P0-DEPLOY `794d53d`; layout rail WIP; **UX-BG** następny czat |
 
 ---
 
@@ -224,8 +229,8 @@
 
 **Reguła:** 1 priorytet → meldunek → test usera → „kolejny punkt?”
 
-1. **P0-SCHED-QA** na prod  
-2. **P1-6** upload okładek  
+1. **UX-BG** — tło jaśniejsze / ciekawsze  
+2. **P1-6** upload okładek (po QA layoutu WIP)  
 3. Dalej wg tabeli „Priorytety teraz”
 
 *Koniec trackera — jeden plik prawdy obok `docs/WSS_NEXT_CHAT_HANDOFF.md`.*
