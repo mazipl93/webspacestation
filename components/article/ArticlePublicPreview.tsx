@@ -12,6 +12,7 @@ import {
   previewCatFallback,
   previewCatMeta,
 } from "@/lib/ui/article-preview-meta";
+import { resolveImage } from "@/lib/articles/resolve-image";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 
 export type ArticlePreviewViewport = "desktop" | "mobile";
@@ -31,6 +32,10 @@ export default function ArticlePublicPreview({
   viewport = "desktop",
   embedded = false,
 }: ArticlePublicPreviewProps) {
+  const heroImage = resolveImage(article, {
+    withFallback: !embedded,
+  });
+
   const meta = previewCatMeta(article.category);
   const bodyParagraphs = getArticleBodyParagraphs(article);
   const isRss = isRssArticle(article.contentOrigin);
@@ -73,20 +78,22 @@ export default function ArticlePublicPreview({
           className="absolute inset-0 -z-30"
           style={{ background: previewCatFallback(article.category) }}
         >
-          <Image
-            src={article.imageUrl}
-            alt={
-              article.imageCredit ??
-              (article.source
-                ? `Ilustracja — materiał ${article.source}`
-                : article.title)
-            }
-            fill
-            priority
-            sizes={viewport === "mobile" ? "390px" : "100vw"}
-            className="object-cover"
-            unoptimized={article.imageUrl.startsWith("http") && embedded}
-          />
+          {heroImage ? (
+            <Image
+              src={heroImage}
+              alt={
+                article.imageCredit ??
+                (article.source
+                  ? `Ilustracja — materiał ${article.source}`
+                  : article.title)
+              }
+              fill
+              priority
+              sizes={viewport === "mobile" ? "390px" : "100vw"}
+              className="object-cover"
+              unoptimized={embedded}
+            />
+          ) : null}
           {article.imageCredit ? (
             <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[rgba(5,7,9,0.92)] to-transparent px-4 pb-3 pt-10 sm:px-6">
               <CoverImageCredit

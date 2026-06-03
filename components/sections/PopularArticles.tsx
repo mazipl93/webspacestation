@@ -55,13 +55,14 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
 
   const popular = useMemo(() => {
     const pool = articles.filter((a) => !exclude.has(a.slug));
-    if (pool.length === 0) return [];
+    const candidatePool = pool.length > 0 ? pool : articles;
+    if (candidatePool.length === 0) return [];
 
     if (likeCounts === null) {
-      return rankPopular(pool, { limit: 6 });
+      return rankPopular(candidatePool, { limit: 6 });
     }
 
-    return rankPopular(pool, {
+    return rankPopular(candidatePool, {
       limit: 6,
       engagementBySlug: likeCounts,
     });

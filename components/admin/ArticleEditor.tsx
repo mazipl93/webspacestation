@@ -98,19 +98,26 @@ function toForm(a: AdminArticle): ArticleFormValues {
   };
 }
 
-function toPayload(form: ArticleFormValues): ArticleWritePayload {
+/** Autosave — content fields only; never status. */
+function toAutosavePayload(form: ArticleFormValues): ArticleWritePayload {
   return {
     title: form.title,
+    content: form.content || null,
+    coverImage: form.coverImage.trim() || null,
+    categoryId: form.categoryId,
+    tags: parseTagsText(form.tagsText),
+  };
+}
+
+function toPayload(form: ArticleFormValues): ArticleWritePayload {
+  return {
+    ...toAutosavePayload(form),
     slug: form.slug,
     subtitle: form.subtitle || null,
     excerpt: form.excerpt || null,
-    content: form.content || null,
     contextNote: form.contextNote || null,
-    coverImage: form.coverImage || null,
-    categoryId: form.categoryId,
     featured: form.featured,
     readingTime: form.readingTime,
-    tags: parseTagsText(form.tagsText),
     source: form.sourceName.trim() || null,
     originalUrl: form.sourceUrl.trim() || null,
   };
@@ -177,7 +184,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   }, [articleId]);
 
   const persist = useCallback(
-    async (opts: { publish?: boolean; schedule?: boolean; silent?: boolean } = {}) => {
+    async (
+      opts: {
+        publish?: boolean;
+        schedule?: boolean;
+        review?: boolean;
+        silent?: boolean;
+      } = {}
+    ) => {
       if (savingRef.current) return;
       if (!form.title.trim()) {
         if (!opts.silent) setError("Tytuł jest wymagany.");
@@ -200,20 +214,39 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setError(null);
 
       try {
-        const payload = toPayload(form);
-        if (opts.publish) payload.status = "PUBLISHED";
-        if (opts.schedule) {
-          payload.status = "SCHEDULED";
-          payload.publishAt = datetimeLocalToIso(form.publishAtLocal);
-        }
-
         let saved: AdminArticle;
+
         if (!currentId) {
-          saved = await adminApi.createArticle(payload);
+          const createPayload: ArticleWritePayload = {
+            ...toPayload(form),
+            status: opts.publish
+              ? "PUBLISHED"
+              : opts.schedule
+                ? "SCHEDULED"
+                : "DRAFT",
+          };
+          if (opts.schedule) {
+            createPayload.publishAt = datetimeLocalToIso(form.publishAtLocal);
+          }
+          saved = await adminApi.createArticle(createPayload);
           setCurrentId(saved.id);
           window.history.replaceState(null, "", `/admin/articles/${saved.id}/edit`);
+        } else if (opts.publish) {
+          await adminApi.updateArticle(currentId, toPayload(form));
+          saved = await adminApi.updateArticle(currentId, { status: "PUBLISHED" });
+        } else if (opts.schedule) {
+          await adminApi.updateArticle(currentId, toPayload(form));
+          saved = await adminApi.updateArticle(currentId, {
+            status: "SCHEDULED",
+            publishAt: datetimeLocalToIso(form.publishAtLocal),
+          });
+        } else if (opts.review) {
+          await adminApi.updateArticle(currentId, toPayload(form));
+          saved = await adminApi.updateArticle(currentId, { status: "REVIEW" });
+        } else if (opts.silent) {
+          saved = await adminApi.updateArticle(currentId, toAutosavePayload(form));
         } else {
-          saved = await adminApi.updateArticle(currentId, payload);
+          saved = await adminApi.updateArticle(currentId, toPayload(form));
         }
 
         dirty.current = false;
@@ -236,6 +269,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
   useEffect(() => {
     if (!dirty.current) return;
+    if (loading) return;
+    if (articleId && !loadedArticle) return;
     if (!form.categoryId) return;
     if (!form.title.trim()) return;
 
@@ -247,7 +282,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [form, persist]);
+  }, [form, persist, loading, articleId, loadedArticle]);
 
   const handleRefineText = async () => {
     if (!currentId || !canRefineContent(form)) return;
@@ -401,6 +436,15 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           <Button variant="ghost" onClick={() => persist()} disabled={saving}>
             Zapisz szkic
           </Button>
+          {currentId && status !== "REVIEW" && status !== "PUBLISHED" ? (
+            <Button
+              variant="ghost"
+              onClick={() => persist({ review: true })}
+              disabled={saving || !form.categoryId}
+            >
+              Do sprawdzenia
+            </Button>
+          ) : null}
           {mayPublish ? (
             publishMode === "schedule" && status !== "PUBLISHED" ? (
               <Button

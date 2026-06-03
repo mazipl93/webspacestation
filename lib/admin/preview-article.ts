@@ -2,21 +2,8 @@ import type { ArticleFormValues, AdminCategory } from "@/lib/admin/types";
 import { buildRssImageCredit } from "@/lib/rss/image-credit";
 import { previewCategorySlug } from "@/lib/ui/article-preview-meta";
 import { hasCitationFields } from "@/lib/ui/article-kind";
-import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
-import type { NewsArticle, NewsCategory } from "@/types";
-
-const COVER_BY_CATEGORY: Partial<Record<NewsCategory, string>> = {
-  technologie:
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=70",
-  misje:
-    "https://images.unsplash.com/photo-1446776811953-b23d57bd2aa0?auto=format&fit=crop&w=1200&q=70",
-  astronomia:
-    "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1200&q=70",
-  ai: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=70",
-  "ziemia-z-kosmosu":
-    "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?auto=format&fit=crop&w=1200&q=70",
-  iss: "https://images.unsplash.com/photo-1614728894747-2f457dab2d4c?auto=format&fit=crop&w=1200&q=70",
-};
+import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
+import type { NewsArticle } from "@/types";
 
 export type PreviewArticleInput = {
   form: ArticleFormValues;
@@ -25,6 +12,8 @@ export type PreviewArticleInput = {
   articleId?: string;
   /** Optional subtitle shown in hero (not on public API shape). */
   subtitle?: string;
+  /** CMS live split: hero only from form URL (gradient when empty). */
+  heroFromFormOnly?: boolean;
 };
 
 function splitContentParagraphs(content: string): string[] {
@@ -42,24 +31,39 @@ function parseTags(tagsText: string): string[] {
     .slice(0, 5);
 }
 
-function resolveCoverImage(
-  coverImage: string,
-  category: NewsCategory
-): string {
-  const trimmed = coverImage.trim();
-  if (trimmed) return trimmed;
-  return COVER_BY_CATEGORY[category] ?? SEARCH_FALLBACK_IMAGE;
+type FormWithImageAliases = ArticleFormValues & {
+  imageUrl?: string;
+  image?: string;
+};
+
+/** User-provided cover URL only (no category fallback). */
+export function resolvePreviewImageFromForm(
+  form: ArticleFormValues
+): string | null {
+  const f = form as FormWithImageAliases;
+  const raw =
+    f.imageUrl?.trim() || form.coverImage.trim() || f.image?.trim() || "";
+  return raw || null;
 }
 
 /** Client-side draft → NewsArticle for live CMS preview (no API). */
 export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
-  const { form, categories, contentOrigin, articleId } = input;
+  const { form, categories, contentOrigin, articleId, heroFromFormOnly } = input;
   const category = previewCategorySlug(form.categoryId, categories);
   const hasSource = hasCitationFields(form.sourceName, form.sourceUrl);
   const source = form.sourceName.trim() || undefined;
   const originalUrl = form.sourceUrl.trim() || undefined;
   const paragraphs = splitContentParagraphs(form.content);
   const now = new Date().toISOString();
+  const coverFromForm = resolvePreviewImageFromForm(form);
+  const image = coverFromForm
+    ? coverFromForm
+    : heroFromFormOnly
+      ? ""
+      : resolveImageOrFallback({
+          category,
+          contentOrigin: contentOrigin ?? "EDITORIAL",
+        });
 
   const imageCredit =
     hasSource && source
@@ -75,7 +79,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     publishedAt: now,
     createdAt: now,
     timeLabel: "podgląd",
-    imageUrl: resolveCoverImage(form.coverImage, category),
+    image,
     readTime: form.readingTime ?? undefined,
     featured: form.featured,
     content: paragraphs.length > 0 ? paragraphs : undefined,

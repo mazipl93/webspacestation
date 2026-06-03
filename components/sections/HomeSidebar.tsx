@@ -66,7 +66,7 @@ function CompactArticleRow({
       )}
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-hairline-faint">
         <Image
-          src={article.imageUrl}
+          src={article.image}
           alt=""
           fill
           sizes="56px"
@@ -141,21 +141,18 @@ export default function HomeSidebar({ articles, excludeSlugs = [] }: Props) {
     };
   }, []);
 
-  const pool = useMemo(
-    () => articles.filter((a) => !exclude.has(a.slug)),
-    [articles, exclude]
-  );
+  const pool = useMemo(() => {
+    const filtered = articles.filter((a) => !exclude.has(a.slug));
+    return filtered.length > 0 ? filtered : articles;
+  }, [articles, exclude]);
 
   const popular = useMemo(() => {
     if (pool.length === 0) return [];
-    if (likeCounts === null) return pool.slice(0, 5);
+    if (likeCounts === null) return rankPopular(pool, { limit: 5 });
     return rankPopular(pool, { limit: 5, engagementBySlug: likeCounts });
   }, [pool, likeCounts]);
 
-  const trending = useMemo(
-    () => rankImportantNow(pool, 5),
-    [pool]
-  );
+  const trending = useMemo(() => rankImportantNow(pool, 5), [pool]);
 
   const recentlyAdded = useMemo(() => rankLatest(pool, 5), [pool]);
 

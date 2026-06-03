@@ -1,4 +1,5 @@
 import type { AdminArticle } from "@/lib/admin/types";
+import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
 import type { NewsArticle } from "@/types";
 
 // Graceful cover fallback so a result card never renders an empty <Image>.
@@ -24,7 +25,11 @@ export function toNewsCard(a: AdminArticle): NewsArticle {
     category: a.category.slug as NewsArticle["category"],
     publishedAt: when,
     timeLabel: formatPl(when),
-    imageUrl: a.coverImage || SEARCH_FALLBACK_IMAGE,
+    image: resolveImageOrFallback({
+      coverImage: a.coverImage,
+      category: a.category.slug,
+      slug: a.slug,
+    }),
     isBreaking: false,
     readTime: a.readingTime ?? undefined,
   };

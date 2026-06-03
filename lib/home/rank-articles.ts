@@ -66,7 +66,8 @@ export function rankImportantNow<T extends RankableArticle>(
   articles: T[],
   limit = 8
 ): T[] {
-  return rankArticles(articles, { limit });
+  if (articles.length === 0) return [];
+  return withSectionFallback(rankArticles(articles, { limit }), articles, limit);
 }
 
 /** Najnowsze — createdAt (fallback publishedAt) descending. */
@@ -74,9 +75,24 @@ export function rankLatest<T extends RankableArticle>(
   articles: T[],
   limit = 8
 ): T[] {
+  if (articles.length === 0) return [];
   return [...articles]
     .sort((a, b) => articleTimestamp(b) - articleTimestamp(a))
     .slice(0, limit);
+}
+
+/**
+ * Homepage section guarantee: never return empty when the pool has articles.
+ * Falls back to newest-first from the full candidate pool (no score/featured gate).
+ */
+export function withSectionFallback<T extends RankableArticle>(
+  result: T[],
+  articles: T[],
+  limit = 8
+): T[] {
+  if (articles.length === 0) return [];
+  if (result.length > 0) return result.slice(0, limit);
+  return rankLatest(articles, limit);
 }
 
 export type PopularRankOptions = {
@@ -104,7 +120,8 @@ export function rankPopular<T extends RankableArticle>(
   options: PopularRankOptions = {}
 ): T[] {
   const { limit = 8, engagementBySlug } = options;
-  return [...articles]
+  if (articles.length === 0) return [];
+  const ranked = [...articles]
     .sort((a, b) => {
       const diff =
         popularScore(b, engagementBySlug) - popularScore(a, engagementBySlug);
@@ -112,6 +129,7 @@ export function rankPopular<T extends RankableArticle>(
       return articleTimestamp(b) - articleTimestamp(a);
     })
     .slice(0, limit);
+  return withSectionFallback(ranked, articles, limit);
 }
 
 export function excludeBySlugs<T extends { slug: string }>(

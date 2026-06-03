@@ -18,6 +18,10 @@ import {
   canPublishArticle,
 } from "@/lib/auth/permissions";
 import { withAiScores } from "@/lib/ai/enrich-response";
+import {
+  traceArticleFetchCms,
+  traceArticleFetchPublic,
+} from "@/lib/server/article-trace";
 
 // GET /api/articles
 //   (public)  → PUBLISHED only, optional ?category=slug (never ?status without CMS auth)
@@ -44,6 +48,10 @@ export async function GET(request: NextRequest) {
         status: normalized === "ALL" ? "ALL" : normalized,
         categorySlug: categoryParam ?? undefined,
       });
+      traceArticleFetchCms({
+        status: normalized,
+        count: articles.length,
+      });
       return NextResponse.json({ data: withAiScores(articles) });
     }
 
@@ -51,6 +59,10 @@ export async function GET(request: NextRequest) {
       categoryParam !== null
         ? await getArticlesByCategory(categoryParam)
         : await getPublishedArticles();
+    traceArticleFetchPublic({
+      scope: categoryParam ? `category:${categoryParam}` : "published",
+      count: articles.length,
+    });
     return NextResponse.json({ data: withAiScores(articles) });
   } catch (error) {
     console.error("[GET /api/articles]", error);

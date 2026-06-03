@@ -41,7 +41,7 @@ export default function ArticleCard({
         style={{ background: categoryFallbackBg(article.category) }}
       >
         <CoverImage
-          src={article.imageUrl}
+          src={article.image}
           alt={article.title}
           fill
           sizes={

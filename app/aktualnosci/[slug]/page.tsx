@@ -90,7 +90,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      images: [{ url: article.imageUrl, width: 1280, height: 720 }],
+      images: [{ url: article.image, width: 1280, height: 720 }],
       type: "article",
       locale: "pl_PL",
     },
@@ -98,7 +98,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: article.title,
       description: article.excerpt,
-      images: [article.imageUrl],
+      images: [article.image],
     },
   };
 }
@@ -134,7 +134,7 @@ function ArticleHero({ article }: { article: NewsArticle }) {
         style={{ background: catFallback(article.category) }}
       >
         <Image
-          src={article.imageUrl}
+          src={article.image}
           alt={
             article.imageCredit ??
             (article.source
@@ -310,7 +310,7 @@ function RelatedMiniCard({ article }: { article: NewsArticle }) {
         style={{ background: catFallback(article.category) }}
       >
         <Image
-          src={article.imageUrl}
+          src={article.image}
           alt={article.title}
           fill
           sizes="80px"
@@ -336,7 +336,7 @@ function RelatedCard({ article }: { article: NewsArticle }) {
         style={{ background: catFallback(article.category) }}
       >
         <Image
-          src={article.imageUrl}
+          src={article.image}
           alt={article.title}
           fill
           sizes="(max-width: 768px) 100vw, 400px"
@@ -626,7 +626,7 @@ function ReadNext({ article }: { article: NewsArticle }) {
             style={{ background: catFallback(article.category) }}
           >
             <Image
-              src={article.imageUrl}
+              src={article.image}
               alt={article.title}
               fill
               sizes="(max-width: 640px) 100vw, 280px"

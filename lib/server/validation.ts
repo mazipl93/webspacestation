@@ -1,5 +1,9 @@
 import { ArticleStatus } from "@prisma/client";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
+import {
+  parseCoverImageForCreate,
+  parseCoverImageForUpdate,
+} from "@/lib/server/article-fields";
 
 const PL_CHARS = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g;
 const PL_MAP: Record<string, string> = {
@@ -145,7 +149,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       excerpt: asTrimmedString(body.excerpt) ?? null,
       content: typeof body.content === "string" ? body.content : null,
       contextNote: asTrimmedString(body.contextNote) ?? null,
-      coverImage: asTrimmedString(body.coverImage) ?? null,
+      coverImage: parseCoverImageForCreate(body),
       categoryId,
       status,
       featured: body.featured === true,
@@ -195,7 +199,8 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   if (body.contextNote !== undefined) {
     out.contextNote = asTrimmedString(body.contextNote) ?? null;
   }
-  if (body.coverImage !== undefined) out.coverImage = asTrimmedString(body.coverImage) ?? null;
+  const coverImage = parseCoverImageForUpdate(body);
+  if (coverImage !== undefined) out.coverImage = coverImage;
   if (body.featured !== undefined) out.featured = body.featured === true;
   if (body.readingTime !== undefined) {
     if (body.readingTime !== null && (typeof body.readingTime !== "number" || body.readingTime < 0)) {

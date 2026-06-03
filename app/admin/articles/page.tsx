@@ -26,7 +26,7 @@ export default function ArticlesListPage() {
   const { role } = useAdminAuth();
   const mayDelete = canDeleteArticle(role);
 
-  const [filter, setFilter] = useState<FilterId>("review");
+  const [filter, setFilter] = useState<FilterId>("all");
   const [articles, setArticles] = useState<AdminArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

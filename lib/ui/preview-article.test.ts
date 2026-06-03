@@ -3,7 +3,9 @@ import { describe, it } from "node:test";
 import {
   formToPreviewArticle,
   previewSubtitle,
+  resolvePreviewImageFromForm,
 } from "@/lib/admin/preview-article";
+import { resolveImage } from "@/lib/articles/resolve-image";
 import type { ArticleFormValues, AdminCategory } from "@/lib/admin/types";
 
 const CATEGORIES: AdminCategory[] = [
@@ -50,15 +52,38 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
     assert.equal(article.source, "SpaceNews");
     assert.equal(article.originalUrl, "https://spacenews.com/example");
     assert.equal(article.contentOrigin, "RSS");
-    assert.equal(article.imageUrl, "https://example.com/cover.jpg");
+    assert.equal(article.image, "https://example.com/cover.jpg");
   });
 
-  it("uses category fallback cover when coverImage empty", () => {
+  it("resolvePreviewImageFromForm prefers coverImage and aliases", () => {
+    assert.equal(
+      resolvePreviewImageFromForm(BASE_FORM),
+      "https://example.com/cover.jpg"
+    );
+    const withUrl = {
+      ...BASE_FORM,
+      coverImage: "",
+      imageUrl: "https://cdn.example/hero.jpg",
+    } as typeof BASE_FORM & { imageUrl: string };
+    assert.equal(
+      resolvePreviewImageFromForm(withUrl),
+      "https://cdn.example/hero.jpg"
+    );
+  });
+
+  it("uses category fallback on image when cover empty (preview model)", () => {
     const article = formToPreviewArticle({
       form: { ...BASE_FORM, coverImage: "" },
       categories: CATEGORIES,
     });
-    assert.ok(article.imageUrl.startsWith("https://"));
+    assert.ok(article.image.startsWith("https://"));
+  });
+
+  it("resolveImage shows gradient path when cover empty and no fallback", () => {
+    assert.equal(
+      resolveImage({ image: "", category: "misje" }, { withFallback: false }),
+      null
+    );
   });
 
   it("builds image credit when source URL present", () => {
@@ -75,6 +100,26 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
       previewSubtitle({ ...BASE_FORM, subtitle: "  " }),
       null
     );
+  });
+});
+
+describe("resolveImage (preview/public parity)", () => {
+  it("uses coverImage / image from DB first", () => {
+    assert.equal(
+      resolveImage({
+        image: "https://db/cover.jpg",
+        coverImage: "https://ignored-if-image-set.com/x.jpg",
+      }),
+      "https://db/cover.jpg"
+    );
+    assert.equal(
+      resolveImage({ coverImage: "https://db/cover.jpg" }),
+      "https://db/cover.jpg"
+    );
+  });
+
+  it("returns null without fallback when cover missing", () => {
+    assert.equal(resolveImage({ image: null }, { withFallback: false }), null);
   });
 });
 

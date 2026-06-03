@@ -11,6 +11,7 @@ import {
   markSlugsUsed,
   rankImportantNow,
   rankLatest,
+  withSectionFallback,
 } from "@/lib/home/rank-articles";
 import { isRssArticle } from "@/lib/ui/article-kind";
 
@@ -207,7 +208,7 @@ function CategorySection({
               )}
             >
               <CoverImage
-                src={lead.imageUrl}
+                src={lead.image}
                 alt={lead.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -682,23 +683,39 @@ export default async function ContentGrid() {
   }
 
   const importantRanked = rankImportantNow(allPublished, IMPORTANT_POOL);
-  const lead = pickHeroLead(importantRanked);
+  const lead =
+    pickHeroLead(importantRanked) ?? rankLatest(allPublished, 1)[0]!;
   const usedSlugs = new Set<string>();
   markSlugsUsed([lead], usedSlugs);
 
-  const importantNow = excludeBySlugs(importantRanked, usedSlugs).slice(
-    0,
+  const importantNow = withSectionFallback(
+    excludeBySlugs(importantRanked, usedSlugs).slice(0, IMPORTANT_SIDEBAR_LIMIT),
+    allPublished,
     IMPORTANT_SIDEBAR_LIMIT
   );
   markSlugsUsed(importantNow, usedSlugs);
 
-  const latest = rankLatest(excludeBySlugs(allPublished, usedSlugs), LATEST_LIMIT);
+  const latest = withSectionFallback(
+    rankLatest(excludeBySlugs(allPublished, usedSlugs), LATEST_LIMIT),
+    allPublished,
+    LATEST_LIMIT
+  );
   markSlugsUsed(latest, usedSlugs);
 
-  const categoryArticles = CATEGORY_ORDER.map((slug, i) => ({
-    slug,
-    articles: (categoryBuckets[i] ?? []).slice(0, 4),
-  }));
+  const categoryArticles = CATEGORY_ORDER.map((slug, i) => {
+    const fromBucket = categoryBuckets[i] ?? [];
+    const fromPublished = allPublished.filter((a) => a.category === slug);
+    const pool = fromBucket.length > 0 ? fromBucket : fromPublished;
+    return {
+      slug,
+      articles: withSectionFallback(pool.slice(0, 4), fromPublished.length > 0 ? fromPublished : allPublished, 4),
+    };
+  });
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("HOMEPAGE INPUT ARTICLES:", allPublished.length);
+    console.log("IMPORTANT NOW RESULT:", importantNow.length);
+  }
 
   const excludeForSidebar = [...usedSlugs];
 

@@ -1,10 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR11 + PR12, commit lokalny)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (sesja: CMS/API/DB spójność + homepage fallbacks — commit w tej sesji)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit lokalny:** `13f9181` — feat(WSS): CMS live preview + collapsible sidebar (PR11, PR12)  
-**Na remote po push:** `13f9181` (prod ma już `ef1f754` — PR9+PR10)
+**Ostatni commit lokalny:** zobacz `git log -1` (fix status + image + ranking)  
+**Na remote po push:** `ef1f754`+ (lokalnie kilka commitów do push — PR9–PR12 + fix sesji)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
@@ -33,32 +33,32 @@ Przeczytaj:
 - docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — ZAWSZE najpierw)
 - docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Stan po sesji 3.06.2026 (czaty 4–6 — PR10–PR12)
+## Stan po sesji 3.06.2026 (fix CMS write/read + homepage)
 
-Lokalnie na `main`: PR9 (related) + PR10 (scheduler) + PR11 (live preview) + PR12 (sidebar).  
-**Wymaga push** + `npm run db:deploy` (migracja `publishAt`) jeśli jeszcze nie na prod.
+Lokalnie na `main`: PR9–PR12 + **fix spójności CMS/API/DB** (status, obraz, ranking homepage).
 
-### Backend (PR10)
-- `publishAt`, `runScheduledPublish()`, cron `/api/cron/publish-scheduled`
-- CMS: Opublikuj teraz / Zaplanuj publikację
+### Status / zapis (krytyczne)
+- DB `Article.status` = jedyne źródło prawdy
+- **Autosave** — tylko title, content, coverImage, tags, categoryId (bez status)
+- **updateArticle** — tylko content; status przez `publishArticle` / `scheduleArticle` / `transitionArticleStatus`
+- CMS: „Do sprawdzenia” → PATCH `{ status: REVIEW }`; domyślna lista **Wszystkie**
+- Dev trace: `ARTICLE_WRITE_*`, `ARTICLE_STATUS_CHANGE`, `ARTICLE_FETCH_*` (terminal `npm run dev`)
 
-### Front artykułu (PR9)
-- Powiązane artykuły + Czytaj dalej (`lib/article/related-articles.ts`)
+### Obraz
+- DB: `coverImage` · public DTO: `NewsArticle.image` · `lib/articles/resolve-image.ts`
+- Preview split: natychmiastowy URL (`heroFromFormOnly`); public = `resolveImage()`
 
-### CMS UI (PR11 + PR12)
-- Split-screen editor + live preview (debounce 400ms, desktop/mobile)
-- Collapsible sidebar + mobile drawer + `admin-sidebar-collapsed`
+### Homepage
+- `withSectionFallback` w `lib/home/rank-articles.ts` — puste sekcje nie chowają artykułów
 
-### Testy npm
-npm run test:ui
-npm run test:articles
-npm run type-check
+### Testy
+npm run test:ui && npm run test:articles && npm run type-check
 
 ## Otwarte / następny czat (priorytet)
-1. **git push main** + Vercel deploy + **`db:deploy`** (`publishAt`)
-2. **PR-H4:** backfill `contentOrigin`
-3. Kolejka ~175 REVIEW — publikacja w CMS
-4. Opcjonalnie: views w DB dla „Popularne”
+1. **git push origin main** + Vercel + **`npm run db:deploy`** (`publishAt` jeśli brak na prod)
+2. Ręczny smoke: create → DRAFT → REVIEW → PUBLISH → API + homepage + obraz
+3. **PR-H4:** backfill `contentOrigin`
+4. Kolejka ~175 REVIEW w CMS
 
 Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
 ```
@@ -66,6 +66,73 @@ Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (czat 11) — CMS/API/DB/public spójność (audit fix)
+
+**Broken:** autosave nadpisywał status; `updateArticle` przyjmował status z payloadu; preview ≠ public (`image` vs `imageUrl`); domyślny filtr REVIEW ukrywał Szkice.
+
+| Obszar | Fix |
+|--------|-----|
+| Status | `updateArticle` = tylko content; `transitionArticleStatus` / `publishArticle` / `scheduleArticle`; autosave bez status |
+| Trace | `ARTICLE_WRITE_*`, `ARTICLE_STATUS_CHANGE`, `ARTICLE_FETCH_CMS/PUBLIC` (dev) |
+| Image | `resolveImage()`; DB `coverImage` → public `image`; usunięto `imageUrl` z `NewsArticle` |
+| CMS | przycisk „Do sprawdzenia”; filtr domyślny **Wszystkie**; preview cover bez debounce |
+
+### Sesja 3.06.2026 (czat 10) — CMS read/write path fix (status + image + lista)
+
+**Broken:** autosave wysyłał `status: DRAFT` zanim załadował REVIEW z API; preview hero tylko z `image` (bez fallback `imageUrl`); domyślny filtr CMS = REVIEW (ukrywał Szkice).
+
+| Plik | Fix |
+|------|-----|
+| `ArticleEditor.tsx` | autosave bez `status`; gate do `loadedArticle` |
+| `app/admin/articles/page.tsx` | domyślny filtr **Wszystkie** |
+| `lib/articles.ts` | `image` = tylko DB `coverImage`; `imageUrl` = cover + fallback |
+| `lib/ui/article-hero-image.ts` | `resolveHeroImage` — preview = public hero |
+| `ArticlePublicPreview.tsx` | używa `resolveHeroImage` |
+
+### Sesja 3.06.2026 (czat 9) — article write path (create/update persistence)
+
+**Problem:** status / coverImage / content niespójne między CMS, API a public; obrazy z aliasów `image`/`imageUrl` nie trafiały do DB.
+
+| Plik | Zmiana |
+|------|--------|
+| `lib/server/article-fields.ts` | `coverImage \|\| imageUrl \|\| image` → DB `coverImage` |
+| `lib/server/validation.ts` | create/update parse cover; update nie nadpisuje cover bez kluczy obrazu |
+| `lib/server/articles.ts` | jawny `buildPrismaUpdateInput`; dev `ARTICLE WRITE` log |
+| `ArticleEditor.tsx` | explicit `status` na create (DRAFT) i update |
+| `lib/articles/article-write.test.ts` | testy mapowania cover |
+
+Test: `npm run test:articles` · `npm run type-check`
+
+### Sesja 3.06.2026 (czat 8) — homepage ranking fallback (UI only)
+
+**Problem:** artykuły PUBLISHED w `/api/articles` nie pojawiały się w sekcjach homepage (dedupe + pusty pool po wykluczeniu slugów).
+
+| Plik | Zmiana |
+|------|--------|
+| `lib/home/rank-articles.ts` | `withSectionFallback`; `rankPopular` / `rankImportantNow` z gwarancją niepustej sekcji |
+| `ContentGrid.tsx` | fallback sekcji; kategorie z `allPublished` gdy bucket pusty; dev logi |
+| `PopularArticles.tsx` / `HomeSidebar.tsx` | pool = pełna lista gdy exclude wycina wszystko |
+
+Test: `npm run test:ui`
+
+### Sesja 3.06.2026 (czat 7) — fix obrazów w preview (UI only)
+
+**Problem:** hero nie renderował okładek w live preview, podglądzie publikacji ani `ArticlePublicPreview`.
+
+**Cel:** jedno pole `image` w modelu preview; hero tylko z `article.image`; fallback gradient bez crasha.
+
+| Plik | Zmiana |
+|------|--------|
+| `lib/admin/preview-article.ts` | `resolvePreviewImageFromForm` — `imageUrl \|\| coverImage \|\| image`; `formToPreviewArticle` ustawia `image` + `imageUrl` |
+| `components/article/ArticlePublicPreview.tsx` | hero z `article.image`; dev `console.log("PREVIEW IMAGE:", …)`; `unoptimized` w embedded |
+| `types/index.ts` | opcjonalne `NewsArticle.image` |
+| `lib/articles.ts` | `toNewsArticle` ustawia `image` (podgląd z DB / preview route) |
+| `lib/ui/preview-article.test.ts` | testy mapowania `image` |
+
+**Nie ruszano:** API, DB, RSS, workflow, ranking, contentOrigin.
+
+Test: `npm run test:ui` · `npm run type-check`
 
 ### Sesja 3.06.2026 (czat 6) — PR12 collapsible admin sidebar (UI only)
 

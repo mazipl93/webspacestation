@@ -51,8 +51,8 @@ export function buildRssXml({
       const cat = getCategoryInfo(article.category);
       const articleUrl = `${siteUrl}/aktualnosci/${article.slug}`;
       const enclosure =
-        article.imageUrl.startsWith("http")
-          ? `\n      <enclosure url="${escapeXml(article.imageUrl)}" type="image/jpeg" length="0"/>`
+        article.image.startsWith("http")
+          ? `\n      <enclosure url="${escapeXml(article.image)}" type="image/jpeg" length="0"/>`
           : "";
 
       return `    <item>

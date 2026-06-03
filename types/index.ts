@@ -15,7 +15,8 @@ export interface NewsArticle {
   category: NewsCategory;
   publishedAt: string; // ISO 8601
   timeLabel: string; // pre-formatted relative label, e.g. "2 godz. temu"
-  imageUrl: string;
+  /** Public DTO — mapped from DB coverImage via resolveImage(). */
+  image: string;
   slug: string;
   isBreaking?: boolean;
   /** score >= 10 — hero / card top emphasis */

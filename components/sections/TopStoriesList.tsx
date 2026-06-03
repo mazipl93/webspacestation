@@ -30,7 +30,7 @@ export default function TopStoriesList({ articles }: { articles: NewsArticle[] }
               >
                 <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-lg border border-hairline-faint sm:h-16 sm:w-16">
                   <Image
-                    src={article.imageUrl}
+                    src={article.image}
                     alt=""
                     fill
                     sizes="88px"

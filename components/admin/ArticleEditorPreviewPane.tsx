@@ -78,20 +78,26 @@ function ArticleEditorPreviewPaneInner({
   const [viewport, setViewport] = useState<ArticlePreviewViewport>("desktop");
   const debouncedForm = useDebouncedValue(form, PREVIEW_DEBOUNCE_MS);
 
+  const previewForm = useMemo(
+    () => ({ ...debouncedForm, coverImage: form.coverImage }),
+    [debouncedForm, form.coverImage]
+  );
+
   const previewArticle = useMemo(
     () =>
       formToPreviewArticle({
-        form: debouncedForm,
+        form: previewForm,
         categories,
         contentOrigin,
         articleId: articleId ?? undefined,
+        heroFromFormOnly: true,
       }),
-    [debouncedForm, categories, contentOrigin, articleId]
+    [previewForm, categories, contentOrigin, articleId]
   );
 
   const subtitle = useMemo(
-    () => previewSubtitle(debouncedForm),
-    [debouncedForm]
+    () => previewSubtitle(previewForm),
+    [previewForm]
   );
 
   return (

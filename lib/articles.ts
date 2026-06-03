@@ -12,14 +12,13 @@ import {
   isTopPriorityScore,
 } from "@/lib/news/score-thresholds";
 import { isRssArticle } from "@/lib/ui/article-kind";
-import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
 import { getRssImageCreditForArticle } from "@/lib/rss/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
 import {
   pickReadNext,
   pickRelatedArticles,
 } from "@/lib/article/related-articles";
-import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
+import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
 import type { NewsArticle, NewsCategory } from "@/types";
 
 // Public reads now come from the Prisma DB (single source of truth shared with
@@ -60,11 +59,12 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
         .filter(Boolean)
     : [];
 
-  const cover =
-    a.coverImage?.trim() ||
-    (isRss
-      ? pickCategoryCoverFallback(a.category.slug, a.slug)
-      : SEARCH_FALLBACK_IMAGE);
+  const image = resolveImageOrFallback({
+    coverImage: a.coverImage,
+    category: a.category.slug,
+    slug: a.slug,
+    contentOrigin: a.contentOrigin,
+  });
 
   return {
     id: a.id,
@@ -74,7 +74,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     category: a.category.slug as NewsCategory,
     publishedAt: when.toISOString(),
     timeLabel: relativeLabel(when),
-    imageUrl: cover,
+    image,
     isBreaking:
       !isRss && (isBreakingScore(a.score ?? 0) || Boolean(a.featured)),
     isTopPriority: !isRss && isTopPriorityScore(a.score ?? 0),

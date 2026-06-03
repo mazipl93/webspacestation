@@ -129,12 +129,13 @@ describe("RSS / AI pipeline status contracts (read-only)", () => {
     assert.doesNotMatch(src, /ArticleStatus\.PUBLISHED/);
   });
 
-  it("updateArticle does not infer status from source fields", () => {
+  it("updateArticle does not apply status (workflow transitions only)", () => {
     const src = readFileSync(
       join(process.cwd(), "lib", "server", "articles.ts"),
       "utf8"
     );
-    assert.match(src, /input\.status !== undefined/);
+    assert.match(src, /buildPrismaContentUpdateInput/);
+    assert.match(src, /transitionArticleStatus/);
     assert.doesNotMatch(src, /source.*status|originalUrl.*status/i);
   });
 });

@@ -44,7 +44,7 @@ export default function HeroArticle({
         style={{ background: categoryFallbackBg(article.category) }}
       >
         <CoverImage
-          src={article.imageUrl}
+          src={article.image}
           alt=""
           fill
           priority

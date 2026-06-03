@@ -6,6 +6,7 @@ import {
   rankLatest,
   rankPopular,
   rankScore,
+  withSectionFallback,
 } from "@/lib/home/rank-articles";
 
 const BASE = {
@@ -63,5 +64,20 @@ describe("rankArticles (PR8 — homepage)", () => {
       score: n,
     }));
     assert.equal(rankArticles(items, { limit: 3 }).length, 3);
+  });
+
+  it("withSectionFallback uses rankLatest when section result is empty", () => {
+    const items = [
+      { ...BASE, slug: "only", createdAt: BASE.createdAt, publishedAt: BASE.publishedAt },
+    ];
+    const fallback = withSectionFallback([], items, 3);
+    assert.equal(fallback.length, 1);
+    assert.equal(fallback[0]?.slug, "only");
+  });
+
+  it("rankPopular falls back to latest when pool has one item", () => {
+    const ranked = rankPopular([{ ...BASE, slug: "solo", score: 0 }], { limit: 6 });
+    assert.equal(ranked.length, 1);
+    assert.equal(ranked[0]?.slug, "solo");
   });
 });

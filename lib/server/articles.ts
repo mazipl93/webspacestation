@@ -35,6 +35,13 @@ import {
   summarizeSchedulePublishRun,
   type SchedulePublishRunResult,
 } from "@/lib/articles/schedule-publisher";
+import {
+  traceArticleFetchCms,
+  traceArticleFetchPublic,
+  traceArticleStatusChange,
+  traceArticleWriteInput,
+  traceArticleWriteOutput,
+} from "@/lib/server/article-trace";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -103,11 +110,13 @@ export function getPublishedArticles(): Promise<ArticleWithRelations[]> {
   return unstable_cache(
     async (): Promise<ArticleWithRelations[]> => {
       try {
-        return await prisma.article.findMany({
+        const rows = await prisma.article.findMany({
           where: PUBLISHED_ARTICLE_WHERE,
           orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
           select: articleSelect,
         });
+        traceArticleFetchPublic({ scope: "published-all", count: rows.length });
+        return rows;
       } catch (error) {
         console.error("[getPublishedArticles]", error);
         return [];
@@ -238,6 +247,12 @@ export function getArticlesForAdmin(
     where,
     orderBy: { createdAt: "desc" },
     select: articleSelect,
+  }).then((rows) => {
+    traceArticleFetchCms({
+      status: query.status ?? "ALL",
+      count: rows.length,
+    });
+    return rows;
   });
 }
 
@@ -276,6 +291,73 @@ export async function getArticleStats(): Promise<ArticleStats> {
   return { total, published, draft, review, scheduled, archived, categories };
 }
 
+/** Content-only Prisma patch — never applies status (workflow uses dedicated transitions). */
+function buildPrismaContentUpdateInput(
+  input: ArticleUpdateInput
+): Prisma.ArticleUncheckedUpdateInput {
+  const data: Prisma.ArticleUncheckedUpdateInput = {};
+
+  if (input.title !== undefined) data.title = input.title;
+  if (input.slug !== undefined) data.slug = input.slug;
+  if (input.subtitle !== undefined) data.subtitle = input.subtitle;
+  if (input.excerpt !== undefined) data.excerpt = input.excerpt;
+  if (input.content !== undefined) data.content = input.content;
+  if (input.contextNote !== undefined) data.contextNote = input.contextNote;
+  if (input.coverImage !== undefined) data.coverImage = input.coverImage;
+  if (input.categoryId !== undefined) data.categoryId = input.categoryId;
+  if (input.featured !== undefined) data.featured = input.featured;
+  if (input.readingTime !== undefined) data.readingTime = input.readingTime;
+  if (input.tags !== undefined) data.tags = input.tags;
+  if (input.source !== undefined) data.source = input.source;
+  if (input.originalUrl !== undefined) data.originalUrl = input.originalUrl;
+
+  return data;
+}
+
+/**
+ * Explicit editorial status transition (DRAFT / REVIEW / ARCHIVED).
+ * PUBLISHED and SCHEDULED use publishArticle / scheduleArticle.
+ */
+export async function transitionArticleStatus(
+  id: string,
+  nextStatus: ArticleStatus
+): Promise<ArticleWithRelations | null> {
+  if (
+    nextStatus === ArticleStatus.PUBLISHED ||
+    nextStatus === ArticleStatus.SCHEDULED
+  ) {
+    throw new ArticleWorkflowError(
+      "Użyj publishArticle lub scheduleArticle dla tego statusu."
+    );
+  }
+
+  const existing = await prisma.article.findUnique({
+    where: { id },
+    select: { status: true, publishedAt: true },
+  });
+  if (!existing) return null;
+
+  traceArticleStatusChange(id, existing.status, nextStatus, "transitionArticleStatus");
+
+  const article = await prisma.article.update({
+    where: { id },
+    data: {
+      status: nextStatus,
+      ...publishedAtPatchForStatusTransition(nextStatus, existing),
+    },
+    select: articleSelect,
+  });
+
+  traceArticleWriteOutput({
+    id: article.id,
+    status: article.status,
+    coverImage: article.coverImage,
+    title: article.title,
+  });
+
+  return article;
+}
+
 /** First admin user id — temporary author fallback until auth exists. */
 async function getDefaultAuthorId(): Promise<string> {
   const admin = await prisma.user.findFirst({
@@ -299,6 +381,8 @@ export async function createArticle(
 ): Promise<ArticleWithRelations> {
   const resolvedAuthorId = authorId ?? (await getDefaultAuthorId());
   const status = resolveCreateStatus(input.status);
+
+  traceArticleWriteInput("create", { ...input, status });
 
   if (status === ArticleStatus.PUBLISHED) {
     const check = validatePublishReady({
@@ -328,7 +412,7 @@ export async function createArticle(
   const publishedAt =
     status === ArticleStatus.PUBLISHED ? new Date() : null;
 
-  return prisma.article.create({
+  const article = await prisma.article.create({
     data: {
       slug: input.slug,
       title: input.title,
@@ -351,11 +435,19 @@ export async function createArticle(
     },
     select: articleSelect,
   });
+
+  traceArticleWriteOutput({
+    id: article.id,
+    status: article.status,
+    coverImage: article.coverImage,
+    title: article.title,
+  });
+
+  return article;
 }
 
 /**
- * Update an article. Status changes only when explicitly passed in input.
- * No automatic workflow transitions from content, source, or contentOrigin.
+ * Update article content fields only. Status is ignored — use workflow transitions.
  */
 export async function updateArticle(
   id: string,
@@ -363,61 +455,31 @@ export async function updateArticle(
 ): Promise<ArticleWithRelations | null> {
   const existing = await prisma.article.findUnique({
     where: { id },
-    select: {
-      status: true,
-      publishedAt: true,
-      title: true,
-      content: true,
-      categoryId: true,
-    },
+    select: { id: true },
   });
   if (!existing) return null;
 
-  if (input.status === ArticleStatus.PUBLISHED) {
-    const check = validatePublishReady({
-      title: input.title ?? existing.title,
-      content: input.content !== undefined ? input.content : existing.content,
-      categoryId: input.categoryId ?? existing.categoryId,
-    });
-    if (!check.ok) throw new ArticleWorkflowError(check.message);
+  traceArticleWriteInput("update", input);
+
+  const data = buildPrismaContentUpdateInput(input);
+  if (Object.keys(data).length === 0) {
+    return getArticleById(id);
   }
 
-  if (input.status === ArticleStatus.SCHEDULED) {
-    const publishAt = input.publishAt;
-    if (!publishAt) {
-      throw new ArticleWorkflowError(
-        "Data zaplanowanej publikacji jest wymagana."
-      );
-    }
-    const pubCheck = validatePublishReady({
-      title: input.title ?? existing.title,
-      content: input.content !== undefined ? input.content : existing.content,
-      categoryId: input.categoryId ?? existing.categoryId,
-    });
-    if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
-    const timeCheck = validateScheduleTime(publishAt);
-    if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
-  }
-
-  // HARD RULE: contentOrigin is immutable after creation (ingest → RSS, CMS create → EDITORIAL).
-  const data: Prisma.ArticleUncheckedUpdateInput = { ...input };
-  delete (data as { contentOrigin?: unknown }).contentOrigin;
-
-  if (input.status !== undefined) {
-    Object.assign(
-      data,
-      publishedAtPatchForStatusTransition(input.status, existing)
-    );
-    if (input.status === ArticleStatus.PUBLISHED) {
-      data.publishAt = null;
-    }
-  }
-
-  return prisma.article.update({
+  const article = await prisma.article.update({
     where: { id },
     data,
     select: articleSelect,
   });
+
+  traceArticleWriteOutput({
+    id: article.id,
+    status: article.status,
+    coverImage: article.coverImage,
+    title: article.title,
+  });
+
+  return article;
 }
 
 /**
@@ -447,6 +509,13 @@ export async function publishArticle(
   });
   if (!check.ok) throw new ArticleWorkflowError(check.message);
 
+  traceArticleStatusChange(
+    id,
+    existing.status,
+    ArticleStatus.PUBLISHED,
+    "publishArticle"
+  );
+
   const article = await prisma.article.update({
     where: { id },
     data: {
@@ -455,6 +524,13 @@ export async function publishArticle(
       publishAt: null,
     },
     select: articleSelect,
+  });
+
+  traceArticleWriteOutput({
+    id: article.id,
+    status: article.status,
+    coverImage: article.coverImage,
+    title: article.title,
   });
 
   await refreshArticleRanking(id);
@@ -490,7 +566,21 @@ export async function scheduleArticle(
   const timeCheck = validateScheduleTime(publishAt);
   if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
 
-  return prisma.article.update({
+  const existingStatus = await prisma.article.findUnique({
+    where: { id },
+    select: { status: true },
+  });
+
+  if (existingStatus) {
+    traceArticleStatusChange(
+      id,
+      existingStatus.status,
+      ArticleStatus.SCHEDULED,
+      "scheduleArticle"
+    );
+  }
+
+  const article = await prisma.article.update({
     where: { id },
     data: {
       status: ArticleStatus.SCHEDULED,
@@ -498,6 +588,15 @@ export async function scheduleArticle(
     },
     select: articleSelect,
   });
+
+  traceArticleWriteOutput({
+    id: article.id,
+    status: article.status,
+    coverImage: article.coverImage,
+    title: article.title,
+  });
+
+  return article;
 }
 
 /**

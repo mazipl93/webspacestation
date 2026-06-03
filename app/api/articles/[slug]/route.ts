@@ -8,6 +8,7 @@ import {
   publishArticle,
   refreshArticleRanking,
   scheduleArticle,
+  transitionArticleStatus,
   updateArticle,
   ArticleWorkflowError,
 } from "@/lib/server/articles";
@@ -82,63 +83,60 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       return jsonError(400, "VALIDATION_ERROR", parsed.message);
     }
 
+    const { status, publishAt, ...content } = parsed.value;
+
     if (
-      (parsed.value.status === "PUBLISHED" ||
-        parsed.value.status === "SCHEDULED") &&
+      (status === "PUBLISHED" || status === "SCHEDULED") &&
       !canPublishArticle(guard.user.role)
     ) {
       return forbidden();
     }
 
-    let article;
-    if (
-      parsed.value.status === ArticleStatus.PUBLISHED &&
-      Object.keys(parsed.value).length === 1
-    ) {
-      article = await publishArticle(id);
-    } else if (
-      parsed.value.status === ArticleStatus.SCHEDULED &&
-      parsed.value.publishAt &&
-      Object.keys(parsed.value).length === 2
-    ) {
-      article = await scheduleArticle(id, parsed.value.publishAt);
-    } else {
-      if (parsed.value.status === ArticleStatus.PUBLISHED) {
-        const existing = await getArticleById(id);
-        if (!existing) return jsonError(404, "NOT_FOUND", "Article not found.");
-        const pubCheck = validatePublishReady({
-          title: parsed.value.title ?? existing.title,
-          content:
-            parsed.value.content !== undefined
-              ? parsed.value.content
-              : existing.content,
-          categoryId: parsed.value.categoryId ?? existing.category.id,
-        });
-        if (!pubCheck.ok) {
-          return jsonError(400, "VALIDATION_ERROR", pubCheck.message);
-        }
-      }
-      article = await updateArticle(id, parsed.value);
+    const existing = await getArticleById(id);
+    if (!existing) return jsonError(404, "NOT_FOUND", "Article not found.");
+
+    if (Object.keys(content).length > 0) {
+      const updated = await updateArticle(id, content);
+      if (!updated) return jsonError(404, "NOT_FOUND", "Article not found.");
     }
 
-    if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
+    let article = (await getArticleById(id))!;
 
-    const wasPublished =
-      parsed.value.status === ArticleStatus.PUBLISHED ||
-      article.status === ArticleStatus.PUBLISHED;
+    if (status === ArticleStatus.PUBLISHED) {
+      const pubCheck = validatePublishReady({
+        title: content.title ?? article.title,
+        content:
+          content.content !== undefined ? content.content : article.content,
+        categoryId: content.categoryId ?? article.category.id,
+      });
+      if (!pubCheck.ok) {
+        return jsonError(400, "VALIDATION_ERROR", pubCheck.message);
+      }
+      const published = await publishArticle(id);
+      if (!published) return jsonError(404, "NOT_FOUND", "Article not found.");
+      article = published;
+    } else if (status === ArticleStatus.SCHEDULED) {
+      if (!publishAt) {
+        return jsonError(
+          400,
+          "VALIDATION_ERROR",
+          "Data zaplanowanej publikacji jest wymagana."
+        );
+      }
+      const scheduled = await scheduleArticle(id, publishAt);
+      if (!scheduled) return jsonError(404, "NOT_FOUND", "Article not found.");
+      article = scheduled;
+    } else if (status === ArticleStatus.REVIEW || status === ArticleStatus.DRAFT) {
+      const transitioned = await transitionArticleStatus(id, status);
+      if (!transitioned) return jsonError(404, "NOT_FOUND", "Article not found.");
+      article = transitioned;
+    }
 
-    const usedPublishArticle =
-      parsed.value.status === ArticleStatus.PUBLISHED &&
-      Object.keys(parsed.value).length === 1;
-
-    if (
-      parsed.value.status === ArticleStatus.PUBLISHED &&
-      !usedPublishArticle
-    ) {
+    if (status === ArticleStatus.PUBLISHED) {
       await refreshArticleRanking(article.id);
     }
 
-    if (wasPublished || parsed.value.status === ArticleStatus.PUBLISHED) {
+    if (article.status === ArticleStatus.PUBLISHED) {
       revalidateTag(ARTICLES_TAG);
       revalidateTag(articleTag(article.slug));
       revalidateTag(categoryTag(article.category.slug));
@@ -168,7 +166,6 @@ export async function DELETE(_request: NextRequest, { params }: Ctx) {
     const article = await archiveArticle(id);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
 
-    // Archiving removes it from public feeds — invalidate the same surfaces.
     revalidateTag(ARTICLES_TAG);
     revalidateTag(articleTag(article.slug));
     revalidateTag(categoryTag(article.category.slug));
