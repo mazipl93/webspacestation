@@ -3,7 +3,7 @@
 **Ostatnia aktualizacja:** 3 czerwca 2026 (PR6.1 UX lock — terminologia + deploy sesji 3.06)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** patrz `git log -1` po push tej sesji (wcześniej `1d973e6`)  
+**Ostatni commit na remote:** `0bbfdb5` — feat(WSS): unify CMS, contentOrigin, workflow and editorial UX (PR3-PR6.1)  
 **Stan:** sesja 3.06 zacommitowana i wdrożona (contentOrigin, workflow, PR3–PR6.1)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
