@@ -197,7 +197,7 @@ async function persistItem(
 
       authorId,
 
-      publishedAt: item.publishedAt,
+      publishedAt: null,
 
     },
 

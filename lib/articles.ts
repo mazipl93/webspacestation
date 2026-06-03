@@ -47,9 +47,11 @@ function relativeLabel(date: Date): string {
 // Map a DB article (with relations) onto the NewsArticle shape the public UI
 // expects. `featured` drives the "Najważniejsze" badge / lead-story pick.
 export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
-  // `when` may arrive as a Date (direct Prisma) or an ISO string (after the
-  // unstable_cache Data Cache round-trips the value), so coerce defensively.
-  const when = new Date(a.publishedAt ?? a.createdAt);
+  // publishedAt = CMS „Opublikuj” moment only (never RSS ingest / createdAt).
+  const when =
+    a.publishedAt != null
+      ? new Date(a.publishedAt)
+      : new Date(a.updatedAt ?? a.createdAt);
   const isRss = isRssArticle(a.contentOrigin);
 
   const paragraphs = a.content
@@ -109,6 +111,12 @@ export async function getAllArticles(): Promise<NewsArticle[]> {
 export async function getRankedArticles(limit = 20): Promise<NewsArticle[]> {
   const articles = await getRankedPublishedArticles(limit);
   return articles.map(toNewsArticle);
+}
+
+/** Public feed — newest by CMS publish time (Najnowsze). */
+export async function getLatestArticles(limit = 40): Promise<NewsArticle[]> {
+  const articles = await getPublishedArticles();
+  return articles.slice(0, limit).map(toNewsArticle);
 }
 
 export async function getAllSlugs(): Promise<string[]> {

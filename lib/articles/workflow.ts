@@ -1,4 +1,5 @@
 import { ArticleStatus } from "@prisma/client";
+import { SCHEDULE_MIN_LEAD_MS } from "@/lib/admin/schedule-datetime";
 
 /**
  * Article lifecycle — status is the ONLY workflow driver.
@@ -50,8 +51,8 @@ export function validatePublishReady(
 }
 
 /**
- * publishedAt side effects — only when status is explicitly transitioned.
- * SCHEDULED does not stamp publishedAt (scheduler sets it on auto-publish).
+ * @deprecated Use articleStateTransition publishedAt rules in lib/server/articles.ts.
+ * publishedAt is stamped only on explicit PUBLISH; cleared on all other transitions.
  */
 export function publishedAtPatchForStatusTransition(
   nextStatus: ArticleStatus,
@@ -77,10 +78,11 @@ export function validateScheduleTime(
   if (!Number.isFinite(publishAt.getTime())) {
     return { ok: false, message: "Nieprawidłowa data zaplanowanej publikacji." };
   }
-  if (publishAt.getTime() <= now.getTime()) {
+  if (publishAt.getTime() < now.getTime() + SCHEDULE_MIN_LEAD_MS) {
     return {
       ok: false,
-      message: "Data zaplanowanej publikacji musi być w przyszłości.",
+      message:
+        "Data zaplanowanej publikacji musi być co najmniej 1 minutę w przyszłości (czas lokalny).",
     };
   }
   return { ok: true };

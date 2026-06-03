@@ -32,6 +32,25 @@ import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import ArticleEditorPreviewPane from "@/components/admin/ArticleEditorPreviewPane";
+import {
+  combineDateIso,
+  combineDatetimeLocal,
+  combineTime24,
+  datetimeLocalToIso,
+  daysInMonth,
+  HOURS_24,
+  MINUTES_60,
+  MONTHS_PL,
+  scheduleYearOptions,
+  splitDateIso,
+  splitDatetimeLocal,
+  splitTime24,
+  formatScheduleLabel,
+  isPublishScheduleDue,
+  todayDateParts,
+  toDatetimeLocalValue,
+  validateScheduleLocal,
+} from "@/lib/admin/schedule-datetime";
 
 const EMPTY_FORM: ArticleFormValues = {
   title: "",
@@ -51,20 +70,6 @@ const EMPTY_FORM: ArticleFormValues = {
 };
 
 const AUTOSAVE_DELAY = 1500;
-
-function toDatetimeLocalValue(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function datetimeLocalToIso(local: string): string | null {
-  if (!local.trim()) return null;
-  const d = new Date(local);
-  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
-}
 
 function tagsToText(tags: string[] | undefined): string {
   return (tags ?? []).filter((t) => t.trim()).join(", ");
@@ -127,6 +132,192 @@ function canRefineContent(form: ArticleFormValues): boolean {
   return hasCitationFields(form.sourceName, form.sourceUrl);
 }
 
+function defaultScheduleTimeLocal(): string {
+  const d = new Date(Date.now() + 120_000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function SchedulePublishFields({
+  publishAtLocal,
+  onChange,
+}: {
+  publishAtLocal: string;
+  onChange: (value: string) => void;
+}) {
+  const { date, time } = splitDatetimeLocal(publishAtLocal);
+  const { hour, minute } = splitTime24(time);
+  const dateParts = splitDateIso(date);
+  const today = todayDateParts();
+  const years = scheduleYearOptions();
+
+  const dateIso = combineDateIso(
+    dateParts.year,
+    dateParts.month,
+    dateParts.day
+  );
+
+  const applySchedule = (
+    nextYear: string,
+    nextMonth: string,
+    nextDay: string,
+    nextHour: string,
+    nextMinute: string
+  ) => {
+    const d = combineDateIso(nextYear, nextMonth, nextDay);
+    if (!d) return;
+    const h = nextHour || hour || "00";
+    const m = nextMinute || minute || "00";
+    const t = combineTime24(h, m);
+    if (!t) return;
+    onChange(combineDatetimeLocal(d, t));
+  };
+
+  const dayOptions =
+    dateParts.year && dateParts.month
+      ? Array.from(
+          {
+            length: daysInMonth(
+              Number(dateParts.year),
+              Number(dateParts.month)
+            ),
+          },
+          (_, i) => String(i + 1).padStart(2, "0")
+        )
+      : Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0"));
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-[10px] leading-snug text-text-muted">
+        Data i godzina w czasie lokalnym (24h). Po „Zaplanuj” artykuł czeka na cron
+        serwera (ok. raz na godzinę, w :00) — nie w dokładnej minucie. Lokalnie:
+        <code className="mx-0.5 rounded bg-white/10 px-1">npm run publish:scheduled</code>.
+      </p>
+      <Field label="Data publikacji" hint="Dzień · miesiąc · rok (po polsku)">
+        <div className="grid grid-cols-3 gap-2">
+          <Select
+            id="publishAtDay"
+            aria-label="Dzień miesiąca"
+            value={dateParts.day}
+            onChange={(e) =>
+              applySchedule(
+                dateParts.year || today.year,
+                dateParts.month || today.month,
+                e.target.value,
+                hour,
+                minute
+              )
+            }
+          >
+            <option value="">Dzień</option>
+            {dayOptions.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </Select>
+          <Select
+            id="publishAtMonth"
+            aria-label="Miesiąc"
+            value={dateParts.month}
+            onChange={(e) =>
+              applySchedule(
+                dateParts.year || today.year,
+                e.target.value,
+                dateParts.day || today.day,
+                hour,
+                minute
+              )
+            }
+          >
+            <option value="">Miesiąc</option>
+            {MONTHS_PL.map((mo) => (
+              <option key={mo.value} value={mo.value}>
+                {mo.label}
+              </option>
+            ))}
+          </Select>
+          <Select
+            id="publishAtYear"
+            aria-label="Rok"
+            value={dateParts.year}
+            onChange={(e) =>
+              applySchedule(
+                e.target.value,
+                dateParts.month || today.month,
+                dateParts.day || today.day,
+                hour,
+                minute
+              )
+            }
+          >
+            <option value="">Rok</option>
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Field>
+      <Field label="Godzina (24h)" hint="Godzina 00–23 i minuta">
+        <div className="flex items-center gap-2">
+          <Select
+            id="publishAtHour"
+            aria-label="Godzina 0–23"
+            value={hour}
+            disabled={!dateIso}
+            onChange={(e) => {
+              const nextHour = e.target.value;
+              applySchedule(
+                dateParts.year || today.year,
+                dateParts.month || today.month,
+                dateParts.day || today.day,
+                nextHour,
+                minute || "00"
+              );
+            }}
+            className="min-w-0 flex-1"
+          >
+            <option value="">Godz.</option>
+            {HOURS_24.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </Select>
+          <span className="text-body font-semibold text-text-secondary" aria-hidden>
+            :
+          </span>
+          <Select
+            id="publishAtMinute"
+            aria-label="Minuta 0–59"
+            value={minute}
+            disabled={!dateIso}
+            onChange={(e) => {
+              applySchedule(
+                dateParts.year || today.year,
+                dateParts.month || today.month,
+                dateParts.day || today.day,
+                hour || "00",
+                e.target.value
+              );
+            }}
+            className="min-w-0 flex-1"
+          >
+            <option value="">Min.</option>
+            {MINUTES_60.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Field>
+    </div>
+  );
+}
+
 export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const { role } = useAdminAuth();
   const mayPublish = canPublishArticle(role);
@@ -151,9 +342,20 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const dirty = useRef(false);
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
+  /** Sync id for persist/autosave — avoids duplicate POST before React re-renders. */
+  const articleIdRef = useRef<string | null>(articleId ?? null);
+  const createInFlightRef = useRef(false);
+  /** Pause autosave after slug conflict until user changes slug. */
+  const autosaveBlockedRef = useRef(false);
 
   const showRefinePanel = Boolean(currentId) && canRefineContent(form);
   const typeLabel = cmsArticleTypeLabel(form.sourceName, form.sourceUrl);
+  const schedulePastDue =
+    status === "SCHEDULED" &&
+    isPublishScheduleDue(loadedArticle?.publishAt ?? null);
+  const scheduleDueLabel = loadedArticle?.publishAt
+    ? formatScheduleLabel(new Date(loadedArticle.publishAt))
+    : null;
 
   useEffect(() => {
     let active = true;
@@ -164,6 +366,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         if (articleId) {
           const article = await adminApi.getArticle(articleId);
           if (!active) return;
+          articleIdRef.current = article.id;
           setLoadedArticle(article);
           setForm(toForm(article));
           setStatus(article.status);
@@ -189,6 +392,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         publish?: boolean;
         schedule?: boolean;
         review?: boolean;
+        draft?: boolean;
         silent?: boolean;
       } = {}
     ) => {
@@ -205,6 +409,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         if (!opts.silent) setError("Podaj datę zaplanowanej publikacji.");
         return;
       }
+      if (opts.schedule) {
+        const scheduleCheck = validateScheduleLocal(form.publishAtLocal);
+        if (!scheduleCheck.ok) {
+          if (!opts.silent) setError(scheduleCheck.message);
+          return;
+        }
+      }
+      if (!articleIdRef.current && createInFlightRef.current) return;
 
       savingRef.current = true;
       setSaving(true);
@@ -213,10 +425,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       );
       setError(null);
 
+      const publishAtLocalDraft = form.publishAtLocal;
+
       try {
         let saved: AdminArticle;
+        const activeId = articleIdRef.current;
 
-        if (!currentId) {
+        if (!activeId) {
+          createInFlightRef.current = true;
           const createPayload: ArticleWritePayload = {
             ...toPayload(form),
             status: opts.publish
@@ -229,42 +445,67 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             createPayload.publishAt = datetimeLocalToIso(form.publishAtLocal);
           }
           saved = await adminApi.createArticle(createPayload);
+          articleIdRef.current = saved.id;
+          autosaveBlockedRef.current = false;
           setCurrentId(saved.id);
           window.history.replaceState(null, "", `/admin/articles/${saved.id}/edit`);
         } else if (opts.publish) {
-          await adminApi.updateArticle(currentId, toPayload(form));
-          saved = await adminApi.updateArticle(currentId, { status: "PUBLISHED" });
+          await adminApi.updateArticle(activeId, toPayload(form));
+          saved = await adminApi.updateArticle(activeId, { status: "PUBLISHED" });
         } else if (opts.schedule) {
-          await adminApi.updateArticle(currentId, toPayload(form));
-          saved = await adminApi.updateArticle(currentId, {
+          await adminApi.updateArticle(activeId, toPayload(form));
+          saved = await adminApi.updateArticle(activeId, {
             status: "SCHEDULED",
             publishAt: datetimeLocalToIso(form.publishAtLocal),
           });
         } else if (opts.review) {
-          await adminApi.updateArticle(currentId, toPayload(form));
-          saved = await adminApi.updateArticle(currentId, { status: "REVIEW" });
+          await adminApi.updateArticle(activeId, toPayload(form));
+          saved = await adminApi.updateArticle(activeId, { status: "REVIEW" });
+        } else if (opts.draft) {
+          saved = await adminApi.updateArticle(activeId, toPayload(form));
+          if (saved.status !== "DRAFT" && saved.status !== "PUBLISHED") {
+            saved = await adminApi.updateArticle(activeId, { status: "DRAFT" });
+          }
         } else if (opts.silent) {
-          saved = await adminApi.updateArticle(currentId, toAutosavePayload(form));
+          saved = await adminApi.updateArticle(activeId, toAutosavePayload(form));
         } else {
-          saved = await adminApi.updateArticle(currentId, toPayload(form));
+          saved = await adminApi.updateArticle(activeId, toPayload(form));
         }
 
         dirty.current = false;
         setLoadedArticle(saved);
-        setForm(toForm(saved));
+        setForm(() => {
+          const next = toForm(saved);
+          if (
+            opts.silent &&
+            publishAtLocalDraft.trim() &&
+            !next.publishAtLocal.trim()
+          ) {
+            next.publishAtLocal = publishAtLocalDraft;
+          }
+          return next;
+        });
         setStatus(saved.status);
         setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
         setPublishMode(saved.status === "SCHEDULED" ? "schedule" : "now");
         setLastSavedAt(new Date());
       } catch (e) {
-        setError(e instanceof ApiError ? e.message : "Zapis nie powiódł się.");
+        if (e instanceof ApiError && e.status === 409 && !articleIdRef.current) {
+          autosaveBlockedRef.current = true;
+          setError(
+            "Ten slug jest już zajęty. Zmień slug albo otwórz istniejący artykuł z listy."
+          );
+        } else {
+          setError(e instanceof ApiError ? e.message : "Zapis nie powiódł się.");
+        }
       } finally {
+        createInFlightRef.current = false;
         savingRef.current = false;
         setSaving(false);
         setSavingLabel("");
       }
     },
-    [form, currentId]
+    [form]
   );
 
   useEffect(() => {
@@ -273,6 +514,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     if (articleId && !loadedArticle) return;
     if (!form.categoryId) return;
     if (!form.title.trim()) return;
+    if (autosaveBlockedRef.current) return;
+    if (createInFlightRef.current) return;
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     autosaveTimer.current = setTimeout(() => {
@@ -325,10 +568,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     value: ArticleFormValues[K]
   ) => {
     dirty.current = true;
+    if (key === "slug") {
+      autosaveBlockedRef.current = false;
+    }
     setForm((prev) => {
       const next = { ...prev, [key]: value };
       if (key === "title" && !slugTouched.current) {
         next.slug = slugify(String(value));
+        autosaveBlockedRef.current = false;
       }
       return next;
     });
@@ -403,13 +650,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 </label>
               </fieldset>
               {publishMode === "schedule" ? (
-                <Field label="Zaplanowana publikacja (publishAt)">
-                  <TextInput
-                    type="datetime-local"
-                    value={form.publishAtLocal}
-                    onChange={(e) => update("publishAtLocal", e.target.value)}
-                  />
-                </Field>
+                <SchedulePublishFields
+                  publishAtLocal={form.publishAtLocal}
+                  onChange={(value) => update("publishAtLocal", value)}
+                />
               ) : null}
             </div>
           ) : null}
@@ -433,7 +677,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               {publishedSlug ? "Podgląd na portalu" : "Preview publikacji"}
             </Link>
           ) : null}
-          <Button variant="ghost" onClick={() => persist()} disabled={saving}>
+          <Button variant="ghost" onClick={() => persist({ draft: true })} disabled={saving}>
             Zapisz szkic
           </Button>
           {currentId && status !== "REVIEW" && status !== "PUBLISHED" ? (
@@ -443,6 +687,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               disabled={saving || !form.categoryId}
             >
               Do sprawdzenia
+            </Button>
+          ) : null}
+          {mayPublish && schedulePastDue ? (
+            <Button
+              onClick={() => persist({ publish: true })}
+              disabled={saving || !form.categoryId || !form.content.trim()}
+            >
+              Opublikuj teraz (termin minął)
             </Button>
           ) : null}
           {mayPublish ? (
@@ -458,7 +710,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               >
                 {status === "SCHEDULED" ? "Zaktualizuj plan" : "Zaplanuj"}
               </Button>
-            ) : (
+            ) : status !== "SCHEDULED" ? (
               <Button
                 onClick={() => persist({ publish: true })}
                 disabled={saving || !form.categoryId || !form.content.trim()}
@@ -470,11 +722,22 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               >
                 {status === "PUBLISHED" ? "Zaktualizuj" : "Opublikuj"}
               </Button>
-            )
+            ) : null
           ) : null}
         </div>
       </div>
 
+      {schedulePastDue ? (
+        <div className="mb-5">
+          <Banner tone="error">
+            Termin publikacji minął
+            {scheduleDueLabel ? ` (${scheduleDueLabel})` : ""}. Cron mógł jeszcze nie
+            zadziałać (na Vercel Hobby często tylko 1× dziennie). Kliknij{" "}
+            <strong>Opublikuj teraz (termin minął)</strong> albo uruchom{" "}
+            <code className="rounded bg-white/10 px-1">npm run publish:scheduled</code>.
+          </Banner>
+        </div>
+      ) : null}
       {error ? (
         <div className="mb-5">
           <Banner tone="error">{error}</Banner>

@@ -119,6 +119,17 @@ describe("schedule publisher (PR10)", () => {
   });
 });
 
+describe("publish-scheduled cron (P0-SCHED)", () => {
+  it("vercel.json runs publish-scheduled every minute", () => {
+    const vercel = readFileSync(join(process.cwd(), "vercel.json"), "utf8");
+    const config = JSON.parse(vercel) as {
+      crons?: Array<{ path: string; schedule: string }>;
+    };
+    const job = config.crons?.find((c) => c.path === "/api/cron/publish-scheduled");
+    assert.equal(job?.schedule, "* * * * *");
+  });
+});
+
 describe("RSS / AI never auto-publish (PR10 contract)", () => {
   it("ingest and process-drafts still avoid PUBLISHED", () => {
     const ingest = readFileSync(join(process.cwd(), "lib/rss/ingest.ts"), "utf8");

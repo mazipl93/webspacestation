@@ -13,7 +13,7 @@ import ArticlePublicPreview, {
 } from "@/components/article/ArticlePublicPreview";
 import { useDebouncedValue } from "@/lib/ui/use-debounced-value";
 
-const PREVIEW_DEBOUNCE_MS = 400;
+const PREVIEW_DEBOUNCE_MS = 300;
 
 export type ArticleEditorPreviewPaneProps = {
   form: ArticleFormValues;
@@ -78,9 +78,20 @@ function ArticleEditorPreviewPaneInner({
   const [viewport, setViewport] = useState<ArticlePreviewViewport>("desktop");
   const debouncedForm = useDebouncedValue(form, PREVIEW_DEBOUNCE_MS);
 
+  /** Text fields debounced; cover/source update live so hero image is instant. */
   const previewForm = useMemo(
-    () => ({ ...debouncedForm, coverImage: form.coverImage }),
-    [debouncedForm, form.coverImage]
+    () => ({
+      ...debouncedForm,
+      coverImage: form.coverImage,
+      sourceName: form.sourceName,
+      sourceUrl: form.sourceUrl,
+    }),
+    [
+      debouncedForm,
+      form.coverImage,
+      form.sourceName,
+      form.sourceUrl,
+    ]
   );
 
   const previewArticle = useMemo(
@@ -94,10 +105,7 @@ function ArticleEditorPreviewPaneInner({
     [previewForm, categories, contentOrigin, articleId]
   );
 
-  const subtitle = useMemo(
-    () => previewSubtitle(previewForm),
-    [previewForm]
-  );
+  const subtitle = useMemo(() => previewSubtitle(form), [form]);
 
   return (
     <div

@@ -16,7 +16,7 @@ export const RECENCY_BIAS_DECAY_PER_DAY = 0.05;
 export const SCORE_OVERLAP_MAX = 2;
 
 function articleTimestamp(article: RelatableArticle): number {
-  const raw = article.createdAt ?? article.publishedAt;
+  const raw = article.publishedAt ?? article.createdAt;
   const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : 0;
 }

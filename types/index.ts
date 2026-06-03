@@ -25,7 +25,7 @@ export interface NewsArticle {
   score?: number;
   /** CMS highlight — boosts „Ważne teraz” ranking. */
   featured?: boolean;
-  /** Original create time — „Najnowsze” sort (falls back to publishedAt). */
+  /** Original create time — editorial metadata; „Najnowsze” uses publishedAt first. */
   createdAt?: string;
   content?: string[];  // article body paragraphs
   readTime?: number;   // estimated reading time in minutes

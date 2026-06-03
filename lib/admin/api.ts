@@ -97,10 +97,33 @@ export const adminApi = {
     return request<AdminArticle>(`/api/articles/${id}`, { method: "DELETE" });
   },
 
+  permanentlyDeleteArchived(ids: string[]) {
+    return request<{ deleted: number; slugs: string[]; categorySlugs: string[] }>(
+      `/api/articles/permanent-delete`,
+      {
+        method: "POST",
+        body: JSON.stringify({ ids }),
+      }
+    );
+  },
+
   reprocessRssArticle(id: string) {
     return request<AdminArticle>(`/api/articles/${id}/reprocess-rss`, {
       method: "POST",
     });
+  },
+
+  /** Publish every SCHEDULED article that is past publishAt (same as cron worker). */
+  publishDueScheduled() {
+    return request<{
+      due: number;
+      published: number;
+      skipped: number;
+      results: Array<
+        | { id: string; slug: string; ok: true }
+        | { id: string; ok: false; reason: string }
+      >;
+    }>(`/api/articles/publish-scheduled`, { method: "POST" });
   },
 
   // ─── Categories ─────────────────────────────────────────────────────────--

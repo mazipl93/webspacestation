@@ -107,6 +107,14 @@ describe("article workflow (status-only lifecycle)", () => {
       validateScheduleTime(new Date("2026-06-03T14:00:00.000Z"), now).ok,
       true
     );
+    assert.equal(
+      validateScheduleTime(new Date(now.getTime() + 30_000), now).ok,
+      false
+    );
+    assert.equal(
+      validateScheduleTime(new Date(now.getTime() + 120_000), now).ok,
+      true
+    );
   });
 
   it("WORKFLOW_STATUSES lists editorial filters", () => {

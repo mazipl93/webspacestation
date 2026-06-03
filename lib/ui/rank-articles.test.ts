@@ -36,13 +36,24 @@ describe("rankArticles (PR8 — homepage)", () => {
     assert.equal(ranked[0]?.slug, "new-f");
   });
 
-  it("rankLatest sorts by createdAt desc", () => {
-    const older = new Date(Date.now() - 86_400_000).toISOString();
+  it("rankLatest sorts by publishedAt desc (RSS republish uses fresh publish date)", () => {
+    const olderPublish = new Date(Date.now() - 86_400_000).toISOString();
+    const freshPublish = new Date().toISOString();
     const ranked = rankLatest([
-      { ...BASE, slug: "older", createdAt: older, publishedAt: older },
-      { ...BASE, slug: "newer", createdAt: BASE.createdAt, publishedAt: BASE.publishedAt },
+      {
+        ...BASE,
+        slug: "old-rss",
+        createdAt: olderPublish,
+        publishedAt: freshPublish,
+      },
+      {
+        ...BASE,
+        slug: "stale",
+        createdAt: BASE.createdAt,
+        publishedAt: olderPublish,
+      },
     ]);
-    assert.equal(ranked[0]?.slug, "newer");
+    assert.equal(ranked[0]?.slug, "old-rss");
   });
 
   it("rankPopular uses engagement map when provided", () => {

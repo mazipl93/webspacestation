@@ -16,7 +16,7 @@ export default function ArticleLivePreview({
         {status === "PUBLISHED" ? "widoczny" : "jeszcze niewidoczny"}.
       </div>
 
-      <ArticlePublicPreview article={article} embedded={false} viewport="desktop" />
+      <ArticlePublicPreview article={article} embedded viewport="desktop" />
 
       <p className="mt-8 pb-10 text-center text-meta text-text-muted">
         <Link href="/aktualnosci" className="text-accent-cyan hover:underline">

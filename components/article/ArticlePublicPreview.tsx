@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Calendar, ChevronRight, Clock } from "lucide-react";
 import type { NewsArticle } from "@/types";
@@ -8,11 +7,11 @@ import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
+import { resolveHeroDisplayUrl } from "@/lib/articles/resolve-image";
 import {
   previewCatFallback,
   previewCatMeta,
 } from "@/lib/ui/article-preview-meta";
-import { resolveImage } from "@/lib/articles/resolve-image";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 
 export type ArticlePreviewViewport = "desktop" | "mobile";
@@ -32,7 +31,7 @@ export default function ArticlePublicPreview({
   viewport = "desktop",
   embedded = false,
 }: ArticlePublicPreviewProps) {
-  const heroImage = resolveImage(article);
+  const heroImage = resolveHeroDisplayUrl(article);
 
   const meta = previewCatMeta(article.category);
   const bodyParagraphs = getArticleBodyParagraphs(article);
@@ -61,23 +60,19 @@ export default function ArticlePublicPreview({
 
   return (
     <div className={frameClass}>
-      {/* Hero — mirrors app/aktualnosci/[slug] ArticleHero */}
       <section className={`relative flex ${heroMinH} items-end overflow-hidden`}>
         <div
-          className="absolute inset-0 -z-40"
+          className="absolute inset-0 z-0"
           style={{
-            background:
-              "linear-gradient(160deg, #04080f 0%, #060c18 35%, #050a16 60%, #04080d 100%)",
+            background: heroImage
+              ? previewCatFallback(article.category)
+              : "linear-gradient(160deg, #04080f 0%, #060c18 35%, #050a16 60%, #04080d 100%)",
           }}
-        />
-
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-30"
-          style={{ background: previewCatFallback(article.category) }}
         >
           {heroImage ? (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={heroImage}
               src={heroImage}
               alt={
                 article.imageCredit ??
@@ -85,15 +80,11 @@ export default function ArticlePublicPreview({
                   ? `Ilustracja — materiał ${article.source}`
                   : article.title)
               }
-              fill
-              priority
-              sizes={viewport === "mobile" ? "390px" : "100vw"}
-              className="object-cover"
-              unoptimized={embedded}
+              className="absolute inset-0 h-full w-full object-cover"
             />
           ) : null}
           {article.imageCredit ? (
-            <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[rgba(5,7,9,0.92)] to-transparent px-4 pb-3 pt-10 sm:px-6">
+            <div className="absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-[rgba(5,7,9,0.92)] to-transparent px-4 pb-3 pt-10 sm:px-6">
               <CoverImageCredit
                 credit={article.imageCredit}
                 source={article.source}
@@ -105,7 +96,7 @@ export default function ArticlePublicPreview({
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-20"
+          className="pointer-events-none absolute inset-0 z-[1]"
           style={{
             background:
               "linear-gradient(to top, rgba(5,7,9,0.97) 0%, rgba(5,7,9,0.82) 26%, rgba(5,7,9,0.46) 52%, rgba(5,7,9,0.16) 100%)",
@@ -113,7 +104,7 @@ export default function ArticlePublicPreview({
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 left-0 -z-20 w-4/5"
+          className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-4/5"
           style={{
             background:
               "linear-gradient(to right, rgba(4,7,12,0.72) 0%, transparent 100%)",
@@ -121,7 +112,7 @@ export default function ArticlePublicPreview({
         />
 
         <div
-          className={`relative w-full ${embedded ? "px-4 pb-8 pt-14" : "container-site pb-12 pt-28"}`}
+          className={`relative z-10 w-full ${embedded ? "px-4 pb-8 pt-14" : "container-site pb-12 pt-28"}`}
         >
           {!embedded ? (
             <nav
@@ -196,105 +187,58 @@ export default function ArticlePublicPreview({
               style={{ color: meta.color }}
             >
               <span
-                className="h-1 w-1 rounded-full"
+                className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{ background: meta.color }}
               />
               {meta.label}
             </span>
-
-            <span
-              aria-hidden="true"
-              className="h-3 w-px"
-              style={{ background: "var(--hairline-strong)" }}
-            />
-
-            <span className="flex items-center gap-1.5 text-[12px] text-text-tertiary">
-              <Calendar size={11} />
+            <span className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
+              <Calendar size={12} aria-hidden />
               {date}
             </span>
-
             {article.readTime ? (
-              <>
-                <span
-                  aria-hidden="true"
-                  className="h-3 w-px"
-                  style={{ background: "var(--hairline-strong)" }}
-                />
-                <span className="flex items-center gap-1.5 text-[12px] text-text-tertiary">
-                  <Clock size={11} />
-                  {article.readTime} min czytania
-                </span>
-              </>
+              <span className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
+                <Clock size={12} aria-hidden />
+                {article.readTime} min
+              </span>
             ) : null}
           </div>
-
-          {article.tags && article.tags.length > 0 ? (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {article.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-md border border-hairline bg-white/5 px-2 py-0.5 text-[10px] text-text-muted"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </div>
       </section>
 
-      {/* Body — mirrors ArticleBody main column */}
-      <div className={`${embedded ? "px-3 py-6" : "container-site py-10"}`}>
-        <article className="card-surface p-5 sm:p-8 md:p-10">
-          <div className="max-w-[72ch]">
-            {!isRss && lead ? (
-              <p
-                className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
-                style={{
-                  fontSize: "var(--text-body)",
-                  lineHeight: 1.78,
-                  borderColor: meta.color,
-                }}
-              >
-                {lead}
-              </p>
-            ) : null}
+      <div
+        className={
+          embedded
+            ? "px-4 py-6"
+            : "container-site py-10 md:py-12"
+        }
+      >
+        {lead ? (
+          <p className="mb-6 text-[17px] font-medium leading-relaxed text-text-primary md:text-[18px]">
+            {lead}
+          </p>
+        ) : null}
 
-            {rest.map((paragraph, i) => (
-              <p
-                key={i}
-                className="mb-6 text-text-secondary"
-                style={{ fontSize: "var(--text-body)", lineHeight: 1.8 }}
-              >
-                {paragraph}
-              </p>
-            ))}
+        {rest.map((paragraph, i) => (
+          <p
+            key={i}
+            className="mb-5 text-[15px] leading-[1.75] text-text-secondary md:text-[16px]"
+          >
+            {paragraph}
+          </p>
+        ))}
 
-            {!lead && !rest.length && !article.contextNote ? (
-              <p className="text-body italic text-text-muted">
-                Treść artykułu pojawi się tutaj…
-              </p>
-            ) : null}
-
-            {isRss && article.contextNote ? (
-              <WssContextBox text={article.contextNote} />
-            ) : null}
-
-            {!isRss && article.contextNote ? (
-              <WssContextBox text={article.contextNote} />
-            ) : null}
-
-            {hasSourceAttribution(article.originalUrl) ? (
-              <SourceAttribution article={article} />
-            ) : null}
+        {article.contextNote ? (
+          <div className="my-8">
+            <WssContextBox text={article.contextNote} />
           </div>
+        ) : null}
 
-          <div className="mt-10 flex items-center gap-4">
-            <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
-            <span className="overline text-text-muted">Web Space Station</span>
-            <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
+        {hasSourceAttribution(article.originalUrl) ? (
+          <div className="mt-10 border-t border-hairline pt-6">
+            <SourceAttribution article={article} />
           </div>
-        </article>
+        ) : null}
       </div>
     </div>
   );

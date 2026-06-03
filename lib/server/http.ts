@@ -45,7 +45,7 @@ export function mapPrismaError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case "P2002":
-        return jsonError(409, "CONFLICT", "A record with this value already exists (slug must be unique).");
+        return jsonError(409, "CONFLICT", "Artykuł z tym slugiem już istnieje.");
       case "P2003":
         return jsonError(400, "INVALID_REFERENCE", "Referenced record does not exist (check categoryId).");
       case "P2025":

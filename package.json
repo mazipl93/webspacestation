@@ -19,6 +19,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:migrate-article-tags": "tsx scripts/migrate-article-tags.ts",
     "db:backfill-content-origin": "tsx scripts/backfill-content-origin.ts",
+    "db:fix-published-at": "tsx scripts/fix-published-at.ts",
     "rss:clean-subtitles": "tsx scripts/clean-rss-subtitles.ts",
     "db:prisma-generate": "powershell -ExecutionPolicy Bypass -File scripts/prisma-generate.ps1",
     "db:studio": "prisma studio",
@@ -30,7 +31,8 @@
     "cache:revalidate": "tsx scripts/cache-revalidate.ts",
     "rss:cleanup-db": "tsx scripts/rss-cleanup-db.ts",
     "scores:recalculate": "tsx scripts/recalculate-scores.ts",
-    "publish:scheduled": "tsx scripts/publish-scheduled.ts"
+    "publish:scheduled": "tsx scripts/publish-scheduled.ts",
+    "publish:scheduled:watch": "tsx scripts/publish-scheduled-watch.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -25,7 +25,7 @@ export type RankArticlesOptions = {
 };
 
 function articleTimestamp(article: RankableArticle): number {
-  const raw = article.createdAt ?? article.publishedAt;
+  const raw = article.publishedAt ?? article.createdAt;
   const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : 0;
 }
@@ -70,7 +70,7 @@ export function rankImportantNow<T extends RankableArticle>(
   return withSectionFallback(rankArticles(articles, { limit }), articles, limit);
 }
 
-/** Najnowsze — createdAt (fallback publishedAt) descending. */
+/** Najnowsze — publishedAt (fallback createdAt) descending. */
 export function rankLatest<T extends RankableArticle>(
   articles: T[],
   limit = 8

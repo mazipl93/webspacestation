@@ -39,3 +39,13 @@ export function resolveImage(
 export function resolveImageOrFallback(article: ResolveImageInput): string {
   return resolveImage(article, { withFallback: true }) ?? SEARCH_FALLBACK_IMAGE;
 }
+
+/**
+ * Hero URL in CMS preview panes — only explicit cover (form / DB field).
+ * Public portal uses resolveImage() with category/stock fallbacks instead.
+ */
+export function resolveHeroDisplayUrl(article: ResolveImageInput): string | null {
+  const direct = article.image?.trim() || article.coverImage?.trim() || null;
+  if (direct && /^https?:\/\//i.test(direct)) return direct;
+  return null;
+}

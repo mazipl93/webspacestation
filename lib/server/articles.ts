@@ -30,7 +30,6 @@ import {
   type ArticleStateAction,
 } from "@/lib/articles/state-transition";
 import {
-  publishedAtPatchForStatusTransition,
   resolveCreateStatus,
   validatePublishReady,
   validateScheduleTime,
@@ -117,7 +116,7 @@ export function getPublishedArticles(): Promise<ArticleWithRelations[]> {
       try {
         const rows = await prisma.article.findMany({
           where: PUBLISHED_ARTICLE_WHERE,
-          orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
+          orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
           select: articleSelect,
         });
         traceArticleFetchPublic({ scope: "published-all", count: rows.length });
@@ -165,7 +164,7 @@ export function getArticlesByCategory(
             ...PUBLISHED_ARTICLE_WHERE,
             category: { slug: categorySlug },
           },
-          orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
+          orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
           select: articleSelect,
         });
       } catch (error) {
@@ -237,20 +236,22 @@ export interface AdminArticleQuery {
   categorySlug?: string;
 }
 
-/** Admin listing: any status, optional status + category filters, newest first. */
+/** Admin listing: any status, optional status + category filters, recently edited first. */
 export function getArticlesForAdmin(
   query: AdminArticleQuery = {}
 ): Promise<ArticleWithRelations[]> {
   const where: Prisma.ArticleWhereInput = {};
   if (query.status && query.status !== "ALL") {
     where.status = query.status;
+  } else {
+    where.status = { not: ArticleStatus.ARCHIVED };
   }
   if (query.categorySlug) {
     where.category = { slug: query.categorySlug };
   }
   return prisma.article.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: { updatedAt: "desc" },
     select: articleSelect,
   }).then((rows) => {
     traceArticleFetchCms({
@@ -323,6 +324,8 @@ export type ArticleStateTransitionInput = {
   id: string;
   action: ArticleStateAction;
   publishAt?: Date;
+  /** On PUBLISH from scheduler — use planned time instead of now(). */
+  publishStampAt?: Date;
 };
 
 /**
@@ -332,7 +335,7 @@ export type ArticleStateTransitionInput = {
 export async function articleStateTransition(
   input: ArticleStateTransitionInput
 ): Promise<ArticleWithRelations | null> {
-  const { id, action, publishAt } = input;
+  const { id, action, publishAt, publishStampAt } = input;
   const nextStatus = actionToStatus(action);
 
   const existing = await prisma.article.findUnique({
@@ -370,14 +373,16 @@ export async function articleStateTransition(
 
   const data: Prisma.ArticleUncheckedUpdateInput = {
     status: nextStatus,
-    ...publishedAtPatchForStatusTransition(nextStatus, existing),
   };
 
   if (action === "PUBLISH") {
-    data.publishedAt = existing.publishedAt ?? new Date();
+    data.publishedAt = publishStampAt ?? new Date();
     data.publishAt = null;
-  } else if (action === "SCHEDULE") {
-    data.publishAt = publishAt!;
+  } else {
+    data.publishedAt = null;
+    if (action === "SCHEDULE") {
+      data.publishAt = publishAt!;
+    }
   }
 
   const article = await prisma.article.update({
@@ -544,7 +549,11 @@ export async function runScheduledPublish(
     const decision = results[i];
     if (!decision?.ok) continue;
 
-    await articleStateTransition({ id: row.id, action: "PUBLISH" });
+    await articleStateTransition({
+      id: row.id,
+      action: "PUBLISH",
+      publishStampAt: row.publishAt ?? undefined,
+    });
   }
 
   return summarizeSchedulePublishRun(results);
@@ -579,6 +588,35 @@ export async function refreshArticleRanking(articleId: string): Promise<void> {
     where: { id: articleId },
     data: { score, featured },
   });
+}
+
+/** Hard delete — only rows already in ARCHIVED (trash). */
+export async function permanentlyDeleteArchivedArticles(
+  ids: string[]
+): Promise<{ deleted: number; slugs: string[]; categorySlugs: string[] }> {
+  const uniqueIds = [...new Set(ids.filter(Boolean))];
+  if (uniqueIds.length === 0) {
+    return { deleted: 0, slugs: [], categorySlugs: [] };
+  }
+
+  const rows = await prisma.article.findMany({
+    where: { id: { in: uniqueIds }, status: ArticleStatus.ARCHIVED },
+    select: { id: true, slug: true, category: { select: { slug: true } } },
+  });
+
+  if (rows.length === 0) {
+    return { deleted: 0, slugs: [], categorySlugs: [] };
+  }
+
+  await prisma.article.deleteMany({
+    where: { id: { in: rows.map((r) => r.id) } },
+  });
+
+  return {
+    deleted: rows.length,
+    slugs: rows.map((r) => r.slug),
+    categorySlugs: [...new Set(rows.map((r) => r.category.slug))],
+  };
 }
 
 /** Soft delete: move an article to ARCHIVED instead of removing the row. */

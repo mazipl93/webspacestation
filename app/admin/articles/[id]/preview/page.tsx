@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/user";
 import { canAccessCms } from "@/lib/auth/permissions";
 import { getArticleById } from "@/lib/server/articles";
-import { toNewsArticle } from "@/lib/articles";
+import { articleRowToCmsPreviewArticle } from "@/lib/admin/preview-article-server";
 import ArticleLivePreview from "@/components/admin/ArticleLivePreview";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function ArticlePreviewPage({
   const row = await getArticleById(id);
   if (!row) notFound();
 
-  const article = toNewsArticle(row);
+  const article = articleRowToCmsPreviewArticle(row);
   const publicHref =
     row.status === "PUBLISHED" ? `/aktualnosci/${row.slug}` : null;
 

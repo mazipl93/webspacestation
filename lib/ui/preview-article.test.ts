@@ -5,7 +5,10 @@ import {
   previewSubtitle,
   resolvePreviewImageFromForm,
 } from "@/lib/admin/preview-article";
-import { resolveImage } from "@/lib/articles/resolve-image";
+import {
+  resolveHeroDisplayUrl,
+  resolveImage,
+} from "@/lib/articles/resolve-image";
 import type { ArticleFormValues, AdminCategory } from "@/lib/admin/types";
 
 const CATEGORIES: AdminCategory[] = [
@@ -71,12 +74,13 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
     );
   });
 
-  it("uses category fallback on image when cover empty (preview model)", () => {
+  it("does not inject category fallback when cover field is empty (CMS preview)", () => {
     const article = formToPreviewArticle({
       form: { ...BASE_FORM, coverImage: "" },
       categories: CATEGORIES,
+      contentOrigin: "RSS",
     });
-    assert.ok(article.image.startsWith("https://"));
+    assert.equal(article.image, "");
   });
 
   it("resolveImage shows gradient path when cover empty and no fallback", () => {
@@ -100,6 +104,19 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
       previewSubtitle({ ...BASE_FORM, subtitle: "  " }),
       null
     );
+  });
+});
+
+describe("resolveHeroDisplayUrl (CMS preview hero)", () => {
+  it("returns http(s) cover from image field", () => {
+    assert.equal(
+      resolveHeroDisplayUrl({ image: "https://cdn.example/cover.jpg" }),
+      "https://cdn.example/cover.jpg"
+    );
+  });
+
+  it("returns null for empty cover (gradient-only hero)", () => {
+    assert.equal(resolveHeroDisplayUrl({ image: "" }), null);
   });
 });
 

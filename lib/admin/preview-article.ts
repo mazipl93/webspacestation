@@ -2,7 +2,6 @@ import type { ArticleFormValues, AdminCategory } from "@/lib/admin/types";
 import { buildRssImageCredit } from "@/lib/rss/image-credit";
 import { previewCategorySlug } from "@/lib/ui/article-preview-meta";
 import { hasCitationFields } from "@/lib/ui/article-kind";
-import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
 import type { NewsArticle } from "@/types";
 
 export type PreviewArticleInput = {
@@ -54,13 +53,8 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
   const paragraphs = splitContentParagraphs(form.content);
   const now = new Date().toISOString();
   const slug = form.slug.trim() || "podglad";
-  const coverFromForm = resolvePreviewImageFromForm(form);
-  const image = resolveImageOrFallback({
-    coverImage: coverFromForm,
-    category,
-    slug,
-    contentOrigin: contentOrigin ?? "EDITORIAL",
-  });
+  // CMS preview = only the cover URL field (no RSS/category/stock fallbacks).
+  const image = resolvePreviewImageFromForm(form) ?? "";
 
   const imageCredit =
     hasSource && source

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ChevronRight, Rss } from "lucide-react";
-import { getArticlesByCategory, getRankedArticles } from "@/lib/articles";
+import { getArticlesByCategory, getLatestArticles } from "@/lib/articles";
+import { rankLatest } from "@/lib/home/rank-articles";
 
-const NEWSROOM_RANK_LIMIT = 20;
+const LATEST_FEED_LIMIT = 40;
 import { getCategoryInfo } from "@/lib/categories";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import ArticleCard from "@/components/article/ArticleCard";
@@ -26,16 +27,16 @@ type Props = {
 
 export default async function ArticleFeedSection({ category }: Props) {
   const articles = category
-    ? await getArticlesByCategory(category)
-    : await getRankedArticles(NEWSROOM_RANK_LIMIT);
+    ? rankLatest(await getArticlesByCategory(category), LATEST_FEED_LIMIT)
+    : await getLatestArticles(LATEST_FEED_LIMIT);
 
   const meta   = category ? getCategoryInfo(category) : null;
   const accent = meta?.color ?? "#2f6dff";
-  const title  = meta?.label ?? "Ważne teraz";
+  const title  = meta?.label ?? "Najnowsze";
 
   const subtitle = category
     ? meta?.description ?? `Wszystkie artykuły z kategorii ${meta?.label}`
-    : `Ranking newsroomu WSS — top ${NEWSROOM_RANK_LIMIT} wg ważności (score), nie chronologia.`;
+    : "Opublikowane artykuły — od najnowszej daty publikacji w CMS.";
 
   const featured = category && articles.length > 0 ? articles[0] : null;
   const rest = category && articles.length > 0 ? articles.slice(1) : articles;

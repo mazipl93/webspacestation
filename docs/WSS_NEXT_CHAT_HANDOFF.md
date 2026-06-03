@@ -1,12 +1,14 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (sesja: CMS/API/DB spójność + homepage fallbacks — commit w tej sesji)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (sesja 16 — P0-SCHED cron co 1 min, panel Archiwum + trwałe usuwanie)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit lokalny:** `94bdfaf` (handoff) · kod: `928848c` — fix CMS status/image/homepage  
-**Na remote po push:** `ef1f754`+ (lokalnie **4 commity** ahead — push przed prod)
+**Ostatni commit na remote:** `b2e6ea6` — hard-lock Article data flow  
+**Lokalnie (NIE commit):** ~25+ plików — sesje 13–15 (patrz sekcja 8 + lista plików poniżej)  
+**Na remote po push:** wymaga `git commit` + `git push` przed prod
 
-**Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
+**Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)  
+**Backlog v3 (checkboxy):** `docs/WSS_ROADMAP_BACKLOG_V3.md`
 
 ---
 
@@ -29,43 +31,109 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 ```
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
-Przeczytaj:
-- docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — ZAWSZE najpierw)
+Przeczytaj ZAWSZE najpierw:
+- docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik)
+- docs/WSS_ROADMAP_BACKLOG_V3.md (tracker planów v3 — checkboxy)
 - docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Stan po sesji 3.06.2026 (fix CMS write/read + homepage)
+## PRIORYTET #1 — zaplanowana publikacja O DOKŁADNEJ GODZINIE
 
-Lokalnie na `main`: PR9–PR12 + **fix spójności CMS/API/DB** (status, obraz, ranking homepage).
+User wymaga: termin w CMS (np. 22:06) → artykuł sam przechodzi na PUBLISHED o tej minucie.
 
-### Status / zapis (krytyczne)
-- DB `Article.status` = jedyne źródło prawdy
-- **Autosave** — tylko title, content, coverImage, tags, categoryId (bez status)
-- **updateArticle** — tylko content; status przez `publishArticle` / `scheduleArticle` / `transitionArticleStatus`
-- CMS: „Do sprawdzenia” → PATCH `{ status: REVIEW }`; domyślna lista **Wszystkie**
-- Dev trace: `ARTICLE_WRITE_*`, `ARTICLE_STATUS_CHANGE`, `ARTICLE_FETCH_*` (terminal `npm run dev`)
+**Sesja 16 (kod):**
+- `vercel.json`: `/api/cron/publish-scheduled` → `* * * * *` (co minutę)
+- `runScheduledPublish()` → `publishedAt = publishAt` (termin planu)
+- Dev: `npm run publish:scheduled:watch` (poll co 60 s)
+- **Do QA na prod:** Vercel Hobby może nadal ograniczać crony — jeśli minuta nie działa, zewnętrzny ping co 1 min do `/api/cron/publish-scheduled` + `CRON_SECRET`
 
-### Obraz
-- DB: `coverImage` · public DTO: `NewsArticle.image` · `lib/articles/resolve-image.ts`
-- Preview split: natychmiastowy URL (`heroFromFormOnly`); public = `resolveImage()`
+Workaroundy CMS (zostają jako awaryjne):
+- POST /api/articles/publish-scheduled
+- „Opublikuj przeterminowane” na liście Zaplanowane
 
-### Homepage
-- `withSectionFallback` w `lib/home/rank-articles.ts` — puste sekcje nie chowają artykułów
+## Stan lokalny (nie na remote)
 
-### Testy
+Remote: b2e6ea6. Wszystko poniżej lokalnie — commit + push przed prod.
+
+Zrobione lokalnie (sesje 14–15):
+- Preview CMS = tylko URL okładki (bez fallback RSS w podglądzie)
+- Najnowsze: sort publishedAt desc; /aktualnosci → getLatestArticles; homepage rankLatest
+- publishedAt tylko przy Opublikuj; timeLabel od publishedAt (nowe OK; stare mogą być „23 min temu” po backfill — OK dla usera)
+- Zaplanuj: UI 24h (dzień + miesiąc PL + rok + godz + min), lib/admin/schedule-datetime.ts
+- Autosave nie kasuje publishAtLocal
+
+## Komendy
+
+npm run publish:scheduled          # ręcznie: due SCHEDULED → PUBLISHED
+npm run publish:scheduled:watch    # dev: poll co 60 s
+npm run db:fix-published-at        # jednorazowy backfill publishedAt (lokalnie 39 szt.)
+npm run cache:revalidate
 npm run test:ui && npm run test:articles && npm run type-check
 
-## Otwarte / następny czat (priorytet)
-1. **git push origin main** + Vercel + **`npm run db:deploy`** (`publishAt` jeśli brak na prod)
-2. Ręczny smoke: create → DRAFT → REVIEW → PUBLISH → API + homepage + obraz
-3. **PR-H4:** backfill `contentOrigin`
-4. Kolejka ~175 REVIEW w CMS
-
-Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
+Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md i docs/WSS_ROADMAP_BACKLOG_V3.md.
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (czat 16) — P0-SCHED + Archiwum CMS
+
+| Obszar | Stan |
+|--------|------|
+| Cron publish-scheduled | `* * * * *` w vercel.json |
+| publishedAt przy auto-publish | = `publishAt` (nie `now()`) |
+| Dev scheduler | `publish:scheduled:watch` |
+| **Archiwum** w Artykuły | zakładka „Archiwum” w `/admin/articles` — bulk trwałe usuwanie z DB |
+| Lista Artykuły (ALL) | bez `ARCHIVED` — archiwum tylko w dziale Archiwum |
+| API | `POST /api/articles/permanent-delete` `{ ids: [] }` |
+
+### Sesja 3.06.2026 (czat 14–15) — preview, Najnowsze, scheduler UX (**BLOCKER cron**)
+
+**Cel:** naprawy z czatu usera (okładka preview, kolejność Najnowsze, zaplanowana publikacja).
+
+| Obszar | Stan |
+|--------|------|
+| Live preview + Preview publikacji | Okładka tylko z pola URL (`resolveHeroDisplayUrl`, `formToPreviewArticle` bez fallback) |
+| `/aktualnosci` Najnowsze | `getLatestArticles` + `publishedAt desc` w DB |
+| Homepage sekcja Najnowsze | `rankLatest` na puli z `getPublishedArticles` (publishedAt desc) |
+| `timeLabel` („X min temu”) | Od `publishedAt` — **nowe** publikacje OK; stare po backfill mogą mieć zbliżony czas — user akceptuje |
+| Zaplanuj UI | `schedule-datetime.ts` — dzień / miesiąc (PL) / rok / godz 00–23 / min (bez AM/PM) |
+| Autosave vs termin | `publishAtLocal` zachowany przy silent autosave |
+| **Zaplanuj o 22:06** | **NIE działa automatycznie** — cron nie odpala w minucie; zostaje SCHEDULED |
+| Workaround (tymczasowy) | `POST /api/articles/publish-scheduled`, przyciski „Opublikuj teraz (termin minął)” — **user: to ma działać samo, nie obejścia** |
+
+**Pliki nowe/zmienione (lokalnie):** `lib/admin/schedule-datetime.ts`, `lib/ui/schedule-datetime.test.ts`, `app/api/articles/publish-scheduled/route.ts`, `lib/admin/preview-article-server.ts`, `ArticleEditor.tsx`, `ArticlePublicPreview.tsx`, `ArticleFeedSection.tsx`, `lib/server/articles.ts`, `lib/articles.ts`, `app/admin/articles/page.tsx`, `docs/WSS_ROADMAP_BACKLOG_V3.md`, …
+
+**Następny czat:** naprawa publikacji w **dokładnej** minucie `publishAt` (infra + ewent. cron frequency).
+
+### Sesja 3.06.2026 (czat 13) — CMS polish (zapis, preview, czas publikacji)
+
+**Cel:** domknięcie workflow edycji po hard-locku — UX zapisu, okładka w preview, poprawna data publikacji.
+
+| Obszar | Fix |
+|--------|-----|
+| Nowy artykuł 409 | `articleIdRef` + blokada równoległego POST; autosave po create → PATCH |
+| REVIEW → Szkic | „Zapisz szkic” → content + transition `DRAFT` |
+| Lista CMS | sort `updatedAt desc` (nie `createdAt`) |
+| Live preview okładka | native `<img>` w embedded; URL z formularza natychmiast |
+| Opublikuj = najnowszy | `publishedAt = now()` przy każdym PUBLISH; RSS ingest `publishedAt: null` |
+| Najnowsze (homepage) | `rankLatest` po `publishedAt` |
+| Backfill | `npm run db:fix-published-at` — 39 opublikowanych (w tym Tajfun Jangmi) |
+
+**Pliki (lokalnie, bez commit):** `ArticleEditor.tsx`, `ArticlePublicPreview.tsx`, `lib/server/articles.ts`, `lib/rss/ingest.ts`, `lib/articles.ts`, `rank-articles.ts`, `scripts/fix-published-at.ts`, …
+
+### Sesja 3.06.2026 (czat 12) — hard-lock Article architecture
+
+**Cel:** CMS = API = DB = public — jeden flow statusów, zero inferencji w UI/API.
+
+| Obszar | Zmiana |
+|--------|--------|
+| Status | `articleStateTransition()` — DRAFT / REVIEW / PUBLISH / SCHEDULE; usunięto `publishArticle`, `scheduleArticle`, `transitionArticleStatus` |
+| Create | Zawsze DRAFT w DB, potem transition |
+| API PATCH | `statusToAction` → `articleStateTransition` |
+| Trace | `ARTICLE_STATE_TRANSITION`, `ARTICLE_API_RESPONSE`, `ARTICLE_CMS_RENDER` |
+| Preview | `resolveImageOrFallback()` — parity z public; bez `heroFromFormOnly` |
+| Deploy | push `b2e6ea6`, db:deploy OK, PR-H4 backfill (1 rekord) |
 
 ### Sesja 3.06.2026 (czat 11) — CMS/API/DB/public spójność (audit fix)
 
@@ -527,19 +595,47 @@ lib/rss/image-credit.ts
 
 | Temat | Status |
 |-------|--------|
-| **PR10 scheduler SCHEDULED** | **Zamknięte** w tej sesji — wymaga `db:deploy` publishAt |
-| **PR9 related + read next** | **Zamknięte** wcześniej |
-| **Commit + deploy** sesji 3.06 PR-H5–PR8 | **Zamknięte** wcześniej |
-| `db:deploy` prod (contentOrigin + SCHEDULED enum) | **Zamknięte** wcześniej |
-| PR-H4 korekta `contentOrigin` | Stare rekordy po inferze source+url |
-| Scheduler `SCHEDULED` | **Zamknięte** (PR10) |
-| Kolejka ~175 REVIEW | Publikuj w CMS |
-| Front/ranking po `contentOrigin` | Opcjonalnie (heurystyka source+url nadal) |
-| `db:backfill-content-origin` | Wyłączyć infer z pól źródła |
-| Cron 30 min | Nie na Hobby — 1×/dzień |
-| Homepage / sekcje | Do iteracji po publikacji treści |
-| `article_likes` 404 | `supabase/article_likes.sql` w Supabase |
-| Pełny artykuł skopiowany z RSS | **Nie** — hybryda + link |
+| **BLOCKER: publikacja zaplanowana o dokładnej godzinie** | **Otwarte — P0 następny czat** (cron/infra, nie tylko UI) |
+| **PR10 scheduler SCHEDULED (DB + workflow)** | **Częściowo** — zapis `publishAt` + transition OK; **auto-publish w minucie NIE** |
+| Commit + push sesji 13–15 | **Otwarte** — remote nadal `b2e6ea6`, ~25 plików lokalnie |
+| Audyt planów v3 | **Zamknięte** — `docs/WSS_ROADMAP_BACKLOG_V3.md` |
+| QA preview + Najnowsze (lokalnie) | User potwierdził preview OK; Najnowsze — do smoke po push |
+| Kolejka ~175 REVIEW | Publikuj w CMS (workflow OK) |
+| `article_likes` 404 | SQL w Supabase |
+| Cron dokładna minuta | **Wymagane** — obecnie `0 * * * *` (co pełną godzinę) + limit Hobby |
+| `npm run publish:scheduled` | Działa ręcznie (dev/staging) |
+| Front/ranking po `contentOrigin` | Opcjonalnie |
+| Pełny artykuł RSS na stronie | **Nie** — hybryda B+ (świadomie) |
+
+### Pliki lokalne do commita (skrót)
+
+```
+app/api/articles/publish-scheduled/route.ts
+app/admin/articles/page.tsx
+app/admin/articles/[id]/preview/page.tsx
+components/admin/ArticleEditor.tsx
+components/admin/ArticleEditorPreviewPane.tsx
+components/admin/ArticleLivePreview.tsx
+components/article/ArticlePublicPreview.tsx
+components/sections/ArticleFeedSection.tsx
+lib/admin/schedule-datetime.ts
+lib/admin/preview-article.ts
+lib/admin/preview-article-server.ts
+lib/admin/api.ts
+lib/server/articles.ts
+lib/articles.ts
+lib/articles/workflow.ts
+lib/articles/resolve-image.ts
+lib/article/related-articles.ts
+lib/rss/ingest.ts
+lib/home/rank-articles.ts
+lib/ui/schedule-datetime.test.ts
+lib/ui/preview-article.test.ts
+scripts/fix-published-at.ts
+docs/WSS_ROADMAP_BACKLOG_V3.md
+docs/WSS_NEXT_CHAT_HANDOFF.md
+package.json
+```
 
 ---
 
@@ -551,6 +647,66 @@ lib/rss/image-credit.ts
 | Czy lead może wspominać SpaceNews? | **Nie** — tylko w stopce (SourceAttribution) |
 | Stary artykuł bez body? | Publikuj jako lead-only lub **Popraw z AI** |
 | Push na Vercel? | `main` auto-deploy po push |
+
+---
+
+## 11. STATUS PRODUKTU — co już jest (audyt vs plany, 3.06.2026)
+
+**Użyj tej sekcji w następnym czacie:** user wyśle plany → mapuj na wiersze poniżej.
+
+### Infrastruktura / deploy
+| Obszar | Status |
+|--------|--------|
+| Next.js 15 + Vercel auto-deploy z `main` | ✅ |
+| Supabase auth + CMS guard | ✅ |
+| Prisma + Supabase Postgres (pooler 6543 / direct 5432) | ✅ |
+| Migracje: contextNote, contentOrigin, SCHEDULED, publishAt | ✅ wdrożone |
+| Cron RSS 1×/dzień (Hobby) | ✅ |
+
+### News Engine / RSS (B+ hybryda)
+| Obszar | Status |
+|--------|--------|
+| RSS ingest → DRAFT, contentOrigin=RSS | ✅ |
+| AI process → REVIEW (B+ pola: lead/body/contextNote) | ✅ |
+| CMS ręczna publikacja → PUBLISHED | ✅ |
+| Front tylko PUBLISHED | ✅ |
+| Strona artykułu: lead + body + Kontekst WSS + źródło | ✅ |
+| Pełna treść RSS na stronie | ❌ celowo — hybryda + link |
+| Popraw z AI (reprocess RSS) | ✅ |
+| `publishedAt` = moment CMS Opublikuj (nie data RSS) | ✅ czat 13 |
+
+### CMS / Admin
+| Obszar | Status |
+|--------|--------|
+| Unified ArticleEditor (manual + RSS) | ✅ |
+| Split live preview (desktop/mobile) | ✅ |
+| Workflow: DRAFT / REVIEW / PUBLISH / SCHEDULE | ✅ `articleStateTransition` |
+| Autosave content-only (bez status) | ✅ |
+| Zapisz szkic → DRAFT (z REVIEW) | ✅ czat 13 |
+| Lista filtry + sort ostatnio edytowany | ✅ |
+| Scheduler SCHEDULED + publishAt (zapis w CMS) | ✅ |
+| Auto-publish w dokładnej minucie `publishAt` | ❌ **BLOCKER** — cron/infra |
+| Collapsible admin sidebar (PR12) | ✅ |
+| contentOrigin badge / Popraw z AI tylko RSS | ✅ |
+
+### Front publiczny
+| Obszar | Status |
+|--------|--------|
+| Homepage sekcje: Ważne teraz / Najnowsze / Popularne (PR8) | ✅ |
+| Fallback pustych sekcji (rank-articles) | ✅ |
+| Related articles + Czytaj dalej (PR9) | ✅ |
+| resolveImage() pipeline (coverImage → image) | ✅ |
+| aiScore read-only w API (CMS kolumna) | ✅ |
+| Subskrypcje zamiast „Kanały RSS” (PR5) | ✅ |
+
+### Zamknięte PR / handoff
+PR1–PR2B contentOrigin · PR3 RSS alignment · PR5 UX · PR6/6.1/7 terminology · PR8 ranking · PR9 related · PR10 scheduler · PR11 preview · PR12 sidebar · PR-H4 backfill · PR-H5 semantic · hard-lock czat 12 · CMS polish czat 13
+
+### Znane otwarte / backlog
+- **P0:** Zaplanowana publikacja o wybranej godzinie (np. 22:06) — musi działać bez ręcznego „Opublikuj”
+- Commit + push sesji 13–15 (~25 plików lokalnych)
+- ~175 REVIEW do publikacji ręcznej
+- `article_likes` 404 — SQL w Supabase
 
 ---
 
