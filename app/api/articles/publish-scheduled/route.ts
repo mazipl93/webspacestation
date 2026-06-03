@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { runScheduledPublish } from "@/lib/server/articles";
-import { ARTICLES_TAG } from "@/lib/cache/tags";
+import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 import { requireCmsAccess } from "@/lib/auth/guard";
 import { jsonError } from "@/lib/server/http";
 
@@ -13,7 +12,7 @@ export async function POST() {
 
     const result = await runScheduledPublish();
     if (result.published > 0) {
-      revalidateTag(ARTICLES_TAG);
+      revalidatePublicArticleCaches();
     }
 
     return NextResponse.json({ data: result });

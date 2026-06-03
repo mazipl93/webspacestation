@@ -9,6 +9,7 @@ import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import {
   excludeBySlugs,
   markSlugsUsed,
+  pickHomepageLatest,
   rankImportantNow,
   rankLatest,
   withSectionFallback,
@@ -695,11 +696,7 @@ export default async function ContentGrid() {
   );
   markSlugsUsed(importantNow, usedSlugs);
 
-  const latest = withSectionFallback(
-    rankLatest(excludeBySlugs(allPublished, usedSlugs), LATEST_LIMIT),
-    allPublished,
-    LATEST_LIMIT
-  );
+  const latest = pickHomepageLatest(allPublished, LATEST_LIMIT);
   markSlugsUsed(latest, usedSlugs);
 
   const categoryArticles = CATEGORY_ORDER.map((slug, i) => {

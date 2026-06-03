@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
+import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 
 import {
   createArticle,
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
     const article = await createArticle(payload, guard.user.id);
 
     if (article.status === "PUBLISHED") {
-      revalidateTag(ARTICLES_TAG);
+      revalidatePublicArticleCaches();
       revalidateTag(articleTag(article.slug));
       revalidateTag(categoryTag(article.category.slug));
     }

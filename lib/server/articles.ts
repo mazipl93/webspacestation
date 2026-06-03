@@ -1,6 +1,7 @@
 import "server-only";
 
-import { revalidateTag, unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache";
+import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 import { prisma } from "@/lib/prisma";
 import { ArticleContentOrigin, ArticleStatus, Prisma, Role } from "@prisma/client";
 import type {
@@ -572,7 +573,7 @@ const scheduledPublishTick = unstable_cache(
   async (): Promise<SchedulePublishRunResult> => {
     const result = await runScheduledPublish();
     if (result.published > 0) {
-      revalidateTag(ARTICLES_TAG);
+      revalidatePublicArticleCaches();
     }
     return result;
   },

@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   rankArticles,
   rankImportantNow,
+  pickHomepageLatest,
   rankLatest,
   rankPopular,
   rankScore,
@@ -34,6 +35,19 @@ describe("rankArticles (PR8 — homepage)", () => {
       { ...BASE, slug: "new-f", publishedAt: BASE.publishedAt, featured: true, score: 3 },
     ], 2);
     assert.equal(ranked[0]?.slug, "new-f");
+  });
+
+  it("pickHomepageLatest keeps global newest even when slug is in hero pool", () => {
+    const newest = new Date().toISOString();
+    const older = new Date(Date.now() - 3_600_000).toISOString();
+    const grid = pickHomepageLatest(
+      [
+        { ...BASE, slug: "hero-used", publishedAt: newest, score: 99, featured: true },
+        { ...BASE, slug: "second", publishedAt: older, score: 1 },
+      ],
+      2
+    );
+    assert.equal(grid[0]?.slug, "hero-used");
   });
 
   it("rankLatest sorts by publishedAt desc (RSS republish uses fresh publish date)", () => {

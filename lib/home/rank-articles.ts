@@ -82,6 +82,17 @@ export function rankLatest<T extends RankableArticle>(
 }
 
 /**
+ * Homepage „Najnowsze” — same order as /aktualnosci head (newest publish first).
+ * Must not exclude hero / „Ważne teraz” slugs or fresh posts vanish from the grid.
+ */
+export function pickHomepageLatest<T extends RankableArticle>(
+  articles: T[],
+  limit = 8
+): T[] {
+  return rankLatest(articles, limit);
+}
+
+/**
  * Homepage section guarantee: never return empty when the pool has articles.
  * Falls back to newest-first from the full candidate pool (no score/featured gate).
  */

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
+import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 
 import {
   archiveArticle,
@@ -118,7 +119,7 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
     }
 
     if (article.status === ArticleStatus.PUBLISHED) {
-      revalidateTag(ARTICLES_TAG);
+      revalidatePublicArticleCaches();
       revalidateTag(articleTag(article.slug));
       revalidateTag(categoryTag(article.category.slug));
     }

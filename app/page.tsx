@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 // DB-backed but cacheable: ISR revalidates every 5 min and on-demand via
 // revalidateTag(ARTICLES_TAG) after a publish. Reads are wrapped in
 // unstable_cache and are build-safe (return [] if the DB is unreachable).
-export const revalidate = 300;
+// On-demand revalidatePath("/") on publish; short ISR as safety net.
+export const revalidate = 60;
 
 export default function HomePage() {
   return (

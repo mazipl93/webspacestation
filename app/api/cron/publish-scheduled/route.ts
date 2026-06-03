@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { runScheduledPublish } from "@/lib/server/articles";
-import { ARTICLES_TAG } from "@/lib/cache/tags";
+import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +28,7 @@ export async function GET(request: Request) {
     const result = await runScheduledPublish();
 
     if (result.published > 0) {
-      revalidateTag(ARTICLES_TAG);
+      revalidatePublicArticleCaches();
     }
 
     return NextResponse.json({
