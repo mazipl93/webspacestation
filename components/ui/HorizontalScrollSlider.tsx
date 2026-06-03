@@ -29,16 +29,8 @@ export default function HorizontalScrollSlider({
   stepRatio = 0.88,
 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef({
-    active: false,
-    pointerId: -1,
-    startX: 0,
-    scrollLeft: 0,
-    moved: false,
-  });
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
-  const [grabbing, setGrabbing] = useState(false);
 
   const updateArrows = useCallback(() => {
     const el = trackRef.current;
@@ -67,6 +59,7 @@ export default function HorizontalScrollSlider({
     el.scrollBy({ left: dir * el.clientWidth * stepRatio, behavior: "smooth" });
   };
 
+  /** Kółko myszy przewija w poziomie; klik w kartę (link) działa normalnie. */
   const onWheel = (e: ReactWheelEvent<HTMLDivElement>) => {
     const el = trackRef.current;
     if (!el) return;
@@ -79,52 +72,6 @@ export default function HorizontalScrollSlider({
 
     e.preventDefault();
     el.scrollLeft += delta;
-  };
-
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const el = trackRef.current;
-    if (!el) return;
-
-    dragRef.current = {
-      active: true,
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      scrollLeft: el.scrollLeft,
-      moved: false,
-    };
-    setGrabbing(true);
-    el.setPointerCapture(e.pointerId);
-  };
-
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = trackRef.current;
-    const drag = dragRef.current;
-    if (!el || !drag.active || e.pointerId !== drag.pointerId) return;
-
-    const dx = e.clientX - drag.startX;
-    if (Math.abs(dx) > 4) drag.moved = true;
-    el.scrollLeft = drag.scrollLeft - dx;
-  };
-
-  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = trackRef.current;
-    const drag = dragRef.current;
-    if (!el || !drag.active || e.pointerId !== drag.pointerId) return;
-
-    drag.active = false;
-    setGrabbing(false);
-    if (el.hasPointerCapture(e.pointerId)) {
-      el.releasePointerCapture(e.pointerId);
-    }
-  };
-
-  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (dragRef.current.moved) {
-      e.preventDefault();
-      e.stopPropagation();
-      dragRef.current.moved = false;
-    }
   };
 
   const arrowClass =
@@ -158,14 +105,8 @@ export default function HorizontalScrollSlider({
         aria-label={ariaLabel}
         tabIndex={0}
         onWheel={onWheel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onClickCapture={onClickCapture}
         className={cn(
-          "flex snap-x snap-mandatory overflow-x-auto pb-2 scrollbar-none select-none",
-          grabbing ? "cursor-grabbing" : "cursor-grab",
+          "flex snap-x snap-mandatory overflow-x-auto pb-2 scrollbar-none",
           trackClassName
         )}
         style={{ WebkitOverflowScrolling: "touch" }}
