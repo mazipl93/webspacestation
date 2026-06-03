@@ -3,16 +3,13 @@ import { revalidateTag } from "next/cache";
 
 import {
   archiveArticle,
+  articleStateTransition,
   getArticleById,
   getPublishedArticleBySlug,
-  publishArticle,
-  refreshArticleRanking,
-  scheduleArticle,
-  transitionArticleStatus,
   updateArticle,
   ArticleWorkflowError,
 } from "@/lib/server/articles";
-import { validatePublishReady } from "@/lib/articles/workflow";
+import { statusToAction } from "@/lib/articles/state-transition";
 import { ArticleStatus } from "@prisma/client";
 import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import {
@@ -31,6 +28,7 @@ import {
   canPublishArticle,
 } from "@/lib/auth/permissions";
 import { withAiScore } from "@/lib/ai/enrich-response";
+import { traceArticleApiResponse } from "@/lib/server/article-trace";
 
 type Ctx = { params: Promise<{ slug: string }> };
 
@@ -48,6 +46,7 @@ export async function GET(request: NextRequest, { params }: Ctx) {
       }
       const article = await getArticleById(slug);
       if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
+      traceArticleApiResponse("GET byId", [article]);
       return NextResponse.json({ data: withAiScore(article) });
     }
 
@@ -56,6 +55,7 @@ export async function GET(request: NextRequest, { params }: Ctx) {
     }
     const article = await getPublishedArticleBySlug(slug);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
+    traceArticleApiResponse("GET public slug", [article]);
     return NextResponse.json({ data: withAiScore(article) });
   } catch (error) {
     console.error("[GET /api/articles/[slug]]", error);
@@ -102,38 +102,19 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
 
     let article = (await getArticleById(id))!;
 
-    if (status === ArticleStatus.PUBLISHED) {
-      const pubCheck = validatePublishReady({
-        title: content.title ?? article.title,
-        content:
-          content.content !== undefined ? content.content : article.content,
-        categoryId: content.categoryId ?? article.category.id,
+    if (status !== undefined) {
+      const action = statusToAction(status);
+      if (!action) {
+        return jsonError(400, "VALIDATION_ERROR", "Invalid status transition.");
+      }
+      const transitioned = await articleStateTransition({
+        id,
+        action,
+        publishAt:
+          status === ArticleStatus.SCHEDULED ? publishAt ?? undefined : undefined,
       });
-      if (!pubCheck.ok) {
-        return jsonError(400, "VALIDATION_ERROR", pubCheck.message);
-      }
-      const published = await publishArticle(id);
-      if (!published) return jsonError(404, "NOT_FOUND", "Article not found.");
-      article = published;
-    } else if (status === ArticleStatus.SCHEDULED) {
-      if (!publishAt) {
-        return jsonError(
-          400,
-          "VALIDATION_ERROR",
-          "Data zaplanowanej publikacji jest wymagana."
-        );
-      }
-      const scheduled = await scheduleArticle(id, publishAt);
-      if (!scheduled) return jsonError(404, "NOT_FOUND", "Article not found.");
-      article = scheduled;
-    } else if (status === ArticleStatus.REVIEW || status === ArticleStatus.DRAFT) {
-      const transitioned = await transitionArticleStatus(id, status);
       if (!transitioned) return jsonError(404, "NOT_FOUND", "Article not found.");
       article = transitioned;
-    }
-
-    if (status === ArticleStatus.PUBLISHED) {
-      await refreshArticleRanking(article.id);
     }
 
     if (article.status === ArticleStatus.PUBLISHED) {
@@ -142,6 +123,7 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       revalidateTag(categoryTag(article.category.slug));
     }
 
+    traceArticleApiResponse("PATCH", [article]);
     return NextResponse.json({ data: article });
   } catch (error) {
     if (error instanceof ArticleWorkflowError) {

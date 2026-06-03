@@ -25,6 +25,11 @@ export class ArticleWorkflowError extends Error {
   }
 }
 import {
+  actionToStatus,
+  statusToAction,
+  type ArticleStateAction,
+} from "@/lib/articles/state-transition";
+import {
   publishedAtPatchForStatusTransition,
   resolveCreateStatus,
   validatePublishReady,
@@ -38,7 +43,7 @@ import {
 import {
   traceArticleFetchCms,
   traceArticleFetchPublic,
-  traceArticleStatusChange,
+  traceArticleStateTransition,
   traceArticleWriteInput,
   traceArticleWriteOutput,
 } from "@/lib/server/article-trace";
@@ -314,37 +319,70 @@ function buildPrismaContentUpdateInput(
   return data;
 }
 
+export type ArticleStateTransitionInput = {
+  id: string;
+  action: ArticleStateAction;
+  publishAt?: Date;
+};
+
 /**
- * Explicit editorial status transition (DRAFT / REVIEW / ARCHIVED).
- * PUBLISHED and SCHEDULED use publishArticle / scheduleArticle.
+ * Single transactional status flow — DRAFT / REVIEW / PUBLISH / SCHEDULE.
+ * All CMS and API status changes must go through this function.
  */
-export async function transitionArticleStatus(
-  id: string,
-  nextStatus: ArticleStatus
+export async function articleStateTransition(
+  input: ArticleStateTransitionInput
 ): Promise<ArticleWithRelations | null> {
-  if (
-    nextStatus === ArticleStatus.PUBLISHED ||
-    nextStatus === ArticleStatus.SCHEDULED
-  ) {
-    throw new ArticleWorkflowError(
-      "Użyj publishArticle lub scheduleArticle dla tego statusu."
-    );
-  }
+  const { id, action, publishAt } = input;
+  const nextStatus = actionToStatus(action);
 
   const existing = await prisma.article.findUnique({
     where: { id },
-    select: { status: true, publishedAt: true },
+    select: {
+      status: true,
+      publishedAt: true,
+      title: true,
+      content: true,
+      categoryId: true,
+    },
   });
   if (!existing) return null;
 
-  traceArticleStatusChange(id, existing.status, nextStatus, "transitionArticleStatus");
+  traceArticleStateTransition(id, existing.status, action);
+
+  if (action === "PUBLISH" || action === "SCHEDULE") {
+    const pubCheck = validatePublishReady({
+      title: existing.title,
+      content: existing.content,
+      categoryId: existing.categoryId,
+    });
+    if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
+  }
+
+  if (action === "SCHEDULE") {
+    if (!publishAt) {
+      throw new ArticleWorkflowError(
+        "Data zaplanowanej publikacji jest wymagana."
+      );
+    }
+    const timeCheck = validateScheduleTime(publishAt);
+    if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
+  }
+
+  const data: Prisma.ArticleUncheckedUpdateInput = {
+    status: nextStatus,
+    ...publishedAtPatchForStatusTransition(nextStatus, existing),
+  };
+
+  if (action === "PUBLISH") {
+    data.publishedAt = existing.publishedAt ?? new Date();
+    data.publishAt = null;
+  } else if (action === "SCHEDULE") {
+    data.publishAt = publishAt!;
+  }
 
   const article = await prisma.article.update({
     where: { id },
-    data: {
-      status: nextStatus,
-      ...publishedAtPatchForStatusTransition(nextStatus, existing),
-    },
+    data,
     select: articleSelect,
   });
 
@@ -354,6 +392,10 @@ export async function transitionArticleStatus(
     coverImage: article.coverImage,
     title: article.title,
   });
+
+  if (action === "PUBLISH") {
+    await refreshArticleRanking(id);
+  }
 
   return article;
 }
@@ -372,45 +414,17 @@ async function getDefaultAuthorId(): Promise<string> {
 }
 
 /**
- * Create an article. Status defaults to DRAFT; never inferred from content or source fields.
- * PUBLISHED on create requires publish validation (prefer publishArticle() for CMS).
+ * Create an article. Persists content as DRAFT, then applies workflow via
+ * articleStateTransition when a non-DRAFT status is requested.
  */
 export async function createArticle(
   input: ArticleCreateInput,
   authorId?: string
 ): Promise<ArticleWithRelations> {
   const resolvedAuthorId = authorId ?? (await getDefaultAuthorId());
-  const status = resolveCreateStatus(input.status);
+  const requestedStatus = resolveCreateStatus(input.status);
 
-  traceArticleWriteInput("create", { ...input, status });
-
-  if (status === ArticleStatus.PUBLISHED) {
-    const check = validatePublishReady({
-      title: input.title,
-      content: input.content,
-      categoryId: input.categoryId,
-    });
-    if (!check.ok) throw new ArticleWorkflowError(check.message);
-  }
-
-  if (status === ArticleStatus.SCHEDULED) {
-    if (!input.publishAt) {
-      throw new ArticleWorkflowError(
-        "Data zaplanowanej publikacji jest wymagana."
-      );
-    }
-    const pubCheck = validatePublishReady({
-      title: input.title,
-      content: input.content,
-      categoryId: input.categoryId,
-    });
-    if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
-    const timeCheck = validateScheduleTime(input.publishAt);
-    if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
-  }
-
-  const publishedAt =
-    status === ArticleStatus.PUBLISHED ? new Date() : null;
+  traceArticleWriteInput("create", { ...input, status: requestedStatus });
 
   const article = await prisma.article.create({
     data: {
@@ -421,7 +435,7 @@ export async function createArticle(
       content: input.content,
       contextNote: input.contextNote,
       coverImage: input.coverImage,
-      status,
+      status: ArticleStatus.DRAFT,
       featured: input.featured,
       readingTime: input.readingTime,
       tags: input.tags,
@@ -430,20 +444,37 @@ export async function createArticle(
       categoryId: input.categoryId,
       authorId: resolvedAuthorId,
       contentOrigin: ArticleContentOrigin.EDITORIAL,
-      publishedAt,
-      publishAt: status === ArticleStatus.SCHEDULED ? input.publishAt : null,
+      publishedAt: null,
+      publishAt: null,
     },
     select: articleSelect,
   });
 
-  traceArticleWriteOutput({
+  if (requestedStatus === ArticleStatus.DRAFT) {
+    traceArticleWriteOutput({
+      id: article.id,
+      status: article.status,
+      coverImage: article.coverImage,
+      title: article.title,
+    });
+    return article;
+  }
+
+  const action = statusToAction(requestedStatus);
+  if (!action) {
+    throw new ArticleWorkflowError(`Nieobsługiwany status: ${requestedStatus}`);
+  }
+
+  const transitioned = await articleStateTransition({
     id: article.id,
-    status: article.status,
-    coverImage: article.coverImage,
-    title: article.title,
+    action,
+    publishAt:
+      requestedStatus === ArticleStatus.SCHEDULED
+        ? (input.publishAt ?? undefined)
+        : undefined,
   });
 
-  return article;
+  return transitioned ?? article;
 }
 
 /**
@@ -469,123 +500,6 @@ export async function updateArticle(
   const article = await prisma.article.update({
     where: { id },
     data,
-    select: articleSelect,
-  });
-
-  traceArticleWriteOutput({
-    id: article.id,
-    status: article.status,
-    coverImage: article.coverImage,
-    title: article.title,
-  });
-
-  return article;
-}
-
-/**
- * Explicit publish transition — sets PUBLISHED and refreshes ranking.
- * Status-only; no heuristics.
- */
-export async function publishArticle(
-  id: string
-): Promise<ArticleWithRelations | null> {
-  const existing = await prisma.article.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      status: true,
-      publishedAt: true,
-      title: true,
-      content: true,
-      categoryId: true,
-    },
-  });
-  if (!existing) return null;
-
-  const check = validatePublishReady({
-    title: existing.title,
-    content: existing.content,
-    categoryId: existing.categoryId,
-  });
-  if (!check.ok) throw new ArticleWorkflowError(check.message);
-
-  traceArticleStatusChange(
-    id,
-    existing.status,
-    ArticleStatus.PUBLISHED,
-    "publishArticle"
-  );
-
-  const article = await prisma.article.update({
-    where: { id },
-    data: {
-      status: ArticleStatus.PUBLISHED,
-      publishedAt: existing.publishedAt ?? new Date(),
-      publishAt: null,
-    },
-    select: articleSelect,
-  });
-
-  traceArticleWriteOutput({
-    id: article.id,
-    status: article.status,
-    coverImage: article.coverImage,
-    title: article.title,
-  });
-
-  await refreshArticleRanking(id);
-  return article;
-}
-
-/**
- * Schedule explicit publish — status SCHEDULED + future publishAt.
- * Requires publish-ready content (same guard as PUBLISHED).
- */
-export async function scheduleArticle(
-  id: string,
-  publishAt: Date
-): Promise<ArticleWithRelations | null> {
-  const existing = await prisma.article.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      title: true,
-      content: true,
-      categoryId: true,
-    },
-  });
-  if (!existing) return null;
-
-  const pubCheck = validatePublishReady({
-    title: existing.title,
-    content: existing.content,
-    categoryId: existing.categoryId,
-  });
-  if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
-
-  const timeCheck = validateScheduleTime(publishAt);
-  if (!timeCheck.ok) throw new ArticleWorkflowError(timeCheck.message);
-
-  const existingStatus = await prisma.article.findUnique({
-    where: { id },
-    select: { status: true },
-  });
-
-  if (existingStatus) {
-    traceArticleStatusChange(
-      id,
-      existingStatus.status,
-      ArticleStatus.SCHEDULED,
-      "scheduleArticle"
-    );
-  }
-
-  const article = await prisma.article.update({
-    where: { id },
-    data: {
-      status: ArticleStatus.SCHEDULED,
-      publishAt,
-    },
     select: articleSelect,
   });
 
@@ -630,18 +544,7 @@ export async function runScheduledPublish(
     const decision = results[i];
     if (!decision?.ok) continue;
 
-    const updated = await prisma.article.updateMany({
-      where: { id: row.id, status: ArticleStatus.SCHEDULED },
-      data: {
-        status: ArticleStatus.PUBLISHED,
-        publishedAt: row.publishedAt ?? now,
-        publishAt: null,
-      },
-    });
-
-    if (updated.count === 0) continue;
-
-    await refreshArticleRanking(row.id);
+    await articleStateTransition({ id: row.id, action: "PUBLISH" });
   }
 
   return summarizeSchedulePublishRun(results);

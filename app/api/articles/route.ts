@@ -19,6 +19,7 @@ import {
 } from "@/lib/auth/permissions";
 import { withAiScores } from "@/lib/ai/enrich-response";
 import {
+  traceArticleApiResponse,
   traceArticleFetchCms,
   traceArticleFetchPublic,
 } from "@/lib/server/article-trace";
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
         status: normalized,
         count: articles.length,
       });
+      traceArticleApiResponse(`GET cms status=${normalized}`, articles);
       return NextResponse.json({ data: withAiScores(articles) });
     }
 
@@ -63,6 +65,10 @@ export async function GET(request: NextRequest) {
       scope: categoryParam ? `category:${categoryParam}` : "published",
       count: articles.length,
     });
+    traceArticleApiResponse(
+      categoryParam ? `GET public category=${categoryParam}` : "GET public",
+      articles
+    );
     return NextResponse.json({ data: withAiScores(articles) });
   } catch (error) {
     console.error("[GET /api/articles]", error);

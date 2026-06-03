@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { adminApi, ApiError } from "@/lib/admin/api";
+import { traceArticleCmsRender } from "@/lib/admin/article-trace";
 import type { AdminArticle } from "@/lib/admin/types";
 import PageHeader from "@/components/admin/PageHeader";
 import ArticlesTable from "@/components/admin/ArticlesTable";
@@ -38,6 +39,7 @@ export default function ArticlesListPage() {
     try {
       const status = FILTERS.find((f) => f.id === current)?.status ?? "ALL";
       const data = await adminApi.listArticles({ status });
+      traceArticleCmsRender(data);
       setArticles(data);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się załadować artykułów.");

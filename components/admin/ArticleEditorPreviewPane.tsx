@@ -90,7 +90,6 @@ function ArticleEditorPreviewPaneInner({
         categories,
         contentOrigin,
         articleId: articleId ?? undefined,
-        heroFromFormOnly: true,
       }),
     [previewForm, categories, contentOrigin, articleId]
   );

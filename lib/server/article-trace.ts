@@ -1,3 +1,4 @@
+import type { ArticleStateAction } from "@/lib/articles/state-transition";
 import type { ArticleStatus } from "@prisma/client";
 
 function devOnly(): boolean {
@@ -36,6 +37,16 @@ export function traceArticleWriteOutput(row: {
   });
 }
 
+export function traceArticleStateTransition(
+  id: string,
+  from: ArticleStatus,
+  action: ArticleStateAction
+): void {
+  if (!devOnly()) return;
+  console.log("ARTICLE_STATE_TRANSITION:", { id, from, action });
+}
+
+/** @deprecated Use traceArticleStateTransition */
 export function traceArticleStatusChange(
   id: string,
   from: ArticleStatus,
@@ -43,7 +54,29 @@ export function traceArticleStatusChange(
   via: string
 ): void {
   if (!devOnly()) return;
-  console.log("ARTICLE_STATUS_CHANGE:", { id, from, to, via });
+  console.log("ARTICLE_STATE_TRANSITION:", { id, from, action: via, to });
+}
+
+export function traceArticleApiResponse(
+  context: string,
+  rows: Array<{
+    id: string;
+    status: ArticleStatus;
+    coverImage: string | null;
+    title: string;
+  }>
+): void {
+  if (!devOnly()) return;
+  console.log("ARTICLE_API_RESPONSE:", {
+    context,
+    count: rows.length,
+    rows: rows.map((r) => ({
+      id: r.id,
+      status: r.status,
+      coverImage: r.coverImage,
+      title: r.title,
+    })),
+  });
 }
 
 export function traceArticleFetchCms(query: {

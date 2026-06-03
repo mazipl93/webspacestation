@@ -12,8 +12,6 @@ export type PreviewArticleInput = {
   articleId?: string;
   /** Optional subtitle shown in hero (not on public API shape). */
   subtitle?: string;
-  /** CMS live split: hero only from form URL (gradient when empty). */
-  heroFromFormOnly?: boolean;
 };
 
 function splitContentParagraphs(content: string): string[] {
@@ -48,22 +46,21 @@ export function resolvePreviewImageFromForm(
 
 /** Client-side draft → NewsArticle for live CMS preview (no API). */
 export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
-  const { form, categories, contentOrigin, articleId, heroFromFormOnly } = input;
+  const { form, categories, contentOrigin, articleId } = input;
   const category = previewCategorySlug(form.categoryId, categories);
   const hasSource = hasCitationFields(form.sourceName, form.sourceUrl);
   const source = form.sourceName.trim() || undefined;
   const originalUrl = form.sourceUrl.trim() || undefined;
   const paragraphs = splitContentParagraphs(form.content);
   const now = new Date().toISOString();
+  const slug = form.slug.trim() || "podglad";
   const coverFromForm = resolvePreviewImageFromForm(form);
-  const image = coverFromForm
-    ? coverFromForm
-    : heroFromFormOnly
-      ? ""
-      : resolveImageOrFallback({
-          category,
-          contentOrigin: contentOrigin ?? "EDITORIAL",
-        });
+  const image = resolveImageOrFallback({
+    coverImage: coverFromForm,
+    category,
+    slug,
+    contentOrigin: contentOrigin ?? "EDITORIAL",
+  });
 
   const imageCredit =
     hasSource && source
@@ -72,7 +69,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
 
   return {
     id: articleId ?? "preview-draft",
-    slug: form.slug.trim() || "podglad",
+    slug,
     title: form.title.trim() || "Tytuł artykułu",
     excerpt: form.excerpt.trim() || form.subtitle.trim() || "",
     category,

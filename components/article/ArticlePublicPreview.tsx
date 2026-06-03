@@ -32,9 +32,7 @@ export default function ArticlePublicPreview({
   viewport = "desktop",
   embedded = false,
 }: ArticlePublicPreviewProps) {
-  const heroImage = resolveImage(article, {
-    withFallback: !embedded,
-  });
+  const heroImage = resolveImage(article);
 
   const meta = previewCatMeta(article.category);
   const bodyParagraphs = getArticleBodyParagraphs(article);

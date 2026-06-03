@@ -4,6 +4,11 @@ import { join } from "node:path";
 import { describe, it } from "node:test";
 import { ArticleStatus } from "@prisma/client";
 import {
+  actionToStatus,
+  statusToAction,
+  type ArticleStateAction,
+} from "@/lib/articles/state-transition";
+import {
   publishedAtPatchForStatusTransition,
   resolveCreateStatus,
   validatePublishReady,
@@ -112,6 +117,20 @@ describe("article workflow (status-only lifecycle)", () => {
       ArticleStatus.SCHEDULED,
     ]);
   });
+
+  it("actionToStatus / statusToAction round-trip editorial states", () => {
+    const actions: ArticleStateAction[] = [
+      "DRAFT",
+      "REVIEW",
+      "PUBLISH",
+      "SCHEDULE",
+    ];
+    for (const action of actions) {
+      const status = actionToStatus(action);
+      assert.equal(statusToAction(status), action);
+    }
+    assert.equal(statusToAction(ArticleStatus.ARCHIVED), null);
+  });
 });
 
 describe("RSS / AI pipeline status contracts (read-only)", () => {
@@ -129,13 +148,13 @@ describe("RSS / AI pipeline status contracts (read-only)", () => {
     assert.doesNotMatch(src, /ArticleStatus\.PUBLISHED/);
   });
 
-  it("updateArticle does not apply status (workflow transitions only)", () => {
+  it("updateArticle does not apply status (articleStateTransition only)", () => {
     const src = readFileSync(
       join(process.cwd(), "lib", "server", "articles.ts"),
       "utf8"
     );
     assert.match(src, /buildPrismaContentUpdateInput/);
-    assert.match(src, /transitionArticleStatus/);
+    assert.match(src, /articleStateTransition/);
     assert.doesNotMatch(src, /source.*status|originalUrl.*status/i);
   });
 });
