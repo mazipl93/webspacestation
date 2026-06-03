@@ -37,7 +37,7 @@ function SettingsCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="card-surface p-5 sm:p-6">
+    <section className="card-surface p-5 transition-colors duration-300 sm:p-6">
       <div className="mb-4 flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-hairline bg-glass text-accent-cyan">
           {icon}
@@ -293,13 +293,15 @@ export default function AccountSettings() {
         <EmailForm />
       </SettingsCard>
 
-      <SettingsCard
-        icon={<KeyRound size={16} />}
-        title="Hasło"
-        description="Dla bezpieczeństwa potwierdź zmianę obecnym hasłem."
-      >
-        <PasswordForm />
-      </SettingsCard>
+      <div className="lg:col-span-2">
+        <SettingsCard
+          icon={<KeyRound size={16} />}
+          title="Hasło"
+          description="Dla bezpieczeństwa potwierdź zmianę obecnym hasłem."
+        >
+          <PasswordForm />
+        </SettingsCard>
+      </div>
     </div>
   );
 }

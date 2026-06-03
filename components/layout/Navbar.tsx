@@ -15,6 +15,12 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import Avatar from "@/components/profile/Avatar";
 import NotificationsPopover from "@/components/notifications/NotificationsPopover";
 import { useNotifications } from "@/hooks/useNotifications";
+import {
+  NAV_OVERLAY_BACKDROP,
+  NAV_OVERLAY_PANEL_BASE,
+  NAV_OVERLAY_PANEL_POSITION,
+  NAV_OVERLAY_PANEL_STYLE,
+} from "@/lib/ui/nav-overlay-panel";
 
 const NAV_LINKS = [
   { label: "Aktualności", href: "/aktualnosci" },
@@ -369,21 +375,19 @@ export default function Navbar() {
 
               {searchOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={closeSearch} />
+                  <div className={NAV_OVERLAY_BACKDROP} onClick={closeSearch} />
                   <div
                     role="dialog"
                     aria-label="Szukaj artykułów"
                     className={cn(
-                      "absolute right-0 top-full z-50 mt-2 w-80 origin-top-right overflow-hidden rounded-2xl border border-hairline p-2 shadow-2xl transition-all duration-150 ease-out",
+                      NAV_OVERLAY_PANEL_BASE,
+                      NAV_OVERLAY_PANEL_POSITION,
+                      "w-full p-2 transition-all duration-150 ease-out sm:w-80",
                       searchShown
                         ? "translate-y-0 scale-100 opacity-100"
                         : "pointer-events-none -translate-y-1 scale-95 opacity-0"
                     )}
-                    style={{
-                      background: "rgba(12,16,24,0.92)",
-                      backdropFilter: "blur(24px) saturate(180%)",
-                      WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                    }}
+                    style={NAV_OVERLAY_PANEL_STYLE}
                   >
                     <form onSubmit={submitSearch}>
                       <div className="relative">

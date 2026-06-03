@@ -1,16 +1,17 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 25 — Prisma OK lokalnie)  
-**Deploy remote:** `4ca8d46` (UI czatu 24 + authorByline — Vercel build w toku)
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25)  
+**Deploy remote:** `06e2d4d`+ (homepage, profil, mobile nav — patrz handoff MAPA)
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
-| 0 | **UI-HOME-24** | Commit WIP motywów sekcji + hero + breadcrumb + `authorByline` po QA usera | **Następne** |
-| 1 | **P0-AUTHOR-BYLINE** | `prisma generate` + smoke lokalnie | `[x]` dev |
-| 2 | **PROD-QA** | Smoke po deploy (Temat tygodnia, daty, Zaktualizuj) | |
-| 3 | **OPS** | ~175 REVIEW + revalidate | |
-| 4 | **P1-6-QA** | Upload okładek na prod | |
+| 0 | **PROD-QA** | Smoke prod po czacie 25 (homepage, profil, mobile nav, autor CMS) | **Następne** |
+| 1 | **OPS** | ~175 REVIEW + revalidate | |
+| 2 | **P1-6-QA** | Upload okładek na prod | |
+| 3 | **P2-WEEK-TOPIC prod** | weekTopic + revalidate na prod | |
+
+**Zamknięte w czacie 24–25:** UI-HOME-24 `[x]` · P0-AUTHOR-BYLINE `[x]` · UI-PROFIL-25 `[x]` · UI-MOBILE-NAV-25 `[x]` · UI-NO-SUBSCRIBE-LINKS `[x]` `06e2d4d`
 
 **P2-WEEK-TOPIC:** kod + push `[x]` `3e7139b` · **prod smoke** (weekTopic ON + revalidate) `[ ]`
 
@@ -34,7 +35,11 @@ _(brak)_
 
 | ID | Zadanie | Status | Uwagi |
 |----|---------|--------|-------|
-| **P0-AUTHOR-BYLINE** | Prisma Client vs `authorByline` | `[x]` dev | Czat 25: kill `node` → `prisma generate` → `db:deploy` (no pending). User QA CMS autor przed commit. |
+| **P0-AUTHOR-BYLINE** | Prisma Client vs `authorByline` | `[x]` | `4ca8d46` + migracja; generate na dev/prod build |
+| **UI-HOME-24** | Homepage motywy, hero, breadcrumb, week topic | `[x]` | `4ca8d46`, `4868232` |
+| **UI-PROFIL-25** | Redesign `/profil` | `[x]` | hero, stats, sekcje |
+| **UI-MOBILE-NAV-25** | Szukaj + powiadomienia mobile | `[x]` | `nav-overlay-panel.ts` |
+| **UI-NO-SUBSCRIBE** | Bez linków Subskrypcje w UI | `[x]` | `06e2d4d` |
 
 | ID | Zadanie | Status | Uwagi |
 |----|---------|--------|-------|

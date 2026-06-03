@@ -26,7 +26,11 @@ function resolveMime(file: File, ext: string): string | null {
   return map[ext] ?? null;
 }
 
-export default function AvatarUploader() {
+type Props = {
+  avatarSize?: number;
+};
+
+export default function AvatarUploader({ avatarSize = 72 }: Props) {
   const { user, refreshUser } = useAuth();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -133,7 +137,7 @@ export default function AvatarUploader() {
   return (
     <div className="flex flex-col items-center gap-2 sm:items-start">
       <div className="relative">
-        <Avatar name={user.name} src={user.avatarUrl} size={72} squared />
+        <Avatar name={user.name} src={user.avatarUrl} size={avatarSize} squared />
         <button
           type="button"
           onClick={() => inputRef.current?.click()}

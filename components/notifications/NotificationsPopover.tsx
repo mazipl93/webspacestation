@@ -14,6 +14,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useNotifications } from "@/hooks/useNotifications";
+import {
+  NAV_OVERLAY_BACKDROP,
+  NAV_OVERLAY_PANEL_BASE,
+  NAV_OVERLAY_PANEL_POSITION,
+  NAV_OVERLAY_PANEL_STYLE,
+} from "@/lib/ui/nav-overlay-panel";
 
 const ICONS: Record<string, LucideIcon> = {
   rocket: Rocket,
@@ -52,17 +58,17 @@ export default function NotificationsPopover({ open, onClose, loginHref }: Props
 
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={onClose} aria-hidden="true" />
+      <div className={NAV_OVERLAY_BACKDROP} onClick={onClose} aria-hidden="true" />
       <div
         ref={panelRef}
         role="dialog"
         aria-label="Powiadomienia"
-        className="absolute right-0 top-full z-50 mt-2 w-[min(calc(100vw-2rem),380px)] origin-top-right overflow-hidden rounded-2xl border border-hairline shadow-2xl"
-        style={{
-          background: "rgba(12,16,24,0.96)",
-          backdropFilter: "blur(24px) saturate(180%)",
-          WebkitBackdropFilter: "blur(24px) saturate(180%)",
-        }}
+        className={cn(
+          NAV_OVERLAY_PANEL_BASE,
+          NAV_OVERLAY_PANEL_POSITION,
+          "w-full sm:w-[min(380px,calc(100vw-2rem))]"
+        )}
+        style={NAV_OVERLAY_PANEL_STYLE}
       >
         <div className="flex items-center justify-between border-b border-hairline-faint px-4 py-3">
           <div className="flex items-center gap-2">
