@@ -3,7 +3,7 @@
 **Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR-H5 + PR7 + PR8)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** _(po push tej sesji — patrz `git log -1`)_
+**Ostatni commit na remote:** `8cc6f8a` — feat(WSS): CMS UX + homepage ranking (PR-H5, PR7, PR8)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
