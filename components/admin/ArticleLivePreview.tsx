@@ -5,33 +5,22 @@ import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
-import { inferRssSource } from "@/lib/admin/rss-display";
-import { isRssAggregatorArticle } from "@/lib/rss/is-aggregator";
+import { hasExternalSource } from "@/lib/ui/article-kind";
 
 export default function ArticleLivePreview({
   article,
   status,
-  subtitle,
 }: {
   article: NewsArticle;
   status: string;
-  subtitle?: string | null;
 }) {
-  const rss = isRssAggregatorArticle({
-    source: article.source,
-    originalUrl: article.originalUrl,
-    subtitle,
-  });
-  const sourceLabel = inferRssSource({
-    source: article.source,
-    subtitle,
-  });
+  const external = hasExternalSource(article.source, article.originalUrl);
   const bodyParagraphs = getArticleBodyParagraphs(article);
 
   return (
     <div className="min-h-dvh bg-space-bg">
       <div className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-meta text-amber-100">
-        Preview publikacji — status: <strong>{status}</strong>. Na portalu{" "}
+        Podgląd publikacji — status: <strong>{status}</strong>. Na portalu{" "}
         {status === "PUBLISHED" ? "widoczny" : "jeszcze niewidoczny"}.
       </div>
 
@@ -48,7 +37,7 @@ export default function ArticleLivePreview({
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[rgba(5,7,9,0.92)] to-transparent px-6 pb-4 pt-12">
             <CoverImageCredit
               credit={article.imageCredit}
-              source={sourceLabel ?? article.source}
+              source={article.source}
               originalUrl={article.originalUrl}
             />
           </div>
@@ -57,11 +46,6 @@ export default function ArticleLivePreview({
 
       <div className="container-site py-10">
         <article className="card-surface mx-auto max-w-3xl p-8 sm:p-10">
-          {rss ? (
-            <span className="mb-4 inline-block rounded-md border border-hairline bg-glass px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-text-secondary">
-              Ze świata
-            </span>
-          ) : null}
           <h1 className="text-headline font-extrabold text-text-primary">{article.title}</h1>
           {article.excerpt ? (
             <p className="mt-4 text-body leading-relaxed text-text-secondary">{article.excerpt}</p>
@@ -83,11 +67,7 @@ export default function ArticleLivePreview({
             </div>
           ) : null}
 
-          {rss && article.originalUrl ? (
-            <div className="mt-8">
-              <SourceAttribution article={article} />
-            </div>
-          ) : null}
+          {external ? <SourceAttribution article={article} /> : null}
         </article>
 
         <p className="mt-8 text-center text-meta text-text-muted">

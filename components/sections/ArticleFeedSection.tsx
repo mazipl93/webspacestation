@@ -103,10 +103,10 @@ export default async function ArticleFeedSection({ category }: Props) {
                 href={category ? `/feed/${category}` : "/feed.xml"}
                 className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-hairline px-3.5 py-1.5 text-[12px] font-medium text-text-secondary transition-colors hover:border-[#ff9500]/40 hover:text-text-primary"
                 style={{ background: "var(--glass-fill)" }}
-                title="Subskrybuj ten dział w czytniku RSS"
+                title="Subskrybuj ten dział"
               >
                 <Rss size={14} className="text-[#ff9500]" aria-hidden />
-                RSS
+                Subskrybuj
               </Link>
               <div
                 className="flex w-fit shrink-0 items-center gap-1.5 rounded-full border border-hairline px-3.5 py-1.5"

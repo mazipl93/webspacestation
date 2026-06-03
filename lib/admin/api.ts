@@ -60,6 +60,9 @@ export interface ArticleWritePayload {
   status?: ArticleStatus;
   featured?: boolean;
   readingTime?: number | null;
+  tags?: string[];
+  source?: string | null;
+  originalUrl?: string | null;
 }
 
 export const adminApi = {

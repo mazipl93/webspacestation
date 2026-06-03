@@ -208,13 +208,6 @@ function ArticleHero({ article }: { article: NewsArticle }) {
             </span>
           </div>
         )}
-        {!article.isBreaking && article.originalUrl && article.source && (
-          <div className="mb-4" style={fadeIn(0.08)}>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-glass px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-text-secondary">
-              Ze świata
-            </span>
-          </div>
-        )}
 
         {/* Headline */}
         <h1

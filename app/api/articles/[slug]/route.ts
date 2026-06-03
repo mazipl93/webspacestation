@@ -5,9 +5,12 @@ import {
   archiveArticle,
   getArticleById,
   getPublishedArticleBySlug,
+  publishArticle,
   refreshArticleRanking,
   updateArticle,
+  ArticleWorkflowError,
 } from "@/lib/server/articles";
+import { validatePublishReady } from "@/lib/articles/workflow";
 import { ArticleStatus } from "@prisma/client";
 import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import {
@@ -25,6 +28,7 @@ import {
   canEditArticle,
   canPublishArticle,
 } from "@/lib/auth/permissions";
+import { withAiScore } from "@/lib/ai/enrich-response";
 
 type Ctx = { params: Promise<{ slug: string }> };
 
@@ -42,7 +46,7 @@ export async function GET(request: NextRequest, { params }: Ctx) {
       }
       const article = await getArticleById(slug);
       if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
-      return NextResponse.json({ data: article });
+      return NextResponse.json({ data: withAiScore(article) });
     }
 
     if (!isValidSlug(slug)) {
@@ -50,7 +54,7 @@ export async function GET(request: NextRequest, { params }: Ctx) {
     }
     const article = await getPublishedArticleBySlug(slug);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
-    return NextResponse.json({ data: article });
+    return NextResponse.json({ data: withAiScore(article) });
   } catch (error) {
     console.error("[GET /api/articles/[slug]]", error);
     return jsonError(500, "INTERNAL_ERROR", "Failed to load article.");
@@ -84,14 +88,45 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       return forbidden();
     }
 
-    const article = await updateArticle(id, parsed.value);
+    let article;
+    if (
+      parsed.value.status === ArticleStatus.PUBLISHED &&
+      Object.keys(parsed.value).length === 1
+    ) {
+      article = await publishArticle(id);
+    } else {
+      if (parsed.value.status === ArticleStatus.PUBLISHED) {
+        const existing = await getArticleById(id);
+        if (!existing) return jsonError(404, "NOT_FOUND", "Article not found.");
+        const pubCheck = validatePublishReady({
+          title: parsed.value.title ?? existing.title,
+          content:
+            parsed.value.content !== undefined
+              ? parsed.value.content
+              : existing.content,
+          categoryId: parsed.value.categoryId ?? existing.category.id,
+        });
+        if (!pubCheck.ok) {
+          return jsonError(400, "VALIDATION_ERROR", pubCheck.message);
+        }
+      }
+      article = await updateArticle(id, parsed.value);
+    }
+
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
 
     const wasPublished =
       parsed.value.status === ArticleStatus.PUBLISHED ||
       article.status === ArticleStatus.PUBLISHED;
 
-    if (parsed.value.status === ArticleStatus.PUBLISHED) {
+    const usedPublishArticle =
+      parsed.value.status === ArticleStatus.PUBLISHED &&
+      Object.keys(parsed.value).length === 1;
+
+    if (
+      parsed.value.status === ArticleStatus.PUBLISHED &&
+      !usedPublishArticle
+    ) {
       await refreshArticleRanking(article.id);
     }
 
@@ -103,6 +138,9 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
 
     return NextResponse.json({ data: article });
   } catch (error) {
+    if (error instanceof ArticleWorkflowError) {
+      return jsonError(400, "VALIDATION_ERROR", error.message);
+    }
     const mapped = mapPrismaError(error);
     if (mapped) return mapped;
     console.error("[PATCH /api/articles/[id]]", error);

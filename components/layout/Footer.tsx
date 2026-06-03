@@ -17,7 +17,7 @@ const FOOTER_NAV = {
     { label: "ISS", href: "/iss" },
   ],
   Popularne: [
-    { label: "Kanały RSS", href: "/rss" },
+    { label: "Subskrypcje", href: "/rss" },
     { label: "Starty rakiet", href: "/starty" },
     { label: "Kalendarz misji", href: "/kalendarz" },
     { label: "Aktywne misje", href: "/misje" },

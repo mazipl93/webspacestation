@@ -28,7 +28,15 @@ enum ArticleStatus {
   DRAFT
   REVIEW
   PUBLISHED
+  SCHEDULED
   ARCHIVED
+}
+
+/// How article body/metadata entered the CMS (CMS unification foundation).
+enum ArticleContentOrigin {
+  EDITORIAL
+  RSS
+  AI_DRAFT
 }
 
 // ─── Models ────────────────────────────────────────────────────────────────--
@@ -83,6 +91,8 @@ model Article {
   source      String?
   /// Canonical URL at the publisher — dedupe key for News Engine ingest.
   originalUrl String?       @unique
+  /// Provenance for CMS policy (RSS prefill vs manual editorial vs future AI drafts).
+  contentOrigin ArticleContentOrigin @default(EDITORIAL)
 
   categoryId  String
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
@@ -101,6 +111,7 @@ model Article {
   @@index([score])
   @@index([publishedAt])
   @@index([source])
+  @@index([contentOrigin])
   @@map("articles")
 }
 

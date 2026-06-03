@@ -1,24 +1,30 @@
 import { RSS_RAW_SUBTITLE_MARKER } from "@/lib/rss/pipeline";
-import {
-  inferRssSource,
-  isRssAggregatorArticle as detectRssAggregator,
-} from "@/lib/rss/is-aggregator";
+import { inferRssSource } from "@/lib/rss/is-aggregator";
+import type { ArticleContentOrigin } from "@/lib/admin/types";
 
 export { inferRssSource };
 
-export function isRssAggregatorArticle(article: {
-  source?: string | null;
-  originalUrl?: string | null;
-  subtitle?: string | null;
+/** CMS RSS classification — provenance only, not citation fields. */
+export function isRssContentOrigin(article: {
+  contentOrigin?: ArticleContentOrigin | string;
 }): boolean {
-  return detectRssAggregator(article);
+  return article.contentOrigin === "RSS";
+}
+
+/** @deprecated Use isRssContentOrigin — name kept for call sites migrating off heuristics. */
+export function isRssAggregatorArticle(article: {
+  contentOrigin?: ArticleContentOrigin | string;
+}): boolean {
+  return isRssContentOrigin(article);
 }
 
 export function isRawRssDraftArticle(article: {
+  contentOrigin?: ArticleContentOrigin | string;
   subtitle?: string | null;
   status?: string;
 }): boolean {
   return (
+    isRssContentOrigin(article) &&
     article.status === "DRAFT" &&
     Boolean(article.subtitle?.includes(RSS_RAW_SUBTITLE_MARKER))
   );
@@ -26,28 +32,27 @@ export function isRawRssDraftArticle(article: {
 
 /** B+ enriched when lead + body + context exist (new pipeline). Legacy rows may lack body/context. */
 export function isAiEnrichedRssArticle(article: {
+  contentOrigin?: ArticleContentOrigin | string;
   subtitle?: string | null;
-  source?: string | null;
-  originalUrl?: string | null;
+  status?: string;
   content?: string | null;
   contextNote?: string | null;
 }): boolean {
-  if (!isRssAggregatorArticle(article)) return false;
+  if (!isRssContentOrigin(article)) return false;
   if (isRawRssDraftArticle(article)) return false;
   return Boolean(article.content?.trim() && article.contextNote?.trim());
 }
 
 /** Legacy RSS in REVIEW with excerpt only (pre-B+). Still publishable — SAFE MODE. */
 export function isLegacyRssReviewArticle(article: {
+  contentOrigin?: ArticleContentOrigin | string;
   subtitle?: string | null;
   status?: string;
-  source?: string | null;
-  originalUrl?: string | null;
   excerpt?: string | null;
   content?: string | null;
   contextNote?: string | null;
 }): boolean {
-  if (!isRssAggregatorArticle(article)) return false;
+  if (!isRssContentOrigin(article)) return false;
   if (isRawRssDraftArticle(article)) return false;
   if (isAiEnrichedRssArticle(article)) return false;
   return Boolean(article.excerpt?.trim());

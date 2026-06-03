@@ -5,7 +5,15 @@ import type { UserRole } from "@/lib/auth/permissions";
 
 export type { UserRole };
 
-export type ArticleStatus = "DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED";
+export type ArticleStatus =
+  | "DRAFT"
+  | "REVIEW"
+  | "PUBLISHED"
+  | "SCHEDULED"
+  | "ARCHIVED";
+
+/** Mirrors Prisma ArticleContentOrigin — exposed on article API responses. */
+export type ArticleContentOrigin = "EDITORIAL" | "RSS" | "AI_DRAFT";
 
 export interface AdminUser {
   id: string;
@@ -55,6 +63,9 @@ export interface AdminArticle {
   publishedAt: string | null;
   source?: string | null;
   originalUrl?: string | null;
+  contentOrigin: ArticleContentOrigin;
+  /** Read-only intelligence score (0–100), computed on API — not persisted. */
+  aiScore?: number | null;
   category: AdminArticleCategory;
   author: AdminArticleAuthor;
 }
@@ -70,6 +81,10 @@ export interface ArticleFormValues {
   categoryId: string;
   featured: boolean;
   readingTime: number | null;
+  /** Comma-separated in the form; normalized to Article.tags on save. */
+  tagsText: string;
+  sourceName: string;
+  sourceUrl: string;
 }
 
 export interface CategoryFormValues {

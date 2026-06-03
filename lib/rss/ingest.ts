@@ -1,4 +1,4 @@
-import { ArticleStatus, Prisma, Role } from "@prisma/client";
+import { ArticleContentOrigin, ArticleStatus, Prisma, Role } from "@prisma/client";
 
 import bcrypt from "bcryptjs";
 
@@ -181,6 +181,9 @@ async function persistItem(
       source: item.source,
 
       originalUrl: item.originalUrl,
+
+      // HARD RULE: contentOrigin is immutable after create — RSS ingest always RSS.
+      contentOrigin: ArticleContentOrigin.RSS,
 
       status: ArticleStatus.DRAFT,
 

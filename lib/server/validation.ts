@@ -1,4 +1,5 @@
 import { ArticleStatus } from "@prisma/client";
+import { normalizeArticleTags } from "@/lib/rss/article-tags";
 
 const PL_CHARS = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g;
 const PL_MAP: Record<string, string> = {
@@ -22,6 +23,7 @@ export const ARTICLE_STATUSES: ArticleStatus[] = [
   ArticleStatus.DRAFT,
   ArticleStatus.REVIEW,
   ArticleStatus.PUBLISHED,
+  ArticleStatus.SCHEDULED,
   ArticleStatus.ARCHIVED,
 ];
 
@@ -44,6 +46,31 @@ function asTrimmedString(v: unknown): string | undefined {
   return typeof v === "string" ? v.trim() : undefined;
 }
 
+function parseTagsField(body: Record<string, unknown>): string[] | undefined {
+  if (body.tags === undefined) return undefined;
+  if (Array.isArray(body.tags)) return normalizeArticleTags(body.tags);
+  if (typeof body.tags === "string") {
+    return normalizeArticleTags(
+      body.tags.split(",").map((t) => t.trim()).filter(Boolean)
+    );
+  }
+  return [];
+}
+
+function parseSourceField(body: Record<string, unknown>): string | null | undefined {
+  if (body.source !== undefined) return asTrimmedString(body.source) ?? null;
+  if (body.sourceName !== undefined) return asTrimmedString(body.sourceName) ?? null;
+  return undefined;
+}
+
+function parseOriginalUrlField(
+  body: Record<string, unknown>
+): string | null | undefined {
+  if (body.originalUrl !== undefined) return asTrimmedString(body.originalUrl) ?? null;
+  if (body.sourceUrl !== undefined) return asTrimmedString(body.sourceUrl) ?? null;
+  return undefined;
+}
+
 // ─── Article inputs ───────────────────────────────────────────────────────--
 
 export interface ArticleCreateInput {
@@ -58,6 +85,9 @@ export interface ArticleCreateInput {
   status: ArticleStatus;
   featured: boolean;
   readingTime: number | null;
+  tags: string[];
+  source: string | null;
+  originalUrl: string | null;
 }
 
 export type ArticleUpdateInput = Partial<ArticleCreateInput>;
@@ -108,6 +138,9 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       featured: body.featured === true,
       readingTime:
         typeof body.readingTime === "number" ? body.readingTime : null,
+      tags: parseTagsField(body) ?? [],
+      source: parseSourceField(body) ?? null,
+      originalUrl: parseOriginalUrlField(body) ?? null,
     },
   };
 }
@@ -156,6 +189,12 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
     }
     out.readingTime = typeof body.readingTime === "number" ? body.readingTime : null;
   }
+  const tags = parseTagsField(body);
+  if (tags !== undefined) out.tags = tags;
+  const source = parseSourceField(body);
+  if (source !== undefined) out.source = source;
+  const originalUrl = parseOriginalUrlField(body);
+  if (originalUrl !== undefined) out.originalUrl = originalUrl;
 
   return { ok: true, value: out };
 }

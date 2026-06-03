@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ExternalLink, Rss } from "lucide-react";
+import { Bell, ExternalLink } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { SITE_CONTAINER } from "@/lib/site-layout";
@@ -9,21 +9,10 @@ import { getSiteUrl } from "@/lib/site-url";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
-  title: "Kanały RSS",
+  title: "Subskrypcje",
   description:
-    "Subskrybuj aktualności Web Space Station w czytniku RSS — cały portal lub wybrany dział.",
+    "Subskrybuj aktualności Web Space Station — cały portal lub wybrany dział — w ulubionym czytniku newsów.",
 };
-
-const EXAMPLE_ITEM = `    <item>
-      <title>Starship Flight 14 — pełny sukces…</title>
-      <link>https://webspacestation.pl/aktualnosci/starship-flight-14-pelny-sukces</link>
-      <pubDate>Sun, 01 Jun 2026 15:20:00 GMT</pubDate>
-      <description><![CDATA[
-        <p>Po raz pierwszy w historii programu…</p>
-        <p><a href="…">Czytaj więcej na Web Space Station</a></p>
-      ]]></description>
-      <category>Misje</category>
-    </item>`;
 
 export default function RssIndexPage() {
   const siteUrl = getSiteUrl();
@@ -41,7 +30,7 @@ export default function RssIndexPage() {
                 color: "#ff9500",
               }}
             >
-              <Rss size={24} aria-hidden />
+              <Bell size={24} aria-hidden />
             </span>
             <div>
               <h1
@@ -52,24 +41,23 @@ export default function RssIndexPage() {
                   lineHeight: 1.08,
                 }}
               >
-                Kanały RSS
+                Subskrypcje
               </h1>
               <p className="mt-2 text-[16px] leading-relaxed text-text-secondary md:text-[15px]">
-                RSS to „aktualizator” dla newsów: dodajesz link poniżej do Feedly,
-                Inoreadera lub aplikacji na telefonie — nowe artykuły pojawiają się
-                same, bez newslettera i bez logowania.
+                Otrzymuj nowe artykuły Web Space Station w Feedly, Inoreaderze
+                lub aplikacji na telefonie — bez newslettera i bez logowania.
               </p>
             </div>
           </div>
 
           <section className="card-surface mb-8 space-y-4 p-6">
             <h2 className="text-[15px] font-bold text-text-primary">
-              Jak to działa?
+              Jak subskrybować?
             </h2>
             <ol className="list-decimal space-y-2 pl-5 text-[14px] leading-relaxed text-text-secondary">
               <li>Wybierz kanał — cały portal albo jeden dział (np. Misje).</li>
-              <li>Skopiuj adres URL kanału (kończy się na <code className="text-text-primary">feed.xml</code> lub <code className="text-text-primary">/feed/misje</code>).</li>
-              <li>Wklej go w czytniku RSS jako „Dodaj subskrypcję” / „Add feed”.</li>
+              <li>Skopiuj link subskrypcji i wklej go w czytniku jako „Dodaj subskrypcję”.</li>
+              <li>Nowe artykuły pojawią się automatycznie w Twojej liście.</li>
             </ol>
             <p className="text-[13px] text-text-tertiary">
               Kanały odświeżają się co około 5 minut — tak jak strona główna.
@@ -95,9 +83,6 @@ export default function RssIndexPage() {
                       <p className="mt-0.5 text-[13px] text-text-tertiary">
                         {feed.description}
                       </p>
-                      <p className="mt-2 truncate font-mono text-[12px] text-accent-cyan">
-                        {feedUrl}
-                      </p>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
                       <Link
@@ -106,8 +91,7 @@ export default function RssIndexPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Rss size={14} className="text-[#ff9500]" />
-                        Otwórz XML
+                        Subskrybuj
                       </Link>
                       <Link
                         href={feed.pageHref}
@@ -117,28 +101,11 @@ export default function RssIndexPage() {
                         <ExternalLink size={13} />
                       </Link>
                     </div>
+                    <span className="sr-only">{feedUrl}</span>
                   </li>
                 );
               })}
             </ul>
-          </section>
-
-          <section className="card-surface overflow-hidden">
-            <div className="border-b border-hairline px-5 py-3">
-              <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-text-tertiary">
-                Przykład — jak wygląda wpis w pliku RSS
-              </h2>
-            </div>
-            <pre
-              className="overflow-x-auto p-5 font-mono text-[12px] leading-relaxed text-text-secondary"
-              style={{ background: "rgba(0,0,0,0.25)" }}
-            >
-              {EXAMPLE_ITEM}
-            </pre>
-            <p className="border-t border-hairline px-5 py-3 text-[12px] text-text-muted">
-              W czytniku zobaczysz normalną listę tytułów i zajawek — nie surowy
-              kod XML.
-            </p>
           </section>
         </div>
       </main>

@@ -2,7 +2,7 @@
  * AI layer: unprocessed DRAFT (raw RSS) → OpenAI B+ enrich → REVIEW.
  * Never sets PUBLISHED. REVIEW/PUBLISHED are never selected or updated.
  */
-import { ArticleStatus } from "@prisma/client";
+import { ArticleContentOrigin, ArticleStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import {
@@ -143,6 +143,8 @@ export async function runRssDraftProcessing(): Promise<ProcessDraftsResult> {
           tags: normalizeArticleTags(fields.tags),
           readingTime: fields.readingTime ?? 3,
           status: ArticleStatus.REVIEW,
+          // HARD RULE: keep RSS provenance — never infer or fallback to EDITORIAL.
+          contentOrigin: ArticleContentOrigin.RSS,
           ...(categoryId ? { categoryId } : {}),
         },
       });

@@ -25,14 +25,15 @@ import StatusBadge from "@/components/admin/StatusBadge";
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
 import {
-  getAdminArticleTags,
-  inferRssSource,
-  isRssAggregatorArticle,
-} from "@/lib/admin/rss-display";
-import {
   buildRssImageCredit,
   getRssImageCreditForArticle,
 } from "@/lib/rss/image-credit";
+import { normalizeArticleTags } from "@/lib/rss/article-tags";
+import {
+  EXTERNAL_SOURCE_LABEL,
+  articleKindLabel,
+  hasExternalSource,
+} from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 
 const EMPTY_FORM: ArticleFormValues = {
@@ -46,11 +47,25 @@ const EMPTY_FORM: ArticleFormValues = {
   categoryId: "",
   featured: false,
   readingTime: null,
+  tagsText: "",
+  sourceName: "",
+  sourceUrl: "",
 };
 
 const AUTOSAVE_DELAY = 1500;
-const READONLY_FIELD =
-  "cursor-default opacity-90 read-only:border-hairline-faint read-only:bg-white/[0.02]";
+
+function tagsToText(tags: string[] | undefined): string {
+  return (tags ?? []).filter((t) => t.trim()).join(", ");
+}
+
+function parseTagsText(text: string): string[] {
+  return normalizeArticleTags(
+    text
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+  );
+}
 
 function toForm(a: AdminArticle): ArticleFormValues {
   return {
@@ -64,17 +79,13 @@ function toForm(a: AdminArticle): ArticleFormValues {
     categoryId: a.category.id,
     featured: a.featured,
     readingTime: a.readingTime,
+    tagsText: tagsToText(a.tags),
+    sourceName: a.source ?? "",
+    sourceUrl: a.originalUrl ?? "",
   };
 }
 
-function toPayload(form: ArticleFormValues, isRss: boolean): ArticleWritePayload {
-  if (isRss) {
-    // RSS: AI fields live in DB via reprocess/process — never wipe via autosave.
-    return {
-      categoryId: form.categoryId,
-      featured: form.featured,
-    };
-  }
+function toPayload(form: ArticleFormValues): ArticleWritePayload {
   return {
     title: form.title,
     slug: form.slug,
@@ -86,7 +97,14 @@ function toPayload(form: ArticleFormValues, isRss: boolean): ArticleWritePayload
     categoryId: form.categoryId,
     featured: form.featured,
     readingTime: form.readingTime,
+    tags: parseTagsText(form.tagsText),
+    source: form.sourceName.trim() || null,
+    originalUrl: form.sourceUrl.trim() || null,
   };
+}
+
+function canEnhanceExternalContent(form: ArticleFormValues): boolean {
+  return hasExternalSource(form.sourceName, form.sourceUrl);
 }
 
 export default function ArticleEditor({ articleId }: { articleId?: string }) {
@@ -105,7 +123,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const [savingLabel, setSavingLabel] = useState<string>("");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [aiSuccess, setAiSuccess] = useState<string | null>(null);
+  const [enhanceSuccess, setEnhanceSuccess] = useState<string | null>(null);
   const [reprocessing, setReprocessing] = useState(false);
 
   const slugTouched = useRef(Boolean(articleId));
@@ -113,8 +131,9 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savingRef = useRef(false);
 
-  const isRss =
-    loadedArticle !== null && isRssAggregatorArticle(loadedArticle);
+  const showExternalEnhancePanel =
+    loadedArticle !== null && canEnhanceExternalContent(form);
+  const kindLabel = articleKindLabel(form.sourceName, form.sourceUrl);
 
   useEffect(() => {
     let active = true;
@@ -161,7 +180,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setError(null);
 
       try {
-        const payload = toPayload(form, isRss);
+        const payload = toPayload(form);
         if (opts.publish) payload.status = "PUBLISHED";
 
         let saved: AdminArticle;
@@ -193,7 +212,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   useEffect(() => {
     if (!dirty.current) return;
     if (!form.categoryId) return;
-    if (!isRss && !form.title.trim()) return;
+    if (!form.title.trim()) return;
 
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     autosaveTimer.current = setTimeout(() => {
@@ -203,13 +222,13 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [form, persist, isRss]);
+  }, [form, persist]);
 
   const handleReprocessAi = async () => {
-    if (!currentId || !loadedArticle || !isRss) return;
+    if (!currentId || !loadedArticle || !canEnhanceExternalContent(form)) return;
     if (
       !window.confirm(
-        "Ponownie uruchomić OpenAI (gpt-5.4-mini)? Lead, treść, kontekst WSS i tagi zostaną nadpisane."
+        "Dopracować treść artykułu? Zajawka, treść, kontekst WSS i tagi zostaną nadpisane."
       )
     ) {
       return;
@@ -220,7 +239,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     }
     setReprocessing(true);
     setError(null);
-    setAiSuccess(null);
+    setEnhanceSuccess(null);
     try {
       const saved = await adminApi.reprocessRssArticle(currentId);
       dirty.current = false;
@@ -229,12 +248,12 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setStatus(saved.status);
       setPublishedSlug(saved.status === "PUBLISHED" ? saved.slug : null);
       setLastSavedAt(new Date());
-      setAiSuccess("AI zaktualizowało lead, treść, kontekst WSS i tagi.");
+      setEnhanceSuccess("Treść artykułu została odświeżona.");
     } catch (e) {
       setError(
         e instanceof ApiError
           ? e.message
-          : "Nie udało się ponowić przetwarzania AI."
+          : "Nie udało się poprawić treści."
       );
     } finally {
       setReprocessing(false);
@@ -248,7 +267,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     dirty.current = true;
     setForm((prev) => {
       const next = { ...prev, [key]: value };
-      if (key === "title" && !slugTouched.current && !isRss) {
+      if (key === "title" && !slugTouched.current) {
         next.slug = slugify(String(value));
       }
       return next;
@@ -264,7 +283,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     );
   }
 
-  const rssTags = loadedArticle ? getAdminArticleTags(loadedArticle) : [];
+  const sourceLabel = form.sourceName.trim() || null;
 
   return (
     <div>
@@ -281,16 +300,17 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <h1 className="text-title font-semibold">
               {currentId ? "Edycja artykułu" : "Nowy artykuł"}
             </h1>
-            <div className="mt-1 flex items-center gap-2.5">
+            <div className="mt-1 flex flex-wrap items-center gap-2.5">
               <StatusBadge status={status} />
+              <span className="rounded-badge border border-hairline bg-white/5 px-2 py-0.5 text-caption text-text-muted">
+                {kindLabel}
+              </span>
               <span className="text-caption text-text-muted">
                 {saving
                   ? savingLabel
                   : lastSavedAt
                     ? `Zapisano ${lastSavedAt.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })}`
-                    : isRss
-                      ? "Artykuł RSS — edytujesz kategorię; treść z AI"
-                      : "Niezapisane zmiany zapisują się automatycznie"}
+                    : "Niezapisane zmiany zapisują się automatycznie"}
               </span>
             </div>
           </div>
@@ -316,11 +336,9 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               {publishedSlug ? "Podgląd na portalu" : "Preview publikacji"}
             </Link>
           ) : null}
-          {!isRss ? (
-            <Button variant="ghost" onClick={() => persist()} disabled={saving}>
-              Zapisz szkic
-            </Button>
-          ) : null}
+          <Button variant="ghost" onClick={() => persist()} disabled={saving}>
+            Zapisz szkic
+          </Button>
           <Button
             onClick={() => persist({ publish: true })}
             disabled={saving || !mayPublish || !form.categoryId}
@@ -342,27 +360,26 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           <Banner tone="error">{error}</Banner>
         </div>
       ) : null}
-      {aiSuccess ? (
+      {enhanceSuccess ? (
         <div className="mb-5">
-          <Banner tone="success">{aiSuccess}</Banner>
+          <Banner tone="success">{enhanceSuccess}</Banner>
         </div>
       ) : null}
 
-      {isRss && loadedArticle ? (
+      {showExternalEnhancePanel && loadedArticle ? (
         <Card className="mb-5 border-accent-cyan/20 bg-accent-cyan/[0.04]">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-overline font-semibold uppercase tracking-wide text-accent-cyan">
-              Źródło RSS
-              {(() => {
-                const label = inferRssSource(loadedArticle);
-                return label ? ` · ${label}` : null;
-              })()}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-meta font-medium text-text-secondary">
+              {EXTERNAL_SOURCE_LABEL}
+              {sourceLabel ? (
+                <span className="text-text-muted"> · {sourceLabel}</span>
+              ) : null}
             </p>
             <Button
               type="button"
               disabled={reprocessing || saving}
               onClick={handleReprocessAi}
-              title="OpenAI: lead, treść, kontekst WSS, tagi"
+              title="Ponownie uzupełnij zajawkę, treść i kontekst artykułu"
             >
               {reprocessing ? (
                 <>
@@ -370,37 +387,10 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   Poprawianie…
                 </>
               ) : (
-                "Popraw z AI"
+                "Popraw treść"
               )}
             </Button>
           </div>
-          {loadedArticle.originalUrl ? (
-            <a
-              href={loadedArticle.originalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 break-all text-meta font-medium text-accent-cyan hover:underline"
-            >
-              <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              {loadedArticle.originalUrl}
-            </a>
-          ) : (
-            <Banner tone="error">
-              Brak linku do oryginału — uruchom ingest RSS lub uzupełnij URL.
-            </Banner>
-          )}
-          {rssTags.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {rssTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-badge border border-hairline bg-white/[0.04] px-2 py-0.5 text-caption text-text-secondary"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </Card>
       ) : null}
 
@@ -412,56 +402,40 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 id="title"
                 value={form.title}
                 placeholder="Nagłówek artykułu"
-                readOnly={isRss}
-                className={isRss ? READONLY_FIELD : undefined}
                 onChange={(e) => update("title", e.target.value)}
               />
             </Field>
 
-            {!isRss ? (
-              <Field label="Podtytuł" htmlFor="subtitle">
-                <TextInput
-                  id="subtitle"
-                  value={form.subtitle}
-                  placeholder="Krótki dek pod tytułem"
-                  onChange={(e) => update("subtitle", e.target.value)}
-                />
-              </Field>
-            ) : null}
-
-            {!isRss ? (
-              <Field
-                label="Slug"
-                htmlFor="slug"
-                hint="Generowany automatycznie z tytułu — można nadpisać."
-              >
-                <TextInput
-                  id="slug"
-                  value={form.slug}
-                  placeholder="slug-artykulu"
-                  onChange={(e) => {
-                    slugTouched.current = true;
-                    update("slug", slugify(e.target.value));
-                  }}
-                />
-              </Field>
-            ) : null}
+            <Field label="Podtytuł" htmlFor="subtitle">
+              <TextInput
+                id="subtitle"
+                value={form.subtitle}
+                placeholder="Krótki dek pod tytułem"
+                onChange={(e) => update("subtitle", e.target.value)}
+              />
+            </Field>
 
             <Field
-              label={isRss ? "Lead (publiczny)" : "Zajawka"}
-              htmlFor="excerpt"
-              hint={
-                isRss
-                  ? "1–2 zdania w hero. Bez wzmianki o wydawcy — źródło jest w stopce."
-                  : undefined
-              }
+              label="Slug"
+              htmlFor="slug"
+              hint="Generowany automatycznie z tytułu — można nadpisać."
             >
+              <TextInput
+                id="slug"
+                value={form.slug}
+                placeholder="slug-artykulu"
+                onChange={(e) => {
+                  slugTouched.current = true;
+                  update("slug", slugify(e.target.value));
+                }}
+              />
+            </Field>
+
+            <Field label="Zajawka" htmlFor="excerpt">
               <TextArea
                 id="excerpt"
-                rows={isRss ? 2 : 3}
+                rows={3}
                 value={form.excerpt}
-                readOnly={isRss}
-                className={isRss ? READONLY_FIELD : undefined}
                 placeholder="Lead wyświetlany pod tytułem."
                 onChange={(e) => update("excerpt", e.target.value)}
               />
@@ -470,45 +444,36 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
           <Card className="flex flex-col gap-2">
             <Field
-              label={isRss ? "Treść (AI)" : "Treść"}
+              label="Treść"
               htmlFor="content"
-              hint={
-                isRss
-                  ? "2–4 akapity na stronie artykułu. Generowane przez AI z RSS."
-                  : "Markdown lub zwykły tekst. Akapity oddzielaj pustą linią."
-              }
+              hint="Markdown lub zwykły tekst. Akapity oddzielaj pustą linią."
             >
               <TextArea
                 id="content"
-                rows={isRss ? 10 : 16}
+                rows={16}
                 value={form.content}
-                readOnly={isRss}
-                className={isRss ? READONLY_FIELD : "font-mono text-meta"}
-                placeholder={isRss ? "Brak treści — uruchom Popraw z AI." : "Treść artykułu…"}
+                className="font-mono text-meta"
+                placeholder="Treść artykułu…"
                 onChange={(e) => update("content", e.target.value)}
               />
             </Field>
           </Card>
 
-          {isRss ? (
-            <Card className="flex flex-col gap-2">
-              <Field
-                label="Kontekst WSS (AI)"
-                htmlFor="contextNote"
-                hint="Ramowanie redakcyjne — ogólny trend, nie cytat ze źródła."
-              >
-                <TextArea
-                  id="contextNote"
-                  rows={3}
-                  value={form.contextNote}
-                  readOnly
-                  className={READONLY_FIELD}
-                  placeholder="Brak kontekstu — uruchom Popraw z AI."
-                  onChange={(e) => update("contextNote", e.target.value)}
-                />
-              </Field>
-            </Card>
-          ) : null}
+          <Card className="flex flex-col gap-2">
+            <Field
+              label="Kontekst WSS"
+              htmlFor="contextNote"
+              hint="Ramowanie redakcyjne — ogólny trend, nie cytat ze źródła."
+            >
+              <TextArea
+                id="contextNote"
+                rows={3}
+                value={form.contextNote}
+                placeholder="Opcjonalny kontekst dla czytelnika."
+                onChange={(e) => update("contextNote", e.target.value)}
+              />
+            </Field>
+          </Card>
         </div>
 
         <div className="flex flex-col gap-5">
@@ -528,14 +493,25 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               </Select>
             </Field>
 
+            <Field
+              label="Tagi"
+              htmlFor="tags"
+              hint="Oddziel przecinkami (maks. 5)."
+            >
+              <TextInput
+                id="tags"
+                value={form.tagsText}
+                placeholder="np. Space, NASA, Starship"
+                onChange={(e) => update("tagsText", e.target.value)}
+              />
+            </Field>
+
             <Field label="Czas czytania (min)" htmlFor="readingTime">
               <TextInput
                 id="readingTime"
                 type="number"
                 min={0}
                 value={form.readingTime ?? ""}
-                readOnly={isRss}
-                className={isRss ? READONLY_FIELD : undefined}
                 placeholder="np. 4"
                 onChange={(e) =>
                   update(
@@ -546,14 +522,45 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               />
             </Field>
 
-            {!isRss ? (
-              <div className="flex items-center justify-between border-t border-hairline-faint pt-4">
-                <span className="text-meta text-text-secondary">Wyróżniony</span>
-                <Toggle
-                  checked={form.featured}
-                  onChange={(v) => update("featured", v)}
-                />
-              </div>
+            <div className="flex items-center justify-between border-t border-hairline-faint pt-4">
+              <span className="text-meta text-text-secondary">Wyróżniony</span>
+              <Toggle
+                checked={form.featured}
+                onChange={(v) => update("featured", v)}
+              />
+            </div>
+          </Card>
+
+          <Card className="flex flex-col gap-4">
+            <p className="text-meta font-semibold text-text-primary">
+              Źródło artykułu
+            </p>
+            <Field label="Wydawca" htmlFor="sourceName">
+              <TextInput
+                id="sourceName"
+                value={form.sourceName}
+                placeholder="np. SpaceNews"
+                onChange={(e) => update("sourceName", e.target.value)}
+              />
+            </Field>
+            <Field label="Link do artykułu" htmlFor="sourceUrl">
+              <TextInput
+                id="sourceUrl"
+                value={form.sourceUrl}
+                placeholder="https://…"
+                onChange={(e) => update("sourceUrl", e.target.value)}
+              />
+            </Field>
+            {form.sourceUrl.trim() ? (
+              <a
+                href={form.sourceUrl.trim()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 break-all text-caption text-accent-cyan hover:underline"
+              >
+                <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+                Otwórz u wydawcy
+              </a>
             ) : null}
           </Card>
 
@@ -562,8 +569,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <TextInput
                 id="coverImage"
                 value={form.coverImage}
-                readOnly={isRss}
-                className={isRss ? READONLY_FIELD : undefined}
                 placeholder="https://…"
                 onChange={(e) => update("coverImage", e.target.value)}
               />
@@ -573,8 +578,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <img
                 src={form.coverImage}
                 alt={
-                  isRss
-                    ? getRssImageCreditForArticle(loadedArticle!) ?? "Okładka RSS"
+                  loadedArticle && getRssImageCreditForArticle(loadedArticle)
+                    ? getRssImageCreditForArticle(loadedArticle)!
                     : "Podgląd okładki"
                 }
                 className="aspect-video w-full rounded-[0.6rem] border border-hairline object-cover"
@@ -584,15 +589,19 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 Brak okładki
               </div>
             )}
-            {isRss && loadedArticle ? (
+            {loadedArticle &&
+            (form.sourceUrl.trim() || form.sourceName.trim()) ? (
               <CoverImageCredit
                 variant="compact"
                 credit={
-                  getRssImageCreditForArticle(loadedArticle) ??
-                  buildRssImageCredit(loadedArticle.source ?? "")
+                  getRssImageCreditForArticle({
+                    ...loadedArticle,
+                    source: form.sourceName.trim() || loadedArticle.source,
+                    originalUrl: form.sourceUrl.trim() || loadedArticle.originalUrl,
+                  }) ?? buildRssImageCredit(form.sourceName.trim() || "źródło")
                 }
-                source={inferRssSource(loadedArticle) ?? undefined}
-                originalUrl={loadedArticle.originalUrl ?? undefined}
+                source={sourceLabel ?? undefined}
+                originalUrl={form.sourceUrl.trim() || undefined}
               />
             ) : null}
           </Card>

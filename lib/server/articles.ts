@@ -2,7 +2,7 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus, Prisma, Role } from "@prisma/client";
+import { ArticleContentOrigin, ArticleStatus, Prisma, Role } from "@prisma/client";
 import type {
   ArticleCreateInput,
   ArticleUpdateInput,
@@ -17,6 +17,18 @@ import {
   categoryTag,
 } from "@/lib/cache/tags";
 import { PUBLISHED_ARTICLE_WHERE } from "@/lib/server/published-only";
+
+export class ArticleWorkflowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ArticleWorkflowError";
+  }
+}
+import {
+  publishedAtPatchForStatusTransition,
+  resolveCreateStatus,
+  validatePublishReady,
+} from "@/lib/articles/workflow";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -38,6 +50,7 @@ const articleSelect = {
   publishedAt: true,
   source: true,
   originalUrl: true,
+  contentOrigin: true,
   category: {
     select: {
       id: true,
@@ -236,22 +249,24 @@ export interface ArticleStats {
   published: number;
   draft: number;
   review: number;
+  scheduled: number;
   archived: number;
   categories: number;
 }
 
 /** Aggregate counts for the dashboard. */
 export async function getArticleStats(): Promise<ArticleStats> {
-  const [total, published, draft, review, archived, categories] =
+  const [total, published, draft, review, scheduled, archived, categories] =
     await Promise.all([
       prisma.article.count(),
       prisma.article.count({ where: { status: ArticleStatus.PUBLISHED } }),
       prisma.article.count({ where: { status: ArticleStatus.DRAFT } }),
       prisma.article.count({ where: { status: ArticleStatus.REVIEW } }),
+      prisma.article.count({ where: { status: ArticleStatus.SCHEDULED } }),
       prisma.article.count({ where: { status: ArticleStatus.ARCHIVED } }),
       prisma.category.count(),
     ]);
-  return { total, published, draft, review, archived, categories };
+  return { total, published, draft, review, scheduled, archived, categories };
 }
 
 /** First admin user id — temporary author fallback until auth exists. */
@@ -268,14 +283,28 @@ async function getDefaultAuthorId(): Promise<string> {
 }
 
 /**
- * Create an article. If status is PUBLISHED, publishedAt is stamped.
- * The author defaults to the first admin when no authorId is supplied.
+ * Create an article. Status defaults to DRAFT; never inferred from content or source fields.
+ * PUBLISHED on create requires publish validation (prefer publishArticle() for CMS).
  */
 export async function createArticle(
   input: ArticleCreateInput,
   authorId?: string
 ): Promise<ArticleWithRelations> {
   const resolvedAuthorId = authorId ?? (await getDefaultAuthorId());
+  const status = resolveCreateStatus(input.status);
+
+  if (status === ArticleStatus.PUBLISHED) {
+    const check = validatePublishReady({
+      title: input.title,
+      content: input.content,
+      categoryId: input.categoryId,
+    });
+    if (!check.ok) throw new ArticleWorkflowError(check.message);
+  }
+
+  const publishedAt =
+    status === ArticleStatus.PUBLISHED ? new Date() : null;
+
   return prisma.article.create({
     data: {
       slug: input.slug,
@@ -285,21 +314,24 @@ export async function createArticle(
       content: input.content,
       contextNote: input.contextNote,
       coverImage: input.coverImage,
-      status: input.status,
+      status,
       featured: input.featured,
       readingTime: input.readingTime,
+      tags: input.tags,
+      source: input.source,
+      originalUrl: input.originalUrl,
       categoryId: input.categoryId,
       authorId: resolvedAuthorId,
-      publishedAt:
-        input.status === ArticleStatus.PUBLISHED ? new Date() : null,
+      contentOrigin: ArticleContentOrigin.EDITORIAL,
+      publishedAt,
     },
     select: articleSelect,
   });
 }
 
 /**
- * Update an article. Transitioning into PUBLISHED stamps publishedAt (once);
- * leaving PUBLISHED clears it.
+ * Update an article. Status changes only when explicitly passed in input.
+ * No automatic workflow transitions from content, source, or contentOrigin.
  */
 export async function updateArticle(
   id: string,
@@ -307,19 +339,34 @@ export async function updateArticle(
 ): Promise<ArticleWithRelations | null> {
   const existing = await prisma.article.findUnique({
     where: { id },
-    select: { status: true, publishedAt: true },
+    select: {
+      status: true,
+      publishedAt: true,
+      title: true,
+      content: true,
+      categoryId: true,
+    },
   });
   if (!existing) return null;
 
-  // Unchecked input lets us pass categoryId as a scalar FK directly.
+  if (input.status === ArticleStatus.PUBLISHED) {
+    const check = validatePublishReady({
+      title: input.title ?? existing.title,
+      content: input.content !== undefined ? input.content : existing.content,
+      categoryId: input.categoryId ?? existing.categoryId,
+    });
+    if (!check.ok) throw new ArticleWorkflowError(check.message);
+  }
+
+  // HARD RULE: contentOrigin is immutable after creation (ingest → RSS, CMS create → EDITORIAL).
   const data: Prisma.ArticleUncheckedUpdateInput = { ...input };
+  delete (data as { contentOrigin?: unknown }).contentOrigin;
 
   if (input.status !== undefined) {
-    if (input.status === ArticleStatus.PUBLISHED && !existing.publishedAt) {
-      data.publishedAt = new Date();
-    } else if (input.status !== ArticleStatus.PUBLISHED) {
-      data.publishedAt = null;
-    }
+    Object.assign(
+      data,
+      publishedAtPatchForStatusTransition(input.status, existing)
+    );
   }
 
   return prisma.article.update({
@@ -327,6 +374,46 @@ export async function updateArticle(
     data,
     select: articleSelect,
   });
+}
+
+/**
+ * Explicit publish transition — sets PUBLISHED and refreshes ranking.
+ * Status-only; no heuristics.
+ */
+export async function publishArticle(
+  id: string
+): Promise<ArticleWithRelations | null> {
+  const existing = await prisma.article.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      status: true,
+      publishedAt: true,
+      title: true,
+      content: true,
+      categoryId: true,
+    },
+  });
+  if (!existing) return null;
+
+  const check = validatePublishReady({
+    title: existing.title,
+    content: existing.content,
+    categoryId: existing.categoryId,
+  });
+  if (!check.ok) throw new ArticleWorkflowError(check.message);
+
+  const article = await prisma.article.update({
+    where: { id },
+    data: {
+      status: ArticleStatus.PUBLISHED,
+      publishedAt: existing.publishedAt ?? new Date(),
+    },
+    select: articleSelect,
+  });
+
+  await refreshArticleRanking(id);
+  return article;
 }
 
 /** Recompute score/featured after manual publish (CMS moderation). */

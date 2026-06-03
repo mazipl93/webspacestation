@@ -13,9 +13,10 @@ import { canDeleteArticle } from "@/lib/auth/permissions";
 import { cn } from "@/lib/cn";
 
 const FILTERS = [
-  { id: "review", label: "Do akceptacji", status: "REVIEW" },
-  { id: "draft", label: "Szkice RSS", status: "DRAFT" },
+  { id: "draft", label: "Szkic", status: "DRAFT" },
+  { id: "review", label: "Do sprawdzenia", status: "REVIEW" },
   { id: "published", label: "Opublikowane", status: "PUBLISHED" },
+  { id: "scheduled", label: "Zaplanowane", status: "SCHEDULED" },
   { id: "all", label: "Wszystkie", status: "ALL" },
 ] as const;
 
@@ -92,7 +93,7 @@ export default function ArticlesListPage() {
       <PageHeader
         overline="Treści"
         title="Artykuły"
-        description="RSS trafia do szkiców i kolejki „Do akceptacji”. Na stronę trafia tylko to, co opublikujesz ręcznie."
+        description="Szkice redakcyjne i z zewnętrznego źródła trafiają do kolejki. Na stronę trafia tylko to, co opublikujesz."
         actions={
           <Link
             href="/admin/articles/new"

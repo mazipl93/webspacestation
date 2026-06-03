@@ -7,7 +7,6 @@ import {
   CheckCircle,
   XCircle,
   ExternalLink,
-  Globe2,
 } from "lucide-react";
 import type { AdminArticle } from "@/lib/admin/types";
 import {
@@ -16,11 +15,8 @@ import {
   getAdminDisplayTitle,
   getAdminArticleTags,
   getRssSourceHostname,
-  isAiEnrichedRssArticle,
-  isRawRssDraftArticle,
-  inferRssSource,
-  isRssAggregatorArticle,
 } from "@/lib/admin/rss-display";
+import { articleKindLabel, hasExternalSource } from "@/lib/ui/article-kind";
 import StatusBadge from "@/components/admin/StatusBadge";
 
 function formatDate(iso: string): string {
@@ -29,6 +25,10 @@ function formatDate(iso: string): string {
     month: "short",
     year: "numeric",
   });
+}
+
+function canModerateStatus(status: AdminArticle["status"]): boolean {
+  return status === "REVIEW" || status === "DRAFT" || status === "SCHEDULED";
 }
 
 export default function ArticlesTable({
@@ -60,9 +60,6 @@ export default function ArticlesTable({
         <thead>
           <tr className="border-b border-hairline text-text-tertiary">
             <th className="px-5 py-3 text-overline font-semibold">Tytuł / streszczenie</th>
-            <th className="hidden px-5 py-3 text-overline font-semibold md:table-cell">
-              Źródło zewnętrzne
-            </th>
             <th className="hidden px-5 py-3 text-overline font-semibold lg:table-cell">
               Kategoria / tagi
             </th>
@@ -78,12 +75,10 @@ export default function ArticlesTable({
         </thead>
         <tbody>
           {articles.map((a) => {
-            const canModerate =
-              a.status === "REVIEW" || a.status === "DRAFT";
-            const rss = isRssAggregatorArticle(a);
-            const sourceLabel = inferRssSource(a) ?? a.source;
-            const raw = isRawRssDraftArticle(a);
-            const enriched = isAiEnrichedRssArticle(a);
+            const canModerate = canModerateStatus(a.status);
+            const external = hasExternalSource(a.source, a.originalUrl);
+            const kind = articleKindLabel(a.source, a.originalUrl);
+            const sourceLabel = a.source?.trim();
             const summary = getAdminDisplaySummary(a);
             const tags = getAdminArticleTags(a);
             const readingLabel = formatReadingTimeLabel(a.readingTime);
@@ -104,30 +99,15 @@ export default function ArticlesTable({
                     <p className="mt-1 line-clamp-2 text-caption leading-snug text-text-tertiary">
                       {summary}
                     </p>
-                  ) : rss && a.status === "REVIEW" ? (
-                    <p className="mt-1 text-caption italic text-amber-200/80">
-                      Brak streszczenia w bazie
+                  ) : a.status === "REVIEW" ? (
+                    <p className="mt-1 text-caption italic text-text-muted">
+                      Brak streszczenia — uzupełnij w edytorze
                     </p>
                   ) : null}
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {rss ? (
-                      <span className="inline-flex items-center gap-0.5 rounded-badge border border-accent-cyan/25 bg-accent-cyan/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent-cyan">
-                        <Globe2 className="h-2.5 w-2.5" aria-hidden />
-                        Ze świata
-                      </span>
-                    ) : null}
-                    {raw ? (
-                      <span className="rounded-badge border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-200">
-                        Surowy RSS
-                      </span>
-                    ) : null}
-                    {enriched && a.status === "REVIEW" ? (
-                      <span className="rounded-badge border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-300">
-                        AI OK
-                      </span>
-                    ) : null}
-                  </div>
-                  {rss && a.originalUrl ? (
+                  <p className="mt-1.5 text-caption font-medium text-text-muted">
+                    {kind}
+                  </p>
+                  {external && a.originalUrl ? (
                     <a
                       href={a.originalUrl}
                       target="_blank"
@@ -136,36 +116,9 @@ export default function ArticlesTable({
                       onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-                      {getRssSourceHostname(a.originalUrl)}
+                      {sourceLabel ?? getRssSourceHostname(a.originalUrl)}
                     </a>
                   ) : null}
-                </td>
-                <td className="hidden px-5 py-3.5 md:table-cell">
-                  {rss ? (
-                    <div className="max-w-[14rem]">
-                      <p className="text-meta font-medium text-text-secondary">
-                        {sourceLabel ?? "RSS"}
-                      </p>
-                      {a.originalUrl ? (
-                        <a
-                          href={a.originalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-1 inline-flex max-w-full items-center gap-1 truncate text-caption text-accent-cyan hover:underline"
-                          title={a.originalUrl}
-                        >
-                          <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-                          {getRssSourceHostname(a.originalUrl)}
-                        </a>
-                      ) : (
-                        <p className="mt-1 text-caption text-amber-200/80">
-                          Brak linku w bazie
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-meta text-text-muted">Redakcja WSS</span>
-                  )}
                 </td>
                 <td className="hidden px-5 py-3.5 lg:table-cell">
                   <span className="inline-flex items-center gap-1.5 text-meta text-text-secondary">

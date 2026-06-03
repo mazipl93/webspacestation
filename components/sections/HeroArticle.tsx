@@ -5,10 +5,6 @@ import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
 
-function isExternalArticle(article: NewsArticle): boolean {
-  return Boolean(article.source && article.originalUrl);
-}
-
 function fadeIn(delay = 0, duration = 0.75): CSSProperties {
   return {
     animation: `reveal-fade ${duration}s cubic-bezier(0.22,1,0.36,1) ${delay}s both`,
@@ -83,15 +79,7 @@ export default function HeroArticle({
                 <span className="live-dot" style={{ background: "#fff" }} />
                 Ważne
               </span>
-            ) : isExternalArticle(article) ? (
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-glass px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-text-secondary sm:text-[11px]">
-                Ze świata
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-blue/90 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white sm:text-[11px]">
-                Redakcja WSS
-              </span>
-            )}
+            ) : null}
           </div>
 
           <div

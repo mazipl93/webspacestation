@@ -6,7 +6,9 @@ import {
   getArticlesByCategory,
   getArticlesForAdmin,
   getPublishedArticles,
+  ArticleWorkflowError,
 } from "@/lib/server/articles";
+import { validatePublishReady } from "@/lib/articles/workflow";
 import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import { forbidden, isValidSlug, jsonError, mapPrismaError, readJson } from "@/lib/server/http";
 import { isArticleStatus, parseArticleCreate } from "@/lib/server/validation";
@@ -15,10 +17,11 @@ import {
   canCreateArticle,
   canPublishArticle,
 } from "@/lib/auth/permissions";
+import { withAiScores } from "@/lib/ai/enrich-response";
 
 // GET /api/articles
 //   (public)  → PUBLISHED only, optional ?category=slug (never ?status without CMS auth)
-//   (admin)   → ?status=ALL|DRAFT|REVIEW|PUBLISHED|ARCHIVED requires CMS auth
+//   (admin)   → ?status=ALL|DRAFT|REVIEW|PUBLISHED|SCHEDULED|ARCHIVED requires CMS auth
 export async function GET(request: NextRequest) {
   try {
     const params = request.nextUrl.searchParams;
@@ -41,14 +44,14 @@ export async function GET(request: NextRequest) {
         status: normalized === "ALL" ? "ALL" : normalized,
         categorySlug: categoryParam ?? undefined,
       });
-      return NextResponse.json({ data: articles });
+      return NextResponse.json({ data: withAiScores(articles) });
     }
 
     const articles =
       categoryParam !== null
         ? await getArticlesByCategory(categoryParam)
         : await getPublishedArticles();
-    return NextResponse.json({ data: articles });
+    return NextResponse.json({ data: withAiScores(articles) });
   } catch (error) {
     console.error("[GET /api/articles]", error);
     return jsonError(500, "INTERNAL_ERROR", "Failed to load articles.");
@@ -77,6 +80,17 @@ export async function POST(request: NextRequest) {
       return forbidden();
     }
 
+    if (parsed.value.status === "PUBLISHED") {
+      const pubCheck = validatePublishReady({
+        title: parsed.value.title,
+        content: parsed.value.content,
+        categoryId: parsed.value.categoryId,
+      });
+      if (!pubCheck.ok) {
+        return jsonError(400, "VALIDATION_ERROR", pubCheck.message);
+      }
+    }
+
     const payload =
       guard.user.role === "AUTHOR"
         ? { ...parsed.value, status: "DRAFT" as const }
@@ -92,6 +106,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: article }, { status: 201 });
   } catch (error) {
+    if (error instanceof ArticleWorkflowError) {
+      return jsonError(400, "VALIDATION_ERROR", error.message);
+    }
     const mapped = mapPrismaError(error);
     if (mapped) return mapped;
     console.error("[POST /api/articles]", error);

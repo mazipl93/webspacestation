@@ -47,11 +47,7 @@ export default async function ArticlePreviewPage({
           </a>
         ) : null}
       </div>
-      <ArticleLivePreview
-        article={article}
-        status={row.status}
-        subtitle={row.subtitle}
-      />
+      <ArticleLivePreview article={article} status={row.status} />
     </div>
   );
 }

@@ -1,9 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 2 czerwca 2026 (sesja B+ hybryda RSS + fixy CMS)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (PR6.1 UX lock — terminologia + deploy sesji 3.06)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit:** `e759397` — fix(UI): usun meta-disclaimer z boxu Kontekst WSS
+**Ostatni commit na remote:** patrz `git log -1` po push tej sesji (wcześniej `1d973e6`)  
+**Stan:** sesja 3.06 zacommitowana i wdrożona (contentOrigin, workflow, PR3–PR6.1)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
@@ -32,42 +33,174 @@ Przeczytaj:
 - docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — ZAWSZE najpierw)
 - docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Stan po ostatniej sesji (skrót)
+## Stan po sesji 3.06.2026 (wdrożone)
 
-PROD: admin + API + front działają (DATABASE_URL :6543 + pgbouncer=true).
+PROD: po push + `npm run db:deploy` + redeploy Vercel.
 
-Model treści RSS = **B+ hybryda** (agregat + redakcja WSS):
-- INGEST → DRAFT (surowe EN)
-- AI (gpt-5.4-mini) → REVIEW: title, lead, body (2–4 akapity), context WSS, tagi
-- Mapowanie DB: excerpt=lead, content=body, contextNote=context
-- CMS: RSS readonly (AI), edytujesz kategorię, Popraw z AI, Preview publikacji, Opublikuj
-- Strona: hero (tytuł+lead) → body → box „Kontekst WSS” → link do źródła
+### Backend / DB (gotowe lokalnie)
 
-Migracja do wdrożenia na prod jeśli nie było: contextNote (npm run db:deploy).
+- **`contentOrigin`:** EDITORIAL | RSS | AI_DRAFT — migracja `20260603120000_article_content_origin`
+  - HARD RULE: immutable po create; ingest/process → RSS; CMS create → EDITORIAL
+  - `updateArticle` stripuje `contentOrigin` z payloadu
+- **Workflow:** DRAFT → REVIEW → PUBLISHED → SCHEDULED (+ ARCHIVED)
+  - Migracja `20260603140000_article_status_scheduled`
+  - `lib/articles/workflow.ts` + `publishArticle()` + walidacja publish (title+content+category)
+- **RSS pipeline (PR3):** ingest → DRAFT + `contentOrigin: RSS`; process-drafts → REVIEW + utrzymuje RSS
+- **AI read-only (PR intel):** `lib/ai/article-score.ts` → `aiScore` w GET API (nie w DB, nie ranking)
 
-## Workflow redakcyjny
+### CMS / UI (gotowe lokalnie)
 
-1. /admin/articles → Do akceptacji
-2. Popraw z AI (stare REVIEW bez body — uzupełnia B+)
-3. Preview publikacji → wybierz kategorię → Opublikuj
-4. RSS ręcznie: npm run rss:ingest && npm run rss:process
+- Jeden `ArticleEditor` — pełna edycja wszystkich pól
+- **UI język (PR6 + PR6.1 UX lock):** tylko „Artykuł redakcyjny” / „Źródło zewnętrzne”
+  - Decyzje wizualne UI: `source` + `originalUrl` (AND) — `lib/ui/article-kind.ts`
+  - **NIE** używać `contentOrigin` w UI (backend nadal tak klasyfikuje)
+  - **PR6.1:** brak kolumn Typ/Jakość/Score w CMS; brak badge „Artykuł redakcyjny” na froncie; edytor „Popraw treść”
+- Edytor: „Popraw treść” gdy oba pola źródła; sekcja „Źródło artykułu”
+- Lista CMS: filtry Szkic / Do sprawdzenia / Opublikowane / Zaplanowane; etykieta rodzaju pod tytułem (tylko 2 koncepcje)
+- Public: tylko „Źródło: [nazwa]” gdy URL; bez systemowych oznaczeń
+- /rss → „Subskrypcje” (bez XML preview)
 
-## Otwarte
+### Testy npm
 
-- Publikować wybrane z ~175 REVIEW (nie wszystko naraz)
-- Cron co 30 min na Hobby NIE — vercel.json 0 6 * * * (1×/dzień) lub zewnętrzny cron / Pro
-- Stare REVIEW bez body/context: Popraw z AI lub zostaw jako lead-only (SAFE MODE)
-- npm run rss:clean-subtitles — stare podtytuły
-- Preview Vercel env może nie mieć DATABASE_URL
+npm run test:content-origin
+npm run test:workflow
+npm run test:articles
+npm run test:ai
+npm run test:ui
 
-Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md (reguła w pliku).
+### Migracje prod (wymagane przed deploy kodu)
 
-Zacznij od tego, co user chce dalej.
+npm run db:deploy   # DIRECT_URL — contextNote (jeśli brak) + contentOrigin + SCHEDULED
+
+## Otwarte / następny czat (priorytet)
+
+1. **PR-H4:** korekta starych rekordów `contentOrigin` (backfill infer — wyłączyć/przerobić skrypt)
+2. Kolejka ~175 REVIEW — publikacja ręczna w CMS
+3. Scheduler dla `SCHEDULED` — nie zaimplementowany
+4. Opcjonalnie: front/ranking po `contentOrigin` zamiast source+url heurystyki
+
+Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
+
+Zacznij od tego, co user chce (np. publikacja REVIEW, PR-H4).
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (cd.) — PR6.1 UX terminology lock (UI only)
+
+**Cel:** zamrożenie warstwy UX — tylko 2 koncepcje w copy; brak Typ/Jakość/AI w UI.
+
+| Plik | Zmiana |
+|------|--------|
+| `components/admin/ArticlesTable.tsx` | Usunięte kolumny Typ + Jakość; etykieta rodzaju pod tytułem |
+| `components/admin/ArticleEditor.tsx` | „Popraw treść” (neutralne); bez pipeline copy |
+| `components/sections/HeroArticle.tsx` | Usunięty badge „Artykuł redakcyjny” na froncie |
+| `lib/ui/article-kind.ts` | Komentarz UX lock PR6.1 |
+
+Test: `npm run test:ui`
+
+### Zamknięcie sesji czatu 3.06.2026 — podsumowanie (commit + deploy)
+
+**Wcześniejszy remote prod:** `1d973e6`. **Zrobiono (kolejno w czacie):**
+
+1. CMS Unification + `contentOrigin` (PR1/PR2B)
+2. PR3 — RSS ingest/process → `contentOrigin: RSS`
+3. PR5 — UX editorial (Subskrypcje, bez „Ze świata”)
+4. Workflow — `SCHEDULED`, `publishArticle()`, testy
+5. AI layer — `aiScore` read-only w GET API
+6. PR6 — jeden język UI (`lib/ui/article-kind.ts`)
+7. PR6.1 — UX lock (terminologia, bez Typ/Jakość na liście CMS)
+
+**Deploy:** commit → push main → `npm run db:deploy` (DIRECT_URL) → Vercel auto-deploy.
+
+### Sesja 3.06.2026 (cd.) — PR6 UX language layer (UI only)
+
+**Cel:** tylko 2 koncepcje w UI — „Artykuł redakcyjny” / „Źródło zewnętrzne”; decyzje po `source`+`url`, **nie** `contentOrigin`.
+
+| Plik | Zmiana |
+|------|--------|
+| `lib/ui/article-kind.ts` | `hasExternalSource`, etykiety editorial/external |
+| CMS lista / edytor / preview | bez RSS/AI/pipeline w copy; „Dopracuj treść”; kolumna „Jakość” |
+| Public | hero „Artykuł redakcyjny”; meta chips bez chipu wydawcy; źródło w stopce |
+
+Test: `npm run test:ui`
+
+### Sesja 3.06.2026 (cd.) — AI intelligence (read-only)
+
+**Cel:** `aiScore` on-the-fly w API; bez DB, workflow, rankingu.
+
+| Plik | Rola |
+|------|------|
+| `lib/ai/article-score.ts` | `calculateArticleScore()` 0–100, `resolveAiScore()` |
+| `lib/ai/enrich-response.ts` | `withAiScore(s)` dla GET API |
+| `lib/ai/related-articles.ts` | scaffold tag-overlap (bez embeddings) |
+| API GET | `{ ...article, aiScore: number \| null }` |
+| CMS | kolumna „Score AI” (`xl:table-cell`, z API) |
+
+Test: `npm run test:ai`
+
+### Sesja 3.06.2026 (cd.) — Article workflow (status-only lifecycle)
+
+**Cel:** `status` jako jedyny driver workflow; enum + `SCHEDULED`; `publishArticle()`.
+
+| Obszar | Co zrobiono |
+|--------|-------------|
+| DB | `ArticleStatus.SCHEDULED` — migracja `20260603140000_article_status_scheduled` |
+| Core | `lib/articles/workflow.ts` — validate publish, `publishedAt` patches, `WORKFLOW_STATUSES` |
+| Server | `createArticle`/`updateArticle`/`publishArticle` — explicit status only; `ArticleWorkflowError` |
+| API | PUBLISHED validation (title+content+category); PATCH `{ status: PUBLISHED }` → `publishArticle` |
+| CMS (minimal) | Filtry: Szkic / Do sprawdzenia / Opublikowane / Zaplanowane; StatusBadge labels |
+| Test | `npm run test:workflow` / `test:articles` |
+
+**Nie ruszano:** RSS ingest/AI pipeline, contentOrigin, ranking, front layout.
+
+### Sesja 3.06.2026 (cd.) — PR5 UX workflow (UI only)
+
+**Cel:** CMS i front brzmią jak newsroom — bez RSS/pipeline w copy.
+
+| Obszar | Co zrobiono |
+|--------|-------------|
+| Lista CMS | Filtry: Szkice (REVIEW), Do sprawdzenia (DRAFT); badge „Zewnętrzne źródła”; usunięte Surowy RSS / AI OK / Ze świata |
+| Edytor | „Ulepsz tekst”, „Źródło zewnętrzne (edytowalne)”, sekcja „Źródło artykułu” |
+| Public | Usunięto chip „Ze świata”; Źródło: subtelny footer „Źródło: [wydawca]” |
+| /rss | → „Subskrypcje”; bez XML preview i debug copy |
+| Footer / sekcje | „Subskrypcje” zamiast „Kanały RSS” |
+
+**Nie ruszano:** backend, pipeline, contentOrigin, API, rankingi.
+
+### Sesja 3.06.2026 (cd.) — PR3 RSS pipeline alignment
+
+**Cel:** RSS ingest/process ustawiają `contentOrigin: RSS`; origin immutable po create.
+
+| Obszar | Co zrobiono |
+|--------|-------------|
+| PR3 ingest | `lib/rss/ingest.ts` — `contentOrigin: RSS` przy `prisma.article.create` |
+| PR3 process | `lib/rss/process-drafts.ts` — explicit `contentOrigin: RSS` w update (bez fallback/inferencji) |
+| Guard | `lib/server/articles.ts` — `delete contentOrigin` z payloadu update; komentarz HARD RULE |
+| Docs | `lib/articles/content-origin.ts` — systemowa reguła immutability |
+| Test | `npm run test:content-origin` — CMS klasyfikuje tylko po `contentOrigin` |
+
+**Pliki PR3:** `lib/rss/ingest.ts`, `lib/rss/process-drafts.ts`, `lib/server/articles.ts`, `lib/articles/content-origin.ts`, `lib/articles/content-origin.rules.test.ts`, `package.json`
+
+**Nie ruszano:** UI, rankingi, heurystyki frontu.
+
+### Sesja 3.06.2026 — CMS Unification + hotfix `contentOrigin`
+
+**Cel:** jeden edytor; `contentOrigin` = proweniencja, nie cytat.
+
+| Obszar | Co zrobiono |
+|--------|-------------|
+| DB (Step 1) | Enum `ArticleContentOrigin`, migracja + backfill SQL, `npm run db:backfill-content-origin` |
+| CMS editor (Step 2) | Unified `ArticleEditor` — pełny payload, pola tagów/źródła, bez readonly |
+| Hotfix PR1 | `createArticle` → `EDITORIAL`; `updateArticle` nie nadpisuje `contentOrigin` |
+| Hotfix PR2B | CMS UI: `canRunRssAi`, badge, `rss-display` — **tylko** `contentOrigin === "RSS"` |
+
+**Pliki zmienione (lokalnie, nie na `main` remote):**
+`prisma/schema.prisma`, `prisma/migrations/20260603120000_article_content_origin/`, `lib/articles/content-origin.ts`, `lib/server/articles.ts`, `lib/server/validation.ts`, `lib/admin/types.ts`, `lib/admin/api.ts`, `lib/admin/rss-display.ts`, `components/admin/ArticleEditor.tsx`, `components/admin/ArticlesTable.tsx`, `package.json`, `scripts/backfill-content-origin.ts`
+
+**Nie zrobiono w tej sesji:** commit, deploy prod, korekta DB (PR-H4), front/ranking po `contentOrigin`.
 
 ### Sesja 2.06.2026 (wieczór) — prod + CMS RSS
 
@@ -118,8 +251,8 @@ Bez tego na prod: błędy Prisma po deployu kodu B+.
 ## 2. Pipeline RSS (B+ hybryda)
 
 ```
-INGEST (lib/rss/ingest.ts)           → DRAFT (EN, content="")
-AI (process-drafts + enrich-drafts)  → REVIEW (B+ pełne pola)
+INGEST (lib/rss/ingest.ts)           → DRAFT (EN, content="", contentOrigin=RSS)
+AI (process-drafts + enrich-drafts)  → REVIEW (B+ pełne pola, contentOrigin=RSS)
 CMS                                  → PUBLISHED ręcznie
 FRONT                                → tylko PUBLISHED
 ```
@@ -165,13 +298,16 @@ FRONT                                → tylko PUBLISHED
 - Filtry: Do akceptacji (REVIEW), Szkice RSS (DRAFT), Opublikowane, Wszystkie
 - Kolumna źródło zewnętrzne + badge „Ze świata”
 
-### Edycja artykułu RSS
+### Edycja artykułu (unified — stan lokalny 3.06.2026)
 
-- Karta **Źródło RSS** + link + **Popraw z AI**
-- Pola AI **readonly**: tytuł, lead, treść, kontekst WSS
-- **Edytujesz:** kategoria (wymagana przed Opublikuj), opcjonalnie featured wyłączone dla RSS
-- **Preview publikacji** (jeden przycisk u góry)
-- **Opublikuj** zablokowany bez kategorii
+- **Jeden edytor** dla manual i RSS — wszystkie pola edytowalne
+- **Popraw z AI** tylko gdy `contentOrigin === "RSS"` (nie po samym `source`+`url`)
+- Pola: tytuł, podtytuł, slug, zajawka, treść, kontekst WSS, tagi, kategoria, źródło (nazwa+URL), okładka, featured
+- **Preview publikacji** · **Opublikuj** (kategoria wymagana)
+
+### Edycja artykułu RSS (prod / stary opis — do wygaszenia po deployu)
+
+- ~~readonly AI~~ → zastąpione unified editorem
 
 ### Podgląd
 
@@ -190,11 +326,9 @@ Kolejność:
 1. Hero: okładka, tytuł, **lead** (`excerpt`)
 2. **Body** — akapity z `content`
 3. **Kontekst WSS** — `components/article/WssContextBox.tsx` (tylko jeśli `contextNote`)
-4. **Źródło** — `SourceAttribution` + „Czytaj u {wydawca}”
+4. **Źródło** — `SourceAttribution`: „Źródło: [wydawca]” (subtelny footer)
 
-Chip **„Ze świata”** na listach.
-
-**Nie pokazujemy:** wewnętrznych disclaimerów redakcyjnych w boxie kontekstu (usunięte `e759397`).
+**Nie pokazujemy:** chip „Ze świata” (usunięty PR5/PR6); wewnętrznych disclaimerów w boxie kontekstu.
 
 ---
 
@@ -214,11 +348,16 @@ Chip **„Ze świata”** na listach.
 ## 6. Komendy
 
 ```bash
-npm run db:deploy              # migracje (+ contextNote)
-npm run rss:ingest             # DRAFT z RSS
-npm run rss:process            # AI B+ → REVIEW
-npm run rss:clean-subtitles    # stare podtytuły → Ze świata · źródło
-npm run cache:revalidate       # po bulk zmianach w DB
+npm run test:content-origin
+npm run test:workflow
+npm run test:articles
+npm run test:ai
+npm run test:ui
+npm run db:deploy              # migracje (contextNote + contentOrigin + SCHEDULED)
+npm run rss:ingest
+npm run rss:process
+npm run rss:clean-subtitles
+npm run cache:revalidate
 npm run dev
 ```
 
@@ -251,9 +390,14 @@ lib/rss/image-credit.ts
 
 | Temat | Status |
 |-------|--------|
-| Kolejka ~175 REVIEW | Publikuj wybrane; stare bez body → Popraw z AI |
-| `db:deploy` na prod | Jeśli jeszcze nie — kolumna `contextNote` |
-| Cron 30 min | Nie na Hobby — 1×/dzień lub zewnętrzny cron |
+| **Commit + deploy** sesji 3.06 | **Zamknięte** w tej sesji |
+| `db:deploy` prod | **Zamknięte** po push (migracje contentOrigin + SCHEDULED) |
+| PR-H4 korekta `contentOrigin` | Stare rekordy po inferze source+url |
+| Scheduler `SCHEDULED` | Enum jest; cron/publish-at — nie zrobione |
+| Kolejka ~175 REVIEW | Publikuj w CMS |
+| Front/ranking po `contentOrigin` | Opcjonalnie (heurystyka source+url nadal) |
+| `db:backfill-content-origin` | Wyłączyć infer z pól źródła |
+| Cron 30 min | Nie na Hobby — 1×/dzień |
 | Homepage / sekcje | Do iteracji po publikacji treści |
 | `article_likes` 404 | `supabase/article_likes.sql` w Supabase |
 | Pełny artykuł skopiowany z RSS | **Nie** — hybryda + link |
