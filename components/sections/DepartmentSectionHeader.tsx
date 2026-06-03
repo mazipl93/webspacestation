@@ -241,7 +241,7 @@ export default function DepartmentSectionHeader({
         <div className="flex items-end justify-between gap-4">
           <h2 className="flex items-baseline gap-2 text-[2rem] font-extrabold tracking-[-0.03em] text-text-primary sm:text-[2.3rem]">
             <span className="text-[1.25rem] font-bold opacity-35" style={{ color: accent }}>
-              //
+              {"//"}
             </span>
             {label}
           </h2>
