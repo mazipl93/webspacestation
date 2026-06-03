@@ -1,9 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR10 scheduler publikacji)  
+**Ostatnia aktualizacja:** 3 czerwca 2026 (zapis sesji: PR11 + PR12, commit lokalny)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Domena prod:** https://webspacestation.pl  
-**Ostatni commit na remote:** `8cc6f8a` — feat(WSS): CMS UX + homepage ranking (PR-H5, PR7, PR8)
+**Ostatni commit lokalny:** (po commit tej sesji — patrz `git log -1`)  
+**Ostatni commit na remote:** `211ba7e` / `ef1f754` po push (PR9–PR12)
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)
 
@@ -32,42 +33,32 @@ Przeczytaj:
 - docs/WSS_NEXT_CHAT_HANDOFF.md (ten plik — ZAWSZE najpierw)
 - docs/WSS_NEWS_ENGINE_HANDOFF.md (architektura News Engine)
 
-## Stan po sesji 3.06.2026 (czat 4 — PR10)
+## Stan po sesji 3.06.2026 (czaty 4–6 — PR10–PR12)
 
-PROD: `211ba7e` / feature `8cc6f8a` na main. **Nowa migracja:** `20260603160000_article_publish_at` (`publishAt`) — wymaga `npm run db:deploy`.
+Lokalnie na `main`: PR9 (related) + PR10 (scheduler) + PR11 (live preview) + PR12 (sidebar).  
+**Wymaga push** + `npm run db:deploy` (migracja `publishAt`) jeśli jeszcze nie na prod.
 
-### Backend / DB (PR10)
+### Backend (PR10)
+- `publishAt`, `runScheduledPublish()`, cron `/api/cron/publish-scheduled`
+- CMS: Opublikuj teraz / Zaplanuj publikację
 
-- **`publishAt`** — data zaplanowanej publikacji (status SCHEDULED)
-- **Scheduler:** `runScheduledPublish()` — SCHEDULED + publishAt ≤ now → PUBLISHED (idempotent `updateMany`)
-- **Cron:** `/api/cron/publish-scheduled` (co godzinę) + hook w `/api/cron/rss` (daily)
-- **Guard:** `validatePublishReady` — brak title/content/category → skip (bez crasha, zostaje SCHEDULED)
-- **CMS:** `scheduleArticle()`, edytor — „Opublikuj teraz” / „Zaplanuj publikację”
-- **Zasada:** RSS/AI nadal nie publikują — tylko explicit PUBLISHED lub scheduler
+### Front artykułu (PR9)
+- Powiązane artykuły + Czytaj dalej (`lib/article/related-articles.ts`)
 
-### Workflow (bez zmian poza PR10)
-
-- **`contentOrigin`:** EDITORIAL | RSS | AI_DRAFT — immutable po create
-- **Workflow:** DRAFT → REVIEW → PUBLISHED | SCHEDULED (+ ARCHIVED)
-- **RSS pipeline:** ingest DRAFT → process REVIEW; CMS publish ręcznie lub zaplanowanie
-
-### Strona artykułu (PR9 — bez zmian w tym czacie)
-
-- `lib/article/related-articles.ts` — Powiązane + Czytaj dalej
+### CMS UI (PR11 + PR12)
+- Split-screen editor + live preview (debounce 400ms, desktop/mobile)
+- Collapsible sidebar + mobile drawer + `admin-sidebar-collapsed`
 
 ### Testy npm
-
-npm run test:articles    # workflow + schedule-publisher + content-origin
-npm run test:workflow
-npm run publish:scheduled  # ręczny worker (lokalnie / CI)
+npm run test:ui
+npm run test:articles
 npm run type-check
 
 ## Otwarte / następny czat (priorytet)
-
-1. **`db:deploy`** — migracja `publishAt` na prod
-2. **PR-H4:** korekta starych `contentOrigin` (backfill infer)
-3. Kolejka ~175 REVIEW — publikacja ręczna w CMS
-4. Opcjonalnie: prawdziwe views w DB dla „Popularne”
+1. **git push main** + Vercel deploy + **`db:deploy`** (`publishAt`)
+2. **PR-H4:** backfill `contentOrigin`
+3. Kolejka ~175 REVIEW — publikacja w CMS
+4. Opcjonalnie: views w DB dla „Popularne”
 
 Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
 ```
@@ -75,6 +66,27 @@ Na końcu sesji: ZAKTUALIZUJ docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 3.06.2026 (czat 6) — PR12 collapsible admin sidebar (UI only)
+
+| Plik | Rola |
+|------|------|
+| `AdminShell.tsx` | layout shell, mobile drawer, localStorage |
+| `AdminSidebar.tsx` | collapse, tooltips, animacja width 300ms |
+| `lib/ui/admin-sidebar-storage.ts` | persist key |
+
+### Sesja 3.06.2026 (czat 5) — PR11 live preview editor (CMS UI only)
+
+**Cel:** split-screen editor + 1:1 preview artykułu, desktop/mobile, debounce, bez API.
+
+| Plik | Rola |
+|------|------|
+| `ArticleEditor.tsx` | split layout + `ArticleEditorPreviewPane` |
+| `ArticlePublicPreview.tsx` | hero + body parity z portalem |
+| `ArticleEditorPreviewPane.tsx` | debounce + viewport toggle |
+| `lib/admin/preview-article.ts` | `formToPreviewArticle` |
+
+Test: `npm run test:ui`
 
 ### Sesja 3.06.2026 (czat 4) — PR10 publishing scheduler
 

@@ -31,6 +31,7 @@ import {
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import ArticleEditorPreviewPane from "@/components/admin/ArticleEditorPreviewPane";
 
 const EMPTY_FORM: ArticleFormValues = {
   title: "",
@@ -466,6 +467,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </Card>
       ) : null}
 
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+        <div className="min-w-0 flex-1 xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto xl:pr-1">
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <div className="flex flex-col gap-5">
           <Card className="flex flex-col gap-4">
@@ -677,6 +680,19 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               />
             ) : null}
           </Card>
+        </div>
+      </div>
+        </div>
+
+        <div className="w-full shrink-0 xl:sticky xl:top-4 xl:w-[min(48%,520px)] xl:max-w-[520px]">
+          <ArticleEditorPreviewPane
+            form={form}
+            categories={categories}
+            status={status}
+            contentOrigin={loadedArticle?.contentOrigin}
+            articleId={currentId}
+            className="h-[min(72vh,900px)] xl:h-[calc(100dvh-8rem)]"
+          />
         </div>
       </div>
     </div>

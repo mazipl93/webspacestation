@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/user";
 import { canAccessCms } from "@/lib/auth/permissions";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminShell from "@/components/admin/AdminShell";
 import { AdminAuthProvider } from "@/components/admin/AdminAuthProvider";
 
 export const metadata: Metadata = {
@@ -26,14 +26,9 @@ export default async function AdminLayout({
 
   return (
     <AdminAuthProvider value={{ email: displayEmail, role }}>
-      <div className="flex min-h-dvh bg-space-bg">
-        <AdminSidebar email={displayEmail} role={role} />
-        <main className="flex-1 overflow-x-hidden">
-          <div className="mx-auto max-w-5xl px-6 py-8 md:px-10 md:py-10">
-            {children}
-          </div>
-        </main>
-      </div>
+      <AdminShell email={displayEmail} role={role}>
+        {children}
+      </AdminShell>
     </AdminAuthProvider>
   );
 }
