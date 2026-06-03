@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/cn";
 import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
@@ -11,17 +12,27 @@ const ACCENT = "#ff453a";
 function ImportantSliderCard({
   article,
   index,
+  wide = false,
 }: {
   article: NewsArticle;
   index: number;
+  wide?: boolean;
 }) {
   return (
     <Link
       href={`/aktualnosci/${article.slug}`}
-      className="surface-interactive group flex w-[min(78vw,300px)] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-hairline bg-space-card sm:w-[280px]"
+      className={
+        wide
+          ? "surface-interactive group flex w-[min(72vw,320px)] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-hairline bg-space-card lg:w-[300px] xl:w-[320px]"
+          : "surface-interactive group flex w-[min(78vw,300px)] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-hairline bg-space-card sm:w-[280px]"
+      }
     >
       <div
-        className="img-sheen relative h-[170px] overflow-hidden sm:h-[185px]"
+        className={
+          wide
+            ? "img-sheen relative h-[170px] overflow-hidden lg:h-[200px]"
+            : "img-sheen relative h-[170px] overflow-hidden sm:h-[185px]"
+        }
         style={{ background: categoryFallbackBg(article.category) }}
       >
         <CoverImage
@@ -105,13 +116,16 @@ function ImportantRailRow({
   );
 }
 
-/** Ważne teraz — slider na mobile, kompaktowa lista w panelu bocznym na desktop. */
+/** Ważne teraz — slider (mobile + pod hero na desktop); rail tylko jeśli używany gdzie indziej. */
 export default function ImportantNowSlider({
   articles,
   variant = "slider",
+  placement = "default",
 }: {
   articles: NewsArticle[];
   variant?: "slider" | "rail";
+  /** Pełna szerokość kolumny pod hero na desktop. */
+  placement?: "default" | "belowHero";
 }) {
   if (articles.length === 0) return null;
 
@@ -134,21 +148,34 @@ export default function ImportantNowSlider({
     );
   }
 
+  const belowHero = placement === "belowHero";
+
   return (
-    <section className="mt-2 lg:mt-0" aria-label="Ważne teraz">
+    <section
+      className={cn(belowHero ? "mt-0" : "mt-2 lg:mt-0")}
+      aria-label="Ważne teraz"
+    >
       <HomepageSectionHeader
         label="Ważne teraz"
         href="/aktualnosci"
         accent={ACCENT}
         glow="0 0 10px rgba(255,69,58,0.55)"
+        prominent={belowHero}
+        subtitle={belowHero ? "Tematy, które warto śledzić" : undefined}
       />
       <HorizontalScrollSlider
         ariaLabel="Ważne teraz — przewiń w poziomie"
         trackClassName="gap-3 sm:gap-4"
         stepRatio={0.92}
+        className={belowHero ? "lg:px-12 xl:px-14" : undefined}
       >
         {articles.map((article, i) => (
-          <ImportantSliderCard key={article.id} article={article} index={i} />
+          <ImportantSliderCard
+            key={article.id}
+            article={article}
+            index={i}
+            wide={belowHero}
+          />
         ))}
       </HorizontalScrollSlider>
     </section>

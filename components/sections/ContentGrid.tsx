@@ -25,7 +25,6 @@ import PopularArticles from "@/components/sections/PopularArticles";
 
 const IMPORTANT_POOL = 14;
 const IMPORTANT_SLIDER_LIMIT = 10;
-const IMPORTANT_RAIL_LIMIT = 5;
 /** Slider mobile — duże karty w poziomie. */
 const LATEST_SLIDER_LIMIT = 10;
 /** Panel boczny desktop — pionowa lista. */
@@ -698,7 +697,6 @@ export default async function ContentGrid() {
     allPublished,
     IMPORTANT_SLIDER_LIMIT
   );
-  const importantRail = importantNow.slice(0, IMPORTANT_RAIL_LIMIT);
   markSlugsUsed(importantNow, usedSlugs);
 
   const latest = pickHomepageLatest(allPublished, LATEST_SLIDER_LIMIT);
@@ -734,6 +732,15 @@ export default async function ContentGrid() {
         >
           <div className="min-w-0">
             <HeroArticle article={lead} topPriority={lead.isTopPriority} />
+            {/* Desktop: Ważne teraz — poziomy slider ze strzałkami pod hero */}
+            <div className="mt-8 hidden lg:block">
+              <ImportantNowSlider
+                articles={importantNow}
+                variant="slider"
+                placement="belowHero"
+              />
+            </div>
+            {/* Mobile: oba działy jako slidery pod hero */}
             <div className="mt-8 space-y-10 lg:hidden">
               <LatestShowcase articles={latest} variant="slider" />
               <ImportantNowSlider articles={importantNow} variant="slider" />
@@ -742,7 +749,6 @@ export default async function ContentGrid() {
 
           <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
             <LatestShowcase articles={latestRail} variant="rail" />
-            <ImportantNowSlider articles={importantRail} variant="rail" />
           </aside>
         </div>
       </div>
