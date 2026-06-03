@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
-import { HOMEPAGE_MAIN_SIDEBAR_GRID, SITE_CONTAINER } from "@/lib/site-layout";
+import { SITE_CONTAINER } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import {
@@ -19,15 +19,14 @@ import { isRssArticle } from "@/lib/ui/article-kind";
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
 import HeroArticle from "@/components/sections/HeroArticle";
-import TopStoriesList from "@/components/sections/TopStoriesList";
-import LatestStoriesList from "@/components/sections/LatestStoriesList";
-import HomeSidebar from "@/components/sections/HomeSidebar";
+import LatestShowcase from "@/components/sections/LatestShowcase";
+import ImportantNowSlider from "@/components/sections/ImportantNowSlider";
 import PopularArticles from "@/components/sections/PopularArticles";
 
 const IMPORTANT_POOL = 14;
-const IMPORTANT_SIDEBAR_LIMIT = 6;
-/** Homepage „Najnowsze” — 3×3 grid (9 kart, bez pustego slotu przy 8). */
-const LATEST_LIMIT = 9;
+const IMPORTANT_SLIDER_LIMIT = 10;
+/** Homepage „Najnowsze” — slider z dużymi kartami. */
+const LATEST_LIMIT = 10;
 
 function pickHeroLead(important: NewsArticle[]): NewsArticle {
   const editorial = (a: NewsArticle) => !isRssArticle(a.contentOrigin);
@@ -692,9 +691,9 @@ export default async function ContentGrid() {
   markSlugsUsed([lead], usedSlugs);
 
   const importantNow = withSectionFallback(
-    excludeBySlugs(importantRanked, usedSlugs).slice(0, IMPORTANT_SIDEBAR_LIMIT),
+    excludeBySlugs(importantRanked, usedSlugs).slice(0, IMPORTANT_SLIDER_LIMIT),
     allPublished,
-    IMPORTANT_SIDEBAR_LIMIT
+    IMPORTANT_SLIDER_LIMIT
   );
   markSlugsUsed(importantNow, usedSlugs);
 
@@ -716,59 +715,35 @@ export default async function ContentGrid() {
     console.log("IMPORTANT NOW RESULT:", importantNow.length);
   }
 
-  const excludeForSidebar = [...usedSlugs];
+  const excludeForPopular = [...usedSlugs];
 
   return (
     <div className={SITE_CONTAINER}>
-      {/* 1. Hero + Najnowsze (rail) */}
-      <div
-        className={cn(
-          "grid grid-cols-1 items-stretch gap-5 pt-[4.5rem] sm:pt-24 lg:gap-6",
-          HOMEPAGE_MAIN_SIDEBAR_GRID
-        )}
-      >
+      {/* 1. Hero — pełna szerokość */}
+      <div className="pt-[4.5rem] sm:pt-24">
         <HeroArticle article={lead} topPriority={lead.isTopPriority} />
-        <div className="hidden lg:block">
-          <LatestStoriesList articles={latest} />
-        </div>
       </div>
 
-      {/* 2. Ważne teraz — zaraz pod hero (mobile + desktop) */}
-      {importantNow.length > 0 ? (
-        <div className="mt-5 lg:mt-6">
-          <TopStoriesList articles={importantNow} />
-        </div>
-      ) : null}
+      {/* 2. Najnowsze — duży slider (publishedAt desc) */}
+      <LatestShowcase articles={latest} />
 
-      {/* Mobile: Najnowsze pod Ważne teraz */}
-      {latest.length > 0 ? (
-        <div className="mt-5 lg:hidden">
-          <LatestStoriesList articles={latest} />
-        </div>
-      ) : null}
+      {/* 3. Ważne teraz — slider (score + featured + recency) */}
+      <ImportantNowSlider articles={importantNow} />
 
-      <div
-        className={cn(
-          "mt-8 grid grid-cols-1 gap-8 pb-14 lg:gap-8",
-          HOMEPAGE_MAIN_SIDEBAR_GRID
-        )}
-      >
-        <div className="min-w-0 space-y-14 md:space-y-14">
-          <PopularArticles
-            articles={allPublished}
-            excludeSlugs={excludeForSidebar}
-          />
+      {/* 4. Popularne (raz) + kategorie + widgety */}
+      <div className="mt-10 space-y-14 pb-14 md:mt-12 md:space-y-14">
+        <PopularArticles
+          articles={allPublished}
+          excludeSlugs={excludeForPopular}
+        />
 
-          <div className="space-y-12 md:space-y-14">
-            {categoryArticles.map(({ slug, articles: catArticles }) => (
-              <CategorySection key={slug} slug={slug} articles={catArticles} />
-            ))}
-          </div>
-
-          <DashboardWidgets />
+        <div className="space-y-12 md:space-y-14">
+          {categoryArticles.map(({ slug, articles: catArticles }) => (
+            <CategorySection key={slug} slug={slug} articles={catArticles} />
+          ))}
         </div>
 
-        <HomeSidebar articles={allPublished} excludeSlugs={excludeForSidebar} />
+        <DashboardWidgets />
       </div>
     </div>
   );
