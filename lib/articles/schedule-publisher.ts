@@ -46,6 +46,7 @@ export function evaluateScheduledPublish(
   const check = validatePublishReady({
     title: article.title,
     content: article.content,
+    excerpt: article.excerpt,
     categoryId: article.categoryId,
   });
   if (!check.ok) {

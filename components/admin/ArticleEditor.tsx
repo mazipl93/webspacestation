@@ -25,6 +25,10 @@ import StatusBadge from "@/components/admin/StatusBadge";
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
 import {
+  hasPublishableBody,
+  validatePublishReady,
+} from "@/lib/articles/workflow";
+import {
   buildRssImageCredit,
   getRssImageCreditForArticle,
 } from "@/lib/rss/image-credit";
@@ -132,10 +136,34 @@ function canRefineContent(form: ArticleFormValues): boolean {
   return hasCitationFields(form.sourceName, form.sourceUrl);
 }
 
-function defaultScheduleTimeLocal(): string {
+function isFormPublishReady(form: ArticleFormValues): boolean {
+  return validatePublishReady({
+    title: form.title,
+    content: form.content || null,
+    excerpt: form.excerpt || null,
+    categoryId: form.categoryId,
+  }).ok;
+}
+
+/** Omit empty categoryId so legacy rows without category can still save draft. */
+function toDraftPayload(form: ArticleFormValues): ArticleWritePayload {
+  const payload = toPayload(form);
+  if (!form.categoryId.trim()) {
+    const { categoryId: _omit, ...rest } = payload;
+    return rest;
+  }
+  return payload;
+}
+
+function defaultScheduleDatetimeLocal(): string {
   const d = new Date(Date.now() + 120_000);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function applyDefaultScheduleForm(form: ArticleFormValues): ArticleFormValues {
+  if (form.publishAtLocal.trim()) return form;
+  return { ...form, publishAtLocal: defaultScheduleDatetimeLocal() };
 }
 
 function SchedulePublishFields({
@@ -189,9 +217,8 @@ function SchedulePublishFields({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-[10px] leading-snug text-text-muted">
-        Data i godzina w czasie lokalnym (24h). Po „Zaplanuj” artykuł czeka na cron
-        serwera (ok. raz na godzinę, w :00) — nie w dokładnej minucie. Lokalnie:
-        <code className="mx-0.5 rounded bg-white/10 px-1">npm run publish:scheduled</code>.
+        Data i godzina w czasie lokalnym (24h). Przy otwartym CMS publikacja następuje
+        automatycznie w ciągu ~30 s po terminie.
       </p>
       <Field label="Data publikacji" hint="Dzień · miesiąc · rok (po polsku)">
         <div className="grid grid-cols-3 gap-2">
@@ -368,10 +395,19 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           if (!active) return;
           articleIdRef.current = article.id;
           setLoadedArticle(article);
-          setForm(toForm(article));
+          const initialForm = toForm(article);
+          const initialMode =
+            article.status === "SCHEDULED" || article.status === "REVIEW"
+              ? "schedule"
+              : "now";
+          setForm(
+            initialMode === "schedule"
+              ? applyDefaultScheduleForm(initialForm)
+              : initialForm
+          );
           setStatus(article.status);
           setPublishedSlug(article.status === "PUBLISHED" ? article.slug : null);
-          setPublishMode(article.status === "SCHEDULED" ? "schedule" : "now");
+          setPublishMode(initialMode);
         }
       } catch (e) {
         if (active) {
@@ -395,14 +431,23 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       setForm(toForm(article));
       setStatus(article.status);
       setPublishedSlug(article.status === "PUBLISHED" ? article.slug : null);
-      setPublishMode(article.status === "SCHEDULED" ? "schedule" : "now");
+      setPublishMode(
+        article.status === "SCHEDULED" || article.status === "REVIEW"
+          ? "schedule"
+          : "now"
+      );
     } catch {
       // ignore — poller / user retry
     }
   }, []);
 
   useEffect(() => {
-    const onPublished = () => void reloadArticle();
+    const onPublished = async () => {
+      await reloadArticle();
+      setEnhanceSuccess(
+        "Zaplanowana publikacja wykonana. Jeśli artykułu nie ma w Najnowsze na homepage — odśwież ją (Ctrl+F5)."
+      );
+    };
     window.addEventListener("wss:scheduled-published", onPublished);
     return () => window.removeEventListener("wss:scheduled-published", onPublished);
   }, [reloadArticle]);
@@ -493,7 +538,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           await adminApi.updateArticle(activeId, toPayload(form));
           saved = await adminApi.updateArticle(activeId, { status: "REVIEW" });
         } else if (opts.draft) {
-          saved = await adminApi.updateArticle(activeId, toPayload(form));
+          saved = await adminApi.updateArticle(activeId, toDraftPayload(form));
           if (saved.status !== "DRAFT" && saved.status !== "PUBLISHED") {
             saved = await adminApi.updateArticle(activeId, { status: "DRAFT" });
           }
@@ -655,40 +700,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
-          {mayPublish && status !== "PUBLISHED" ? (
-            <div className="flex min-w-[220px] flex-col gap-2 rounded-[0.55rem] border border-hairline bg-white/[0.02] px-3 py-2.5">
-              <fieldset className="flex flex-col gap-1.5">
-                <legend className="sr-only">Tryb publikacji</legend>
-                <label className="flex cursor-pointer items-center gap-2 text-meta text-text-secondary">
-                  <input
-                    type="radio"
-                    name="publishMode"
-                    checked={publishMode === "now"}
-                    onChange={() => setPublishMode("now")}
-                    className="accent-accent-blue"
-                  />
-                  Opublikuj teraz
-                </label>
-                <label className="flex cursor-pointer items-center gap-2 text-meta text-text-secondary">
-                  <input
-                    type="radio"
-                    name="publishMode"
-                    checked={publishMode === "schedule"}
-                    onChange={() => setPublishMode("schedule")}
-                    className="accent-accent-blue"
-                  />
-                  Zaplanuj publikację
-                </label>
-              </fieldset>
-              {publishMode === "schedule" ? (
-                <SchedulePublishFields
-                  publishAtLocal={form.publishAtLocal}
-                  onChange={(value) => update("publishAtLocal", value)}
-                />
-              ) : null}
-            </div>
-          ) : null}
-
           {currentId ? (
             <Link
               href={
@@ -708,8 +719,17 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               {publishedSlug ? "Podgląd na portalu" : "Preview publikacji"}
             </Link>
           ) : null}
-          <Button variant="ghost" onClick={() => persist({ draft: true })} disabled={saving}>
-            Zapisz szkic
+          <Button
+            variant="ghost"
+            onClick={() => persist({ draft: true })}
+            disabled={saving}
+            title={
+              status === "REVIEW"
+                ? "Przenieś z kolejki „Do sprawdzenia” do szkiców"
+                : undefined
+            }
+          >
+            {status === "REVIEW" ? "Przenieś do szkiców" : "Zapisz szkic"}
           </Button>
           {currentId && status !== "REVIEW" && status !== "PUBLISHED" ? (
             <Button
@@ -720,43 +740,136 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               Do sprawdzenia
             </Button>
           ) : null}
-          {mayPublish && schedulePastDue ? (
-            <Button
-              onClick={() => persist({ publish: true })}
-              disabled={saving || !form.categoryId || !form.content.trim()}
-            >
-              Opublikuj teraz (termin minął)
-            </Button>
-          ) : null}
-          {mayPublish ? (
-            publishMode === "schedule" && status !== "PUBLISHED" ? (
-              <Button
-                onClick={() => persist({ schedule: true })}
-                disabled={saving || !form.categoryId || !form.content.trim()}
-                title={
-                  !form.content.trim()
-                    ? "Treść jest wymagana przed zaplanowaniem publikacji"
-                    : undefined
-                }
-              >
-                {status === "SCHEDULED" ? "Zaktualizuj plan" : "Zaplanuj"}
-              </Button>
-            ) : status !== "SCHEDULED" ? (
-              <Button
-                onClick={() => persist({ publish: true })}
-                disabled={saving || !form.categoryId || !form.content.trim()}
-                title={
-                  !form.content.trim()
-                    ? "Treść jest wymagana przed publikacją"
-                    : undefined
-                }
-              >
-                {status === "PUBLISHED" ? "Zaktualizuj" : "Opublikuj"}
-              </Button>
-            ) : null
-          ) : null}
         </div>
       </div>
+
+      {status === "PUBLISHED" ? (
+        <Card className="mb-5 border-emerald-500/20 bg-emerald-500/[0.04]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-meta text-text-secondary">
+              Ten artykuł jest już <strong className="text-text-primary">opublikowany</strong> na
+              portalu. Zaplanowanie terminu dotyczy artykułów ze statusu{" "}
+              <strong className="text-text-primary">Do sprawdzenia</strong>,{" "}
+              <strong className="text-text-primary">Szkic</strong> lub{" "}
+              <strong className="text-text-primary">Zaplanowane</strong> — wybierz taki z listy
+              CMS.
+            </p>
+            {mayPublish ? (
+              <Button
+                onClick={() => persist({ publish: true })}
+                disabled={saving || !isFormPublishReady(form)}
+                className="shrink-0"
+              >
+                Zaktualizuj
+              </Button>
+            ) : null}
+          </div>
+        </Card>
+      ) : mayPublish ? (
+        <Card className="mb-5 border-accent-blue/25 bg-accent-blue/[0.04]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-meta font-semibold text-text-primary">Publikacja</h2>
+              {status === "REVIEW" ? (
+                <p className="mt-1 text-caption text-text-muted">
+                  Artykuł z kolejki „Do sprawdzenia” — opublikuj od razu albo ustaw termin
+                  (np. +2 min). Przy otwartym CMS publikacja nastąpi automatycznie po terminie.
+                </p>
+              ) : status === "SCHEDULED" ? (
+                <p className="mt-1 text-caption text-text-muted">
+                  Artykuł czeka na zaplanowany termin. Możesz go zaktualizować poniżej.
+                </p>
+              ) : (
+                <p className="mt-1 text-caption text-text-muted">
+                  Opublikuj od razu lub wybierz datę i godzinę.
+                </p>
+              )}
+              <fieldset className="mt-3 flex flex-col gap-2 sm:flex-row sm:gap-6">
+                <legend className="sr-only">Tryb publikacji</legend>
+                <label className="flex cursor-pointer items-center gap-2 text-meta text-text-secondary">
+                  <input
+                    type="radio"
+                    name="publishMode"
+                    checked={publishMode === "now"}
+                    onChange={() => setPublishMode("now")}
+                    className="accent-accent-blue"
+                  />
+                  Opublikuj teraz
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-meta text-text-secondary">
+                  <input
+                    type="radio"
+                    name="publishMode"
+                    checked={publishMode === "schedule"}
+                    onChange={() => {
+                      setPublishMode("schedule");
+                      if (!form.publishAtLocal.trim()) {
+                        update("publishAtLocal", defaultScheduleDatetimeLocal());
+                      }
+                    }}
+                    className="accent-accent-blue"
+                  />
+                  Zaplanuj publikację
+                </label>
+              </fieldset>
+              {publishMode === "schedule" ? (
+                <div className="mt-3 max-w-xl">
+                  <SchedulePublishFields
+                    publishAtLocal={form.publishAtLocal}
+                    onChange={(value) => update("publishAtLocal", value)}
+                  />
+                </div>
+              ) : null}
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {schedulePastDue ? (
+                <Button
+                  onClick={() => persist({ publish: true })}
+                  disabled={saving || !isFormPublishReady(form)}
+                >
+                  Opublikuj teraz (termin minął)
+                </Button>
+              ) : null}
+              {publishMode === "schedule" ? (
+                <Button
+                  onClick={() => persist({ schedule: true })}
+                  disabled={saving || !isFormPublishReady(form)}
+                  title={
+                    !hasPublishableBody(form)
+                      ? "Treść lub zajawka jest wymagana przed zaplanowaniem publikacji"
+                      : !form.categoryId
+                        ? "Kategoria jest wymagana przed zaplanowaniem publikacji"
+                        : undefined
+                  }
+                >
+                  {status === "SCHEDULED" ? "Zaktualizuj plan" : "Zaplanuj"}
+                </Button>
+              ) : status !== "SCHEDULED" ? (
+                <Button
+                  onClick={() => persist({ publish: true })}
+                  disabled={saving || !isFormPublishReady(form)}
+                  title={
+                    !hasPublishableBody(form)
+                      ? "Treść lub zajawka jest wymagana przed publikacją"
+                      : !form.categoryId
+                        ? "Kategoria jest wymagana przed publikacją"
+                        : undefined
+                  }
+                >
+                  Opublikuj
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card className="mb-5 border-hairline bg-white/[0.02]">
+          <p className="text-meta text-text-muted">
+            Publikacja i planowanie wymagają roli <strong>Edytor</strong> lub{" "}
+            <strong>Administrator</strong>.
+          </p>
+        </Card>
+      )}
 
       {schedulePastDue ? (
         <div className="mb-5">

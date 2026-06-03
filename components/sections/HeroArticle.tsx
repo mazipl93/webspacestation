@@ -29,7 +29,7 @@ export default function HeroArticle({
 
   return (
     <section
-      className="flex min-h-[min(68vh,640px)] flex-col overflow-hidden rounded-xl border sm:rounded-2xl lg:min-h-[540px]"
+      className="flex min-h-0 flex-col overflow-hidden rounded-xl border sm:min-h-[380px] sm:rounded-2xl lg:min-h-[540px]"
       style={
         topPriority
           ? {
@@ -41,7 +41,7 @@ export default function HeroArticle({
       }
     >
       <div
-        className="img-sheen relative min-h-[44vh] flex-1 overflow-hidden sm:min-h-[38vh] lg:min-h-[360px]"
+        className="img-sheen relative min-h-[200px] flex-1 overflow-hidden sm:min-h-[280px] lg:min-h-[360px]"
         style={{ background: categoryFallbackBg(article.category) }}
       >
         <CoverImage

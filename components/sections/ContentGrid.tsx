@@ -20,6 +20,7 @@ import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
 import HeroArticle from "@/components/sections/HeroArticle";
 import TopStoriesList from "@/components/sections/TopStoriesList";
+import LatestStoriesList from "@/components/sections/LatestStoriesList";
 import HomeSidebar from "@/components/sections/HomeSidebar";
 import PopularArticles from "@/components/sections/PopularArticles";
 
@@ -719,7 +720,7 @@ export default async function ContentGrid() {
 
   return (
     <div className={SITE_CONTAINER}>
-      {/* 1. Hero + Ważne teraz */}
+      {/* 1. Hero + Najnowsze (rail) */}
       <div
         className={cn(
           "grid grid-cols-1 items-stretch gap-5 pt-[4.5rem] sm:pt-24 lg:gap-6",
@@ -728,13 +729,23 @@ export default async function ContentGrid() {
       >
         <HeroArticle article={lead} topPriority={lead.isTopPriority} />
         <div className="hidden lg:block">
-          <TopStoriesList articles={importantNow} />
+          <LatestStoriesList articles={latest} />
         </div>
       </div>
 
-      <div className="mt-5 lg:hidden">
-        <TopStoriesList articles={importantNow} />
-      </div>
+      {/* 2. Ważne teraz — zaraz pod hero (mobile + desktop) */}
+      {importantNow.length > 0 ? (
+        <div className="mt-5 lg:mt-6">
+          <TopStoriesList articles={importantNow} />
+        </div>
+      ) : null}
+
+      {/* Mobile: Najnowsze pod Ważne teraz */}
+      {latest.length > 0 ? (
+        <div className="mt-5 lg:hidden">
+          <LatestStoriesList articles={latest} />
+        </div>
+      ) : null}
 
       <div
         className={cn(
@@ -743,17 +754,6 @@ export default async function ContentGrid() {
         )}
       >
         <div className="min-w-0 space-y-14 md:space-y-14">
-          {latest.length > 0 ? (
-            <section className="border-t border-hairline pt-8 md:pt-12">
-              <SectionHeader label="Najnowsze" href="/aktualnosci" large />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 xl:gap-5">
-                {latest.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
           <PopularArticles
             articles={allPublished}
             excludeSlugs={excludeForSidebar}

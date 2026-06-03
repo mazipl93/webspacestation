@@ -20,8 +20,18 @@ export const ARCHIVE_STATUS = ArticleStatus.ARCHIVED;
 export type PublishCheckInput = {
   title: string;
   content: string | null;
+  /** Lead-only legacy RSS (pre-B+ SAFE MODE) counts as publishable body. */
+  excerpt?: string | null;
   categoryId: string;
 };
+
+/** True when article has body text for publish/schedule (content or legacy excerpt). */
+export function hasPublishableBody(input: {
+  content: string | null | undefined;
+  excerpt?: string | null | undefined;
+}): boolean {
+  return Boolean(input.content?.trim() || input.excerpt?.trim());
+}
 
 export type WorkflowValidation =
   | { ok: true }
@@ -34,15 +44,18 @@ export function resolveCreateStatus(
   return requested ?? ArticleStatus.DRAFT;
 }
 
-/** PUBLISHED requires title, body, and category. */
+/** PUBLISHED / SCHEDULED requires title, body (or lead), and category. */
 export function validatePublishReady(
   input: PublishCheckInput
 ): WorkflowValidation {
   if (!input.title.trim()) {
     return { ok: false, message: "Tytuł jest wymagany przed publikacją." };
   }
-  if (!input.content?.trim()) {
-    return { ok: false, message: "Treść jest wymagana przed publikacją." };
+  if (!hasPublishableBody(input)) {
+    return {
+      ok: false,
+      message: "Treść lub zajawka jest wymagana przed publikacją.",
+    };
   }
   if (!input.categoryId.trim()) {
     return { ok: false, message: "Kategoria jest wymagana przed publikacją." };

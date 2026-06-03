@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
       const pubCheck = validatePublishReady({
         title: parsed.value.title,
         content: parsed.value.content,
+        excerpt: parsed.value.excerpt,
         categoryId: parsed.value.categoryId,
       });
       if (!pubCheck.ok) {

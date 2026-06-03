@@ -7,6 +7,6 @@ const PUBLIC_LIST_PATHS = ["/", "/aktualnosci"] as const;
 export function revalidatePublicArticleCaches(): void {
   revalidateTag(ARTICLES_TAG);
   for (const path of PUBLIC_LIST_PATHS) {
-    revalidatePath(path);
+    revalidatePath(path, "layout");
   }
 }

@@ -20,6 +20,7 @@ function row(
   overrides: Partial<{
     title: string;
     content: string | null;
+    excerpt: string | null;
     categoryId: string;
     publishAt: Date | null;
     status: ArticleStatus;
@@ -106,6 +107,14 @@ describe("schedule publisher (PR10)", () => {
     const result = evaluateScheduledPublish(row("ok"));
     assert.equal(result.ok, true);
     if (result.ok) assert.equal(result.slug, "ok");
+  });
+
+  it("evaluateScheduledPublish approves legacy RSS with excerpt only (SAFE MODE)", () => {
+    const result = evaluateScheduledPublish(
+      row("legacy", { content: null, excerpt: "Lead z RSS przed B+" })
+    );
+    assert.equal(result.ok, true);
+    if (result.ok) assert.equal(result.slug, "legacy");
   });
 
   it("summarizeSchedulePublishRun counts published vs skipped", () => {

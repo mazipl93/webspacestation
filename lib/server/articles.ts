@@ -110,24 +110,30 @@ export type CategoryRecord = Prisma.CategoryGetPayload<{
 // request after deploy repopulates the cache. Mutations invalidate via
 // `revalidateTag` (see app/api/articles & app/api/categories).
 
+async function queryPublishedArticlesFromDb(): Promise<ArticleWithRelations[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: PUBLISHED_ARTICLE_WHERE,
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      select: articleSelect,
+    });
+    traceArticleFetchPublic({ scope: "published-all", count: rows.length });
+    return rows;
+  } catch (error) {
+    console.error("[getPublishedArticles]", error);
+    return [];
+  }
+}
+
 /** All published articles, newest first. Cached under the ARTICLES tag. */
 export async function getPublishedArticles(): Promise<ArticleWithRelations[]> {
-  await maybeTickScheduledPublish();
+  const tick = await maybeTickScheduledPublish();
+  // Same request must not read stale unstable_cache right after auto-publish.
+  if (tick && tick.published > 0) {
+    return queryPublishedArticlesFromDb();
+  }
   return unstable_cache(
-    async (): Promise<ArticleWithRelations[]> => {
-      try {
-        const rows = await prisma.article.findMany({
-          where: PUBLISHED_ARTICLE_WHERE,
-          orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
-          select: articleSelect,
-        });
-        traceArticleFetchPublic({ scope: "published-all", count: rows.length });
-        return rows;
-      } catch (error) {
-        console.error("[getPublishedArticles]", error);
-        return [];
-      }
-    },
+    queryPublishedArticlesFromDb,
     ["published-articles"],
     { tags: [ARTICLES_TAG] }
   )();
@@ -350,6 +356,7 @@ export async function articleStateTransition(
       status: true,
       publishedAt: true,
       title: true,
+      excerpt: true,
       content: true,
       categoryId: true,
     },
@@ -362,6 +369,7 @@ export async function articleStateTransition(
     const pubCheck = validatePublishReady({
       title: existing.title,
       content: existing.content,
+      excerpt: existing.excerpt,
       categoryId: existing.categoryId,
     });
     if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
@@ -540,6 +548,7 @@ export async function runScheduledPublish(
       id: true,
       slug: true,
       title: true,
+      excerpt: true,
       content: true,
       categoryId: true,
       status: true,
@@ -562,6 +571,10 @@ export async function runScheduledPublish(
     });
   }
 
+  if (results.some((r) => r.ok)) {
+    revalidatePublicArticleCaches();
+  }
+
   return summarizeSchedulePublishRun(results);
 }
 
@@ -570,13 +583,7 @@ export async function runScheduledPublish(
  * Vercel Hobby cron cannot run every minute — this runs on site/CMS traffic instead.
  */
 const scheduledPublishTick = unstable_cache(
-  async (): Promise<SchedulePublishRunResult> => {
-    const result = await runScheduledPublish();
-    if (result.published > 0) {
-      revalidatePublicArticleCaches();
-    }
-    return result;
-  },
+  async (): Promise<SchedulePublishRunResult> => runScheduledPublish(),
   ["wss-scheduled-publish-tick"],
   { revalidate: 55 }
 );

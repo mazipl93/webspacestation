@@ -29,7 +29,7 @@ describe("article workflow (status-only lifecycle)", () => {
     );
   });
 
-  it("validatePublishReady requires title, content, categoryId", () => {
+  it("validatePublishReady requires title, body, categoryId", () => {
     assert.equal(
       validatePublishReady({
         title: "",
@@ -45,6 +45,15 @@ describe("article workflow (status-only lifecycle)", () => {
         categoryId: "cat",
       }).ok,
       false
+    );
+    assert.equal(
+      validatePublishReady({
+        title: "T",
+        content: "",
+        excerpt: "lead only",
+        categoryId: "cat",
+      }).ok,
+      true
     );
     assert.equal(
       validatePublishReady({
