@@ -31,6 +31,7 @@ const BASE_FORM: ArticleFormValues = {
   contextNote: "",
   coverImage: "https://example.com/cover.jpg",
   coverImageCredit: "",
+  authorByline: "",
   categoryId: "cat-misje",
   featured: false,
   weekTopic: false,

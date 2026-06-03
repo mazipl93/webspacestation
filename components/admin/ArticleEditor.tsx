@@ -63,6 +63,7 @@ const EMPTY_FORM: ArticleFormValues = {
   contextNote: "",
   coverImage: "",
   coverImageCredit: "",
+  authorByline: "",
   categoryId: "",
   featured: false,
   weekTopic: false,
@@ -96,6 +97,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     contextNote: a.contextNote ?? "",
     coverImage: a.coverImage ?? "",
     coverImageCredit: a.coverImageCredit ?? "",
+    authorByline: a.authorByline ?? "",
     categoryId: a.category.id,
     featured: a.featured,
     weekTopic: a.weekTopic ?? false,
@@ -117,6 +119,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     contextNote: form.contextNote || null,
     coverImage: form.coverImage.trim() || null,
     coverImageCredit: form.coverImageCredit.trim() || null,
+    authorByline: form.authorByline.trim() || null,
     categoryId: form.categoryId,
     tags: parseTagsText(form.tagsText),
     featured: form.featured,
@@ -1031,6 +1034,19 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                     e.target.value === "" ? null : Number(e.target.value)
                   )
                 }
+              />
+            </Field>
+
+            <Field
+              label="Autor (opcjonalnie)"
+              htmlFor="authorByline"
+              hint="Podpis na stronie artykułu. Puste = nie wyświetla się."
+            >
+              <TextInput
+                id="authorByline"
+                value={form.authorByline}
+                placeholder="np. Anna Nowak, redakcja WSS"
+                onChange={(e) => update("authorByline", e.target.value)}
               />
             </Field>
 

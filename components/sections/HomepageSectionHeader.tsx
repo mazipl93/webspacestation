@@ -9,15 +9,89 @@ export default function HomepageSectionHeader({
   glow,
   prominent = false,
   subtitle,
+  variant = "label",
+  kicker,
+  featured = false,
+  live = false,
 }: {
   label: string;
   href?: string;
   accent?: string;
   glow?: string;
-  /** Większy nagłówek — panel boczny desktop. */
+  /** Większy nagłówek — panel boczny desktop (tylko variant label). */
   prominent?: boolean;
   subtitle?: string;
+  /** editorial = nagłówek portalu; label = kompaktowa etykieta sekcji. */
+  variant?: "editorial" | "label";
+  /** Krótka etykieta redakcyjna nad tytułem. */
+  kicker?: string;
+  /** Większy tytuł + grubszy akcent (sekcje wyróżnione). */
+  featured?: boolean;
+  /** Delikatna kropka „na żywo” przy kickera. */
+  live?: boolean;
 }) {
+  const moreLink = href ? (
+    <Link
+      href={href}
+      className="group flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-text-tertiary transition-colors hover:text-accent-cyan sm:text-[12.5px]"
+    >
+      Więcej
+      <ChevronRight
+        size={15}
+        className="transition-transform duration-300 group-hover:translate-x-0.5 sm:h-3.5 sm:w-3.5"
+      />
+    </Link>
+  ) : null;
+
+  if (variant === "editorial") {
+    return (
+      <div className={cn("relative z-[1]", featured ? "mb-6 sm:mb-7" : "mb-5 sm:mb-6")}>
+        {kicker ? (
+          <p
+            className="mb-2.5 flex items-center gap-2 text-[13px] font-semibold tracking-[-0.01em] sm:text-[12.5px]"
+            style={{ color: accent }}
+          >
+            {live ? (
+              <span className="live-dot shrink-0" style={{ background: accent }} />
+            ) : null}
+            {kicker}
+          </p>
+        ) : null}
+        <div className="flex items-end justify-between gap-4">
+          <h2
+            className={cn(
+              "font-extrabold tracking-[-0.03em] text-text-primary",
+              featured
+                ? "text-[1.625rem] sm:text-[1.875rem]"
+                : "text-[1.375rem] sm:text-[1.5rem]",
+            )}
+            style={{ lineHeight: 1.06 }}
+          >
+            {label}
+          </h2>
+          {moreLink}
+        </div>
+        {subtitle ? (
+          <p className="mt-2.5 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
+            {subtitle}
+          </p>
+        ) : null}
+        <div
+          aria-hidden
+          className={cn(
+            "w-full",
+            featured ? "mt-5 h-1 rounded-full" : "mt-4 h-px",
+          )}
+          style={{
+            background: featured
+              ? `linear-gradient(90deg, ${accent} 0%, ${accent}88 38%, ${accent}22 72%, transparent 100%)`
+              : `linear-gradient(90deg, ${accent} 0%, ${accent}66 42%, transparent 100%)`,
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -62,15 +136,7 @@ export default function HomepageSectionHeader({
           </p>
         ) : null}
       </div>
-      {href ? (
-        <Link
-          href={href}
-          className="flex shrink-0 items-center gap-0.5 pt-0.5 text-[13px] font-semibold text-text-tertiary transition-colors hover:text-accent-cyan sm:text-[12px]"
-        >
-          Więcej
-          <ChevronRight size={15} className="sm:h-3.5 sm:w-3.5" />
-        </Link>
-      ) : null}
+      {moreLink}
     </div>
   );
 }

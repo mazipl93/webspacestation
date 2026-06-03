@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
@@ -22,6 +23,12 @@ import HeroArticle from "@/components/sections/HeroArticle";
 import LatestShowcase from "@/components/sections/LatestShowcase";
 import WeekTopicSection from "@/components/sections/WeekTopicSection";
 import PopularArticles from "@/components/sections/PopularArticles";
+import DepartmentSectionFrame from "@/components/sections/DepartmentSectionFrame";
+import DepartmentSectionHeader from "@/components/sections/DepartmentSectionHeader";
+import {
+  categorySectionTheme,
+  OPS_THEME,
+} from "@/lib/home/homepage-section-themes";
 import {
   getWeekTopicConfig,
   pickWeekTopicArticles,
@@ -141,186 +148,127 @@ function CategorySection({
   const meta = CATEGORY_META[slug];
   if (!meta || articles.length === 0) return null;
 
-  const header = (
-    <div className="mb-5">
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <Link
-            href={meta.href}
-            className="group inline-flex items-center gap-2 transition-colors hover:text-accent-cyan"
-          >
-            <h2
-              className="text-[1.85rem] font-extrabold uppercase tracking-[0.05em] md:text-[1.9rem] lg:text-[2rem]"
-              style={{ letterSpacing: "-0.02em", color: meta.color }}
-            >
-              {meta.label}
-            </h2>
-            <ChevronRight
-              size={22}
-              className="text-text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-cyan md:h-5 md:w-5"
-            />
-          </Link>
-          <p className="mt-2 max-w-none text-[16px] leading-relaxed text-text-tertiary md:max-w-[720px] md:text-[14px]">
-            {meta.description}
-          </p>
-        </div>
-        <a
-          href={meta.href}
-          className="hidden min-h-[44px] items-center text-[13px] font-medium text-text-tertiary transition-colors hover:text-text-primary sm:flex"
-        >
-          Zobacz wszystkie →
-        </a>
-      </div>
-      <div
-        className="h-1 w-full rounded-full"
-        style={{
-          background: `linear-gradient(90deg, ${meta.color} 0%, ${meta.color}44 55%, transparent 100%)`,
-        }}
-      />
-    </div>
-  );
+  const themeConfig = categorySectionTheme(slug, meta);
+
+  const header = <DepartmentSectionHeader config={themeConfig} />;
+
+  let body: ReactNode;
 
   if (meta.variant === "hero-strip") {
     const [lead, ...rest] = articles;
     const prominent = meta.prominent ?? false;
-    return (
-      <section
+    body = (
+      <div
         className={cn(
-          "overflow-hidden rounded-2xl border p-5 sm:p-6",
-          prominent && "sm:p-7"
+          "grid grid-cols-1 gap-5",
+          prominent
+            ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+            : "lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]",
         )}
-        style={{
-          borderColor: prominent ? `${meta.color}44` : undefined,
-          background: prominent
-            ? `linear-gradient(135deg, ${meta.color}38 0%, ${meta.color}16 38%, transparent 72%), var(--space-card)`
-            : `linear-gradient(135deg, ${meta.color}18 0%, transparent 55%), var(--space-card)`,
-          boxShadow: prominent ? `0 0 56px -16px ${meta.color}66` : undefined,
-        }}
       >
-        {header}
-        <div
-          className={cn(
-            "grid grid-cols-1 gap-5",
-            prominent
-              ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
-              : "lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]"
-          )}
-        >
-          {lead && (
-            <Link
-              href={`/aktualnosci/${lead.slug}`}
-              className={cn(
-                "surface-interactive group relative overflow-hidden rounded-xl border border-hairline",
-                prominent ? "min-h-[280px] sm:min-h-[320px]" : "min-h-[240px]"
-              )}
-            >
-              <CoverImage
-                src={lead.image}
-                alt={lead.title}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: prominent
-                    ? "linear-gradient(to top, rgba(5,7,9,0.94) 0%, rgba(5,7,9,0.35) 55%, transparent 100%)"
-                    : "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
-                }}
-              />
-              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-                <span
-                  className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
-                  style={{ color: meta.color }}
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: meta.color }}
-                  />
-                  {meta.label}
-                </span>
-                <p
-                  className={cn(
-                    "font-bold leading-snug text-text-primary",
-                    prominent ? "text-[22px] md:text-[22px]" : "text-[20px] md:text-[20px]"
-                  )}
-                >
-                  {lead.title}
-                </p>
-                <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
-                  {lead.excerpt}
-                </p>
-              </div>
-            </Link>
-          )}
-          <div
+        {lead ? (
+          <Link
+            href={`/aktualnosci/${lead.slug}`}
             className={cn(
-              "grid grid-cols-1 gap-4",
-              prominent ? "lg:gap-3" : "sm:grid-cols-2 lg:grid-cols-1"
+              "surface-interactive group relative overflow-hidden rounded-xl border border-hairline",
+              prominent ? "min-h-[280px] sm:min-h-[320px]" : "min-h-[240px]",
             )}
           >
-            {rest.map((article) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                compact={prominent}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (meta.variant === "accent-bar") {
-    return (
-      <section className="relative overflow-hidden rounded-2xl border border-hairline">
+            <CoverImage
+              src={lead.image}
+              alt={lead.title}
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: prominent
+                  ? "linear-gradient(to top, rgba(5,7,9,0.94) 0%, rgba(5,7,9,0.35) 55%, transparent 100%)"
+                  : "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
+              }}
+            />
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+              <span
+                className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+                style={{ color: meta.color }}
+              >
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ background: meta.color }}
+                />
+                {meta.label}
+              </span>
+              <p
+                className={cn(
+                  "font-bold leading-snug text-text-primary",
+                  prominent ? "text-[22px]" : "text-[20px]",
+                )}
+              >
+                {lead.title}
+              </p>
+              <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
+                {lead.excerpt}
+              </p>
+            </div>
+          </Link>
+        ) : null}
         <div
-          className="absolute inset-y-0 left-0 w-1.5"
-          style={{ background: meta.color, boxShadow: `0 0 20px ${meta.color}66` }}
-        />
-        <div className="py-5 pl-6 pr-5 sm:py-6 sm:pl-8 sm:pr-6">
-          {header}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {articles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (meta.variant === "banner") {
-    return (
-      <section
-        className="overflow-hidden rounded-2xl border border-hairline"
-        style={{
-          background: `linear-gradient(180deg, ${meta.color}18 0%, transparent 100%)`,
-        }}
-      >
-        <div className="border-b border-hairline-faint px-5 py-4 sm:px-6">
-          {header}
-        </div>
-        <div className="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-4">
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+          className={cn(
+            "grid grid-cols-1 gap-4",
+            prominent ? "lg:gap-3" : "sm:grid-cols-2 lg:grid-cols-1",
+          )}
+        >
+          {rest.map((article) => (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              compact={prominent}
+            />
           ))}
         </div>
-      </section>
+      </div>
+    );
+  } else if (meta.variant === "banner") {
+    body = (
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {articles.map((article) => (
+          <ArticleCard key={article.id} article={article} />
+        ))}
+      </div>
+    );
+  } else {
+    body = (
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-5",
+          meta.variant === "minimal"
+            ? "sm:grid-cols-2 lg:grid-cols-4"
+            : "sm:grid-cols-2 xl:grid-cols-4",
+        )}
+      >
+        {articles.map((article) => (
+          <ArticleCard
+            key={article.id}
+            article={article}
+            compact={meta.variant === "minimal"}
+          />
+        ))}
+      </div>
     );
   }
 
-  // minimal (ISS)
   return (
-    <section className="border-y border-hairline py-8">
-      {header}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {articles.map((article) => (
-          <ArticleCard key={article.id} article={article} compact />
-        ))}
-      </div>
+    <section className="reveal">
+      <DepartmentSectionFrame
+        theme={themeConfig.theme}
+        accent={themeConfig.accent}
+        accentAlt={themeConfig.accentAlt}
+      >
+        {header}
+        {body}
+      </DepartmentSectionFrame>
     </section>
   );
 }
@@ -644,21 +592,22 @@ function TimelineWydarzen() {
 
 function DashboardWidgets() {
   return (
-    <section className="reveal mt-4 space-y-4 rounded-2xl border border-hairline bg-space-card/40 px-5 py-10 sm:px-6">
-      <div className="mb-2">
-        <p className="overline text-text-muted">Centrum operacyjne</p>
-        <p className="mt-1 text-[14px] text-text-tertiary sm:text-[13px]">
-          Podgląd startów, misji i wydarzeń — pełne dane na żywo wkrótce
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <NadchodzaceStarty />
-        <LiveMissionCenter />
-      </div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <AktyweneMisje />
-        <TimelineWydarzen />
-      </div>
+    <section className="reveal">
+      <DepartmentSectionFrame
+        theme={OPS_THEME.theme}
+        accent={OPS_THEME.accent}
+        accentAlt={OPS_THEME.accentAlt}
+      >
+        <DepartmentSectionHeader config={OPS_THEME} />
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <NadchodzaceStarty />
+          <LiveMissionCenter />
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <AktyweneMisje />
+          <TimelineWydarzen />
+        </div>
+      </DepartmentSectionFrame>
     </section>
   );
 }
@@ -749,7 +698,7 @@ export default async function ContentGrid() {
           <div className="min-w-0">
             <HeroArticle article={lead} topPriority={lead.isTopPriority} />
             {weekTopicPick.articles.length > 0 ? (
-              <div className="mt-8">
+              <div className="mt-10">
                 <WeekTopicSection
                   articles={weekTopicPick.articles}
                   config={weekTopicConfig}
@@ -759,7 +708,7 @@ export default async function ContentGrid() {
             <div
               className={
                 weekTopicPick.articles.length > 0
-                  ? "mt-8 space-y-0 border-t border-hairline pt-8 lg:hidden"
+                  ? "mt-10 lg:hidden"
                   : "mt-8 lg:hidden"
               }
             >

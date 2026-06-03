@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, Calendar, ChevronRight } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, ChevronRight, User } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
@@ -19,6 +19,8 @@ import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import CoverImage from "@/components/article/CoverImage";
 import HeroMetaChip from "@/components/article/HeroMetaChip";
+import HeroBreadcrumbChip from "@/components/article/HeroBreadcrumbChip";
+import { getCategoryInfo } from "@/lib/categories";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 
@@ -111,6 +113,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 function ArticleHero({ article }: { article: NewsArticle }) {
   const meta = catMeta(article.category);
+  const catInfo = getCategoryInfo(article.category);
   const date = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
     day: "numeric",
     month: "long",
@@ -182,24 +185,16 @@ function ArticleHero({ article }: { article: NewsArticle }) {
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"
-          className="mb-6 flex items-center gap-1.5 text-[11px] text-text-tertiary"
+          className="mb-6 flex flex-wrap items-center gap-2"
           style={fadeIn(0.04)}
         >
-          <Link
-            href="/"
-            className="transition-colors duration-200 hover:text-text-primary"
-          >
-            WSS
-          </Link>
-          <ChevronRight size={11} className="opacity-40" />
-          <Link
-            href="/aktualnosci"
-            className="transition-colors duration-200 hover:text-text-primary"
-          >
-            Aktualności
-          </Link>
-          <ChevronRight size={11} className="opacity-40" />
-          <span style={{ color: meta.color }}>{meta.label}</span>
+          <HeroBreadcrumbChip href="/">WSS</HeroBreadcrumbChip>
+          <ChevronRight size={12} className="shrink-0 text-white/35" aria-hidden />
+          <HeroBreadcrumbChip href="/aktualnosci">Aktualności</HeroBreadcrumbChip>
+          <ChevronRight size={12} className="shrink-0 text-white/35" aria-hidden />
+          <HeroBreadcrumbChip href={catInfo.href} accent={meta.color}>
+            {meta.label}
+          </HeroBreadcrumbChip>
         </nav>
 
         {/* Breaking badge */}
@@ -262,6 +257,9 @@ function ArticleHero({ article }: { article: NewsArticle }) {
           <HeroMetaChip icon={Clock}>
             {article.readTime ?? 3} min czytania
           </HeroMetaChip>
+          {article.authorByline ? (
+            <HeroMetaChip icon={User}>{article.authorByline}</HeroMetaChip>
+          ) : null}
         </div>
       </div>
     </section>

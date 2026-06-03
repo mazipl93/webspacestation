@@ -41,7 +41,7 @@ export default function HeroArticle({
       }
     >
       <div
-        className="img-sheen relative min-h-[200px] flex-1 overflow-hidden sm:min-h-[280px] lg:min-h-[360px]"
+        className="img-sheen relative min-h-[288px] flex-[1.2] overflow-hidden max-sm:min-h-[300px] sm:min-h-[280px] lg:min-h-[360px]"
         style={{ background: categoryFallbackBg(article.category) }}
       >
         <CoverImage
@@ -127,12 +127,12 @@ export default function HeroArticle({
         </div>
       </div>
 
-      <div className="border-t border-hairline bg-space-card px-4 py-5 sm:px-7 sm:py-6">
+      <div className="border-t border-hairline bg-space-card px-4 py-3.5 max-sm:py-3 sm:px-7 sm:py-6">
         <p
-          className="mb-5 max-w-none leading-relaxed text-text-secondary sm:max-w-[920px]"
+          className="mb-3 max-w-none leading-relaxed text-text-secondary max-sm:text-[15px] sm:mb-5 sm:max-w-[920px]"
           style={{
-            fontSize: "clamp(1.0625rem, 2.8vw, 1.125rem)",
-            lineHeight: 1.65,
+            fontSize: "clamp(0.9375rem, 2.6vw, 1.125rem)",
+            lineHeight: 1.6,
             ...fadeIn(0.2),
           }}
         >

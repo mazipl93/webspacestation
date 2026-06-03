@@ -98,6 +98,7 @@ export interface ArticleCreateInput {
   contextNote: string | null;
   coverImage: string | null;
   coverImageCredit: string | null;
+  authorByline: string | null;
   categoryId: string;
   status: ArticleStatus;
   featured: boolean;
@@ -161,6 +162,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       contextNote: asTrimmedString(body.contextNote) ?? null,
       coverImage: parseCoverImageForCreate(body),
       coverImageCredit: asTrimmedString(body.coverImageCredit) ?? null,
+      authorByline: asTrimmedString(body.authorByline) ?? null,
       categoryId,
       status,
       featured: body.featured === true,
@@ -221,6 +223,9 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   }
   if (body.coverImageCredit !== undefined) {
     out.coverImageCredit = asTrimmedString(body.coverImageCredit) ?? null;
+  }
+  if (body.authorByline !== undefined) {
+    out.authorByline = asTrimmedString(body.authorByline) ?? null;
   }
   const coverImage = parseCoverImageForUpdate(body);
   if (coverImage !== undefined) out.coverImage = coverImage;

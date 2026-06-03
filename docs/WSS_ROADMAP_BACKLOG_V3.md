@@ -1,15 +1,16 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 23 — push `3e7139b`)  
-**Deploy remote:** `3e7139b`
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 25 — Prisma OK lokalnie)  
+**Deploy remote:** `3e7139b` (UI czatu 24 **nie** na prod)
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
-| 0 | **PROD-QA** | Smoke homepage + CMS po `3e7139b` (Temat tygodnia, daty, Zaktualizuj) | **Następne** |
-| 1 | **OPS** | ~175 REVIEW + revalidate + prod db | |
-| 2 | **P1-6-QA** | Upload okładek na prod (env + SQL) | |
-| 3+ | P1-7, P6-24… | jak wcześniej | |
+| 0 | **UI-HOME-24** | Commit WIP motywów sekcji + hero + breadcrumb + `authorByline` po QA usera | **Następne** |
+| 1 | **P0-AUTHOR-BYLINE** | `prisma generate` + smoke lokalnie | `[x]` dev |
+| 2 | **PROD-QA** | Smoke po deploy (Temat tygodnia, daty, Zaktualizuj) | |
+| 3 | **OPS** | ~175 REVIEW + revalidate | |
+| 4 | **P1-6-QA** | Upload okładek na prod | |
 
 **P2-WEEK-TOPIC:** kod + push `[x]` `3e7139b` · **prod smoke** (weekTopic ON + revalidate) `[ ]`
 
@@ -25,7 +26,15 @@
 
 ---
 
+## P0 — BLOCKER (otwarte)
+
+_(brak)_
+
 ## P0 — BLOCKER (zamknięte / domknięcie)
+
+| ID | Zadanie | Status | Uwagi |
+|----|---------|--------|-------|
+| **P0-AUTHOR-BYLINE** | Prisma Client vs `authorByline` | `[x]` dev | Czat 25: kill `node` → `prisma generate` → `db:deploy` (no pending). User QA CMS autor przed commit. |
 
 | ID | Zadanie | Status | Uwagi |
 |----|---------|--------|-------|

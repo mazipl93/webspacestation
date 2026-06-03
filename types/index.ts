@@ -40,6 +40,8 @@ export interface NewsArticle {
   originalUrl?: string;
   /** RSS cover caption (publisher + site) */
   imageCredit?: string;
+  /** Editorial byline — optional, from CMS. */
+  authorByline?: string;
   /** Editorial / RSS tags — related-articles ranking (frontend). */
   tags?: string[];
 }

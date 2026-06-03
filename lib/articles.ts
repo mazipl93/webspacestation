@@ -85,6 +85,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
       subtitle: a.subtitle,
       contentOrigin: a.contentOrigin,
     }),
+    authorByline: a.authorByline?.trim() || undefined,
     tags: a.tags?.length ? a.tags : undefined,
   };
 }

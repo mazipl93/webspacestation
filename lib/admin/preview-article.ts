@@ -74,6 +74,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     source,
     originalUrl,
     imageCredit,
+    authorByline: form.authorByline.trim() || undefined,
     tags: parseTags(form.tagsText),
   };
 }

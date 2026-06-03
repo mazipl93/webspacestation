@@ -57,6 +57,7 @@ export interface ArticleWritePayload {
   contextNote?: string | null;
   coverImage?: string | null;
   coverImageCredit?: string | null;
+  authorByline?: string | null;
   categoryId?: string;
   status?: ArticleStatus;
   featured?: boolean;

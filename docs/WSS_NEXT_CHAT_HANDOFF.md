@@ -1,10 +1,14 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 23 — push prod `3e7139b`)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 25 start — **P0 Prisma naprawione lokalnie**, WIP bez commita)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Ostatni commit remote:** `3e7139b` · Vercel auto-deploy z `main`
 
-**Prod QA (user po deploy):** Temat tygodnia pod hero · stabilne daty „Najnowsze” · CMS bez autosave · `npm run cache:revalidate` + Ctrl+F5
+**Następne:** user QA UI czatu 24 + CMS pole **Autor** → commit WIP · prod: `db:deploy` przy deploy (migracja `20260604200000` już applied na Supabase pooler)
+
+**Prod QA (user po deploy):** Temat tygodnia · daty Najnowsze · CMS Zaktualizuj — jak czat 23
+
+**WIP lokalnie (czat 24, nie na remote):** UI sekcji homepage (motywy per dział) · hero mobile · breadcrumb chipy · pole CMS `authorByline` · migracja `20260604200000`
 
 **Wdrożone (czat 23):** `3e7139b` — week topic fix, `publishedAt` immutable, CMS manual save, UI bez podtytułów dev
 
@@ -45,37 +49,44 @@ Przeczytaj ZAWSZE najpierw:
 
 Punkt po punkcie · raport → test usera → CZEKAJ na OK.
 
-## Stan prod (remote `3e7139b`)
+## P0 — authorByline (zamknięte lokalnie, czat 25)
 
-### Homepage
-- **Temat tygodnia:** slider pod hero — `weekTopic=true` u ≥1 PUBLISHED + **Zaktualizuj** w CMS; `npm run cache:revalidate`
-- **Najnowsze:** czas z `publishedAt` (moment Opublikuj), nie `updatedAt`; bez podtytułów dev pod nagłówkami
-- Dev: `npm run week-topic:seed-dev` tylko lokalnie
+**Było:** `Unknown field authorByline` — stary Prisma Client + EPERM przy działającym `npm run dev`.
 
-### CMS (`ArticleEditor`)
-- **Brak autosave** — zapis: **Zaktualizuj** (PUBLISHED) / **Zapisz zmiany** (inne statusy)
-- **Zaktualizuj** nie zmienia `publishedAt` ani statusu
+**Zrobione:** stop wszystkich procesów `node` → `npx prisma generate` OK → `npm run db:deploy` (brak pending migrations) → usunięty `.next` → dev na **:3001** (stary proces na :3000 — zamknąć ręcznie jeśli myli).
 
-### Daty publikacji (fix `3e7139b`)
-- `lib/articles/public-publish-time.ts` — etykieta tylko z `publishedAt`
-- Idempotentny PUBLISH — nie resetuje daty przy ponownej publikacji
-- **Nie uruchamiaj** `npm run db:fix-published-at` bez `--apply` (dry-run domyślnie)
+**Smoke agenta:** `/` i `/aktualnosci/starship-flight-14-pelny-sukces` → 200, zapytania SQL z `authorByline`.
 
-### Prod checklist usera
-1. Vercel deploy OK (`3e7139b`)
-2. `npm run db:deploy` jeśli migracja `weekTopic` jeszcze nie na prod
-3. CMS: Temat tygodnia ON + Zaktualizuj u opublikowanych
-4. `npm run cache:revalidate` · Ctrl+F5 homepage + mobile
+**Do usera:** CMS → **Autor (opcjonalnie)** → Zaktualizuj → chip na hero. Potem QA homepage UI → commit.
 
-## Kolejność backlogu
+## Stan repo
 
-1. **OPS** — ~175 REVIEW · revalidate
-2. **P1-6-QA** — upload okładek prod
-3. P1-7, P6-24…
+- **Remote prod:** `3e7139b` (bez zmian UI czatu 24).
+- **Lokalnie:** ~20 zmodyfikowanych plików + nowe komponenty (DepartmentSection*, HeroBreadcrumbChip, homepage-section-themes) — **bez commita**.
+
+### WIP UI (czat 24 — po fixie Prisma: user QA → commit)
+
+- Homepage: unikalny motyw per sekcja (`DepartmentSectionFrame` + `DepartmentSectionHeader`).
+- **Najnowsze:** zatwierdzone przez usera — zostawić.
+- Temat tygodnia: bez „ten tydzień” w kickera; wzmocniony panel.
+- Hero mobile: większe zdjęcie, niższy blok zajawki.
+- Artykuł: breadcrumb jako chipy (`HeroBreadcrumbChip`); opcjonalny autor na hero.
+
+### CMS / daty (z czatu 23, prod)
+
+- Brak autosave · **Zaktualizuj** nie zmienia `publishedAt`.
+- `npm run cache:revalidate` po deploy.
+
+## Kolejność teraz
+
+1. User QA UI homepage + artykuł + autor CMS
+2. Commit WIP czatu 24 (+ migracja `20260604200000`)
+3. Push → Vercel: upewnij się że `db:deploy` / migracja na prod DB
+4. OPS / P1-6-QA (backlog)
 
 ## Komendy
 
-npm run dev · npm run db:deploy · npm run cache:revalidate · npm run type-check · npm run week-topic:seed-dev
+npm run dev · npx prisma generate · npm run db:deploy · npm run cache:revalidate · npm run type-check
 
 Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
 ```
@@ -83,6 +94,31 @@ Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 25 start) — fix P0 Prisma authorByline
+
+| Obszar | Stan |
+|--------|------|
+| **Prisma** | `npx prisma generate` po kill `node` (EPERM) — OK |
+| **DB** | `npm run db:deploy` — 13 migracji, **no pending** (w tym `20260604200000`) |
+| **Dev** | `.next` usunięty; smoke HTTP 200 na `/` i artykuł |
+| **Commit** | **Brak** — czeka na user QA UI + CMS autor |
+
+### Sesja 4.06.2026 (czat 24, koniec) — UI homepage + authorByline WIP · BLOCKER Prisma
+
+| Obszar | Stan |
+|--------|------|
+| **UI homepage** | Motywy per sekcja (`DepartmentSectionFrame/Header`, `homepage-section-themes`); Najnowsze OK u usera; Popularne + działy + ops — osobny wygląd |
+| **Temat tygodnia** | Usunięte „ten tydzień” z kickera; wzmocniony panel |
+| **Hero mobile** | Większe zdjęcie, niższy blok zajawki (`HeroArticle.tsx`) |
+| **Artykuł** | Breadcrumb jako chipy (`HeroBreadcrumbChip`); opcjonalny autor na hero |
+| **CMS / DB** | Pole `authorByline` + migracja `20260604200000`; pole „Autor (opcjonalnie)” w edytorze |
+| **BLOCKER** | `Unknown field authorByline` — **`npx prisma generate` nie wykonany** (EPERM przy działającym dev). **Następny czat: fix → QA → commit** |
+| **Commit** | **Brak** — cały czat 24 lokalnie na `main` |
+
+**Migracja:** `20260604200000_article_author_byline` — `ALTER TABLE articles ADD COLUMN authorByline TEXT` (lokalny Supabase: applied; prod: sprawdzić przy deploy).
+
+**Nowe pliki (untracked):** `HeroBreadcrumbChip.tsx`, `DepartmentSectionFrame.tsx`, `DepartmentSectionHeader.tsx`, `HomepageSpotlightPanel.tsx`, `lib/home/homepage-section-themes.ts`, migracja powyżej.
 
 ### Sesja 4.06.2026 (czat 23) — push prod: week topic, daty, CMS, UI
 
@@ -710,6 +746,8 @@ lib/rss/image-credit.ts
 
 | Temat | Status |
 |-------|--------|
+| **P0-AUTHOR-BYLINE-PRISMA** | `[x]` lokalnie (czat 25) — user QA CMS autor + commit |
+| **UI homepage czat 24** | WIP lokalnie — commit po fixie Prisma + QA usera |
 | **Lajki per-user** | **Krok 1+2 lokalnie** — SQL: `supabase/user_article_likes.sql` |
 | **UX-BG / logo / layout** | WIP lokalnie — commit po QA |
 | **P1-6 upload okładek** | Kod `[x]` `31a5525`; prod env + bucket SQL |
@@ -721,7 +759,39 @@ lib/rss/image-credit.ts
 | Scheduler bez otwartego CMS | Vercel Hobby ≠ cron co minutę; poller CMS OK gdy panel otwarty; opcjonalnie zewnętrzny ping |
 | Pełny artykuł RSS na stronie | **Nie** — hybryda B+ (świadomie) |
 
-### Pliki lokalne do commita (skrót)
+### Pliki lokalne do commita (czat 24 — po fix Prisma)
+
+```
+prisma/schema.prisma
+prisma/migrations/20260604200000_article_author_byline/
+components/article/HeroBreadcrumbChip.tsx
+components/sections/DepartmentSectionFrame.tsx
+components/sections/DepartmentSectionHeader.tsx
+components/sections/HomepageSpotlightPanel.tsx
+components/sections/WeekTopicSection.tsx
+components/sections/LatestShowcase.tsx
+components/sections/PopularArticles.tsx
+components/sections/ContentGrid.tsx
+components/sections/HeroArticle.tsx
+components/sections/HomepageSectionHeader.tsx
+components/admin/ArticleEditor.tsx
+components/article/ArticlePublicPreview.tsx
+app/aktualnosci/[slug]/page.tsx
+lib/home/homepage-section-themes.ts
+lib/home/week-topic.ts
+lib/server/articles.ts
+lib/server/validation.ts
+lib/articles.ts
+lib/admin/types.ts
+lib/admin/api.ts
+lib/admin/preview-article.ts
+lib/ui/preview-article.test.ts
+types/index.ts
+docs/WSS_NEXT_CHAT_HANDOFF.md
+docs/WSS_ROADMAP_BACKLOG_V3.md
+```
+
+### Pliki lokalne do commita (skrót — starsze WIP)
 
 ```
 app/api/articles/publish-scheduled/route.ts

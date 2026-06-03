@@ -59,6 +59,7 @@ const articleSelect = {
   contextNote: true,
   coverImage: true,
   coverImageCredit: true,
+  authorByline: true,
   status: true,
   featured: true,
   weekTopic: true,
@@ -328,6 +329,7 @@ function buildPrismaContentUpdateInput(
   if (input.contextNote !== undefined) data.contextNote = input.contextNote;
   if (input.coverImage !== undefined) data.coverImage = input.coverImage;
   if (input.coverImageCredit !== undefined) data.coverImageCredit = input.coverImageCredit;
+  if (input.authorByline !== undefined) data.authorByline = input.authorByline;
   if (input.categoryId !== undefined) data.categoryId = input.categoryId;
   if (input.featured !== undefined) data.featured = input.featured;
   if (input.weekTopic !== undefined) data.weekTopic = input.weekTopic;
@@ -478,6 +480,7 @@ export async function createArticle(
       contextNote: input.contextNote,
       coverImage: input.coverImage,
       coverImageCredit: input.coverImageCredit,
+      authorByline: input.authorByline,
       status: ArticleStatus.DRAFT,
       featured: input.featured,
       weekTopic: input.weekTopic,

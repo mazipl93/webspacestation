@@ -81,6 +81,8 @@ model Article {
   coverImage  String?
   /// Caption for cover image (photographer, license, source).
   coverImageCredit String?  @db.Text
+  /// Optional byline on public article (e.g. „Jan Kowalski, redakcja WSS”).
+  authorByline  String?     @db.Text
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
   /// Homepage „Temat tygodnia” — slider pod hero (ręczny przełącznik CMS).

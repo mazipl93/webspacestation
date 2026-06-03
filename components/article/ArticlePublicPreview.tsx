@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { Calendar, ChevronRight, Clock } from "lucide-react";
+import { Calendar, ChevronRight, Clock, User } from "lucide-react";
 import type { NewsArticle } from "@/types";
 import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import HeroMetaChip from "@/components/article/HeroMetaChip";
+import HeroBreadcrumbChip from "@/components/article/HeroBreadcrumbChip";
+import { getCategoryInfo } from "@/lib/categories";
 import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
 import { resolveHeroDisplayUrl } from "@/lib/articles/resolve-image";
 import {
@@ -118,23 +119,15 @@ export default function ArticlePublicPreview({
           {!embedded ? (
             <nav
               aria-label="Breadcrumb"
-              className="mb-6 flex items-center gap-1.5 text-[11px] text-text-tertiary"
+              className="mb-6 flex flex-wrap items-center gap-2"
             >
-              <Link
-                href="/"
-                className="transition-colors duration-200 hover:text-text-primary"
-              >
-                WSS
-              </Link>
-              <ChevronRight size={11} className="opacity-40" />
-              <Link
-                href="/aktualnosci"
-                className="transition-colors duration-200 hover:text-text-primary"
-              >
-                Aktualności
-              </Link>
-              <ChevronRight size={11} className="opacity-40" />
-              <span style={{ color: meta.color }}>{meta.label}</span>
+              <HeroBreadcrumbChip href="/">WSS</HeroBreadcrumbChip>
+              <ChevronRight size={12} className="shrink-0 text-white/35" aria-hidden />
+              <HeroBreadcrumbChip href="/aktualnosci">Aktualności</HeroBreadcrumbChip>
+              <ChevronRight size={12} className="shrink-0 text-white/35" aria-hidden />
+              <HeroBreadcrumbChip href={getCategoryInfo(article.category).href} accent={meta.color}>
+                {meta.label}
+              </HeroBreadcrumbChip>
             </nav>
           ) : (
             <p
@@ -200,6 +193,9 @@ export default function ArticlePublicPreview({
             <HeroMetaChip icon={Calendar}>{date}</HeroMetaChip>
             {article.readTime ? (
               <HeroMetaChip icon={Clock}>{article.readTime} min czytania</HeroMetaChip>
+            ) : null}
+            {article.authorByline ? (
+              <HeroMetaChip icon={User}>{article.authorByline}</HeroMetaChip>
             ) : null}
           </div>
         </div>

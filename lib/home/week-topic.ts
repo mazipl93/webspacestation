@@ -18,7 +18,7 @@ export function getWeekTopicConfig(): WeekTopicConfig {
       8,
       Math.max(2, Number(process.env.WEEK_TOPIC_LIMIT) || 6)
     ),
-    accent: "#a855f7",
+    accent: "#8b5cf6",
   };
 }
 
