@@ -1,12 +1,14 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 22 — homepage Temat tygodnia)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 23 — push prod `3e7139b`)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `76cf517`
+**Ostatni commit remote:** `3e7139b` · Vercel auto-deploy z `main`
 
-**BLOCKER (nowy czat):** sekcja **Temat tygodnia** pod hero **nie widać** na stronie (user) — debug render + dane `weekTopic` + cache.
+**Prod QA (user po deploy):** Temat tygodnia pod hero · stabilne daty „Najnowsze” · CMS bez autosave · `npm run cache:revalidate` + Ctrl+F5
 
-**Wdrożone (czat 21–22):** commit WIP `8b447af`, P1-6 upload okładek `31a5525`, layout homepage (slidery / hero), **Temat tygodnia** `5a5eb77` + fix migracji `76cf517`
+**Wdrożone (czat 23):** `3e7139b` — week topic fix, `publishedAt` immutable, CMS manual save, UI bez podtytułów dev
+
+**Wdrożone wcześniej (czat 21–22):** `8b447af`, P1-6 `31a5525`, Temat tygodnia `5a5eb77` + migracja `76cf517`
 
 **Supabase:** user uruchomił `supabase/user_article_likes.sql` (lajki per-user)
 
@@ -41,61 +43,39 @@ Przeczytaj ZAWSZE najpierw:
 
 ## REGUŁA PRACY (OBOWIĄZKOWA — user)
 
-Pracujemy PUNKT PO PUNKCIE z backlogu.
-- Zrób TYLKO jeden punkt na raz (teraz: BLOCKER Temat tygodnia).
-- Na końcu: CO zrobiłeś + CO user ma przetestować → CZEKAJ na OK.
+Punkt po punkcie · raport → test usera → CZEKAJ na OK.
 
-## BLOCKER — Temat tygodnia nie widać na homepage
+## Stan prod (remote `3e7139b`)
 
-User: sekcja „Temat tygodnia” **nie wyświetla się w ogóle** pod HERO (miał być kompaktowy **poziomy slider ze strzałkami**, w miejscu dawnego „Ważne teraz”).
+### Homepage
+- **Temat tygodnia:** slider pod hero — `weekTopic=true` u ≥1 PUBLISHED + **Zaktualizuj** w CMS; `npm run cache:revalidate`
+- **Najnowsze:** czas z `publishedAt` (moment Opublikuj), nie `updatedAt`; bez podtytułów dev pod nagłówkami
+- Dev: `npm run week-topic:seed-dev` tylko lokalnie
 
-### Jak ma działać (kod na `main` / `76cf517`)
+### CMS (`ArticleEditor`)
+- **Brak autosave** — zapis: **Zaktualizuj** (PUBLISHED) / **Zapisz zmiany** (inne statusy)
+- **Zaktualizuj** nie zmienia `publishedAt` ani statusu
 
-- DB: kolumna `articles.weekTopic` (migracja `20260604130000_article_week_topic` — tabela **`articles`**, nie `Article`; fix w `76cf517`).
-- CMS: przełącznik **„Temat tygodnia”** w edytorze (`ArticleEditor.tsx`), obok „Wyróżniony” — zapis w API (`weekTopic: boolean`).
-- Homepage: `ContentGrid.tsx` → `pickWeekTopicArticles()` (`lib/home/week-topic.ts`) — **tylko** `PUBLISHED` + `weekTopic === true`; jeśli **0 artykułów → sekcja się nie renderuje** (`WeekTopicSection` return null).
-- UI: `components/sections/WeekTopicSection.tsx` — pod `HeroArticle`, `mt-8`, `HorizontalScrollSlider` + fioletowa ramka.
-- **Wyróżniony (`featured`)** ≠ Temat tygodnia: featured podbija ranking/hero; weekTopic = osobny slider.
+### Daty publikacji (fix `3e7139b`)
+- `lib/articles/public-publish-time.ts` — etykieta tylko z `publishedAt`
+- Idempotentny PUBLISH — nie resetuje daty przy ponownej publikacji
+- **Nie uruchamiaj** `npm run db:fix-published-at` bez `--apply` (dry-run domyślnie)
 
-### Hipotezy do sprawdzenia (kolejno)
+### Prod checklist usera
+1. Vercel deploy OK (`3e7139b`)
+2. `npm run db:deploy` jeśli migracja `weekTopic` jeszcze nie na prod
+3. CMS: Temat tygodnia ON + Zaktualizuj u opublikowanych
+4. `npm run cache:revalidate` · Ctrl+F5 homepage + mobile
 
-1. Czy user włączył **Temat tygodnia** u ≥1 **opublikowanego** artykułu i **zapisał** (nie tylko autosave bez weekTopic)?
-2. Czy `npm run db:deploy` na **prod** (kolumna `weekTopic`) — lokalnie user naprawił migrację (`migrate resolve` + deploy OK).
-3. Czy `weekTopic` wraca w API/CMS GET i w `toNewsArticle` (`lib/articles.ts`)?
-4. Cache ISR: `getPublishedArticles` + `revalidate` — stary cache bez pola `weekTopic`?
-5. Dev log: `WEEK TOPIC: N cms` w konsoli serwera przy `npm run dev` na `/`.
-6. Czy deploy Vercel ma commit `5a5eb77`+ (`WeekTopicSection` w bundle)?
+## Kolejność backlogu
 
-### Pliki kluczowe
-
-- `components/sections/ContentGrid.tsx` (warunek renderu)
-- `components/sections/WeekTopicSection.tsx`
-- `lib/home/week-topic.ts`
-- `lib/server/articles.ts` (`articleSelect.weekTopic`)
-- `prisma/schema.prisma` + migracja `20260604130000_*`
-
-### Po fixie
-
-`npm run cache:revalidate` · smoke desktop + mobile (fiolet pod hero, cyan „Najnowsze” na mobile).
-
-## Zamknięte w czatach 21–22 (remote)
-
-- `8b447af` — WIP sesja 20 (tło, logo, lajki, layout, ShareBar, cache)
-- `31a5525` — P1-6 upload okładek WebP (`/api/admin/cover-upload`, `SUPABASE_SERVICE_ROLE_KEY`, `article-covers.sql`)
-- `3d2301d` / `ccaacc5` / `9f5f0c0` — iteracje layoutu homepage (Ważne teraz / hero+2 / duży Temat tygodnia) — **superseded**
-- `5a5eb77` — Temat tygodnia: toggle CMS, kompakt pod hero, bez tagów
-- `76cf517` — fix migracji SQL (`articles.weekTopic`)
-- Hydration Cursor (`data-cursor-ref`) — fałszywy alarm
-
-## Kolejność po BLOCKERze
-
-1. OPS — ~175 REVIEW + revalidate · prod `user_article_likes`
-2. P1-6 QA upload okładek na prod
-3. P1-7 → …
+1. **OPS** — ~175 REVIEW · revalidate
+2. **P1-6-QA** — upload okładek prod
+3. P1-7, P6-24…
 
 ## Komendy
 
-npm run dev · npm run db:deploy · npm run cache:revalidate · npm run type-check
+npm run dev · npm run db:deploy · npm run cache:revalidate · npm run type-check · npm run week-topic:seed-dev
 
 Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
 ```
@@ -103,6 +83,19 @@ Na końcu sesji: aktualizuj ten plik + docs/WSS_ROADMAP_BACKLOG_V3.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 23) — push prod: week topic, daty, CMS, UI
+
+| Obszar | Stan |
+|--------|------|
+| **Push** | `3e7139b` → `origin/main` · Vercel auto-deploy |
+| **Temat tygodnia** | Autosave CMS nie zapisywał `weekTopic`; dev cache bypass; pick + hero fallback; bez podtytułu CMS |
+| **Daty Najnowsze** | `publishedAt` immutable; etykieta bez `updatedAt`; idempotentny PUBLISH |
+| **CMS** | Wyłączony autosave; **Zaktualizuj** = pełny zapis bez republish |
+| **UI** | Usunięte podtytuły dev (Temat tygodnia, Najnowsze) |
+| **Skrypty** | `week-topic:seed-dev`; `db:fix-published-at` dry-run domyślnie |
+
+**Commity czat 23:** `3e7139b`
 
 ### Sesja 4.06.2026 (czat 22, koniec) — Temat tygodnia + BLOCKER widoczności
 
@@ -720,7 +713,7 @@ lib/rss/image-credit.ts
 | **Lajki per-user** | **Krok 1+2 lokalnie** — SQL: `supabase/user_article_likes.sql` |
 | **UX-BG / logo / layout** | WIP lokalnie — commit po QA |
 | **P1-6 upload okładek** | Kod `[x]` `31a5525`; prod env + bucket SQL |
-| **P2-WEEK-TOPIC** | Toggle CMS `[x]`; **sekcja na froncie nie widać** — BLOCKER |
+| **P2-WEEK-TOPIC** | Kod + push `[x]` `3e7139b`; prod QA: weekTopic w CMS + revalidate `[ ]` |
 | `article_likes` 404 | SQL w Supabase |
 | P1-7 live preview QA | Formalny smoke okładki CMS |
 | P6-24 SEO | Canonical, OG, schema, sitemap |
