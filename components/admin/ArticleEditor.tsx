@@ -32,6 +32,7 @@ import { resolveImageCreditFromForm } from "@/lib/articles/image-credit";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import CoverImageUploader from "@/components/admin/CoverImageUploader";
 import ArticleEditorPreviewPane from "@/components/admin/ArticleEditorPreviewPane";
 import {
   combineDateIso,
@@ -1092,11 +1093,19 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
           </Card>
 
           <Card className="flex flex-col gap-4">
+            <Field label="Okładka artykułu" hint="Upload (WebP) lub URL zewnętrzny">
+              <CoverImageUploader
+                articleId={currentId}
+                coverUrl={form.coverImage.trim()}
+                onCoverUrl={(url) => update("coverImage", url)}
+                disabled={loading}
+              />
+            </Field>
             <Field label="Obraz okładki (URL)" htmlFor="coverImage">
               <TextInput
                 id="coverImage"
                 value={form.coverImage}
-                placeholder="https://…"
+                placeholder="https://… lub upload powyżej"
                 onChange={(e) => update("coverImage", e.target.value)}
               />
             </Field>
@@ -1113,18 +1122,6 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 onChange={(e) => update("coverImageCredit", e.target.value)}
               />
             </Field>
-            {form.coverImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.coverImage}
-                alt={previewCredit || "Podgląd okładki"}
-                className="aspect-video w-full rounded-[0.6rem] border border-hairline object-cover"
-              />
-            ) : (
-              <div className="grid aspect-video w-full place-items-center rounded-[0.6rem] border border-dashed border-hairline text-caption text-text-muted">
-                Brak okładki
-              </div>
-            )}
             {previewCredit ? (
               <CoverImageCredit
                 variant="compact"
