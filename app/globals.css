@@ -849,6 +849,9 @@ html[data-portal-theme] .site-cosmos-grain {
   color: #94a3b8;
   line-height: 1.2;
 }
+html[data-portal-theme] .ops-map-pin-detail__media {
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
 html[data-portal-theme] .ops-map-pin-detail__copy {
   background: rgba(255, 255, 255, 0.04);
 }
