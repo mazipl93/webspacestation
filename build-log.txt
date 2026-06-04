@@ -1,0 +1,47 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help
+ npmrc` for supported config options.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...config options.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+> wss-nowa@0.1.0 build
+> next build
+
+   Ôľ▓ Next.js 15.5.18
+   - Environments: .env
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (101kiB) impacts deserialization performance (conside
+r using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (231kiB) impacts deserialization performance (conside
+r using Buffer instead and decode when needed)
+ Ôťô Compiled successfully in 21.0s
+   Linting and checking validity of types ...
+
+Failed to compile.
+
+./app/api/articles/route.ts
+13:10  Warning: 'ARTICLES_TAG' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/ArticleEditor.tsx
+150:25  Warning: '_omit' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/sections/DepartmentSectionHeader.tsx
+243:93  Error: Comments inside children section of tag should be placed inside braces  react/jsx-no-comment-textnodes
+
+./lib/article/related-articles.ts
+2:28  Warning: 'NewsCategory' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/likes.ts
+10:31  Warning: '_slug' is defined but never used.  @typescript-eslint/no-unused-vars
+15:31  Warning: '_slug' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/rss/normalize.ts
+152:3  Warning: '_source' is defined but never used.  @typescript-eslint/no-unused-vars
+153:3  Warning: '_originalUrl' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#dis
+abling-rules
