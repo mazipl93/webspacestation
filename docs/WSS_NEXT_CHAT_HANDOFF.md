@@ -1,13 +1,15 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 43 — krok 5+6 Odkrywaj + ops API, lokalnie)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 44 — push krok 5+6, smoke prod)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `93f710b` (remote) · **WIP lokalnie:** krok 5+6 bez pusha  
-**Historia:** `976c55d` UI czat 40 · `14d1675` komentarze · `f93415a` CMS/hero
+**Ostatni commit:** `a069877` (remote `main`) · krok 5+6 **na prod**  
+**Historia:** `93f710b` SEO · `976c55d` UI czat 40 · `14d1675` komentarze
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Następny krok STEP_BY_STEP:** **commit + push krok 5+6** (po Twoim „commit”) · potem **P1-6** upload okładek prod lub **GSC** env
+**Następny krok STEP_BY_STEP:** **OK + commit** perf homepage (czat 44 WIP) · potem **GSC** · **NASA_API_KEY** · **P1-6** · OPS-REVIEW
+
+**WIP lokalnie (czat 44, perf Lighthouse mobile 68):** LCP preload, preconnect CDN, hero 1 obraz/slajd, lazy Najnowsze, `optimizePackageImports` lucide
 
 **Krok 5+6 DONE (lokalnie, czat 43):**
 - Odkrywaj: `/starty` `/kalendarz` `/mapa` `/galeria` `/wideo` + homepage ops
@@ -22,7 +24,7 @@
 - **noindex:** 404, auth, `/search` (Odkrywaj **w** sitemap od kroku 5+6 lokalnie)
 - **Artykuł dół:** `ArticleMainColumnShell` — Koniec / Czytaj dalej = szerokość Komentarze
 
-**Po deploy kroku 5+6 — Vercel:** `NASA_API_KEY` · `NEXT_PUBLIC_SITE_URL`
+**Vercel Production (czat 44):** `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl` — **dodane** · `NASA_API_KEY` — **brak** (prod używa `DEMO_KEY` z kodu) · redeploy po env
 
 **Po deploy — GSC (user, ręcznie):**
 1. Vercel Production: `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl`
@@ -165,14 +167,14 @@ Przeczytaj ZAWSZE (w tej kolejności):
 
 REGUŁA: jeden krok · raport · test · CZEKAJ OK · commit/push tylko po explicit OK usera.
 
-Stan remote main: `93f710b` · prod https://webspacestation.pl
-Stan lokalny: krok 5+6 DONE — **NIE na main** (brak commita/pusha z czatu 43).
+Stan remote main: `a069877` · prod https://webspacestation.pl
+Krok 5+6: **na main i prod** (smoke OK 4.06.2026).
 
 ZACZNIJ OD:
-1) **Commit + push** całego pakietu Odkrywaj + ops API (user chce to w tym czacie).
-2) Vercel Production: `NASA_API_KEY`, `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl`
-3) GSC: `GOOGLE_SITE_VERIFICATION` + sitemap.xml
-4) Smoke prod: `/starty` (misje Starlink… + odliczenie), `/`, galeria, wideo, mapa
+1) Vercel: `NASA_API_KEY` (własny klucz z api.nasa.gov) + redeploy
+2) GSC: `GOOGLE_SITE_VERIFICATION` w Vercel Production → redeploy → Sitemaps `sitemap.xml`
+3) **P1-6** upload okładek prod · **OPS-REVIEW** ~175 w CMS
+4) Smoke: Rich Results Test na artykule po GSC
 
 Krok 5+6 DONE lokalnie (czat 43):
 - Odkrywaj: /starty /kalendarz /mapa /galeria /wideo — żywe API
@@ -194,6 +196,24 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 44, cd.) — Lighthouse perf homepage (WIP, bez commita)
+
+| Obszar | Stan |
+|--------|------|
+| **Raport usera** | Mobile Perf 68 · LCP 2,9s · TBT 1620ms · SEO 100 |
+| **Fixy** | `hero-lcp.ts` + `preload()` · preconnect CDN · hero 1 img/slide · `fetchPriority=high` · lazy Najnowsze · lucide tree-shake |
+| **Następny** | User OK → commit/push → ponowny Lighthouse · potem GSC/NASA/P1-6 |
+
+### Sesja 4.06.2026 (czat 44) — commit/push krok 5+6 + Vercel env + smoke prod
+
+| Obszar | Stan |
+|--------|------|
+| **Push** | `a069877` → `origin/main` · Vercel deploy OK |
+| **Vercel** | `NEXT_PUBLIC_SITE_URL` Production dodane; `NASA_API_KEY` / `GOOGLE_SITE_VERIFICATION` — **do ustawienia przez usera** |
+| **Smoke prod** | `/starty` Starlink Group + odliczenie · `/` ops live · galeria/wideo/mapa 200 · sitemap z Odkrywaj |
+| **type-check** | OK przed commitem |
+| **Następny** | NASA klucz · GSC meta · P1-6 · OPS-REVIEW |
 
 ### Sesja 4.06.2026 (czat 43, koniec) — krok 5+6 Odkrywaj + ops API (lokalnie, bez commita)
 

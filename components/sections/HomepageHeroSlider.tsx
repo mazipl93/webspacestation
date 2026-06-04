@@ -101,7 +101,8 @@ export default function HomepageHeroSlider({ articles }: Props) {
             <HeroSlide
               key={article.id}
               article={article}
-              priority={slideIndex === 0}
+              showImage={slideIndex === index}
+              priority={slideIndex === 0 && index === 0}
             />
           ))}
         </div>
@@ -165,9 +166,12 @@ export default function HomepageHeroSlider({ articles }: Props) {
 
 function HeroSlide({
   article,
+  showImage = true,
   priority = false,
 }: {
   article: NewsArticle;
+  /** Only the active slide loads an image (LCP + bandwidth). */
+  showImage?: boolean;
   priority?: boolean;
 }) {
   const meta = getCategoryInfo(article.category);
@@ -175,20 +179,24 @@ function HeroSlide({
   return (
     <Link
       href={`/aktualnosci/${article.slug}`}
+      aria-label={`Przeczytaj: ${article.title}`}
       className="group relative block h-full min-w-full shrink-0 overflow-hidden"
     >
       <div
         className="absolute inset-0"
         style={{ background: categoryFallbackBg(article.category) }}
       />
-      <CoverImage
-        src={article.image}
-        alt=""
-        fill
-        priority={priority}
-        sizes="(max-width: 1024px) 100vw, min(100vw, 900px)"
-        className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
-      />
+      {showImage ? (
+        <CoverImage
+          src={article.image}
+          alt=""
+          fill
+          priority={priority}
+          fetchPriority={priority ? "high" : undefined}
+          sizes="(max-width: 1024px) 100vw, min(100vw, 900px)"
+          className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+        />
+      ) : null}
       <div
         aria-hidden
         className="absolute inset-0"

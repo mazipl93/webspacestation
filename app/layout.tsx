@@ -8,6 +8,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import { buildSiteJsonLd } from "@/lib/seo/json-ld";
 import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
 import "./globals.css";
+import { HERO_IMAGE_PRECONNECT_ORIGINS } from "@/lib/home/hero-lcp";
 
 const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
@@ -95,6 +96,16 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
+      <head>
+        {HERO_IMAGE_PRECONNECT_ORIGINS.map((origin) => (
+          <link
+            key={origin}
+            rel="preconnect"
+            href={origin}
+            crossOrigin="anonymous"
+          />
+        ))}
+      </head>
       <body className="antialiased">
         <JsonLd data={buildSiteJsonLd()} />
         <SiteBackground />
