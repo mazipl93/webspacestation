@@ -2,7 +2,7 @@
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
 **Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25)  
-**Deploy remote:** `f956ff0` (homepage, profil, mobile nav — patrz handoff MAPA)
+**Deploy remote:** `c68b896` (homepage, profil, mobile nav, logo wordmark — patrz handoff MAPA)
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|

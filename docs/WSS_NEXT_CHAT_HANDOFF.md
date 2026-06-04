@@ -2,7 +2,7 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25 — logo wordmark v2 + handoff)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** _(po push tej sesji — `git log -1`)_
+**Ostatni commit remote:** `c68b896`
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -49,7 +49,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **CMS daty** | `3e7139b` | Brak autosave; **Zaktualizuj** nie zmienia `publishedAt` |
 | **Temat tygodnia** | `3e7139b` + UI `4ca8d46` | Toggle CMS, sekcja pod hero |
 | **Deploy Vercel** | `4868232` | Build prod naprawiony (JSX `//`) |
-| **Logo wordmark v2** | _(ten push)_ | Oficjalny PNG WSS+łuk+WEB SPACE STATION (`wss-wordmark.png`), nav/stopka; skrypty `process-wss-wordmark.mjs` |
+| **Logo wordmark v2** | `c68b896` | Oficjalny PNG WSS+łuk+WEB SPACE STATION (`wss-wordmark.png`), nav/stopka; skrypty `process-wss-wordmark.mjs` |
 
 ### Do zrobienia (backlog — kolejność sugerowana)
 
@@ -776,7 +776,7 @@ lib/rss/image-credit.ts
 
 ### Commity czat 24–25 (referencja)
 
-`3e7139b` → `4ca8d46` → `4868232` → `06e2d4d` → `f956ff0` → _(logo wordmark)_
+`3e7139b` → `4ca8d46` → `4868232` → `06e2d4d` → `f956ff0` → `c68b896`
 
 ### Pliki kluczowe (czat 24–25)
 
