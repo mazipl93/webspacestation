@@ -1,8 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 40 — krok 3 komentarze Supabase, **bez commita**)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 40 — push krok 3 komentarze)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit (remote):** `f93415a` — feat(cms): editor layout, byline, bulk actions, hero meta  
+**Ostatni commit (remote):** `14d1675` — feat(comments): Supabase `article_comments`  
+**Poprzedni:** `f93415a` — CMS/hero/byline  
 **Historia:** `e16931b` REVIEW count · `18fc9a3` Ważne teraz · `eb6fc60` logo C + theme
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -16,15 +17,11 @@
 - Admin: nazwa + avatar z profilu Supabase (`/api/profile/sync`)
 - Migracja: `20260604220000_article_byline_user` — **`npm run db:deploy` na prod**
 
-**WIP lokalnie (krok 3 — czeka OK usera + SQL Supabase):**
-- `supabase/article_comments.sql` — tabela `article_comments`, RLS (read public, write own)
-- `lib/comments/article-comments.ts` · `hooks/useArticleComments.ts`
-- `components/article/Comments.tsx` — **bez localStorage**, Supabase jak lajki
-- Testy: `npm run test:comments` · `npm run type-check` OK
+**Na `main` (krok 3):**
+- Komentarze w Supabase (`article_comments`) — `14d1675`
+- SQL: `supabase/article_comments.sql` — **prod:** jeśli komentarze 404, wklej w Supabase SQL Editor (lokalnie wykonane przez `prisma db execute`)
 
-**Przed testem usera:** w Supabase SQL Editor uruchom `supabase/article_comments.sql` (jak `user_article_likes.sql`).
-
-**Następny krok po OK + commit:** **4** — Sitemap + JSON-LD
+**Następny krok:** **4** — Sitemap + JSON-LD · potem redakcja artykułów / weave / REVIEW
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -112,7 +109,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **0** | Commit WIP UI | `[x]` `eb6fc60` |
 | **1** | Usunąć Ważne teraz | `[x]` `18fc9a3` |
 | **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
-| **3** | Komentarze Supabase | `[~]` WIP lokalnie — czeka SQL + OK |
+| **3** | Komentarze Supabase | `[x]` `14d1675` |
 | **4** | Sitemap + JSON-LD |
 | **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) |
 | **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
@@ -159,15 +156,14 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 
 ## Historia sesji (skrót)
 
-### Sesja 4.06.2026 (czat 40) — krok 3 komentarze Supabase (WIP)
+### Sesja 4.06.2026 (czat 40) — krok 3 komentarze + push
 
 | Obszar | Stan |
 |--------|------|
-| **Storage** | `article_comments` w Supabase zamiast `localStorage` |
-| **UX** | Ten sam UI: dodaj / edytuj / usuń (właściciel po `user_id`) |
-| **SQL** | `supabase/article_comments.sql` — **user musi wkleić w Supabase** |
-| **Testy** | `npm run type-check` · `npm run test:comments` OK |
-| **Commit** | **Brak** — czeka OK usera |
+| **Push** | `14d1675` → `origin/main` · Vercel auto-deploy |
+| **Komentarze** | Supabase `article_comments` + RLS |
+| **SQL** | Lokalnie: `prisma db execute --file supabase/article_comments.sql` — prod: ten sam skrypt w SQL Editor jeśli 404 |
+| **Następny** | Krok 4 SEO · redakcja / weave artykułów |
 
 ### Sesja 4.06.2026 (czat 39) — push pakietu CMS/hero + nowy czat
 

@@ -2,7 +2,7 @@
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 37 — backlog krok po kroku czat 38)  
-**Deploy remote:** `f93415a`  
+**Deploy remote:** `14d1675`  
 **Plan:** `docs/WSS_STEP_BY_STEP_BACKLOG.md`
 
 ## Priorytety teraz (krok po kroku — czat 39)
@@ -13,7 +13,7 @@
 | **WIP-CMS** | **CMS-HERO-BYLINE** | Hero meta, bulk CMS, edytor, byline, profil admin | `[x]` `f93415a` |
 | **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[x]` |
 | **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[x]` `e16931b` |
-| **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[~]` WIP — SQL + OK |
+| **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[x]` `14d1675` |
 | **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[ ]` |
 | **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content | `[ ]` |
 | **6** | **OPS-API** | Homepage ops z API (nie LAUNCHES[] mock) | `[ ]` |
