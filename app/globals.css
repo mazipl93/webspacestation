@@ -776,26 +776,46 @@ html[data-portal-theme] .site-cosmos-grain {
 .ops-map-pin-detail__desc {
   margin-top: 6px;
   font-size: 11px;
-  line-height: 1.4;
+  line-height: 1.5;
   color: #475569;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
 }
-.ops-map-pin-detail__fact {
-  margin-top: 6px;
-  font-size: 10px;
-  line-height: 1.35;
-  color: #64748b;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+.ops-map-pin-detail__facts {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
 }
-.ops-map-pin-detail__fact-label {
+.ops-map-pin-detail__facts-label {
+  margin-bottom: 4px;
+  font-size: 9px;
   font-weight: 700;
-  color: #334155;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.ops-map-pin-detail__facts-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ops-map-pin-detail__facts-list li {
+  position: relative;
+  padding-left: 12px;
+  font-size: 10px;
+  line-height: 1.45;
+  color: #64748b;
+}
+.ops-map-pin-detail__facts-list li + li {
+  margin-top: 4px;
+}
+.ops-map-pin-detail__facts-list li::before {
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #38bdf8;
+  content: "";
 }
 .ops-map-pin-detail__credit {
   margin-top: 6px;
@@ -818,21 +838,22 @@ html[data-portal-theme] .ops-map-pin-detail__caption {
 html[data-portal-theme] .ops-map-pin-detail__desc {
   color: #94a3b8;
 }
-html[data-portal-theme] .ops-map-pin-detail__fact,
-html[data-portal-theme] .ops-map-pin-detail__fact-label {
-  color: #94a3b8;
+html[data-portal-theme] .ops-map-pin-detail__facts {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
-html[data-portal-theme] .ops-map-pin-detail__fact-label {
-  color: #cbd5e1;
+html[data-portal-theme] .ops-map-pin-detail__facts-label,
+html[data-portal-theme] .ops-map-pin-detail__facts-list li {
+  color: #94a3b8;
 }
 @media (min-width: 640px) {
   .ops-map-pin-detail__grid {
-    grid-template-columns: 120px minmax(0, 1fr);
+    grid-template-columns: 128px minmax(0, 1fr);
   }
   .ops-map-pin-detail__media {
-    width: 120px;
-    min-height: 112px;
-    max-height: 112px;
+    width: 128px;
+    min-height: 120px;
+    max-height: none;
+    align-self: stretch;
   }
   .ops-map-pin-detail__copy {
     padding: 12px 14px 12px 12px;
@@ -842,7 +863,9 @@ html[data-portal-theme] .ops-map-pin-detail__fact-label {
   }
   .ops-map-pin-detail__desc {
     font-size: 12px;
-    -webkit-line-clamp: 2;
+  }
+  .ops-map-pin-detail__facts-list li {
+    font-size: 11px;
   }
 }
 @media (prefers-reduced-motion: no-preference) {

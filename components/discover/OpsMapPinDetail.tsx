@@ -2,7 +2,6 @@
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { compactSpotlightCopy } from "@/lib/ops/compact-spotlight-text";
 import type { MapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 
 const FALLBACK_IMAGE =
@@ -23,7 +22,6 @@ export default function OpsMapPinDetail({
 }: Props) {
   const [imgSrc, setImgSrc] = useState(spotlight.imageUrl);
   const [imgReady, setImgReady] = useState(false);
-  const { description, fact } = compactSpotlightCopy(spotlight);
 
   useEffect(() => {
     setImgSrc(spotlight.imageUrl);
@@ -76,11 +74,16 @@ export default function OpsMapPinDetail({
           {caption ? (
             <p className="ops-map-pin-detail__caption">{caption}</p>
           ) : null}
-          <p className="ops-map-pin-detail__desc">{description}</p>
-          {fact ? (
-            <p className="ops-map-pin-detail__fact">
-              <span className="ops-map-pin-detail__fact-label">Czy wiesz, że?</span> {fact}
-            </p>
+          <p className="ops-map-pin-detail__desc">{spotlight.description}</p>
+          {spotlight.facts.length > 0 ? (
+            <div className="ops-map-pin-detail__facts">
+              <p className="ops-map-pin-detail__facts-label">Czy wiesz, że?</p>
+              <ul className="ops-map-pin-detail__facts-list">
+                {spotlight.facts.map((fact, i) => (
+                  <li key={`${pinId}-fact-${i}`}>{fact}</li>
+                ))}
+              </ul>
+            </div>
           ) : null}
           <p className="ops-map-pin-detail__credit">{spotlight.imageCredit}</p>
         </div>
