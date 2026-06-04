@@ -2,14 +2,16 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 44 — push krok 5+6, smoke prod)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `a069877` (remote `main`) · krok 5+6 **na prod**  
+**Ostatni commit:** `22b0fb6` (remote `main`) · perf homepage LCP na prod  
 **Historia:** `93f710b` SEO · `976c55d` UI czat 40 · `14d1675` komentarze
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
 **Następny krok STEP_BY_STEP:** **OK + commit** perf homepage (czat 44 WIP) · potem **GSC** · **NASA_API_KEY** · **P1-6** · OPS-REVIEW
 
-**WIP lokalnie (czat 44, perf Lighthouse mobile 68):** LCP preload, preconnect CDN, hero 1 obraz/slajd, lazy Najnowsze, `optimizePackageImports` lucide
+**Perf homepage (czat 44):** `22b0fb6` — Lighthouse mobile **83** (było 68) · LCP preload, preconnect, hero 1 img/slide
+
+**Vercel env (czat 44):** `NEXT_PUBLIC_SITE_URL` ✅ · `NASA_API_KEY` ❌ · `GOOGLE_SITE_VERIFICATION` ❌ (user musi wkleić w Vercel)
 
 **Krok 5+6 DONE (lokalnie, czat 43):**
 - Odkrywaj: `/starty` `/kalendarz` `/mapa` `/galeria` `/wideo` + homepage ops
@@ -197,13 +199,15 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 
 ## Historia sesji (skrót)
 
-### Sesja 4.06.2026 (czat 44, cd.) — Lighthouse perf homepage (WIP, bez commita)
+### Sesja 4.06.2026 (czat 44, cd.) — perf push + PageSpeed OK
 
 | Obszar | Stan |
 |--------|------|
-| **Raport usera** | Mobile Perf 68 · LCP 2,9s · TBT 1620ms · SEO 100 |
-| **Fixy** | `hero-lcp.ts` + `preload()` · preconnect CDN · hero 1 img/slide · `fetchPriority=high` · lazy Najnowsze · lucide tree-shake |
-| **Następny** | User OK → commit/push → ponowny Lighthouse · potem GSC/NASA/P1-6 |
+| **Push** | `22b0fb6` perf homepage |
+| **PageSpeed user** | Wydajność **83** (było 68) · A11y 88 · SEO 100 |
+| **Vercel** | `NEXT_PUBLIC_SITE_URL` OK · NASA + GSC — **czeka wartości od usera** |
+| **GSC smoke** | `sitemap.xml` OK · meta verification **brak** (brak env) |
+| **Następny** | User: NASA + GSC w Vercel → redeploy → GSC sitemap · P1-6 |
 
 ### Sesja 4.06.2026 (czat 44) — commit/push krok 5+6 + Vercel env + smoke prod
 
