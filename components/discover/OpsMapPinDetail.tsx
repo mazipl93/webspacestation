@@ -55,7 +55,7 @@ export default function OpsMapPinDetail({
             key={`${pinId}-${imgSrc}`}
             src={imgSrc}
             alt=""
-            className={`ops-map-pin-detail__img h-full w-full object-cover transition-opacity duration-150 ${
+            className={`ops-map-pin-detail__img transition-opacity duration-150 ${
               imgReady ? "opacity-100" : "opacity-0"
             }`}
             decoding="async"

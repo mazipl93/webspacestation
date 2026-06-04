@@ -738,22 +738,33 @@ html[data-portal-theme] .site-cosmos-grain {
   overflow: hidden;
   border-radius: inherit;
 }
-/* Panel szczegółów pod mapą — kompakt, bez przewijania */
+/* Panel szczegółów: wąski kafel, zdjęcie = wysokość tekstu */
 .ops-map-detail-slot {
   width: 100%;
-  max-width: 100%;
+  max-width: min(100%, 480px);
   min-width: 0;
+}
+.ops-map-pin-detail {
+  width: 100%;
 }
 .ops-map-pin-detail__grid {
   display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  gap: 0;
+  grid-template-columns: 92px minmax(0, 1fr);
   align-items: stretch;
 }
 .ops-map-pin-detail__media {
-  width: 108px;
-  min-height: 108px;
-  max-height: 108px;
+  position: relative;
+  min-height: 72px;
+  height: 100%;
+}
+.ops-map-pin-detail__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 .ops-map-pin-detail__copy {
   padding: 10px 12px 10px 10px;
@@ -846,14 +857,11 @@ html[data-portal-theme] .ops-map-pin-detail__facts-list li {
   color: #94a3b8;
 }
 @media (min-width: 640px) {
-  .ops-map-pin-detail__grid {
-    grid-template-columns: 128px minmax(0, 1fr);
+  .ops-map-detail-slot {
+    max-width: min(100%, 440px);
   }
-  .ops-map-pin-detail__media {
-    width: 128px;
-    min-height: 120px;
-    max-height: none;
-    align-self: stretch;
+  .ops-map-pin-detail__grid {
+    grid-template-columns: 104px minmax(0, 1fr);
   }
   .ops-map-pin-detail__copy {
     padding: 12px 14px 12px 12px;
