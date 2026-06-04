@@ -1,5 +1,9 @@
 import type { NewsArticle } from "@/types";
 import { isRssArticle } from "@/lib/ui/article-kind";
+import {
+  parseArticleBodyBlocks,
+  type ArticleContentBlock,
+} from "@/lib/articles/parse-content-blocks";
 
 const BOILERPLATE_SNIPPETS = [
   "zebrany automatycznie przez wss news engine",
@@ -27,4 +31,24 @@ export function getArticleBodyParagraphs(article: NewsArticle): string[] {
   }
 
   return paragraphs;
+}
+
+/** Parsed body blocks (paragraphs + vertical lists) for public article UI. */
+export function getArticleBodyBlocks(article: NewsArticle): ArticleContentBlock[] {
+  return parseArticleBodyBlocks(getArticleBodyParagraphs(article));
+}
+
+/** Editorial lead (first paragraph) + remaining blocks for manual articles. */
+export function splitArticleLeadAndBody(
+  article: NewsArticle,
+  blocks: ArticleContentBlock[]
+): { lead: string | null; restBlocks: ArticleContentBlock[] } {
+  if (isRssArticle(article.contentOrigin)) {
+    return { lead: null, restBlocks: blocks };
+  }
+  if (blocks[0]?.kind === "paragraph") {
+    return { lead: blocks[0].text, restBlocks: blocks.slice(1) };
+  }
+  const fallbackLead = article.excerpt?.trim();
+  return { lead: fallbackLead || null, restBlocks: blocks };
 }

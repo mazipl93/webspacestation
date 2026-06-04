@@ -4,8 +4,8 @@ type Props = {
   credit: string;
   source?: string;
   originalUrl?: string;
-  /** compact = cards / list; default = article hero */
-  variant?: "default" | "compact";
+  /** compact = cards / list; overlay = caption on photo hero */
+  variant?: "default" | "compact" | "overlay";
 };
 
 export default function CoverImageCredit({
@@ -15,13 +15,16 @@ export default function CoverImageCredit({
   variant = "default",
 }: Props) {
   const compact = variant === "compact";
+  const overlay = variant === "overlay";
 
   return (
     <figcaption
       className={
-        compact
-          ? "mt-1.5 text-[10px] leading-snug text-text-muted"
-          : "text-[11px] leading-relaxed text-text-tertiary"
+        overlay
+          ? "text-[10px] leading-snug text-white/50"
+          : compact
+            ? "mt-1.5 text-[10px] leading-snug text-text-muted"
+            : "text-[11px] leading-relaxed text-text-tertiary"
       }
     >
       <span className={compact ? "line-clamp-2" : undefined}>{credit}</span>

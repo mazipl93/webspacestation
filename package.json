@@ -13,7 +13,7 @@
     "test:workflow": "node --import tsx --test lib/articles/article-workflow.test.ts",
     "test:articles": "node --import tsx --test lib/articles/*.test.ts",
     "test:ai": "node --import tsx --test lib/ai/*.test.ts",
-    "test:ui": "node --import tsx --test lib/ui/*.test.ts",
+    "test:ui": "node --import tsx --test lib/ui/*.test.ts lib/home/*.test.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

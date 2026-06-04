@@ -84,6 +84,21 @@ export type PickRelatedOptions = {
 /**
  * Rank related articles: tag overlap first, then category, then score similarity.
  */
+/**
+ * Up to `max` related articles from the same category (tag/recency ranking within pool).
+ */
+export function pickSameCategoryRelated<T extends RelatableArticle>(
+  source: T,
+  all: T[],
+  max = 3
+): T[] {
+  const pool = all.filter(
+    (a) => a.id !== source.id && a.category === source.category
+  );
+  if (pool.length === 0) return [];
+  return pickRelatedArticles(source, pool, { min: 1, max });
+}
+
 export function pickRelatedArticles<T extends RelatableArticle>(
   source: T,
   all: T[],
@@ -110,25 +125,68 @@ export function pickRelatedArticles<T extends RelatableArticle>(
   return ranked.slice(0, Math.min(min, ranked.length));
 }
 
+export const READ_NEXT_LIST_LIMIT = 5;
+
+function pushUnique<T extends RelatableArticle>(
+  result: T[],
+  seen: Set<string>,
+  candidates: T[],
+  limit: number
+): void {
+  for (const article of candidates) {
+    if (result.length >= limit) return;
+    if (seen.has(article.id)) continue;
+    seen.add(article.id);
+    result.push(article);
+  }
+}
+
 /**
- * Next article in the published feed (newest-first), then popular fallback.
+ * Propozycje „Czytaj dalej”: ten sam dział → kolejne w kanale (publishedAt desc) → powiązane → popularne.
  */
-export function pickReadNext<T extends RelatableArticle>(
+export function pickReadNextArticles<T extends RelatableArticle>(
   source: T,
-  all: T[]
-): T | null {
+  all: T[],
+  options: { limit?: number } = {}
+): T[] {
+  const limit = Math.min(Math.max(options.limit ?? READ_NEXT_LIST_LIMIT, 1), 6);
+  const seen = new Set<string>([source.id]);
+  const result: T[] = [];
+
+  pushUnique(
+    result,
+    seen,
+    pickSameCategoryRelated(source, all, limit),
+    limit
+  );
+
   const sorted = [...all].sort(
     (a, b) => articleTimestamp(b) - articleTimestamp(a)
   );
   const index = sorted.findIndex((a) => a.id === source.id);
-  if (index === -1) return null;
+  if (index !== -1) {
+    pushUnique(result, seen, sorted.slice(index + 1), limit);
+  }
 
-  const nextInFeed = sorted[index + 1];
-  if (nextInFeed) return nextInFeed;
+  pushUnique(
+    result,
+    seen,
+    pickRelatedArticles(source, all, { min: 1, max: limit }),
+    limit
+  );
 
-  const others = all.filter((a) => a.id !== source.id);
-  if (others.length === 0) return null;
+  if (result.length < limit) {
+    const others = all.filter((a) => !seen.has(a.id));
+    pushUnique(result, seen, rankPopular(others, { limit }), limit);
+  }
 
-  const [popular] = rankPopular(others, { limit: 1 });
-  return popular ?? null;
+  return result;
+}
+
+/** Pierwsza propozycja z listy (kompatybilność wsteczna). */
+export function pickReadNext<T extends RelatableArticle>(
+  source: T,
+  all: T[]
+): T | null {
+  return pickReadNextArticles(source, all, { limit: 1 })[0] ?? null;
 }

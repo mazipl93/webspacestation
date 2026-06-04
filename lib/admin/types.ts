@@ -58,6 +58,7 @@ export interface AdminArticle {
   authorByline: string | null;
   status: ArticleStatus;
   featured: boolean;
+  heroPosition: number;
   weekTopic: boolean;
   readingTime: number | null;
   tags: string[];
@@ -86,6 +87,7 @@ export interface ArticleFormValues {
   authorByline: string;
   categoryId: string;
   featured: boolean;
+  heroPosition: number;
   weekTopic: boolean;
   readingTime: number | null;
   /** Comma-separated in the form; normalized to Article.tags on save. */

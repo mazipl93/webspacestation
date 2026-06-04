@@ -61,6 +61,7 @@ export interface ArticleWritePayload {
   categoryId?: string;
   status?: ArticleStatus;
   featured?: boolean;
+  heroPosition?: number;
   weekTopic?: boolean;
   readingTime?: number | null;
   tags?: string[];

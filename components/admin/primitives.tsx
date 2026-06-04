@@ -1,7 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import React, {
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from "react";
 
 // ─── Button ───────────────────────────────────────────────────────────────--
 
@@ -82,16 +86,18 @@ export function TextInput(
   return <input {...props} className={cn(FIELD_BASE, props.className)} />;
 }
 
-export function TextArea(
-  props: React.TextareaHTMLAttributes<HTMLTextAreaElement>
-) {
+export const TextArea = forwardRef<
+  HTMLTextAreaElement,
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>
+>(function TextArea(props, ref) {
   return (
     <textarea
+      ref={ref}
       {...props}
       className={cn(FIELD_BASE, "resize-y leading-relaxed", props.className)}
     />
   );
-}
+});
 
 export function Select(
   props: React.SelectHTMLAttributes<HTMLSelectElement>

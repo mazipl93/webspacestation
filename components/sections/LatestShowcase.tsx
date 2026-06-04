@@ -208,21 +208,49 @@ function LatestPanel({
   );
 }
 
-/** Najnowsze — slider na mobile, panel boczny z wiodącą kartą na desktop. */
+/** Najnowsze — pionowa lista (mobile), slider opcjonalny, rail na desktop. */
 export default function LatestShowcase({
   articles,
   variant = "slider",
   mobileShell = false,
+  peekBelowHero = false,
 }: {
   articles: NewsArticle[];
-  variant?: "slider" | "rail";
+  variant?: "slider" | "rail" | "list";
   mobileShell?: boolean;
+  /** Tighter top spacing when stacked under mobile hero (peek next section). */
+  peekBelowHero?: boolean;
 }) {
   if (articles.length === 0) return null;
 
   const [lead, ...rest] = articles;
 
   const header = <DepartmentSectionHeader config={LATEST_THEME} />;
+
+  if (variant === "list") {
+    return (
+      <section
+        className={cn(
+          "reveal",
+          mobileShell
+            ? peekBelowHero
+              ? "mt-0 lg:mt-0"
+              : "mt-10 lg:mt-0"
+            : "mt-2 lg:mt-0",
+        )}
+        aria-label="Najnowsze artykuły"
+      >
+        <LatestPanel>
+          {header}
+          <div className="divide-y divide-hairline-faint border-t border-hairline-faint">
+            {articles.map((article) => (
+              <LatestRailRow key={article.id} article={article} />
+            ))}
+          </div>
+        </LatestPanel>
+      </section>
+    );
+  }
 
   if (variant === "rail") {
     return (
@@ -242,7 +270,14 @@ export default function LatestShowcase({
 
   return (
     <section
-      className={cn("reveal", mobileShell ? "mt-10 lg:mt-0" : "mt-2 lg:mt-0")}
+      className={cn(
+        "reveal",
+        mobileShell
+          ? peekBelowHero
+            ? "mt-0 lg:mt-0"
+            : "mt-10 lg:mt-0"
+          : "mt-2 lg:mt-0",
+      )}
       aria-label="Najnowsze artykuły"
     >
       <LatestPanel>

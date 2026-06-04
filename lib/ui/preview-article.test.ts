@@ -34,6 +34,7 @@ const BASE_FORM: ArticleFormValues = {
   authorByline: "",
   categoryId: "cat-misje",
   featured: false,
+  heroPosition: 0,
   weekTopic: false,
   readingTime: 4,
   tagsText: "SpaceX, Starship",

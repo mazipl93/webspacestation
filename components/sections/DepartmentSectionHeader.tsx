@@ -1,7 +1,24 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { SectionThemeConfig } from "@/lib/home/homepage-section-themes";
+
+/** Tytuł + „Więcej” — na mobile w kolumnie, żeby nic nie nachodziło. */
+function SectionTitleRow({
+  title,
+  more,
+}: {
+  title: ReactNode;
+  more?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+      <div className="min-w-0 flex-1">{title}</div>
+      {more ? <div className="shrink-0 self-start sm:self-auto">{more}</div> : null}
+    </div>
+  );
+}
 
 function MoreLink({ href, accent }: { href: string; accent: string }) {
   return (
@@ -36,7 +53,7 @@ export default function DepartmentSectionHeader({
   if (theme === "week-topic") {
     const [first, ...rest] = label.split(" ");
     return (
-      <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
         <span
           className="mb-3 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white"
           style={{
@@ -46,18 +63,20 @@ export default function DepartmentSectionHeader({
         >
           {kicker}
         </span>
-        <div className="flex items-end justify-between gap-4">
-          <h2
-            className="max-w-[640px] text-[2rem] font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-[2.35rem]"
-            style={{ textShadow: `0 0 40px ${accent}44` }}
-          >
-            <span style={{ color: accent }}>{first}</span>
-            {rest.length > 0 ? (
-              <span className="text-text-primary"> {rest.join(" ")}</span>
-            ) : null}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2
+              className="max-w-[640px] text-[1.75rem] font-extrabold leading-[1.05] tracking-[-0.04em] sm:text-[2.35rem]"
+              style={{ textShadow: `0 0 40px ${accent}44` }}
+            >
+              <span style={{ color: accent }}>{first}</span>
+              {rest.length > 0 ? (
+                <span className="text-text-primary"> {rest.join(" ")}</span>
+              ) : null}
+            </h2>
+          }
+        />
         {subtitle ? (
           <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
@@ -74,7 +93,7 @@ export default function DepartmentSectionHeader({
 
   if (theme === "latest") {
     return (
-      <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
         <p
           className="mb-2.5 flex items-center gap-2 text-[13px] font-semibold sm:text-[12.5px]"
           style={{ color: accent }}
@@ -82,12 +101,14 @@ export default function DepartmentSectionHeader({
           {live ? <span className="live-dot shrink-0" style={{ background: accent }} /> : null}
           {kicker}
         </p>
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="text-[1.625rem] font-extrabold tracking-[-0.03em] text-text-primary sm:text-[1.875rem]">
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2 className="text-[1.5rem] font-extrabold tracking-[-0.03em] text-text-primary sm:text-[1.875rem]">
+              {label}
+            </h2>
+          }
+        />
         <div
           aria-hidden
           className="mt-5 h-1 rounded-full"
@@ -101,27 +122,29 @@ export default function DepartmentSectionHeader({
 
   if (theme === "popular") {
     return (
-      <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
         <p
           className="mb-2 text-[12px] font-bold uppercase tracking-[0.2em]"
           style={{ color: alt }}
         >
           {kicker}
         </p>
-        <div className="flex items-end justify-between gap-4">
-          <h2
-            className="text-[2.1rem] font-extrabold leading-none tracking-[-0.04em] sm:text-[2.5rem]"
-            style={{
-              background: `linear-gradient(135deg, ${accent} 0%, ${alt} 55%, #fff4e0 100%)`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2
+              className="text-[1.75rem] font-extrabold leading-tight tracking-[-0.04em] sm:text-[2.5rem]"
+              style={{
+                background: `linear-gradient(135deg, ${accent} 0%, ${alt} 55%, #fff4e0 100%)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              {label}
+            </h2>
+          }
+        />
         <div aria-hidden className="mt-5 flex gap-1">
           {[0, 1, 2, 3, 4].map((i) => (
             <span
@@ -141,21 +164,26 @@ export default function DepartmentSectionHeader({
   if (theme === "technologie") {
     return (
       <div
-        className={cn("relative z-[1] mb-6 border-l-4 pl-5 sm:mb-7 sm:pl-6", className)}
+        className={cn(
+          "relative isolate z-[2] mb-5 border-l-4 pl-5 sm:mb-7 sm:pl-6",
+          className,
+        )}
         style={{ borderColor: accent }}
       >
         <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-text-tertiary">
           {kicker}
         </p>
-        <div className="flex items-end justify-between gap-4">
-          <h2
-            className="text-[2rem] font-extrabold uppercase sm:text-[2.25rem]"
-            style={{ color: accent, letterSpacing: "0.04em" }}
-          >
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2
+              className="text-[1.5rem] font-extrabold uppercase leading-tight sm:text-[2.25rem]"
+              style={{ color: accent, letterSpacing: "0.04em" }}
+            >
+              {label}
+            </h2>
+          }
+        />
         {subtitle ? (
           <p className="mt-3 max-w-[640px] font-mono text-[13px] leading-relaxed text-text-tertiary">
             {subtitle}
@@ -176,10 +204,10 @@ export default function DepartmentSectionHeader({
 
   if (theme === "astronomia") {
     return (
-      <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-1 top-0 flex gap-3 opacity-50"
+          className="pointer-events-none absolute -left-1 top-0 hidden gap-3 opacity-50 sm:flex"
         >
           {[8, 5, 6].map((s, i) => (
             <span
@@ -192,20 +220,22 @@ export default function DepartmentSectionHeader({
         <p className="mb-2 text-[12px] font-semibold tracking-[0.12em]" style={{ color: alt }}>
           {kicker}
         </p>
-        <div className="flex items-end justify-between gap-4">
-          <h2
-            className="text-[2.15rem] font-extrabold leading-[0.98] tracking-[-0.03em] sm:text-[2.45rem]"
-            style={{
-              background: `linear-gradient(165deg, #fff 0%, ${accent} 48%, ${alt} 100%)`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2
+              className="text-[1.65rem] font-extrabold leading-tight tracking-[-0.03em] sm:text-[2.45rem]"
+              style={{
+                background: `linear-gradient(165deg, #fff 0%, ${accent} 48%, ${alt} 100%)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              {label}
+            </h2>
+          }
+        />
         {subtitle ? (
           <p className="mt-3 max-w-[640px] text-[15px] italic leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
@@ -224,7 +254,7 @@ export default function DepartmentSectionHeader({
 
   if (theme === "misje") {
     return (
-      <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
         <div className="mb-3 flex items-center gap-3">
           <span
             className="inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]"
@@ -238,15 +268,20 @@ export default function DepartmentSectionHeader({
             {kicker}
           </span>
         </div>
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="flex items-baseline gap-2 text-[2rem] font-extrabold tracking-[-0.03em] text-text-primary sm:text-[2.3rem]">
-            <span className="text-[1.25rem] font-bold opacity-35" style={{ color: accent }}>
-              {"//"}
-            </span>
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2 className="text-[1.65rem] font-extrabold leading-tight tracking-[-0.03em] text-text-primary sm:text-[2.3rem]">
+              <span
+                className="mr-1.5 inline-block align-middle text-[1.1rem] font-bold opacity-35 sm:mr-2 sm:text-[1.25rem]"
+                style={{ color: accent }}
+              >
+                {"//"}
+              </span>
+              <span className="align-middle">{label}</span>
+            </h2>
+          }
+        />
         {subtitle ? (
           <p className="mt-2.5 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
@@ -266,19 +301,21 @@ export default function DepartmentSectionHeader({
 
   if (theme === "ziemia-z-kosmosu") {
     return (
-      <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
         <p className="mb-2 text-[12px] font-semibold tracking-wide" style={{ color: accent }}>
           {kicker}
         </p>
-        <div className="flex items-end justify-between gap-4">
-          <h2
-            className="text-[1.85rem] font-extrabold leading-tight tracking-[-0.03em] sm:text-[2.15rem]"
-            style={{ color: accent }}
-          >
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2
+              className="text-[1.55rem] font-extrabold leading-tight tracking-[-0.03em] sm:text-[2.15rem]"
+              style={{ color: accent }}
+            >
+              {label}
+            </h2>
+          }
+        />
         {subtitle ? (
           <p className="mt-2.5 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
@@ -299,7 +336,7 @@ export default function DepartmentSectionHeader({
 
   if (theme === "iss") {
     return (
-      <div className={cn("relative z-[1] mb-5 sm:mb-6", className)}>
+      <div className={cn("relative isolate z-[2] mb-5 sm:mb-6", className)}>
         <div aria-hidden className="mb-3 flex gap-1">
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <span
@@ -315,12 +352,14 @@ export default function DepartmentSectionHeader({
         >
           {kicker}
         </p>
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="text-[2.4rem] font-extrabold leading-none tracking-[-0.05em] text-text-primary sm:text-[2.75rem]">
-            {label}
-          </h2>
-          {more}
-        </div>
+        <SectionTitleRow
+          more={more}
+          title={
+            <h2 className="text-[1.85rem] font-extrabold leading-tight tracking-[-0.04em] text-text-primary sm:text-[2.75rem]">
+              {label}
+            </h2>
+          }
+        />
         {subtitle ? (
           <p className="mt-2 text-[14px] leading-relaxed text-text-tertiary">{subtitle}</p>
         ) : null}
@@ -329,7 +368,7 @@ export default function DepartmentSectionHeader({
   }
 
   return (
-    <div className={cn("relative z-[1] mb-6 sm:mb-7", className)}>
+    <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
       <p
         className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em]"
         style={{ color: accent }}
@@ -337,15 +376,17 @@ export default function DepartmentSectionHeader({
         {live ? <span className="live-dot shrink-0" style={{ background: accent }} /> : null}
         {kicker}
       </p>
-      <div className="flex items-end justify-between gap-4">
-        <h2
-          className="text-[1.75rem] font-extrabold uppercase tracking-[0.04em] sm:text-[2rem]"
-          style={{ color: accent, textShadow: `0 0 32px ${accent}44` }}
-        >
-          {label}
-        </h2>
-        {more}
-      </div>
+      <SectionTitleRow
+        more={more}
+        title={
+          <h2
+            className="text-[1.5rem] font-extrabold uppercase tracking-[0.04em] sm:text-[2rem]"
+            style={{ color: accent, textShadow: `0 0 32px ${accent}44` }}
+          >
+            {label}
+          </h2>
+        }
+      />
       {subtitle ? (
         <p className="mt-2.5 text-[14px] leading-relaxed text-text-tertiary">{subtitle}</p>
       ) : null}

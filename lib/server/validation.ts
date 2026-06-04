@@ -75,6 +75,20 @@ function parseOriginalUrlField(
   return undefined;
 }
 
+function parseHeroPositionField(
+  body: Record<string, unknown>
+): number | undefined | null {
+  if (body.heroPosition === undefined) return undefined;
+  const n =
+    typeof body.heroPosition === "number"
+      ? body.heroPosition
+      : typeof body.heroPosition === "string"
+        ? Number.parseInt(body.heroPosition, 10)
+        : NaN;
+  if (!Number.isInteger(n) || n < 0 || n > 4) return null;
+  return n;
+}
+
 function parsePublishAtField(
   body: Record<string, unknown>
 ): Date | null | undefined {
@@ -102,6 +116,7 @@ export interface ArticleCreateInput {
   categoryId: string;
   status: ArticleStatus;
   featured: boolean;
+  heroPosition: number;
   weekTopic: boolean;
   readingTime: number | null;
   tags: string[];
@@ -151,6 +166,14 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
     }
   }
 
+  const heroPosition = parseHeroPositionField(body);
+  if (heroPosition === null) {
+    return {
+      ok: false,
+      message: "'heroPosition' must be an integer from 0 to 4.",
+    };
+  }
+
   return {
     ok: true,
     value: {
@@ -166,6 +189,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       categoryId,
       status,
       featured: body.featured === true,
+      heroPosition: heroPosition ?? 0,
       weekTopic: body.weekTopic === true,
       readingTime:
         typeof body.readingTime === "number" ? body.readingTime : null,
@@ -230,6 +254,14 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   const coverImage = parseCoverImageForUpdate(body);
   if (coverImage !== undefined) out.coverImage = coverImage;
   if (body.featured !== undefined) out.featured = body.featured === true;
+  const heroPosition = parseHeroPositionField(body);
+  if (heroPosition === null) {
+    return {
+      ok: false,
+      message: "'heroPosition' must be an integer from 0 to 4.",
+    };
+  }
+  if (heroPosition !== undefined) out.heroPosition = heroPosition;
   if (body.weekTopic !== undefined) out.weekTopic = body.weekTopic === true;
   if (body.readingTime !== undefined) {
     if (body.readingTime !== null && (typeof body.readingTime !== "number" || body.readingTime < 0)) {

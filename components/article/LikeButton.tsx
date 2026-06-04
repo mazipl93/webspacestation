@@ -39,7 +39,7 @@ export default function LikeButton({ slug }: Props) {
       aria-label={label}
       title={!isAuthed ? "Zaloguj się, aby polubić" : label}
       className={cn(
-        "group inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97] disabled:opacity-70",
+        "group inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97] disabled:opacity-70",
         liked
           ? "border-accent-live/40 bg-accent-live/10 text-accent-live"
           : "border-hairline bg-glass text-text-secondary hover:border-hairline-strong hover:bg-glass-hover hover:text-text-primary"

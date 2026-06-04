@@ -21,25 +21,19 @@ import {
   NAV_OVERLAY_PANEL_POSITION,
   NAV_OVERLAY_PANEL_STYLE,
 } from "@/lib/ui/nav-overlay-panel";
-
-const NAV_LINKS = [
-  { label: "Aktualności", href: "/aktualnosci" },
-  { label: "Misje", href: "/misje" },
-  { label: "Astronomia", href: "/astronomia" },
-  { label: "Technologie", href: "/technologie" },
-] as const;
-
-const CATEGORY_LINKS = [
-  { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },
-  { label: "ISS", href: "/iss" },
-] as const;
-
-const MORE_LINKS = [
-  { label: "Galeria zdjęć", href: "/galeria" },
-  { label: "Wideo", href: "/wideo" },
-  { label: "Kalendarz startów", href: "/kalendarz" },
-  { label: "Mapa kosmosu", href: "/mapa" },
-] as const;
+import {
+  NAV_CATEGORY_LINKS,
+  NAV_MOBILE_SECTIONS,
+  NAV_MORE_LINKS,
+  NAV_PRIMARY_LINKS,
+  navLinkAccent,
+} from "@/lib/ui/nav-menu-config";
+import {
+  NavDropdownMenu,
+  NavMenuItem,
+  NavMenuSectionLabel,
+  NavMobileAccordion,
+} from "@/components/layout/NavMenuPrimitives";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -72,6 +66,13 @@ export default function Navbar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileMounted, setMobileMounted] = useState(false);
+  const [mobileShown, setMobileShown] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({
+    categories: false,
+    more: false,
+  });
+  const mobileCloseTimer = useRef<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
   // searchOpen = mounted; searchShown = animated-in. Splitting them lets us
   // play both an open AND a close transition instead of an instant unmount.
@@ -159,18 +160,52 @@ export default function Navbar() {
     setMoreOpen(false);
     setCategoriesOpen(false);
     setNotificationsOpen(false);
+    setMobileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      if (mobileCloseTimer.current) {
+        window.clearTimeout(mobileCloseTimer.current);
+        mobileCloseTimer.current = null;
+      }
+      setMobileMounted(true);
+      requestAnimationFrame(() => setMobileShown(true));
+      return;
+    }
+    setMobileShown(false);
+    mobileCloseTimer.current = window.setTimeout(() => {
+      setMobileMounted(false);
+      mobileCloseTimer.current = null;
+    }, 220);
+  }, [mobileOpen]);
+
+  useEffect(
+    () => () => {
+      if (mobileCloseTimer.current) window.clearTimeout(mobileCloseTimer.current);
+    },
+    []
+  );
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setMoreOpen(false);
         setCategoriesOpen(false);
+        setMobileOpen(false);
       }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  function closeMobileNav() {
+    setMobileOpen(false);
+  }
+
+  function toggleMobileSection(id: string) {
+    setMobileExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -251,7 +286,7 @@ export default function Navbar() {
           {/* ── Desktop nav ────────────────────────────────────── */}
           <nav className="ml-1 hidden min-w-0 flex-1 items-center lg:flex">
             <div className="flex min-w-0 items-center">
-              {NAV_LINKS.map((link) => (
+              {NAV_PRIMARY_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -266,98 +301,49 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setCategoriesOpen((v) => !v);
-                    setMoreOpen(false);
-                  }}
-                  className={cn(
-                    "flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
-                    CATEGORY_LINKS.some((l) => isActive(l.href))
-                      ? "text-text-primary"
-                      : "text-text-secondary"
-                  )}
-                >
-                  Kategorie
-                  <ChevronDown
-                    size={14}
-                    className={cn(
-                      "transition-transform duration-300",
-                      categoriesOpen && "rotate-180"
-                    )}
+              <NavDropdownMenu
+                label="Kategorie"
+                open={categoriesOpen}
+                onToggle={() => {
+                  setCategoriesOpen((v) => !v);
+                  setMoreOpen(false);
+                }}
+                onClose={() => setCategoriesOpen(false)}
+                active={NAV_CATEGORY_LINKS.some((l) => isActive(l.href))}
+                panelWidth="w-[min(100vw-2rem,19rem)]"
+              >
+                <NavMenuSectionLabel>Działy tematyczne</NavMenuSectionLabel>
+                {NAV_CATEGORY_LINKS.map((link, i) => (
+                  <NavMenuItem
+                    key={link.href}
+                    link={link}
+                    index={i}
+                    onSelect={() => setCategoriesOpen(false)}
                   />
-                </button>
+                ))}
+              </NavDropdownMenu>
 
-                {categoriesOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setCategoriesOpen(false)}
-                    />
-                    <div
-                      className="absolute left-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-hairline p-1.5 shadow-2xl"
-                      style={{
-                        background: "rgba(12,16,24,0.92)",
-                        backdropFilter: "blur(24px) saturate(180%)",
-                        WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                      }}
-                    >
-                      {CATEGORY_LINKS.map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          onClick={() => setCategoriesOpen(false)}
-                          className="block whitespace-nowrap rounded-lg px-3 py-2.5 text-[13px] text-text-secondary transition-colors duration-200 hover:bg-glass-hover hover:text-text-primary"
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setMoreOpen((v) => !v);
-                    setCategoriesOpen(false);
-                  }}
-                  className="flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium text-text-secondary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]"
-                >
-                  Więcej
-                  <ChevronDown
-                    size={14}
-                    className={cn("transition-transform duration-300", moreOpen && "rotate-180")}
+              <NavDropdownMenu
+                label="Więcej"
+                open={moreOpen}
+                onToggle={() => {
+                  setMoreOpen((v) => !v);
+                  setCategoriesOpen(false);
+                }}
+                onClose={() => setMoreOpen(false)}
+                active={NAV_MORE_LINKS.some((l) => isActive(l.href))}
+                panelWidth="w-[min(100vw-2rem,19rem)]"
+              >
+                <NavMenuSectionLabel>Odkrywaj WSS</NavMenuSectionLabel>
+                {NAV_MORE_LINKS.map((link, i) => (
+                  <NavMenuItem
+                    key={link.href}
+                    link={link}
+                    index={i}
+                    onSelect={() => setMoreOpen(false)}
                   />
-                </button>
-
-              {moreOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setMoreOpen(false)} />
-                  <div
-                    className="absolute left-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-hairline p-1.5 shadow-2xl"
-                    style={{
-                      background: "rgba(12,16,24,0.92)",
-                      backdropFilter: "blur(24px) saturate(180%)",
-                      WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                    }}
-                  >
-                    {MORE_LINKS.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        onClick={() => setMoreOpen(false)}
-                        className="block rounded-lg px-3 py-2.5 text-[13px] text-text-secondary transition-colors duration-200 hover:bg-glass-hover hover:text-text-primary"
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                </>
-              )}
-              </div>
+                ))}
+              </NavDropdownMenu>
             </div>
           </nav>
 
@@ -534,79 +520,132 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Mobile drawer ──────────────────────────────────────── */}
-      {mobileOpen && (
-        <div
-          className="border-b border-hairline lg:hidden"
-          style={{
-            background: "rgba(5,7,9,0.96)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-          }}
-        >
-          <nav className={cn(SITE_CONTAINER, "flex flex-col py-3")}>
-            {[...NAV_LINKS, ...CATEGORY_LINKS, ...MORE_LINKS].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex min-h-[48px] items-center border-b border-hairline-faint text-[17px] font-medium transition-colors last:border-0 hover:text-text-primary md:text-[16px]",
-                  isActive(link.href) ? "text-text-primary" : "text-text-secondary"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-            {user ? (
-              <div className="mt-3 flex flex-col gap-2">
-                <div className="flex items-center gap-3 rounded-lg border border-hairline bg-glass px-3 py-2.5">
-                  <Avatar name={user.name} src={user.avatarUrl} size={32} squared />
-                  <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold text-text-primary">
-                      {user.name}
-                    </p>
-                    <p className="truncate text-[11.5px] text-text-muted">{user.email}</p>
-                  </div>
-                </div>
-                <Link
-                  href="/profil"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-hairline-strong hover:text-text-primary"
-                >
-                  <User size={16} />
-                  Profil
-                </Link>
-                <LogoutButton
-                  next="/"
-                  formClassName="w-full"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-accent-live/60 hover:text-accent-live"
-                >
-                  <LogOut size={16} />
-                  Wyloguj się
-                </LogoutButton>
-              </div>
-            ) : (
-              <div className="mt-3 flex flex-col gap-2">
-                <Link
-                  href={loginHref}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center rounded-lg bg-accent-blue px-4 py-2.5 text-[14px] font-semibold text-white"
-                >
-                  Zaloguj się
-                </Link>
-                <Link
-                  href={registerHref}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center rounded-lg border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-hairline-strong hover:text-text-primary"
-                >
-                  Zarejestruj się
-                </Link>
-              </div>
+      {/* ── Mobile drawer (animowane) ─────────────────────────── */}
+      {mobileMounted ? (
+        <>
+          <div
+            className={cn(
+              "fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 ease-out lg:hidden",
+              mobileShown ? "opacity-100" : "opacity-0"
             )}
-          </nav>
-        </div>
-      )}
+            onClick={closeMobileNav}
+            aria-hidden
+          />
+          <div
+            className={cn(
+              "relative z-[45] border-b border-hairline transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden",
+              mobileShown
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none -translate-y-3 opacity-0"
+            )}
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(8,12,20,0.98) 0%, rgba(5,7,11,0.97) 100%)",
+              backdropFilter: "blur(28px) saturate(160%)",
+              WebkitBackdropFilter: "blur(28px) saturate(160%)",
+            }}
+          >
+            <nav className={cn(SITE_CONTAINER, "flex max-h-[min(78vh,640px)] flex-col overflow-y-auto overscroll-contain py-3")}>
+              <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">
+                Artykuły
+              </p>
+              <ul className="mb-2 flex flex-col gap-0.5">
+                {NAV_PRIMARY_LINKS.map((link, i) => {
+                  const accent = navLinkAccent(link);
+                  const Icon = link.icon;
+                  const active = isActive(link.href);
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={closeMobileNav}
+                        className={cn(
+                          "nav-menu-item-enter flex min-h-[48px] items-center gap-3 rounded-xl px-2.5 py-2 transition-colors",
+                          active
+                            ? "bg-glass-hover text-text-primary"
+                            : "text-text-secondary hover:bg-glass/60 hover:text-text-primary"
+                        )}
+                        style={{ animationDelay: `${i * 35}ms` }}
+                      >
+                        <span
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                          style={{
+                            color: accent,
+                            background: `${accent}14`,
+                            border: `1px solid ${accent}33`,
+                          }}
+                        >
+                          {Icon ? <Icon size={15} aria-hidden /> : null}
+                        </span>
+                        <span className="text-[15px] font-semibold">{link.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {NAV_MOBILE_SECTIONS.filter((s) => s.id !== "primary").map((section) => (
+                <NavMobileAccordion
+                  key={section.id}
+                  label={section.label}
+                  links={section.links}
+                  open={Boolean(mobileExpanded[section.id])}
+                  onToggle={() => toggleMobileSection(section.id)}
+                  onNavigate={closeMobileNav}
+                  isActive={isActive}
+                />
+              ))}
+
+              {user ? (
+                <div className="mt-4 flex flex-col gap-2 border-t border-hairline-faint pt-4">
+                  <div className="flex items-center gap-3 rounded-xl border border-hairline bg-glass px-3 py-2.5">
+                    <Avatar name={user.name} src={user.avatarUrl} size={32} squared />
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-semibold text-text-primary">
+                        {user.name}
+                      </p>
+                      <p className="truncate text-[11.5px] text-text-muted">{user.email}</p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/profil"
+                    onClick={closeMobileNav}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-hairline-strong hover:text-text-primary"
+                  >
+                    <User size={16} />
+                    Profil
+                  </Link>
+                  <LogoutButton
+                    next="/"
+                    formClassName="w-full"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-accent-live/60 hover:text-accent-live"
+                  >
+                    <LogOut size={16} />
+                    Wyloguj się
+                  </LogoutButton>
+                </div>
+              ) : (
+                <div className="mt-4 flex flex-col gap-2 border-t border-hairline-faint pt-4">
+                  <Link
+                    href={loginHref}
+                    onClick={closeMobileNav}
+                    className="flex items-center justify-center rounded-xl bg-accent-blue px-4 py-2.5 text-[14px] font-semibold text-white"
+                  >
+                    Zaloguj się
+                  </Link>
+                  <Link
+                    href={registerHref}
+                    onClick={closeMobileNav}
+                    className="flex items-center justify-center rounded-xl border border-hairline px-4 py-2.5 text-[14px] font-semibold text-text-secondary transition-colors hover:border-hairline-strong hover:text-text-primary"
+                  >
+                    Zarejestruj się
+                  </Link>
+                </div>
+              )}
+            </nav>
+          </div>
+        </>
+      ) : null}
     </header>
   );
 }

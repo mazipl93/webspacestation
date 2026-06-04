@@ -182,11 +182,11 @@ export default function Comments({ slug }: { slug: string }) {
               placeholder="Dołącz do dyskusji…"
               className="w-full resize-y rounded-xl border border-hairline bg-black/25 px-4 py-3 text-[13.5px] leading-relaxed text-text-primary outline-none transition-all duration-300 placeholder:text-text-muted focus:border-accent-blue/60 focus:ring-2 focus:ring-accent-blue/20"
             />
-            <div className="mt-2.5 flex items-center justify-between">
+            <div className="mt-2.5 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
               <span
                 role="status"
                 aria-live="polite"
-                className="flex items-center gap-1.5 text-[11px] text-text-muted"
+                className="flex min-w-0 items-center gap-1.5 text-[11px] text-text-muted"
               >
                 {posted ? (
                   <span className="flex items-center gap-1.5 text-[#22c55e]">
@@ -203,7 +203,7 @@ export default function Comments({ slug }: { slug: string }) {
               <button
                 type="submit"
                 disabled={!draft.trim()}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent-blue px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-accent-blue px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 <Send size={14} />
                 Opublikuj
@@ -222,7 +222,7 @@ export default function Comments({ slug }: { slug: string }) {
             </div>
             <Link
               href={loginHref}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-accent-blue px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover active:scale-[0.97]"
+              className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-accent-blue px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover active:scale-[0.97] sm:w-auto"
             >
               Zaloguj się
             </Link>

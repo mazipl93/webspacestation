@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, ListPlus, Loader2 } from "lucide-react";
+import { insertListItemAtCaret } from "@/lib/articles/content-list";
 import { adminApi, ApiError, type ArticleWritePayload } from "@/lib/admin/api";
 import type {
   AdminArticle,
@@ -66,6 +67,7 @@ const EMPTY_FORM: ArticleFormValues = {
   authorByline: "",
   categoryId: "",
   featured: false,
+  heroPosition: 0,
   weekTopic: false,
   readingTime: null,
   tagsText: "",
@@ -100,6 +102,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     authorByline: a.authorByline ?? "",
     categoryId: a.category.id,
     featured: a.featured,
+    heroPosition: a.heroPosition ?? 0,
     weekTopic: a.weekTopic ?? false,
     readingTime: a.readingTime,
     tagsText: tagsToText(a.tags),
@@ -123,6 +126,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     categoryId: form.categoryId,
     tags: parseTagsText(form.tagsText),
     featured: form.featured,
+    heroPosition: form.heroPosition,
     weekTopic: form.weekTopic,
     readingTime: form.readingTime,
     source: form.sourceName.trim() || null,
@@ -371,6 +375,30 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const createInFlightRef = useRef(false);
   /** Pause save after slug conflict until user changes slug. */
   const slugConflictRef = useRef(false);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const contentSelectionRef = useRef({ start: 0, end: 0 });
+  const pendingContentCaretRef = useRef<{ start: number; end: number } | null>(
+    null
+  );
+
+  const syncContentSelection = useCallback(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    contentSelectionRef.current = {
+      start: el.selectionStart,
+      end: el.selectionEnd,
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const pending = pendingContentCaretRef.current;
+    if (!pending) return;
+    pendingContentCaretRef.current = null;
+    const el = contentRef.current;
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    el.setSelectionRange(pending.start, pending.end);
+  }, [form.content]);
 
   const showRefinePanel = Boolean(currentId) && canRefineContent(form);
   const typeLabel = cmsArticleTypeLabel(form.sourceName, form.sourceUrl);
@@ -961,16 +989,46 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <Field
               label="Treść"
               htmlFor="content"
-              hint="Markdown lub zwykły tekst. Akapity oddzielaj pustą linią."
+              hint="Akapity oddzielaj pustą linią. Listę buduj przyciskiem — każdy punkt w nowej linii (•)."
             >
-              <TextArea
-                id="content"
-                rows={16}
-                value={form.content}
-                className="font-mono text-meta"
-                placeholder="Treść artykułu…"
-                onChange={(e) => update("content", e.target.value)}
-              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-fit px-2.5 py-1.5 text-meta"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    const el = contentRef.current;
+                    const caretStart =
+                      el?.selectionStart ?? contentSelectionRef.current.start;
+                    const caretEnd =
+                      el?.selectionEnd ?? contentSelectionRef.current.end;
+                    const { value, selectionStart, selectionEnd } =
+                      insertListItemAtCaret(form.content, caretStart, caretEnd);
+                    pendingContentCaretRef.current = {
+                      start: selectionStart,
+                      end: selectionEnd,
+                    };
+                    update("content", value);
+                  }}
+                >
+                  <ListPlus size={14} aria-hidden />
+                  Dodaj punkt listy
+                </Button>
+                <TextArea
+                  ref={contentRef}
+                  id="content"
+                  rows={16}
+                  value={form.content}
+                  className="font-mono text-meta"
+                  placeholder="Treść artykułu…"
+                  onChange={(e) => update("content", e.target.value)}
+                  onSelect={syncContentSelection}
+                  onKeyUp={syncContentSelection}
+                  onClick={syncContentSelection}
+                  onFocus={syncContentSelection}
+                />
+              </div>
             </Field>
           </Card>
 
@@ -1063,6 +1121,25 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   onChange={(v) => update("featured", v)}
                 />
               </div>
+              <Field
+                label="Pozycja w hero (strona główna)"
+                htmlFor="heroPosition"
+                hint="0 = poza sliderem. 1–4 = kolejność slajdów we wszystkich widokach."
+              >
+                <Select
+                  id="heroPosition"
+                  value={String(form.heroPosition)}
+                  onChange={(e) =>
+                    update("heroPosition", Number.parseInt(e.target.value, 10) || 0)
+                  }
+                >
+                  <option value="0">0 — nie w hero</option>
+                  <option value="1">1 — pierwszy slajd</option>
+                  <option value="2">2 — drugi slajd</option>
+                  <option value="3">3 — trzeci slajd</option>
+                  <option value="4">4 — czwarty slajd</option>
+                </Select>
+              </Field>
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <span className="text-meta text-text-secondary">Temat tygodnia</span>

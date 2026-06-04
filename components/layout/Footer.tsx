@@ -126,42 +126,66 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Links grid */}
-      <div className={cn(SITE_CONTAINER, "pb-12 pt-4")}>
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-          <div>
-            <div className="mb-4">
+      {/* Mapa serwisu — grid kolumn (mobile: 2+1, desktop: logo + 3 kolumny) */}
+      <div className={cn(SITE_CONTAINER, "pb-12 pt-6")}>
+        <div className="rounded-2xl border border-hairline-faint bg-space-card/40 px-5 py-8 sm:px-8 sm:py-10">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-14 xl:gap-20">
+            <div className="flex flex-col items-center border-b border-hairline-faint pb-8 text-center lg:max-w-[260px] lg:shrink-0 lg:items-start lg:border-0 lg:pb-0 lg:text-left">
               <WssLogoWordmark height={48} />
+              <p className="mt-4 max-w-[280px] text-[13px] leading-relaxed text-text-tertiary lg:max-w-none">
+                Największy polski portal informacyjny o kosmosie, astronomii i
+                technologiach kosmicznych.
+              </p>
             </div>
-            <p className="max-w-[260px] text-[13px] leading-relaxed text-text-tertiary">
-              Największy polski portal informacyjny o kosmosie, astronomii i technologiach
-              kosmicznych.
-            </p>
-          </div>
 
-          {Object.entries(FOOTER_NAV).map(([title, links]) => (
-            <div key={title}>
-              <h4 className="overline mb-4 text-text-tertiary">{title}</h4>
-              <ul className="space-y-2.5">
-                {links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-[13px] text-text-secondary transition-colors duration-300 hover:text-text-primary"
-                      {...(link.href.startsWith("http")
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
+            <nav
+              className="w-full flex-1"
+              aria-label="Nawigacja w stopce"
+            >
+              <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 sm:gap-x-10 md:gap-x-14">
+                {Object.entries(FOOTER_NAV).map(([title, links]) => (
+                  <div
+                    key={title}
+                    className={cn(
+                      title === "Społeczność" &&
+                        "col-span-2 sm:col-span-1",
+                    )}
+                  >
+                    <h4 className="overline mb-3.5 border-b border-hairline-faint pb-2 text-text-tertiary">
+                      {title}
+                    </h4>
+                    <ul
+                      className={cn(
+                        title === "Społeczność"
+                          ? "grid grid-cols-2 gap-x-4 gap-y-0.5 sm:grid-cols-1 sm:space-y-2"
+                          : "space-y-2",
+                      )}
                     >
-                      {link.label}
-                    </Link>
-                  </li>
+                      {links.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className="inline-flex min-h-[36px] items-center text-[13px] text-text-secondary transition-colors duration-300 hover:text-text-primary"
+                            {...(link.href.startsWith("http")
+                              ? {
+                                  target: "_blank",
+                                  rel: "noopener noreferrer",
+                                }
+                              : {})}
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
+              </div>
+            </nav>
+          </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-hairline-faint pt-7 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-hairline-faint pt-7 sm:flex-row sm:items-center">
           <p className="text-[12px] text-text-muted">© 2026 Web Space Station</p>
           <p className="text-[12px] text-text-muted">Wszelkie prawa zastrzeżone</p>
         </div>

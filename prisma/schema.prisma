@@ -85,6 +85,8 @@ model Article {
   authorByline  String?     @db.Text
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
+  /// Homepage hero slider: 0 = off, 1–4 = slide order (ASC on homepage).
+  heroPosition Int          @default(0)
   /// Homepage „Temat tygodnia” — slider pod hero (ręczny przełącznik CMS).
   weekTopic   Boolean       @default(false)
   /// News Engine ranking — higher appears first on homepage.
@@ -116,6 +118,7 @@ model Article {
   @@index([categoryId])
   @@index([authorId])
   @@index([featured])
+  @@index([heroPosition])
   @@index([weekTopic])
   @@index([score])
   @@index([publishedAt])

@@ -4,27 +4,36 @@ import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
-import { SITE_CONTAINER, HOMEPAGE_MAIN_SIDEBAR_GRID } from "@/lib/site-layout";
-import type { NewsArticle } from "@/types";
-import { getAllArticles, getArticlesByCategory } from "@/lib/articles";
 import {
-  excludeBySlugs,
+  BELOW_FIXED_NAV_OFFSET_CLASS,
+  SITE_CONTAINER,
+  HOMEPAGE_MAIN_SIDEBAR_GRID,
+} from "@/lib/site-layout";
+import type { NewsArticle } from "@/types";
+import {
+  getAllArticles,
+  getHeroSlideArticles,
+} from "@/lib/articles";
+import {
+  buildHomepageHeroSlides,
+  pickHeroLead,
+} from "@/lib/home/hero-slides";
+import {
   markSlugsUsed,
   pickHomepageLatest,
   rankImportantNow,
   rankLatest,
   withSectionFallback,
 } from "@/lib/home/rank-articles";
-import { isRssArticle } from "@/lib/ui/article-kind";
-
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
-import HeroArticle from "@/components/sections/HeroArticle";
+import HomepageHeroSlider from "@/components/sections/HomepageHeroSlider";
 import LatestShowcase from "@/components/sections/LatestShowcase";
 import WeekTopicSection from "@/components/sections/WeekTopicSection";
 import PopularArticles from "@/components/sections/PopularArticles";
 import DepartmentSectionFrame from "@/components/sections/DepartmentSectionFrame";
 import DepartmentSectionHeader from "@/components/sections/DepartmentSectionHeader";
+import { HomeSectionMobileFeed } from "@/components/sections/HomeSectionArticleFeed";
 import {
   categorySectionTheme,
   OPS_THEME,
@@ -35,19 +44,12 @@ import {
 } from "@/lib/home/week-topic";
 
 const IMPORTANT_POOL = 14;
-/** Slider mobile — duże karty w poziomie. */
-const LATEST_SLIDER_LIMIT = 10;
+/** Homepage Najnowsze — pełna lista wg publishedAt (hero nie wyklucza). */
+const LATEST_FEED_LIMIT = 12;
+/** Mobile — pionowa lista pod hero (kilka pozycji od razu widocznych). */
+const LATEST_MOBILE_LIST_LIMIT = 6;
 /** Panel boczny desktop — pionowa lista. */
 const LATEST_RAIL_LIMIT = 5;
-
-function pickHeroLead(important: NewsArticle[]): NewsArticle {
-  const editorial = (a: NewsArticle) => !isRssArticle(a.contentOrigin);
-  return (
-    important.find((a) => editorial(a) && a.isTopPriority) ??
-    important.find((a) => editorial(a)) ??
-    important[0]
-  );
-}
 
 // ─── Category presentation ────────────────────────────────────────────────────
 
@@ -154,108 +156,131 @@ function CategorySection({
 
   let body: ReactNode;
 
+  const prominent = meta.variant === "hero-strip" && (meta.prominent ?? false);
+
   if (meta.variant === "hero-strip") {
     const [lead, ...rest] = articles;
-    const prominent = meta.prominent ?? false;
     body = (
-      <div
-        className={cn(
-          "grid grid-cols-1 gap-5",
-          prominent
-            ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
-            : "lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]",
-        )}
-      >
-        {lead ? (
-          <Link
-            href={`/aktualnosci/${lead.slug}`}
-            className={cn(
-              "surface-interactive group relative overflow-hidden rounded-xl border border-hairline",
-              prominent ? "min-h-[280px] sm:min-h-[320px]" : "min-h-[240px]",
-            )}
-          >
-            <CoverImage
-              src={lead.image}
-              alt={lead.title}
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background: prominent
-                  ? "linear-gradient(to top, rgba(5,7,9,0.94) 0%, rgba(5,7,9,0.35) 55%, transparent 100%)"
-                  : "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
-              }}
-            />
-            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-              <span
-                className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
-                style={{ color: meta.color }}
-              >
-                <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: meta.color }}
-                />
-                {meta.label}
-              </span>
-              <p
-                className={cn(
-                  "font-bold leading-snug text-text-primary",
-                  prominent ? "text-[22px]" : "text-[20px]",
-                )}
-              >
-                {lead.title}
-              </p>
-              <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
-                {lead.excerpt}
-              </p>
-            </div>
-          </Link>
-        ) : null}
+      <>
+        <HomeSectionMobileFeed
+          articles={articles}
+          accent={meta.color}
+          categoryLabel={meta.label}
+          prominent={prominent}
+        />
         <div
           className={cn(
-            "grid grid-cols-1 gap-4",
-            prominent ? "lg:gap-3" : "sm:grid-cols-2 lg:grid-cols-1",
+            "hidden grid-cols-1 gap-5 lg:grid",
+            prominent
+              ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"
+              : "lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]",
           )}
         >
-          {rest.map((article) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              compact={prominent}
-            />
-          ))}
+          {lead ? (
+            <Link
+              href={`/aktualnosci/${lead.slug}`}
+              className={cn(
+                "surface-interactive group relative overflow-hidden rounded-xl border border-hairline",
+                prominent ? "min-h-[280px] sm:min-h-[320px]" : "min-h-[240px]",
+              )}
+            >
+              <CoverImage
+                src={lead.image}
+                alt={lead.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: prominent
+                    ? "linear-gradient(to top, rgba(5,7,9,0.94) 0%, rgba(5,7,9,0.35) 55%, transparent 100%)"
+                    : "linear-gradient(to top, rgba(5,7,9,0.92) 0%, transparent 60%)",
+                }}
+              />
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                <span
+                  className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+                  style={{ color: meta.color }}
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: meta.color }}
+                  />
+                  {meta.label}
+                </span>
+                <p
+                  className={cn(
+                    "font-bold leading-snug text-text-primary",
+                    prominent ? "text-[22px]" : "text-[20px]",
+                  )}
+                >
+                  {lead.title}
+                </p>
+                <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
+                  {lead.excerpt}
+                </p>
+              </div>
+            </Link>
+          ) : null}
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-4",
+              prominent ? "lg:gap-3" : "sm:grid-cols-2 lg:grid-cols-1",
+            )}
+          >
+            {rest.map((article) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                compact={prominent}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   } else if (meta.variant === "banner") {
     body = (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {articles.map((article) => (
-          <ArticleCard key={article.id} article={article} />
-        ))}
-      </div>
+      <>
+        <HomeSectionMobileFeed
+          articles={articles}
+          accent={meta.color}
+          categoryLabel={meta.label}
+        />
+        <div className="hidden grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4 lg:grid">
+          {articles.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
+        </div>
+      </>
     );
   } else {
     body = (
-      <div
-        className={cn(
-          "grid grid-cols-1 gap-5",
-          meta.variant === "minimal"
-            ? "sm:grid-cols-2 lg:grid-cols-4"
-            : "sm:grid-cols-2 xl:grid-cols-4",
-        )}
-      >
-        {articles.map((article) => (
-          <ArticleCard
-            key={article.id}
-            article={article}
-            compact={meta.variant === "minimal"}
-          />
-        ))}
-      </div>
+      <>
+        <HomeSectionMobileFeed
+          articles={articles}
+          accent={meta.color}
+          categoryLabel={meta.label}
+        />
+        <div
+          className={cn(
+            "hidden grid-cols-1 gap-5 lg:grid",
+            meta.variant === "minimal"
+              ? "sm:grid-cols-2 lg:grid-cols-4"
+              : "sm:grid-cols-2 xl:grid-cols-4",
+          )}
+        >
+          {articles.map((article) => (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              compact={meta.variant === "minimal"}
+            />
+          ))}
+        </div>
+      </>
     );
   }
 
@@ -615,9 +640,9 @@ function DashboardWidgets() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default async function ContentGrid() {
-  const [allPublished, ...categoryBuckets] = await Promise.all([
+  const [allPublished, cmsHeroSlides] = await Promise.all([
     getAllArticles(),
-    ...CATEGORY_ORDER.map((slug) => getArticlesByCategory(slug)),
+    getHeroSlideArticles(),
   ]);
 
   if (allPublished.length === 0) {
@@ -639,10 +664,14 @@ export default async function ContentGrid() {
   }
 
   const importantRanked = rankImportantNow(allPublished, IMPORTANT_POOL);
-  const lead =
-    pickHeroLead(importantRanked) ?? rankLatest(allPublished, 1)[0]!;
+  let heroSlides = buildHomepageHeroSlides(cmsHeroSlides, importantRanked);
+  if (heroSlides.length === 0) {
+    const fallback =
+      pickHeroLead(importantRanked) ?? rankLatest(allPublished, 1)[0];
+    if (fallback) heroSlides = [fallback];
+  }
   const usedSlugs = new Set<string>();
-  markSlugsUsed([lead], usedSlugs);
+  markSlugsUsed(heroSlides, usedSlugs);
 
   const weekTopicConfig = getWeekTopicConfig();
   const weekTopicPick = pickWeekTopicArticles(
@@ -652,20 +681,21 @@ export default async function ContentGrid() {
   );
   markSlugsUsed(weekTopicPick.articles, usedSlugs);
 
-  const latest = pickHomepageLatest(
-    excludeBySlugs(allPublished, usedSlugs),
-    LATEST_SLIDER_LIMIT
-  );
+  // Najnowsze = wyłącznie publishedAt desc; slot hero to osobne wyróżnienie (bez deduplikacji).
+  const latest = pickHomepageLatest(allPublished, LATEST_FEED_LIMIT);
   const latestRail = latest.slice(0, LATEST_RAIL_LIMIT);
   markSlugsUsed(latest, usedSlugs);
 
-  const categoryArticles = CATEGORY_ORDER.map((slug, i) => {
-    const fromBucket = categoryBuckets[i] ?? [];
+  const categoryArticles = CATEGORY_ORDER.map((slug) => {
     const fromPublished = allPublished.filter((a) => a.category === slug);
-    const pool = fromBucket.length > 0 ? fromBucket : fromPublished;
+    const ranked = rankLatest(fromPublished, 4);
     return {
       slug,
-      articles: withSectionFallback(pool.slice(0, 4), fromPublished.length > 0 ? fromPublished : allPublished, 4),
+      articles: withSectionFallback(
+        ranked,
+        fromPublished.length > 0 ? fromPublished : allPublished,
+        4
+      ),
     };
   });
 
@@ -678,8 +708,10 @@ export default async function ContentGrid() {
       "render",
       "| flagged:",
       weekTopicCandidates.length,
-      "| hero slug:",
-      lead.slug
+      "| hero slides:",
+      heroSlides.length,
+      "| first slide:",
+      heroSlides[0]?.slug ?? "(fallback)"
     );
   }
 
@@ -687,37 +719,34 @@ export default async function ContentGrid() {
 
   return (
     <div className={cn(SITE_CONTAINER, "relative z-[1]")}>
-      {/* Hero + panel boczny (desktop) / hero + slidery pod spodem (mobile) */}
-      <div className="pt-[4.5rem] sm:pt-24">
+      {/* Hero slider (wszystkie urządzenia) + Najnowsze pod hero (mobile) + rail (desktop) */}
+      <div className={BELOW_FIXED_NAV_OFFSET_CLASS}>
         <div
           className={cn(
             "grid items-start gap-8 lg:gap-8",
             HOMEPAGE_MAIN_SIDEBAR_GRID,
           )}
         >
-          <div className="min-w-0">
-            <HeroArticle article={lead} topPriority={lead.isTopPriority} />
+          <div className="flex min-w-0 flex-col">
+            <HomepageHeroSlider articles={heroSlides} />
+
+            <div className="mt-3 max-lg:scroll-mt-4 lg:hidden">
+              <LatestShowcase
+                articles={latest.slice(0, LATEST_MOBILE_LIST_LIMIT)}
+                variant="list"
+                mobileShell
+                peekBelowHero
+              />
+            </div>
+
             {weekTopicPick.articles.length > 0 ? (
-              <div className="mt-10">
+              <div className="mt-8 max-lg:mt-6 lg:mt-10">
                 <WeekTopicSection
                   articles={weekTopicPick.articles}
                   config={weekTopicConfig}
                 />
               </div>
             ) : null}
-            <div
-              className={
-                weekTopicPick.articles.length > 0
-                  ? "mt-10 lg:hidden"
-                  : "mt-8 lg:hidden"
-              }
-            >
-              <LatestShowcase
-                articles={latest}
-                variant="slider"
-                mobileShell
-              />
-            </div>
           </div>
 
           <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">

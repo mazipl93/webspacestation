@@ -1,37 +1,41 @@
 import Image from "next/image";
 import { cn } from "@/lib/cn";
 
-/** Szerokość przy danej wysokości (aspect ~3.78 z exportu). */
-const WORDMARK_ASPECT = 3.78;
+/** Natural aspect of trimmed wordmark PNG (≈400×96 source). */
+const WORDMARK_ASPECT = 400 / 96;
 
 type Props = {
-  /** Wysokość wordmarku w px (nav domyślnie większy). */
+  /** Wysokość wordmarku w px (nav domyślnie 52, stopka 48). */
   height?: number;
   className?: string;
 };
 
-/** Oficjalny wordmark WSS (WSS + łuk + Web Space Station) — PNG bez tła. */
+function wordmarkSrc(height: number): string {
+  if (height >= 80) return "/brand/wss-wordmark@88h.png";
+  if (height >= 48) return "/brand/wss-wordmark@52h.png";
+  return "/brand/wss-wordmark.png";
+}
+
+/**
+ * Oficjalny wordmark WSS (PNG) — WSS + łuk + WEB SPACE STATION.
+ * Wektor SVG odrzucony; UI opiera się na assetach z `public/brand/`.
+ */
 export default function WssLogoWordmark({ height = 52, className }: Props) {
   const width = Math.round(height * WORDMARK_ASPECT);
 
   return (
-    <div
+    <Image
+      src={wordmarkSrc(height)}
+      alt=""
+      width={width}
+      height={height}
       className={cn(
-        "relative shrink-0 transition-transform duration-500 group-hover:scale-[1.02]",
-        "drop-shadow-[0_4px_24px_rgba(56,189,248,0.22)]",
+        "h-auto w-auto max-w-[min(260px,52vw)] shrink-0 transition-transform duration-500 group-hover:scale-[1.02]",
         className
       )}
-    >
-      <Image
-        src="/brand/wss-wordmark.png"
-        alt=""
-        width={width}
-        height={height}
-        className="h-auto max-w-[min(240px,48vw)] w-auto object-contain object-left"
-        style={{ height, width: "auto", maxHeight: height }}
-        priority
-        unoptimized
-      />
-    </div>
+      style={{ height, width: "auto" }}
+      priority
+      unoptimized
+    />
   );
 }

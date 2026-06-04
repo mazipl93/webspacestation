@@ -115,13 +115,13 @@ function ArticleEditorPreviewPaneInner({
         <div>
           <p className="text-meta font-semibold text-text-primary">Live preview</p>
           <p className="text-[10px] text-text-muted">
-            Podgląd na żywo · status: {status}
+            Mobile = telefon · Desktop = nav + okładka 1024px (jak portal)
           </p>
         </div>
         <ViewportToggle viewport={viewport} onChange={setViewport} />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-space-bg">
+      <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto overscroll-contain bg-space-bg">
         <ArticlePublicPreview
           article={previewArticle}
           subtitle={subtitle}

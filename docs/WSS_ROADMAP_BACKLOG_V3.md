@@ -1,15 +1,19 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25)  
-**Deploy remote:** `c68b896` (homepage, profil, mobile nav, logo wordmark — patrz handoff MAPA)
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 30)  
+**Deploy remote:** `c68b896` · WIP lokalny czat 26–30 (patrz handoff MAPA)
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
-| 0 | **PROD-QA** | Smoke prod po czacie 25 (homepage, profil, mobile nav, autor CMS) | **Następne** |
-| 1 | **OPS** | ~175 REVIEW + revalidate | |
-| 2 | **P1-6-QA** | Upload okładek na prod | |
-| 3 | **P2-WEEK-TOPIC prod** | weekTopic + revalidate na prod | |
+| 0 | **UI-ARTICLE-DISCUSSION** | Dyskusja / share pod artykułem — mobile layout | **Następne** |
+| 1 | **COMMIT-WIP-30** | Commit pakietu czat 26–30 | |
+| 2 | **PROD-QA** | Smoke prod + `db:deploy` prod (`heroPosition`) | |
+| 3 | **OPS** | ~175 REVIEW + revalidate | |
+
+**Zamknięte lokalnie (czat 30, user OK):** UI-HOME-DEPTS-MOBILE `[x]` · UI-FOOTER-NAV `[x]` · UI-ARTICLE-READ-NEXT `[x]` · hero okładka PC `[x]`
+
+**WIP czat 26–30 (lokalnie, bez commit):** CMS listy `[~]` · live preview `[~]` · hero breadcrumb `[x]` bonus
 
 **Zamknięte w czacie 24–25:** UI-HOME-24 `[x]` · P0-AUTHOR-BYLINE `[x]` · UI-PROFIL-25 `[x]` · UI-MOBILE-NAV-25 `[x]` · UI-NO-SUBSCRIBE-LINKS `[x]` · **P1-10 LOGO** wordmark v2 `[x]` (PNG, nav/stopka)
 
@@ -83,6 +87,11 @@ _(brak)_
 | P1-6 | Upload zdjęć (pro) | `[~]` | `31a5525` — API + UI; prod: `SUPABASE_SERVICE_ROLE_KEY` + `article-covers.sql` |
 | P2-16 | Temat tygodnia (homepage) | `[~]` | Push `3e7139b`; prod: weekTopic w CMS + `cache:revalidate` |
 | P1-7 | Live preview editor | `[~]` | Split + hero URL; QA okładki `[ ]` |
+| **P1-11** | **Listy w treści CMS** | `[~]` | WIP czat 29 lokalnie — przycisk + parser + `<ul>` |
+| **UI-HOME-DEPTS** | Działy homepage mobile/tablet | `[x]` | `HomeSectionArticleFeed` — user OK czat 30 |
+| **UI-FOOTER** | Stopka nawigacja | `[x]` | `Footer.tsx` grid — user OK czat 30 |
+| **UI-ARTICLE-READ-NEXT** | Czytaj dalej lista + CTA dział | `[x]` | `ReadNextSection`, `pickReadNextArticles` |
+| **UI-ARTICLE-DISCUSSION** | Dyskusja mobile | `[ ]` | `ArticleInteractions.tsx` — następny czat |
 | P1-8 | CMS redesign (The Verge) | `[~]` | Uproszczenie PR7; pełny redesign `[ ]` |
 | P1-9 | Hero article UX — kontrast daty/meta | `[x]` | `HeroMetaChip` — user OK (sesja 17) |
 | P1-10 | Zmiana logo / favicon | `[~]` | Wordmark v2 PNG w nav/stopce `[x]`; favicon / apple-touch `[ ]` |

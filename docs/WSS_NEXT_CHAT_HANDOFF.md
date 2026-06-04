@@ -1,12 +1,14 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25 — logo wordmark v2 + handoff)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 30)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `c68b896`
+**Ostatni commit remote:** `c68b896` · **WIP lokalny (czat 26–30, bez commita)** — patrz MAPA STANU
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Następne (user):** formalny prod smoke (patrz MAPA → Do zrobienia) · OPS ~175 REVIEW · P1-6 okładki prod
+**Następny czat — PRIORYTET:** Dyskusja mobile pod artykułem → **COMMIT WIP** → PROD-QA (`db:deploy` prod `heroPosition`).
+
+**Lokalna DB:** migracja `20260604210000` — OK lokalnie. **Prod:** `db:deploy` przed deployem `heroPosition`.
 
 **Wdrożone (czat 23):** `3e7139b` — week topic fix, `publishedAt` immutable, CMS manual save, UI bez podtytułów dev
 
@@ -33,7 +35,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 
 ---
 
-## MAPA STANU — zrobione vs do zrobienia (czat 24–25)
+## MAPA STANU — zrobione vs do zrobienia (aktualizacja czat 30)
 
 ### Zrobione i na `main` (prod po zielonym Vercel)
 
@@ -51,19 +53,40 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **Deploy Vercel** | `4868232` | Build prod naprawiony (JSX `//`) |
 | **Logo wordmark v2** | `c68b896` | Oficjalny PNG WSS+łuk+WEB SPACE STATION (`wss-wordmark.png`), nav/stopka; skrypty `process-wss-wordmark.mjs` |
 
+### WIP lokalnie (czat 26–30 — bez commita na remote)
+
+| Obszar | Pliki | Co |
+|--------|-------|-----|
+| **Homepage hero slider** | `HomepageHeroSlider.tsx`, `ContentGrid.tsx`, `lib/home/hero-slides.ts` | Slider; `heroPosition` CMS; hero ~40–50svh mobile |
+| **Najnowsze** | `LatestShowcase.tsx`, `rank-articles.ts` | Mobile lista 6 szt.; hero nie wyklucza z Najnowszych |
+| **Działy homepage &lt;lg** | `HomeSectionArticleFeed.tsx`, `ContentGrid.tsx`, `PopularArticles.tsx`, `DepartmentSectionHeader.tsx` | Lead + lista; fix nachodzenia nagłówków; Technologie „Więcej” — **user OK** |
+| **Hero artykułu** | `ArticlePageHero.tsx`, `article-hero-frame.ts`, `CoverImage.tsx` | Offset `<main>`; okładka PC (`lg:` zamiast container queries); mobile meta pod zdjęciem |
+| **Breadcrumb hero** | `ArticleHeroBreadcrumb.tsx`, `HeroBreadcrumbChip.tsx` | WSS → Aktualności → dział (mobile panel + desktop overlay) — user: zostaje |
+| **Czytaj dalej** | `ReadNextSection.tsx`, `related-articles.ts`, `page.tsx` | Lista do 5 artykułów + CTA „Zobacz wszystkie artykuły z działu …” — **user OK** |
+| **Stopka nawigacja** | `Footer.tsx` | Grid 2+1 mobile, 3 kolumny tablet+, logo wyśrodkowane — **user OK** |
+| **CMS listy** | `parse-content-blocks.ts`, `ArticleEditor.tsx` | Przycisk „Dodaj punkt listy”; `<ul>` |
+| **Live preview CMS** | `ArticlePublicPreview.tsx` | `previewLayout` mobile/desktop |
+| **Linki wewnętrzne** | `weave-internal-links.ts`, `InternalLinkTeaser.tsx` | Wplecenie co 2–3 akapity |
+| **Nav menu** | `NavMenuPrimitives.tsx`, `Navbar.tsx` | Dropdowny + mobile akordeon |
+| **CMS `heroPosition`** | migracja `20260604210000` | Lokalnie deployed; **prod: db:deploy przed deploy** |
+| **ReadAlsoInline** | `ReadAlsoInline.tsx` | Wycofane ze strony artykułu |
+
+**Reguła okładki artykułu (OBOWIĄZKOWO):** `object-cover object-center` — **nigdy** `object-contain`. Ramka: `lib/ui/article-hero-frame.ts`.
+
 ### Do zrobienia (backlog — kolejność sugerowana)
 
 | Priorytet | ID | Zadanie |
 |-----------|-----|---------|
-| 1 | **PROD-QA** | Smoke prod: homepage, logo wordmark (nav/stopka), profil, mobile szukaj/powiadomienia, autor CMS, Temat tygodnia |
-| 2 | **OPS** | ~175 artykułów REVIEW + `npm run cache:revalidate` |
-| 3 | **P1-6-QA** | Upload okładek na prod (`SUPABASE_SERVICE_ROLE_KEY`, bucket SQL) |
-| 4 | **P2-WEEK-TOPIC prod** | weekTopic ON w CMS + revalidate na prod |
-| 5 | **P1-7** | Formalny smoke live preview / okładki CMS |
-| 6 | **P0-5** | Smoke edytora CMS na telefonie |
-| 7 | **P6-24 SEO** | Canonical, OG, schema, sitemap |
-| 8 | **INFRA** | Prisma 7 `prisma.config.ts` (ostrzeżenie deprecacji — nie pilne) |
-| — | **P5/P4/P6** | Menu architektura, ulubione kategorie, scaling — nie priorytet |
+| 0 | **UI-ARTICLE-DISCUSSION** | Dyskusja pod artykułem — przyciski/share na mobile (flex wrap / stack) |
+| 1 | **COMMIT-WIP-30** | Commit całego pakietu czat 26–30 po OK dyskusji (lub wcześniej jeśli user każe) |
+| 2 | **PROD-QA** | `npm run db:deploy` prod (`heroPosition`) + smoke + `cache:revalidate` |
+| 3 | **OPS** | ~175 REVIEW w CMS |
+| 4 | **P1-6-QA** | Upload okładek na prod |
+| 5 | **P2-WEEK-TOPIC prod** | weekTopic ON + revalidate |
+
+**Zamknięte lokalnie (czat 28–30, user OK):** Najnowsze mobile · działy homepage mobile · Czytaj dalej lista · stopka nav · okładka artykułu PC
+
+**Uwaga:** Hero breadcrumb (3 segmenty) to bonus z czatu 30 — nie mylić ze stopką; user zaakceptował zostawienie.
 
 **Nie robimy:** pełny RSS body na stronie (hybryda B+); scheduler co minutę na Hobby bez CMS.
 
@@ -79,20 +102,133 @@ Przeczytaj ZAWSZE:
 - docs/WSS_ROADMAP_BACKLOG_V3.md
 - docs/WSS_NEWS_ENGINE_HANDOFF.md
 
-REGUŁA: punkt po punkcie · raport → test usera → CZEKAJ na OK.
+REGUŁA: punkt po punkt · raport → test usera → CZEKAJ na OK.
 
-Stan: main — homepage UI, authorByline, profil, mobile nav, bez Subskrypcje w UI, **logo wordmark v2** (PNG bez tła).
+Stan: main `c68b896` + duży WIP lokalny czat 26–30 (bez commita na remote).
 
-Następne: PROD-QA (w tym logo na prod) → OPS REVIEW → P1-6 prod.
+Komendy: npm run dev · npm run db:deploy · npm run type-check · npm run cache:revalidate
 
-Komendy: npm run dev · npx prisma generate · npm run db:deploy · npm run cache:revalidate · npm run type-check
+---
 
-Na końcu sesji: aktualizuj ten plik + WSS_ROADMAP_BACKLOG_V3.md.
+## WIP lokalny (czat 26–30) — NIE psuj bez potrzeby · commit po moich OK
+
+**Już zrobione lokalnie (user OK — nie cofać):**
+- Homepage: hero slider, Najnowsze lista, `heroPosition`, działy <lg (lead + lista, `HomeSectionArticleFeed.tsx`)
+- Artykuł: `ArticlePageHero`, okładka PC (`lg:` w `article-hero-frame.ts`), `BELOW_FIXED_NAV_OFFSET_CLASS` na `<main>`
+- Breadcrumb hero: `ArticleHeroBreadcrumb` (WSS → Aktualności → dział) — bonus, zostaje
+- Czytaj dalej: `ReadNextSection` — lista do 5 + przycisk „Zobacz wszystkie artykuły z działu …”
+- Stopka: `Footer.tsx` — grid nawigacji (2+1 mobile, 3 kolumny sm+)
+- CMS listy, live preview, linki wewnętrzne, nav menu
+- Migracja `20260604210000` heroPosition — OK lokalnie
+
+**Reguły niepodważalne:**
+- Okładka: `object-cover` — NIE `object-contain`
+- Najnowszy `publishedAt` = #1 w Najnowszych / Aktualnościach / dziale na homepage
+- `heroPosition` nie wyklucza z Najnowszych
+
+**Przed prod:** commit WIP → `npm run db:deploy` (heroPosition) → deploy → `cache:revalidate`
+
+---
+
+## PRIORYTET #1 — Dyskusja pod artykułem (mobile)
+
+Sekcja **Dyskusja** (`ArticleInteractions.tsx` + `ShareBar`, `Comments`): przyciski się rozjeżdżają na wąskim ekranie.
+
+Cel: flex wrap / stack / grid — czytelnie, min. tap target ~44px, bez overflow w poziomie.
+
+Pliki: `components/article/ArticleInteractions.tsx`, `ShareBar.tsx`, ewent. komponenty komentarzy.
+
+QA: telefon — share + komentarze pod treścią artykułu.
+
+---
+
+## PRIORYTET #2 — COMMIT WIP (po OK dyskusji)
+
+Jeden commit (lub sensowny podział) całego pakietu czat 26–30. Nie commituj `.next`. Przed pushem: user OK.
+
+Message hint: homepage mobile depts, article read-next list, footer nav grid, hero fixes, CMS lists, heroPosition migration.
+
+---
+
+## PRIORYTET #3 — PROD-QA
+
+1. `npm run db:deploy` na prod (`heroPosition`)
+2. Push `main` → Vercel zielony
+3. Smoke: homepage działy mobile, artykuł okładka + Czytaj dalej, stopka
+4. `npm run cache:revalidate` jeśli trzeba
+
+---
+
+## Kolejność
+1. Dyskusja mobile
+2. COMMIT WIP
+3. PROD-QA
+
+Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md + WSS_ROADMAP_BACKLOG_V3.md.
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 30, koniec) — homepage działy + dół artykułu + stopka + handoff
+
+| Obszar | Stan |
+|--------|------|
+| **Homepage działy &lt;lg** | `HomeSectionArticleFeed`, lead+lista, fix nagłówków — user OK |
+| **Okładka artykułu PC** | `article-hero-frame.ts` — media `lg:` zamiast container queries |
+| **Czytaj dalej** | `ReadNextSection`, `pickReadNextArticles`, CTA do działu — user OK |
+| **Stopka nav** | `Footer.tsx` grid — user OK (to był właściwy „nav na dole”, nie hero) |
+| **Hero breadcrumb** | `ArticleHeroBreadcrumb` — bonus, user: zostaje |
+| **Commit** | Brak — następny czat: dyskusja mobile → commit → prod |
+| **Następny czat** | `ArticleInteractions` mobile → COMMIT-WIP-30 → PROD-QA |
+
+### Sesja 4.06.2026 (czat 29, koniec) — listy CMS + hero/nav + handoff na homepage mobile
+
+| Obszar | Stan |
+|--------|------|
+| **CMS listy** | Przycisk „Dodaj punkt listy”, parser `<ul>`, testy — WIP lokalnie |
+| **Live preview** | Wspólne `ArticlePageHero`/`ArticlePageBodyMain`; mobile OK; desktop `previewLayout` |
+| **Hero artykułu / nav** | `BELOW_FIXED_NAV_OFFSET_CLASS` na `<main>` (jak homepage); `resolveImageOrFallback` |
+| **Następny czat** | Działy homepage mobile · stopka · dół artykułu (dyskusja + czytaj dalej) |
+| **Commit** | Brak — user idzie na nowy czat |
+
+### Sesja 4.06.2026 (czat 28, koniec) — hero OK + homepage + nav + handoff na listy CMS
+
+| Obszar | Stan |
+|--------|------|
+| **Hero artykułu** | <lg: czyste zdjęcie + meta pod spodem + offset pod nav; lg+: overlay; **user OK** |
+| **Homepage** | Najnowsze lista mobile; hero≠latest; hero niższy mobile |
+| **Linki w treści** | weave internal links |
+| **Nav** | animowane menu |
+| **Następny czat** | **CMS lista w treści** (przycisk w edytorze); potem commit |
+| **Commit** | Brak |
+
+### Sesja 4.06.2026 (czat 27, koniec) — homepage slider + hero artykułu WIP
+
+| Obszar | Stan |
+|--------|------|
+| **Homepage hero** | Slider na **wszystkich** urządzeniach; `heroPosition` 1–4 w CMS; Najnowsze pod hero (mobile) |
+| **DB lokalnie** | `npm run db:deploy` — migracja `20260604210000` OK (fix błędu `heroPosition` column) |
+| **Hero artykułu** | `justify-end` + wyższy gradient mobile — user: **nadal za wysoko → następny czat** |
+| **Inne WIP** | PNG logo, `ReadAlsoInline`, object-cover hero, bez CTA homepage |
+| **Commit** | **Brak** — user idzie na nowy czat |
+
+### Sesja 4.06.2026 (czat 27) — mobile hero slider, heroPosition, logo PNG
+
+| Obszar | Stan |
+|--------|------|
+| **Pierwsza iteracja** | Slider tylko mobile → potem rozszerzony na desktop |
+| **CMS** | `heroPosition` 0–4 |
+| **Layout** | Najnowsze pod hero (mobile) |
+
+### Sesja 4.06.2026 (czat 26) — hero artykułu editorial + logo SVG odrzucone
+
+| Obszar | Stan |
+|--------|------|
+| **Hero artykułu** | Mobile overlay (tytuł na zdjęciu); iteracje contain (letterbox — **odrzucone**) → **ramka aspect-ratio + object-cover**; podpis zdjęcia nie koliduje z breadcrumb; `lib/ui/article-hero-frame.ts` |
+| **Logo** | Próba SVG wordmark — user **odrzucił**; do redo / powrót PNG |
+| **Commit** | **Brak** — WIP lokalnie, czeka QA usera |
 
 ### Sesja 4.06.2026 (czat 25, koniec) — logo wordmark v2 + zapis na nowy czat
 
@@ -789,7 +925,11 @@ components/article/HeroBreadcrumbChip.tsx
 prisma/migrations/20260604200000_article_author_byline/
 lib/ui/nav-overlay-panel.ts
 components/brand/WssLogoWordmark.tsx
-components/brand/WssLogoGlobe.tsx
+components/sections/HomepageHeroSlider.tsx
+components/article/ReadAlsoInline.tsx
+lib/home/hero-slides.ts
+lib/ui/article-hero-frame.ts
+prisma/migrations/20260604210000_article_hero_position/
 public/brand/wss-wordmark.png
 scripts/process-wss-wordmark.mjs
 components/profile/ProfileClient.tsx

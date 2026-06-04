@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image, { type ImageProps } from "next/image";
 import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
 
@@ -13,11 +13,15 @@ type Props = Omit<ImageProps, "src" | "onError" | "alt"> & {
 export default function CoverImage({ src, alt, ...props }: Props) {
   const [current, setCurrent] = useState(src);
 
+  useEffect(() => {
+    setCurrent(src);
+  }, [src]);
+
   return (
     <Image
       {...props}
       alt={alt}
-      src={current}
+      src={current || SEARCH_FALLBACK_IMAGE}
       onError={() => {
         if (current !== SEARCH_FALLBACK_IMAGE) setCurrent(SEARCH_FALLBACK_IMAGE);
       }}

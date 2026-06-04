@@ -25,6 +25,8 @@ export interface NewsArticle {
   score?: number;
   /** CMS highlight — boosts ranking / szansa na hero. */
   featured?: boolean;
+  /** Homepage hero slider slot: 0 = off, 1–4 = slide order. */
+  heroPosition?: number;
   /** CMS „Temat tygodnia” — slider pod hero. */
   weekTopic?: boolean;
   /** Original create time — editorial metadata; „Najnowsze” uses publishedAt first. */

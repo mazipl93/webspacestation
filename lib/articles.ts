@@ -3,6 +3,7 @@ import "server-only";
 import {
   getPublishedArticles,
   getPublishedArticleBySlug,
+  getPublishedHeroSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
   getRankedPublishedArticles,
   type ArticleWithRelations,
@@ -16,7 +17,10 @@ import { resolveArticleImageCredit } from "@/lib/articles/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
 import {
   pickReadNext,
+  pickReadNextArticles,
+  READ_NEXT_LIST_LIMIT,
   pickRelatedArticles,
+  pickSameCategoryRelated,
 } from "@/lib/article/related-articles";
 import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
 import {
@@ -68,6 +72,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     isTopPriority: !isRss && isTopPriorityScore(a.score ?? 0),
     score: a.score,
     featured: a.featured,
+    heroPosition: a.heroPosition ?? 0,
     weekTopic: a.weekTopic,
     createdAt: new Date(a.createdAt).toISOString(),
     content: paragraphs.length > 0 ? paragraphs : undefined,
@@ -93,6 +98,12 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
 export async function getAllArticles(): Promise<NewsArticle[]> {
   const articles = await getPublishedArticles();
   return articles.map(toNewsArticle);
+}
+
+/** CMS hero slots (heroPosition 1–4), ordered ASC. */
+export async function getHeroSlideArticles(): Promise<NewsArticle[]> {
+  const rows = await getPublishedHeroSlides();
+  return rows.map(toNewsArticle);
 }
 
 /** Homepage / newsroom — top N by score, then recency. */
@@ -135,10 +146,28 @@ export async function getRelatedArticles(
   return pickRelatedArticles(article, all, { min: 3, max: count });
 }
 
+/** Three related articles from the same category (in-body „Czytaj również”). */
+export async function getSameCategoryRelatedArticles(
+  article: NewsArticle,
+  count = 3
+): Promise<NewsArticle[]> {
+  const all = await getAllArticles();
+  return pickSameCategoryRelated(article, all, count);
+}
+
 /** Next article in feed (newest-first), popular fallback when oldest (PR9). */
 export async function getReadNextArticle(
   article: NewsArticle
 ): Promise<NewsArticle | null> {
   const all = await getAllArticles();
   return pickReadNext(article, all);
+}
+
+/** Kilka propozycji „Czytaj dalej” — ten sam dział preferowany (PR9 + UI lista). */
+export async function getReadNextArticles(
+  article: NewsArticle,
+  count = READ_NEXT_LIST_LIMIT
+): Promise<NewsArticle[]> {
+  const all = await getAllArticles();
+  return pickReadNextArticles(article, all, { limit: count });
 }

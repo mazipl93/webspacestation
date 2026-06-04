@@ -62,6 +62,7 @@ const articleSelect = {
   authorByline: true,
   status: true,
   featured: true,
+  heroPosition: true,
   weekTopic: true,
   score: true,
   readingTime: true,
@@ -126,6 +127,36 @@ async function queryPublishedArticlesFromDb(): Promise<ArticleWithRelations[]> {
     console.error("[getPublishedArticles]", error);
     return [];
   }
+}
+
+async function queryPublishedHeroSlidesFromDb(): Promise<ArticleWithRelations[]> {
+  try {
+    return await prisma.article.findMany({
+      where: {
+        ...PUBLISHED_ARTICLE_WHERE,
+        heroPosition: { gte: 1, lte: 4 },
+      },
+      orderBy: [{ heroPosition: "asc" }, { publishedAt: "desc" }],
+      take: 4,
+      select: articleSelect,
+    });
+  } catch (error) {
+    console.error("[getPublishedHeroSlides]", error);
+    return [];
+  }
+}
+
+/** CMS hero slider slots (heroPosition 1–4), ordered ASC. */
+export async function getPublishedHeroSlides(): Promise<ArticleWithRelations[]> {
+  const useLiveQuery = process.env.NODE_ENV === "development";
+  if (useLiveQuery) {
+    return queryPublishedHeroSlidesFromDb();
+  }
+  return unstable_cache(
+    queryPublishedHeroSlidesFromDb,
+    ["published-hero-slides", "v1-hero-position"],
+    { tags: [ARTICLES_TAG] }
+  )();
 }
 
 /** All published articles, newest first. Cached under the ARTICLES tag. */
@@ -332,6 +363,7 @@ function buildPrismaContentUpdateInput(
   if (input.authorByline !== undefined) data.authorByline = input.authorByline;
   if (input.categoryId !== undefined) data.categoryId = input.categoryId;
   if (input.featured !== undefined) data.featured = input.featured;
+  if (input.heroPosition !== undefined) data.heroPosition = input.heroPosition;
   if (input.weekTopic !== undefined) data.weekTopic = input.weekTopic;
   if (input.readingTime !== undefined) data.readingTime = input.readingTime;
   if (input.tags !== undefined) data.tags = input.tags;
@@ -483,6 +515,7 @@ export async function createArticle(
       authorByline: input.authorByline,
       status: ArticleStatus.DRAFT,
       featured: input.featured,
+      heroPosition: input.heroPosition ?? 0,
       weekTopic: input.weekTopic,
       readingTime: input.readingTime,
       tags: input.tags,
@@ -538,6 +571,17 @@ export async function updateArticle(
   if (!existing) return null;
 
   traceArticleWriteInput("update", input);
+
+  if (
+    input.heroPosition !== undefined &&
+    input.heroPosition >= 1 &&
+    input.heroPosition <= 4
+  ) {
+    await prisma.article.updateMany({
+      where: { heroPosition: input.heroPosition, id: { not: id } },
+      data: { heroPosition: 0 },
+    });
+  }
 
   const data = buildPrismaContentUpdateInput(input);
   if (Object.keys(data).length === 0) {

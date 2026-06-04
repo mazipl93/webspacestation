@@ -68,6 +68,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     image,
     readTime: form.readingTime ?? undefined,
     featured: form.featured,
+    heroPosition: form.heroPosition,
     content: paragraphs.length > 0 ? paragraphs : undefined,
     contextNote: form.contextNote.trim() || undefined,
     contentOrigin: contentOrigin ?? "EDITORIAL",

@@ -101,7 +101,9 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       if (!updated) return jsonError(404, "NOT_FOUND", "Article not found.");
       if (
         updated.status === ArticleStatus.PUBLISHED &&
-        (content.weekTopic !== undefined || content.featured !== undefined)
+        (content.weekTopic !== undefined ||
+          content.featured !== undefined ||
+          content.heroPosition !== undefined)
       ) {
         revalidatePublicArticleCaches();
       }

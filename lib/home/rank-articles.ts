@@ -82,8 +82,8 @@ export function rankLatest<T extends RankableArticle>(
 }
 
 /**
- * Homepage „Najnowsze” — same order as /aktualnosci head (newest publish first).
- * Must not exclude hero / „Ważne teraz” slugs or fresh posts vanish from the grid.
+ * Homepage „Najnowsze” — ten sam porządek co /aktualnosci (publishedAt desc).
+ * Nie wykluczaj slugów z hero: heroPosition to osobne wyróżnienie, nie zastępuje feedu.
  */
 export function pickHomepageLatest<T extends RankableArticle>(
   articles: T[],

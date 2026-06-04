@@ -1,28 +1,24 @@
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, Calendar, ChevronRight, User } from "lucide-react";
+import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
   getArticleBySlug,
-  getReadNextArticle,
+  getReadNextArticles,
   getRelatedArticles,
+  getSameCategoryRelatedArticles,
 } from "@/lib/articles";
+import ReadNextSection from "@/components/article/ReadNextSection";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
-import ArticleEditButton from "@/components/article/ArticleEditButton";
-import SourceAttribution from "@/components/article/SourceAttribution";
-import WssContextBox from "@/components/article/WssContextBox";
-import CoverImageCredit from "@/components/article/CoverImageCredit";
 import CoverImage from "@/components/article/CoverImage";
-import HeroMetaChip from "@/components/article/HeroMetaChip";
-import HeroBreadcrumbChip from "@/components/article/HeroBreadcrumbChip";
-import { getCategoryInfo } from "@/lib/categories";
-import { getArticleBodyParagraphs } from "@/lib/articles/display-content";
-import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
+import ArticlePageHero from "@/components/article/ArticlePageHero";
+import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
+import { mergeInternalLinkCandidates } from "@/lib/article/weave-internal-links";
+import { BELOW_FIXED_NAV_OFFSET_CLASS } from "@/lib/site-layout";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
 // DB access during `next build`; the page is rendered on first request, cached,
@@ -74,13 +70,6 @@ function catFallback(c: string) {
   return CATEGORY_FALLBACK[c] ?? CATEGORY_FALLBACK.technologie;
 }
 
-// Reusable animation shorthand — reuses the reveal-fade @keyframes from globals.css
-function fadeIn(delay = 0, duration = 0.75): CSSProperties {
-  return {
-    animation: `reveal-fade ${duration}s cubic-bezier(0.22,1,0.36,1) ${delay}s both`,
-  };
-}
-
 // ─── Per-article SEO ─────────────────────────────────────────────────────────
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -104,166 +93,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: [article.image],
     },
   };
-}
-
-// ─── Article Hero ─────────────────────────────────────────────────────────────
-// Layout mirrors the homepage Hero: same layering system (base → photo →
-// gradient scrims), same container, same token usage. The content stagger
-// (0.05 → 0.1 → 0.18 → 0.28s) creates the editorial "materialise" entry feel.
-
-function ArticleHero({ article }: { article: NewsArticle }) {
-  const meta = catMeta(article.category);
-  const catInfo = getCategoryInfo(article.category);
-  const date = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  return (
-    <section className="relative isolate flex min-h-[68vh] items-end overflow-hidden">
-      {/* Layer 0 — deep space base (z-0; no negative z — image was hidden behind SiteBackground) */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          background:
-            "linear-gradient(160deg, #04080f 0%, #060c18 35%, #050a16 60%, #04080d 100%)",
-        }}
-      />
-
-      {/* Layer 1 — article photograph */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 z-[1]"
-        style={{ background: catFallback(article.category) }}
-      >
-        <CoverImage
-          src={article.image}
-          alt={
-            article.imageCredit ??
-            (article.source
-              ? `Ilustracja — materiał ${article.source}`
-              : article.title)
-          }
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        {article.imageCredit ? (
-          <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[rgba(5,7,9,0.92)] to-transparent px-4 pb-3 pt-10 sm:px-6">
-            <CoverImageCredit
-              credit={article.imageCredit}
-              source={article.source}
-              originalUrl={article.originalUrl}
-            />
-          </div>
-        ) : null}
-      </div>
-
-      {/* Layer 2 — cinematic depth scrims */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[2]"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(5,7,9,0.97) 0%, rgba(5,7,9,0.82) 26%, rgba(5,7,9,0.46) 52%, rgba(5,7,9,0.16) 100%)",
-        }}
-      />
-      {/* Left-side scrim for headline legibility */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 left-0 z-[2] w-4/5"
-        style={{
-          background:
-            "linear-gradient(to right, rgba(4,7,12,0.72) 0%, transparent 100%)",
-        }}
-      />
-
-      {/* Content — above scrims */}
-      <div className="container-site relative z-10 w-full pb-12 pt-28">
-        {/* Breadcrumb */}
-        <nav
-          aria-label="Breadcrumb"
-          className="mb-6 flex flex-wrap items-center gap-2"
-          style={fadeIn(0.04)}
-        >
-          <HeroBreadcrumbChip href="/">WSS</HeroBreadcrumbChip>
-          <ChevronRight size={12} className="shrink-0 text-white/35" aria-hidden />
-          <HeroBreadcrumbChip href="/aktualnosci">Aktualności</HeroBreadcrumbChip>
-          <ChevronRight size={12} className="shrink-0 text-white/35" aria-hidden />
-          <HeroBreadcrumbChip href={catInfo.href} accent={meta.color}>
-            {meta.label}
-          </HeroBreadcrumbChip>
-        </nav>
-
-        {/* Breaking badge */}
-        {article.isBreaking && (
-          <div className="mb-4" style={fadeIn(0.08)}>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
-              <span className="live-dot" style={{ background: "#fff" }} />
-              Ważne
-            </span>
-          </div>
-        )}
-
-        {/* Headline */}
-        <h1
-          className="mb-5 max-w-[820px] break-words text-balance font-extrabold text-text-primary"
-          style={{
-            fontSize: "clamp(1.375rem, 3.5vw, 2.5rem)",
-            lineHeight: 1.1,
-            letterSpacing: "-0.025em",
-            textShadow: "0 2px 40px rgba(0,0,0,0.6)",
-            ...fadeIn(0.12),
-          }}
-        >
-          {article.title}
-        </h1>
-
-        {/* Deck — the editorial standfirst that bridges card excerpt → article */}
-        <p
-          className="mb-6 max-w-[620px] leading-relaxed text-text-secondary"
-          style={{
-            fontSize: "var(--text-title-sm)",
-            lineHeight: 1.55,
-            textShadow: "0 1px 20px rgba(0,0,0,0.5)",
-            ...fadeIn(0.2),
-          }}
-        >
-          {article.excerpt}
-        </p>
-
-        {/* Meta row */}
-        <div
-          className="flex flex-wrap items-center gap-2"
-          style={fadeIn(0.28)}
-        >
-          <span
-            className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-md"
-            style={{
-              color: meta.color,
-              borderColor: `${meta.color}55`,
-              background: "rgba(0,0,0,0.55)",
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: meta.color }}
-            />
-            {meta.label}
-          </span>
-          <HeroMetaChip icon={Calendar}>{date}</HeroMetaChip>
-          <HeroMetaChip icon={Clock}>
-            {article.readTime ?? 3} min czytania
-          </HeroMetaChip>
-          {article.authorByline ? (
-            <HeroMetaChip icon={User}>{article.authorByline}</HeroMetaChip>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
 }
 
 // ─── Sidebar: related mini-card ───────────────────────────────────────────────
@@ -359,9 +188,11 @@ function RelatedCard({ article }: { article: NewsArticle }) {
 function ArticleBody({
   article,
   sidebarRelated,
+  weaveCandidates,
 }: {
   article: NewsArticle;
   sidebarRelated: NewsArticle[];
+  weaveCandidates: import("@/lib/article/weave-internal-links").InternalLinkCandidate[];
 }) {
   const meta = catMeta(article.category);
   const fullDate = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
@@ -371,83 +202,16 @@ function ArticleBody({
     year: "numeric",
   });
 
-  const bodyParagraphs = getArticleBodyParagraphs(article);
-  const isRss = isRssArticle(article.contentOrigin);
-  const lead = isRss ? null : bodyParagraphs[0] ?? article.excerpt;
-  const rest = isRss ? bodyParagraphs : bodyParagraphs.slice(lead ? 1 : 0);
-
   return (
-    <div id="article-body" className="container-site py-10 reveal">
+    <div id="article-body" className="container-site py-6 reveal max-sm:py-5 sm:py-10">
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
 
-        {/* ── Main article text ── */}
-        <article className="card-surface p-7 sm:p-10">
-          {/*
-            Prose max-width: 72ch ≈ 65-70 chars/line at 15px.
-            This is the optimal editorial measure for long-form reading.
-            The card padding + prose width still leave right-side breathing room
-            on wide screens — intentional whitespace, not wasted space.
-          */}
-          <div className="max-w-[72ch]">
-            {!isRss && lead ? (
-              <p
-                className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
-                style={{
-                  fontSize: "var(--text-body)",
-                  lineHeight: 1.78,
-                  borderColor: meta.color,
-                }}
-              >
-                {lead}
-              </p>
-            ) : null}
-
-            {rest.map((paragraph, i) => (
-              <p
-                key={i}
-                className="mb-6 text-text-secondary"
-                style={{ fontSize: "var(--text-body)", lineHeight: 1.8 }}
-              >
-                {paragraph}
-              </p>
-            ))}
-
-            {isRss && article.contextNote ? (
-              <WssContextBox text={article.contextNote} />
-            ) : null}
-
-            {hasSourceAttribution(article.originalUrl) ? (
-              <SourceAttribution article={article} />
-            ) : null}
-          </div>
-
-          {/* Article end mark — full card width */}
-          <div className="mt-10 flex items-center gap-4">
-            <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
-            <span className="overline text-text-muted">Web Space Station</span>
-            <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
-          </div>
-
-          {/* Back navigation */}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              href="/aktualnosci"
-              className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-glass px-4 py-2.5 text-[12.5px] font-medium text-text-secondary transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover hover:text-text-primary active:scale-[0.97]"
-            >
-              <ArrowLeft size={14} />
-              Wróć do aktualności
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-xl border border-hairline px-4 py-2.5 text-[12.5px] font-medium text-text-tertiary transition-all duration-300 hover:border-hairline-strong hover:text-text-secondary active:scale-[0.97]"
-            >
-              Strona główna
-            </Link>
-            {/* Edit affordance is resolved on the client (useAuth + CMS check)
-                so this page stays statically cacheable for anonymous visitors. */}
-            <ArticleEditButton articleId={article.id} />
-          </div>
-        </article>
+        <ArticlePageBodyMain
+          article={article}
+          weaveCandidates={weaveCandidates}
+          layout="in-grid"
+          articleId={article.id}
+        />
 
         {/* ── Sidebar ── */}
         <aside className="flex flex-col gap-4">
@@ -564,75 +328,6 @@ function ReturnBand({ category }: { category: string }) {
   );
 }
 
-// ─── "Czytaj dalej" — next in feed ───────────────────────────────────────────
-
-function ReadNext({ article }: { article: NewsArticle }) {
-  const meta = catMeta(article.category);
-  return (
-    <div className="container-site pb-8 reveal">
-      <div className="card-surface overflow-hidden p-0">
-        <div className="mb-0 flex items-center gap-2.5 border-b border-hairline px-5 py-4">
-          <span
-            className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"
-            style={{ boxShadow: "0 0 10px rgba(47,109,255,0.45)" }}
-          />
-          <h2 className="overline text-text-secondary">Czytaj dalej</h2>
-        </div>
-
-        <Link
-          href={`/aktualnosci/${article.slug}`}
-          className="surface-interactive group grid grid-cols-1 gap-0 sm:grid-cols-[minmax(0,1fr)_280px]"
-        >
-          <div className="flex flex-col justify-center p-6 sm:p-8">
-            <span
-              className="mb-3 flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-[0.14em]"
-              style={{ color: meta.color }}
-            >
-              <span className="h-1 w-1 rounded-full" style={{ background: meta.color }} />
-              {meta.label}
-            </span>
-            <h3 className="mb-3 text-balance text-[clamp(1.125rem,2.5vw,1.5rem)] font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan">
-              {article.title}
-            </h3>
-            <p className="line-clamp-2 max-w-[56ch] text-[13.5px] leading-relaxed text-text-secondary">
-              {article.excerpt}
-            </p>
-            <span className="mt-4 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-accent-blue transition-colors duration-300 group-hover:text-accent-cyan">
-              Kontynuuj czytanie
-              <ChevronRight
-                size={14}
-                className="transition-transform duration-300 group-hover:translate-x-0.5"
-              />
-            </span>
-          </div>
-
-          <div
-            className="img-sheen relative min-h-[180px] overflow-hidden sm:min-h-[220px]"
-            style={{ background: catFallback(article.category) }}
-          >
-            <CoverImage
-              src={article.image}
-              alt={article.title}
-              fill
-              sizes="(max-width: 640px) 100vw, 280px"
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-              style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 sm:hidden"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(5,7,9,0.72) 0%, transparent 55%)",
-              }}
-            />
-          </div>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 // ─── "Powiązane artykuły" strip ───────────────────────────────────────────────
 // Uses `reveal` class so it scroll-animates in — reinforces the spatial loop.
 
@@ -681,13 +376,22 @@ export default async function ArticlePage({ params }: Props) {
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
 
-  const [allRelated, readNext] = await Promise.all([
+  const [allRelated, readNextList, categoryRelated] = await Promise.all([
     getRelatedArticles(article, 6),
-    getReadNextArticle(article),
+    getReadNextArticles(article),
+    getSameCategoryRelatedArticles(article, 3),
   ]);
 
   const reservedIds = new Set<string>([article.id]);
-  if (readNext) reservedIds.add(readNext.id);
+  for (const a of readNextList) reservedIds.add(a.id);
+
+  const weaveCandidates = mergeInternalLinkCandidates(
+    categoryRelated,
+    allRelated
+  )
+    .filter((a) => !reservedIds.has(a.id))
+    .slice(0, 8);
+  for (const a of weaveCandidates) reservedIds.add(a.id);
 
   const sidebarRelated = allRelated
     .filter((a) => !reservedIds.has(a.id))
@@ -701,12 +405,16 @@ export default async function ArticlePage({ params }: Props) {
       <Navbar />
       {/* Reading context bar — appears after hero scroll, tracks article progress */}
       <StickyArticleBar title={article.title} category={article.category} slug={article.slug} />
-      <main>
-        <ArticleHero article={article} />
-        <ArticleBody article={article} sidebarRelated={sidebarRelated} />
+      <main className={`relative z-[1] ${BELOW_FIXED_NAV_OFFSET_CLASS}`}>
+        <ArticlePageHero article={article} embedded />
+        <ArticleBody
+          article={article}
+          sidebarRelated={sidebarRelated}
+          weaveCandidates={weaveCandidates}
+        />
         <ArticleInteractions slug={article.slug} title={article.title} />
         <ReturnBand category={article.category} />
-        {readNext ? <ReadNext article={readNext} /> : null}
+        <ReadNextSection articles={readNextList} category={article.category} />
         <RelatedArticlesStrip articles={stripRelated} />
       </main>
       <Footer />

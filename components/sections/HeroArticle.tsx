@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
@@ -128,29 +128,21 @@ export default function HeroArticle({
       </div>
 
       <div className="border-t border-hairline bg-space-card px-4 py-3.5 max-sm:py-3 sm:px-7 sm:py-6">
-        <p
-          className="mb-3 max-w-none leading-relaxed text-text-secondary max-sm:text-[15px] sm:mb-5 sm:max-w-[920px]"
-          style={{
-            fontSize: "clamp(0.9375rem, 2.6vw, 1.125rem)",
-            lineHeight: 1.6,
-            ...fadeIn(0.2),
-          }}
+        <Link
+          href={`/aktualnosci/${article.slug}`}
+          className="group block max-w-[920px]"
+          style={fadeIn(0.2)}
         >
-          {article.excerpt}
-        </p>
-
-        <div style={fadeIn(0.28)}>
-          <Link
-            href={`/aktualnosci/${article.slug}`}
-            className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-accent-blue px-5 py-3.5 text-[16px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover hover:shadow-[0_8px_30px_-8px_rgba(47,109,255,0.7)] active:scale-[0.97] sm:inline-flex sm:w-auto sm:text-[15px]"
+          <p
+            className="max-w-none leading-relaxed text-text-secondary transition-colors duration-300 group-hover:text-text-primary max-sm:text-[15px]"
+            style={{
+              fontSize: "clamp(0.9375rem, 2.6vw, 1.125rem)",
+              lineHeight: 1.6,
+            }}
           >
-            Czytaj artykuł
-            <ArrowRight
-              size={18}
-              className="transition-transform duration-300 group-hover:translate-x-0.5 sm:h-4 sm:w-4"
-            />
-          </Link>
-        </div>
+            {article.excerpt}
+          </p>
+        </Link>
       </div>
     </section>
   );

@@ -114,52 +114,67 @@ export default function ShareBar({ title, slug }: Props) {
     }
   }
 
+  const shareIconClass =
+    "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-hairline bg-glass text-text-secondary transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover active:scale-[0.97]";
+
+  const actionButtonClass =
+    "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97] sm:w-auto";
+
   return (
-    <div className="card-surface flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="card-surface flex max-w-full flex-col gap-4 overflow-hidden p-4 sm:gap-3 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+      {/* Primary engagement — like + bookmark stay together on all breakpoints */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <LikeButton slug={slug} />
+        <BookmarkButton slug={slug} variant="inline" className="!h-11 !w-11 shrink-0" />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Share targets — stacked on mobile, inline from sm+ */}
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
         {canNativeShare && (
           <button
             type="button"
             onClick={nativeShare}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent-blue px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover hover:shadow-[0_8px_24px_-8px_rgba(47,109,255,0.7)] active:scale-[0.97]"
+            className={`${actionButtonClass} bg-accent-blue text-white hover:bg-accent-blue-hover hover:shadow-[0_8px_24px_-8px_rgba(47,109,255,0.7)]`}
           >
             <Share2 size={14} />
             Udostępnij
           </button>
         )}
 
-        {SHARE_TARGETS.map((target) => {
-          const Icon = target.icon;
-          return (
-            <a
-              key={target.id}
-              href={target.href(resolvedUrl, title)}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={target.label}
-              title={target.label}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-hairline bg-glass text-text-secondary transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover active:scale-[0.97]"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = target.color;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "";
-              }}
-            >
-              <Icon size={15} />
-            </a>
-          );
-        })}
+        <div
+          className="grid grid-cols-4 gap-2 sm:contents"
+          role="group"
+          aria-label="Udostępnij w mediach społecznościowych"
+        >
+          {SHARE_TARGETS.map((target) => {
+            const Icon = target.icon;
+            return (
+              <a
+                key={target.id}
+                href={target.href(resolvedUrl, title)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={target.label}
+                title={target.label}
+                className={shareIconClass}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = target.color;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "";
+                }}
+              >
+                <Icon size={15} />
+              </a>
+            );
+          })}
+        </div>
 
         <button
           type="button"
           onClick={copyLink}
           aria-live="polite"
-          className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-glass px-4 py-2.5 text-[12.5px] font-medium text-text-secondary transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover hover:text-text-primary active:scale-[0.97]"
+          className={`${actionButtonClass} border border-hairline bg-glass font-medium text-text-secondary hover:border-hairline-strong hover:bg-glass-hover hover:text-text-primary`}
         >
           {copyState === "copied" ? (
             <>
@@ -178,8 +193,6 @@ export default function ShareBar({ title, slug }: Props) {
             </>
           )}
         </button>
-
-        <BookmarkButton slug={slug} variant="inline" />
       </div>
     </div>
   );

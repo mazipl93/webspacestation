@@ -1,5 +1,7 @@
 /**
  * Logo WSS v2 — usuwa czarne tło, eksport wordmarku do public/brand/.
+ * UI: components/brand/WssLogoWordmark.tsx (PNG z public/brand/).
+ * Ten skrypt zostaje do PNG/OG/e-mail z oryginalnego assets/logo-wss-wordmark-source.png.
  * node scripts/process-wss-wordmark.mjs
  */
 import sharp from "sharp";
