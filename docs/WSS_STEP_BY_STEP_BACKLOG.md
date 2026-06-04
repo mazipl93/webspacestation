@@ -9,7 +9,7 @@
 - `docs/WSS_NEXT_CHAT_HANDOFF.md` — WIP lokalny, reguły, STARTING PROMPT
 - `docs/WSS_ROADMAP_BACKLOG_V3.md` — checkboxy
 
-**Stan:** lokalnie WIP bez commita · prod `main` `a5ab17c` · https://webspacestation.pl
+**Stan:** prod `main` `93f710b` · https://webspacestation.pl · krok 4 na main (czat 42)
 
 ---
 

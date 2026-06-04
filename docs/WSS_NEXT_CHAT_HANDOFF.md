@@ -1,21 +1,28 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 42 — krok 4 SEO + wyrównanie dół artykułu)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 42 — krok 4 SEO push `93f710b`)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `0063e33` · UI: `a9630e9`  
+**Ostatni commit:** `93f710b` · poprzednio: `0063e33` (UI v2) · `a9630e9`  
 **Historia:** `976c55d` UI czat 40 · `14d1675` komentarze · `f93415a` CMS/hero
 
-**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
+**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main` (deploy po `93f710b` — sprawdź zielony build)
 
-**WIP lokalnie (czat 42, bez commita):**
-- **Krok 4 SEO:** sitemap, robots, JSON-LD, manifest, `GOOGLE_SITE_VERIFICATION`
-- **E-E-A-T:** `/polityka-prywatnosci`, `/kontakt` + linki w stopce
-- **noindex:** 404, auth, Odkrywaj (Wkrótce), `/search` poza sitemap
-- **Artykuł dół:** `ArticleMainColumnShell` — szerokość jak Komentarze
+**Na `main` (krok 4 — czat 42, `93f710b`):**
+- **SEO:** `app/sitemap.ts`, `app/robots.ts`, JSON-LD (`lib/seo/`), `app/manifest.ts`
+- **GSC env:** `GOOGLE_SITE_VERIFICATION` w layout (Vercel Production — ustaw ręcznie)
+- **E-E-A-T:** `/polityka-prywatnosci`, `/kontakt` + stopka
+- **noindex:** 404, auth, Odkrywaj (Wkrótce), `/search` **poza** sitemap
+- **Artykuł dół:** `ArticleMainColumnShell` — Koniec / Czytaj dalej = szerokość Komentarze
 
-**Następny krok STEP_BY_STEP:** **5** — Odkrywaj (po OK usera + push kroku 4)
+**Następny krok STEP_BY_STEP:** **5** — Odkrywaj (galeria, wideo, kalendarz, mapa, starty)
 
-**GSC po deploy:** dodaj właściwość → Sitemaps → `https://webspacestation.pl/sitemap.xml` · Rich Results Test na artykule
+**Po deploy — GSC (user, ręcznie):**
+1. Vercel Production: `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl`
+2. Vercel: `GOOGLE_SITE_VERIFICATION=<kod z GSC>` → redeploy
+3. GSC → Sitemaps → `https://webspacestation.pl/sitemap.xml`
+4. Rich Results Test na artykule (NewsArticle)
+
+**Nie w commicie (lokalnie untracked, opcjonalnie później):** `build-log.txt`, martwe wordmarki A/B w `components/brand/wordmarks/`
 
 **Na `main` (kroki 0–2 + pakiet CMS/hero z czat 38–39):**
 - Krok 0–2: logo C, cleanup Ważne teraz, licznik REVIEW
@@ -125,8 +132,8 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **1** | Usunąć Ważne teraz | `[x]` `18fc9a3` |
 | **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | Komentarze Supabase | `[x]` `14d1675` |
-| **4** | Sitemap + JSON-LD | `[~]` WIP lokalnie — czeka OK + push |
-| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) | **START po kroku 4** |
+| **4** | Sitemap + JSON-LD | `[x]` `93f710b` |
+| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) | **START** |
 | **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
 
 **Reguła:** po każdym kroku → raport → test usera → **CZEKAJ OK** → następny.
@@ -150,13 +157,17 @@ Przeczytaj ZAWSZE (w tej kolejności):
 
 REGUŁA: jeden krok STEP_BY_STEP · raport · test · CZEKAJ OK · commit/push tylko po OK.
 
-Stan remote main: po push czat 41 · prod https://webspacestation.pl
+Stan remote main: `93f710b` · prod https://webspacestation.pl
 
-Krok 4 WIP lokalnie: sitemap.xml · robots.txt · JSON-LD (WebSite, Organization, NewsArticle) → po push: GSC sitemap.
+Krok 4 DONE (`93f710b`): sitemap · robots · JSON-LD · manifest · polityka/kontakt · noindex fixes.
 
-UI czat 41 na main: HOMEPAGE_LAYOUT_V2 · shell 1320px · artykuł/stopka/NAV.
+ZACZNIJ OD KROKU 5: Odkrywaj — /starty, /kalendarz, /mapa, /galeria, /wideo (zamiast ComingSoon).
 
-Krok 5: Odkrywaj · Krok 6: API ops panel
+Po deploy kroku 4: GSC sitemap + GOOGLE_SITE_VERIFICATION + NEXT_PUBLIC_SITE_URL na Vercel.
+
+UI czat 41: shell 1320px · artykuł/stopka/NAV (HOMEPAGE_LAYOUT_V2=false).
+
+Krok 6: API ops panel (LAUNCHES[] mock na homepage).
 
 Opcjonalnie: weave linki · publikacja REVIEW · `npm run db:deploy` (byline) jeśli brak
 
@@ -171,18 +182,21 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 
 ## Historia sesji (skrót)
 
-### Sesja 4.06.2026 (czat 42) — krok 4 SEO + szerokość dół artykułu
+### Sesja 4.06.2026 (czat 42) — krok 4 SEO push + handoff na czat 43
 
 | Obszar | Stan |
 |--------|------|
-| **Sitemap** | `app/sitemap.ts` — `/`, działy, Odkrywaj, wszystkie PUBLISHED slugi |
-| **robots.txt** | `app/robots.ts` — disallow admin/api/profil/auth; `sitemap` + `host` |
-| **JSON-LD** | layout: WebSite + Organization; artykuł: NewsArticle + canonical URL |
-| **Artykuł UI** | `ArticleMainColumnShell` — Koniec / Czytaj dalej / Powiązane = szerokość Komentarze |
-| **Test lokalny** | `/sitemap.xml` OK · JSON-LD w źródle · panele 912px / left 208px @ xl |
-| **Commit** | **Brak** — czeka OK usera |
+| **Push** | `93f710b` → `origin/main` · Vercel auto-deploy |
+| **Sitemap** | działy + `/polityka-prywatnosci` + `/kontakt` + artykuły; **bez** `/search` i Odkrywaj |
+| **robots.txt** | disallow admin/api/profil/auth |
+| **JSON-LD** | WebSite + Organization + NewsArticle; `updatedAt` → dateModified |
+| **E-E-A-T** | `/polityka-prywatnosci`, `/kontakt`, linki w stopce |
+| **noindex** | 404, auth, Odkrywaj, brakujący slug |
+| **manifest** | `app/manifest.ts` |
+| **Artykuł UI** | `ArticleMainColumnShell` |
+| **Następny czat** | **Krok 5** Odkrywaj · GSC po deploy (env Vercel) |
 
-**Pliki:** `app/sitemap.ts`, `app/robots.ts`, `lib/seo/*`, `components/seo/JsonLd.tsx`, `components/article/ArticleMainColumnShell.tsx`, `ReadNextSection.tsx`, `aktualnosci/[slug]/page.tsx`, `app/layout.tsx`
+**Pliki kluczowe:** `lib/seo/*`, `app/sitemap.ts`, `app/robots.ts`, `app/polityka-prywatnosci/`, `app/kontakt/`, `components/article/ArticleMainColumnShell.tsx`
 
 ### Sesja 4.06.2026 (czat 41) — UI homepage v2, artykuł, stopka, NAV
 
