@@ -5,10 +5,9 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
 import {
-  BELOW_FIXED_NAV_OFFSET_CLASS,
+  HOMEPAGE_LAYOUT_V2,
+  HOMEPAGE_V2_CATEGORY_SLUGS,
   SITE_CONTAINER,
-  HOMEPAGE_HERO_DOUBLE_GRID,
-  HOMEPAGE_HERO_TRIPLE_GRID,
 } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import {
@@ -28,9 +27,7 @@ import {
 } from "@/lib/home/rank-articles";
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
-import HomepageHeroSlider from "@/components/sections/HomepageHeroSlider";
-import LatestShowcase from "@/components/sections/LatestShowcase";
-import WeekTopicSection from "@/components/sections/WeekTopicSection";
+import HomepageTopZone from "@/components/sections/HomepageTopZone";
 import PopularArticles from "@/components/sections/PopularArticles";
 import DepartmentSectionFrame from "@/components/sections/DepartmentSectionFrame";
 import DepartmentSectionHeader from "@/components/sections/DepartmentSectionHeader";
@@ -49,11 +46,6 @@ const IMPORTANT_POOL = 14;
 const LATEST_FEED_LIMIT = 12;
 /** Mobile — pionowa lista pod hero (kilka pozycji od razu widocznych). */
 const LATEST_MOBILE_LIST_LIMIT = 6;
-/** Panel boczny desktop — pionowa lista. */
-const LATEST_RAIL_LIMIT = 5;
-/** Lewy rail desktop — Temat tygodnia (jak Najnowsze). */
-const WEEK_TOPIC_RAIL_LIMIT = 5;
-
 // ─── Category presentation ────────────────────────────────────────────────────
 
 const CATEGORY_LAYOUT: Record<
@@ -143,12 +135,71 @@ function SectionHeader({
   );
 }
 
+function CategorySplitLeadDesktop({
+  meta,
+  lead,
+  rest,
+}: {
+  meta: (typeof CATEGORY_META)[string];
+  lead: NewsArticle;
+  rest: NewsArticle[];
+}) {
+  return (
+    <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-5">
+      <Link
+        href={`/aktualnosci/${lead.slug}`}
+        className="surface-interactive group relative min-h-[260px] overflow-hidden rounded-xl border border-hairline"
+      >
+        <CoverImage
+          src={lead.image}
+          alt={lead.title}
+          fill
+          sizes="(max-width: 1320px) 58vw, 720px"
+          className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(5,7,9,0.92) 0%, rgba(5,7,9,0.35) 55%, transparent 100%)",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+          <span
+            className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
+            style={{ color: meta.color }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: meta.color }}
+            />
+            {meta.label}
+          </span>
+          <p className="text-[20px] font-bold leading-snug text-text-primary">
+            {lead.title}
+          </p>
+          <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
+            {lead.excerpt}
+          </p>
+        </div>
+      </Link>
+      <div className="grid grid-cols-1 gap-4">
+        {rest.map((article) => (
+          <ArticleCard key={article.id} article={article} compact />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CategorySection({
   slug,
   articles,
+  desktopLayout = "legacy",
 }: {
   slug: string;
   articles: NewsArticle[];
+  desktopLayout?: "legacy" | "split-lead";
 }) {
   const meta = CATEGORY_META[slug];
   if (!meta || articles.length === 0) return null;
@@ -161,7 +212,19 @@ function CategorySection({
 
   const prominent = meta.variant === "hero-strip" && (meta.prominent ?? false);
 
-  if (meta.variant === "hero-strip") {
+  if (desktopLayout === "split-lead") {
+    const [lead, ...rest] = articles;
+    body = lead ? (
+      <>
+        <HomeSectionMobileFeed
+          articles={articles}
+          accent={meta.color}
+          categoryLabel={meta.label}
+        />
+        <CategorySplitLeadDesktop meta={meta} lead={lead} rest={rest} />
+      </>
+    ) : null;
+  } else if (meta.variant === "hero-strip") {
     const [lead, ...rest] = articles;
     body = (
       <>
@@ -686,12 +749,13 @@ export default async function ContentGrid() {
 
   // Najnowsze = wyłącznie publishedAt desc; slot hero to osobne wyróżnienie (bez deduplikacji).
   const latest = pickHomepageLatest(allPublished, LATEST_FEED_LIMIT);
-  const latestRail = latest.slice(0, LATEST_RAIL_LIMIT);
   markSlugsUsed(latest, usedSlugs);
 
-  const weekTopicRail = weekTopicPick.articles.slice(0, WEEK_TOPIC_RAIL_LIMIT);
+  const homepageCategorySlugs = HOMEPAGE_LAYOUT_V2
+    ? HOMEPAGE_V2_CATEGORY_SLUGS
+    : CATEGORY_ORDER;
 
-  const categoryArticles = CATEGORY_ORDER.map((slug) => {
+  const categoryArticles = homepageCategorySlugs.map((slug) => {
     const fromPublished = allPublished.filter((a) => a.category === slug);
     const ranked = rankLatest(fromPublished, 4);
     return {
@@ -708,59 +772,12 @@ export default async function ContentGrid() {
 
   return (
     <div className={cn(SITE_CONTAINER, "relative z-[1]")}>
-      {/* Desktop: Temat tygodnia (L) · hero (środek) · Najnowsze (P). Mobile: hero → Najnowsze → Temat tygodnia. */}
-      <div className={BELOW_FIXED_NAV_OFFSET_CLASS}>
-        <div
-          className={cn(
-            "gap-8 lg:items-stretch",
-            weekTopicRail.length > 0
-              ? HOMEPAGE_HERO_TRIPLE_GRID
-              : HOMEPAGE_HERO_DOUBLE_GRID,
-          )}
-        >
-          {weekTopicRail.length > 0 ? (
-            <aside className="hidden min-w-0 flex-col lg:flex lg:sticky lg:top-[5.25rem] lg:z-[2] lg:max-h-[calc(100vh-5.5rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pl-0.5">
-              <WeekTopicSection
-                articles={weekTopicRail}
-                config={weekTopicConfig}
-                variant="rail"
-              />
-            </aside>
-          ) : null}
-
-          <div
-            className={cn(
-              "flex min-w-0 flex-col",
-              weekTopicRail.length > 0 && "lg:col-start-2",
-            )}
-          >
-            <HomepageHeroSlider articles={heroSlides} />
-
-            <div className="mt-3 max-lg:scroll-mt-4 lg:hidden">
-              <LatestShowcase
-                articles={latest.slice(0, LATEST_MOBILE_LIST_LIMIT)}
-                variant="list"
-                mobileShell
-                peekBelowHero
-              />
-            </div>
-
-            {weekTopicPick.articles.length > 0 ? (
-              <div className="mt-8 max-lg:mt-6 lg:hidden">
-                <WeekTopicSection
-                  articles={weekTopicPick.articles}
-                  config={weekTopicConfig}
-                  variant="slider"
-                />
-              </div>
-            ) : null}
-          </div>
-
-          <aside className="hidden min-w-0 flex-col lg:flex lg:sticky lg:top-[5.25rem] lg:z-[2] lg:max-h-[calc(100vh-5.5rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
-            <LatestShowcase articles={latestRail} variant="rail" />
-          </aside>
-        </div>
-      </div>
+      <HomepageTopZone
+        heroSlides={heroSlides}
+        latest={latest}
+        weekTopicPick={weekTopicPick}
+        weekTopicConfig={weekTopicConfig}
+      />
 
       {/* Popularne + kategorie + widgety */}
       <div className="mt-10 space-y-14 pb-14 md:mt-12 md:space-y-14">
@@ -771,7 +788,12 @@ export default async function ContentGrid() {
 
         <div className="space-y-12 md:space-y-14">
           {categoryArticles.map(({ slug, articles: catArticles }) => (
-            <CategorySection key={slug} slug={slug} articles={catArticles} />
+            <CategorySection
+              key={slug}
+              slug={slug}
+              articles={catArticles}
+              desktopLayout={HOMEPAGE_LAYOUT_V2 ? "split-lead" : "legacy"}
+            />
           ))}
         </div>
 

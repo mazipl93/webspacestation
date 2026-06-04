@@ -22,6 +22,11 @@ import {
   NAV_OVERLAY_PANEL_STYLE,
 } from "@/lib/ui/nav-overlay-panel";
 import {
+  NAV_DESKTOP_ACTIONS,
+  NAV_DESKTOP_TRACK,
+  navTrackLinkClass,
+} from "@/lib/ui/nav-desktop";
+import {
   NAV_CATEGORY_LINKS,
   NAV_MOBILE_SECTIONS,
   NAV_MORE_LINKS,
@@ -269,27 +274,40 @@ export default function Navbar() {
         className="wss-nav-bar"
         data-scrolled={scrolled ? "true" : "false"}
       >
-        <div className={cn(SITE_CONTAINER, "flex h-[4.25rem] items-center gap-3 sm:h-16 sm:gap-4 xl:gap-5")}>
-          {/* ── Logo + brand ───────────────────────────────────── */}
-          <WssLogo asLink />
+        <div className={cn(SITE_CONTAINER, "flex h-[4.25rem] items-center gap-3 sm:h-16 sm:gap-4")}>
+          <WssLogo asLink height={48} className="shrink-0" />
 
-          {/* ── Desktop nav ────────────────────────────────────── */}
-          <nav className="ml-1 hidden min-w-0 flex-1 items-center lg:flex">
-            <div className="flex min-w-0 items-center">
-              {NAV_PRIMARY_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "relative whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
-                    isActive(link.href)
-                      ? "text-text-primary after:absolute after:inset-x-2.5 after:-bottom-[1px] after:h-[2px] after:rounded-full after:bg-accent-blue xl:after:inset-x-3"
-                      : "text-text-secondary"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              ))}
+          <span
+            aria-hidden
+            className="hidden h-7 w-px shrink-0 bg-white/[0.08] lg:block"
+          />
+
+          {/* Desktop — pill track (wyśrodkowany) */}
+          <nav
+            className="hidden min-w-0 flex-1 justify-center lg:flex"
+            aria-label="Główne menu"
+          >
+            <div className={NAV_DESKTOP_TRACK}>
+              {NAV_PRIMARY_LINKS.map((link) => {
+                const active = isActive(link.href);
+                const accent = navLinkAccent(link);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={navTrackLinkClass(active)}
+                  >
+                    {link.label}
+                    {active ? (
+                      <span
+                        aria-hidden
+                        className="absolute inset-x-2 bottom-0.5 h-0.5 rounded-full"
+                        style={{ background: accent }}
+                      />
+                    ) : null}
+                  </Link>
+                );
+              })}
 
               <NavDropdownMenu
                 label="Kategorie"
@@ -337,14 +355,13 @@ export default function Navbar() {
             </div>
           </nav>
 
-          {/* ── Right actions ──────────────────────────────────── */}
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <div className={cn("ml-auto flex shrink-0 items-center gap-2", NAV_DESKTOP_ACTIONS)}>
             <div className="relative">
               <button
                 aria-label="Szukaj"
                 aria-expanded={searchOpen}
                 onClick={() => (searchOpen ? closeSearch() : openSearch())}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 hover:bg-white/[0.06] hover:text-text-primary"
               >
                 <Search size={18} strokeWidth={2} />
               </button>
@@ -456,9 +473,9 @@ export default function Navbar() {
                   setSearchShown(false);
                   setNotificationsOpen((v) => !v);
                 }}
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary"
+                className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 hover:bg-white/[0.06] hover:text-text-primary"
               >
-                <Bell size={18} strokeWidth={2} />
+                <Bell size={17} strokeWidth={2} />
                 {hasUnreadNotifications && (
                   <span
                     aria-hidden="true"
@@ -486,15 +503,15 @@ export default function Navbar() {
               <>
                 <Link
                   href={registerHref}
-                  className="ml-1.5 hidden items-center rounded-lg px-3 py-2 text-[12.5px] font-semibold text-text-secondary transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary sm:flex"
+                  className="hidden items-center rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary sm:flex"
                 >
-                  Zarejestruj się
+                  Rejestracja
                 </Link>
                 <Link
                   href={loginHref}
-                  className="ml-1 hidden items-center gap-1.5 rounded-lg bg-accent-blue px-4 py-2 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover hover:shadow-[0_4px_20px_-4px_rgba(47,109,255,0.6)] active:scale-[0.97] sm:flex"
+                  className="hidden items-center rounded-lg bg-accent-blue px-3 py-1.5 text-[12px] font-semibold text-white transition-all hover:bg-accent-blue-hover active:scale-[0.98] sm:flex"
                 >
-                  Zaloguj się
+                  Zaloguj
                 </Link>
               </>
             )}
@@ -502,7 +519,7 @@ export default function Navbar() {
             <button
               aria-label="Menu"
               onClick={() => setMobileOpen((v) => !v)}
-              className="ml-0.5 flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-glass-hover hover:text-text-primary lg:hidden"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary lg:hidden"
             >
               {mobileOpen ? <X size={18} /> : <Menu size={18} />}
             </button>

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import BookmarkButton from "@/components/article/BookmarkButton";
+import { ARTICLE_SHELL } from "@/lib/ui/article-editorial-layout";
+import { cn } from "@/lib/cn";
 
 // Mirrors the map in page.tsx — kept local so the server component is untouched
 const CATEGORY_META: Record<string, { label: string; color: string }> = {
@@ -83,7 +85,7 @@ export default function StickyArticleBar({ title, category, slug }: Props) {
         }}
       >
         {/* Context row */}
-        <div className="container-site flex h-10 items-center gap-3 overflow-hidden">
+        <div className={cn(ARTICLE_SHELL, "flex h-10 items-center gap-3 overflow-hidden")}>
           {/* Back link */}
           <Link
             href="/aktualnosci"

@@ -17,7 +17,7 @@ type Props = {
 
 /**
  * Homepage featured hero — magazine slider on all viewports (max 4 slides).
- * ~48svh on phone (lekko niższy niż wcześniej); capped height on desktop.
+ * Mobile ~48svh; desktop 16:9 w kolumnie hero (wyższy cap w zwężonym shellu).
  */
 export default function HomepageHeroSlider({ articles }: Props) {
   const count = articles.length;
@@ -90,7 +90,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
         className={cn(
           "relative w-full overflow-hidden",
           "max-lg:h-[clamp(42svh,46svh,50svh)] max-lg:max-h-[50svh] max-lg:min-h-[40svh]",
-          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(42vh,420px)] lg:min-h-[220px]",
+          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(52vh,520px)] lg:min-h-[280px]",
         )}
       >
         <div

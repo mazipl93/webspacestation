@@ -67,6 +67,10 @@
 
   /* ── Layout ──────────────────────────────────────────────────────────── */
   --spacing-container: 1240px;
+  /** Nav, homepage, stopka — węższa kolumna niż pełna szerokość viewportu. */
+  --spacing-site-shell: 1320px;
+  /** Maks. szerokość karty w siatkach homepage (Popularne itd.). */
+  --homepage-card-max: 300px;
 
   /* ── Radius scale ────────────────────────────────────────────────────── */
   --radius-badge: 0.375rem;
@@ -518,7 +522,9 @@ html[data-portal-theme] .site-cosmos-grain {
   .wss-nav-bar[data-scrolled="true"] {
     border-bottom-color: var(--portal-nav-border);
     background: var(--color-page-fill, var(--color-nav-surface));
-    box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.18);
+    box-shadow:
+      0 4px 16px -10px rgba(0, 0, 0, 0.22),
+      0 0 32px -24px rgba(47, 109, 255, 0.35);
   }
 
   .wss-nav-bar .text-text-primary {

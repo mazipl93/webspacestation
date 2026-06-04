@@ -17,12 +17,12 @@ const FOOTER_NAV = {
     { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },
     { label: "ISS", href: "/iss" },
   ],
-  Popularne: [
+  Odkrywaj: [
     { label: "Starty rakiet", href: "/starty" },
     { label: "Kalendarz misji", href: "/kalendarz" },
-    { label: "Aktywne misje", href: "/misje" },
     { label: "Mapa kosmosu", href: "/mapa" },
     { label: "Galeria zdjęć", href: "/galeria" },
+    { label: "Wideo", href: "/wideo" },
   ],
   Społeczność: [
     { label: "Discord", href: "https://discord.gg/wss" },
@@ -32,6 +32,8 @@ const FOOTER_NAV = {
     { label: "Facebook", href: "https://facebook.com/webspacestation" },
   ],
 } as const;
+
+const FOOTER_LEGAL = [{ label: "Szukaj", href: "/search" }] as const;
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -49,148 +51,175 @@ export default function Footer() {
   }
 
   return (
-    <footer className="mt-12 border-t border-on-page">
-      {/* Newsletter strip */}
+    <footer className="relative mt-14 overflow-hidden border-t border-hairline">
+      {/* Kotwica wizualna — pas nad treścią stopki */}
       <div
-        className="py-14"
+        aria-hidden
+        className="h-[3px] w-full"
         style={{
           background:
-            "radial-gradient(ellipse 60% 100% at 15% 0%, rgba(47,109,255,0.1) 0%, transparent 60%)",
+            "linear-gradient(90deg, transparent 0%, #2f6dff 18%, #22d3ee 50%, #2f6dff 82%, transparent 100%)",
+        }}
+      />
+
+      <div
+        className="relative"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 120% at 0% 0%, rgba(47,109,255,0.14) 0%, transparent 55%), radial-gradient(ellipse 50% 80% at 100% 100%, rgba(34,211,238,0.06) 0%, transparent 50%), linear-gradient(180deg, #0a0f18 0%, #060910 100%)",
         }}
       >
-        <div className={SITE_CONTAINER}>
-          <div className="card-surface flex flex-col items-start justify-between gap-6 px-7 py-7 sm:flex-row sm:items-center">
-            <div>
-              <h3 className="mb-1.5 text-[20px] font-bold text-text-primary" style={{ letterSpacing: "-0.02em" }}>
-                Bądź na bieżąco z kosmosem
-              </h3>
-              <p className="text-[13.5px] text-text-secondary">
-                Najważniejsze newsy prosto na Twoją skrzynkę. Bez spamu.
-              </p>
-            </div>
-            <div className="w-full sm:w-auto">
-              <form
-                className="flex w-full gap-2 sm:w-auto"
-                onSubmit={handleSubscribe}
-                noValidate
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (status !== "idle") setStatus("idle");
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-24 top-0 h-64 w-64 rounded-full opacity-30 blur-3xl"
+          style={{ background: "rgba(47,109,255,0.35)" }}
+        />
+
+        <div className={cn(SITE_CONTAINER, "relative py-10 sm:py-12")}>
+          <div className="card-surface editorial-surface overflow-hidden rounded-2xl border border-hairline">
+            <div className="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
+              {/* Punkt zaczepienia — marka + newsletter */}
+              <div className="relative border-b border-hairline-faint bg-[#0c111a] px-6 py-8 sm:px-8 lg:border-b-0 lg:border-r">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-0 w-[3px]"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, #2f6dff 0%, #22d3ee 55%, transparent 100%)",
                   }}
-                  placeholder="Twój adres e-mail"
-                  aria-invalid={status === "error"}
-                  aria-describedby="newsletter-status"
-                  className={`flex-1 rounded-xl border bg-black/25 px-4 py-3 text-[13px] text-text-primary outline-none transition-all duration-300 placeholder:text-text-muted focus:ring-2 focus:ring-accent-blue/20 sm:w-72 ${
-                    status === "error"
-                      ? "border-accent-live/60 focus:border-accent-live/60"
-                      : "border-hairline focus:border-accent-blue/60"
-                  }`}
                 />
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-accent-blue px-5 py-3 text-[13px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover hover:shadow-[0_8px_24px_-8px_rgba(47,109,255,0.7)] active:scale-[0.98]"
-                >
-                  {status === "success" ? (
-                    <>
-                      <Check size={15} />
-                      Zapisano
-                    </>
-                  ) : (
-                    "Zapisz się"
-                  )}
-                </button>
-              </form>
-              <p
-                id="newsletter-status"
-                role="status"
-                aria-live="polite"
-                className="mt-2 min-h-[18px] text-[12px]"
-              >
-                {status === "success" && (
-                  <span className="text-[#22c55e]">
-                    Dziękujemy! Potwierdź zapis w wiadomości e-mail.
-                  </span>
-                )}
-                {status === "error" && (
-                  <span className="text-accent-live">
-                    Podaj poprawny adres e-mail.
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-cyan">
+                  Web Space Station
+                </p>
+                <Link href="/" className="inline-block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-cyan">
+                  <WssLogoWordmark height={56} className="max-w-[240px]" />
+                </Link>
+                <p className="mt-4 text-[13px] leading-relaxed text-text-secondary">
+                  Polski portal o kosmosie, astronomii i technologiach
+                  kosmicznych — newsy, misje i odkrycia.
+                </p>
 
-      {/* Mapa serwisu — grid kolumn (mobile: 2+1, desktop: logo + 3 kolumny) */}
-      <div className={cn(SITE_CONTAINER, "pb-12 pt-6")}>
-        <div className="card-surface editorial-surface rounded-2xl px-5 py-8 sm:px-8 sm:py-10">
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-14 xl:gap-20">
-            <div className="flex flex-col items-center border-b border-hairline-faint pb-8 text-center lg:max-w-[260px] lg:shrink-0 lg:items-start lg:border-0 lg:pb-0 lg:text-left">
-              <WssLogoWordmark height={48} />
-              <p className="mt-4 max-w-[280px] text-[13px] leading-relaxed text-text-tertiary lg:max-w-none">
-                Największy polski portal informacyjny o kosmosie, astronomii i
-                technologiach kosmicznych.
-              </p>
-            </div>
-
-            <nav
-              className="w-full flex-1"
-              aria-label="Nawigacja w stopce"
-            >
-              <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 sm:gap-x-10 md:gap-x-14">
-                {Object.entries(FOOTER_NAV).map(([title, links]) => (
-                  <div
-                    key={title}
-                    className={cn(
-                      title === "Społeczność" &&
-                        "col-span-2 sm:col-span-1",
-                    )}
+                <div className="mt-6 border-t border-hairline-faint pt-6">
+                  <p className="text-[13px] font-semibold text-text-primary">
+                    Newsletter
+                  </p>
+                  <p className="mt-1 text-[12px] text-text-tertiary">
+                    Raz w tygodniu — bez spamu.
+                  </p>
+                  <form
+                    className="mt-3 flex flex-col gap-2 sm:flex-row"
+                    onSubmit={handleSubscribe}
+                    noValidate
                   >
-                    <h4 className="overline mb-3.5 border-b border-hairline-faint pb-2 text-text-tertiary">
-                      {title}
-                    </h4>
-                    <ul
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (status !== "idle") setStatus("idle");
+                      }}
+                      placeholder="E-mail"
+                      aria-invalid={status === "error"}
+                      aria-describedby="newsletter-status"
                       className={cn(
-                        title === "Społeczność"
-                          ? "grid grid-cols-2 gap-x-4 gap-y-0.5 sm:grid-cols-1 sm:space-y-2"
-                          : "space-y-2",
+                        "min-w-0 flex-1 rounded-lg border bg-black/30 px-3.5 py-2.5 text-[13px] text-text-primary outline-none transition-colors placeholder:text-text-muted focus:ring-2 focus:ring-accent-blue/25",
+                        status === "error"
+                          ? "border-accent-live/60"
+                          : "border-hairline focus:border-accent-blue/50",
                       )}
+                    />
+                    <button
+                      type="submit"
+                      className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-accent-blue px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-accent-blue-hover"
                     >
-                      {links.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className="inline-flex min-h-[36px] items-center text-[13px] text-text-secondary transition-colors duration-300 hover:text-text-primary"
-                            {...(link.href.startsWith("http")
-                              ? {
-                                  target: "_blank",
-                                  rel: "noopener noreferrer",
-                                }
-                              : {})}
-                          >
-                            {link.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                      {status === "success" ? (
+                        <>
+                          <Check size={15} />
+                          OK
+                        </>
+                      ) : (
+                        "Zapisz"
+                      )}
+                    </button>
+                  </form>
+                  <p
+                    id="newsletter-status"
+                    role="status"
+                    aria-live="polite"
+                    className="mt-2 min-h-[16px] text-[11px]"
+                  >
+                    {status === "success" && (
+                      <span className="text-[#22c55e]">
+                        Sprawdź skrzynkę — potwierdź zapis.
+                      </span>
+                    )}
+                    {status === "error" && (
+                      <span className="text-accent-live">
+                        Podaj poprawny adres e-mail.
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
-            </nav>
-          </div>
-        </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-on-page pt-7 sm:flex-row sm:items-center">
-          <p className="text-[12px] text-on-page-muted">© 2026 Web Space Station</p>
-          <p className="text-[12px] text-on-page-muted">Wszelkie prawa zastrzeżone</p>
+              {/* Mapa linków — zwarte kolumny */}
+              <div className="px-6 py-8 sm:px-8">
+                <nav aria-label="Nawigacja w stopce">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 sm:gap-x-8">
+                    {Object.entries(FOOTER_NAV).map(([title, links]) => (
+                      <div key={title}>
+                        <h4 className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
+                          <span
+                            className="h-3 w-[2px] shrink-0 rounded-full bg-accent-cyan/80"
+                            aria-hidden
+                          />
+                          {title}
+                        </h4>
+                        <ul className="space-y-1.5">
+                          {links.map((link) => (
+                            <li key={link.href}>
+                              <Link
+                                href={link.href}
+                                className="inline-flex min-h-[32px] items-center text-[13px] text-text-secondary transition-colors hover:text-accent-cyan"
+                                {...(link.href.startsWith("http")
+                                  ? {
+                                      target: "_blank",
+                                      rel: "noopener noreferrer",
+                                    }
+                                  : {})}
+                              >
+                                {link.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          {/* Dolny pasek — jedna linia, bez pustego rozwodu */}
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <p className="text-[12px] text-text-muted">
+              © 2026 Web Space Station · Wszelkie prawa zastrzeżone
+            </p>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {FOOTER_LEGAL.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-[12px] text-text-tertiary transition-colors hover:text-text-primary"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
-

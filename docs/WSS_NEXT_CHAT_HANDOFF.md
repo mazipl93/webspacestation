@@ -1,9 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 40 — UI homepage + artykuł + push)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 41 — UI homepage v2, artykuł, stopka, NAV)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `2560fe1` (docs) · feature UI: `976c55d` · komentarze: `14d1675`  
-**Historia:** `ef6c933` · `f93415a` CMS/hero
+**Ostatni commit:** _(po push tej sesji — patrz `git log -1`)_  
+**Historia:** `976c55d` UI czat 40 · `14d1675` komentarze · `f93415a` CMS/hero
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -18,8 +18,15 @@
 
 **Na `main` (krok 3 + UI czat 40):**
 - Komentarze Supabase — `14d1675` · SQL `supabase/article_comments.sql` (prod: SQL Editor jeśli 404)
-- **Homepage desktop:** Temat tygodnia (L) · hero 16:9 (środek) · Najnowsze (P) — `976c55d`
-- **Artykuł:** Informacje przy tytule; Powiązane pod Informacjami; okładka bez border — `976c55d`
+- **Homepage desktop (czat 40):** Temat tygodnia (L) · hero · Najnowsze (P) — `976c55d`
+- **Artykuł (czat 40):** Informacje przy tytule; Powiązane pod Informacjami — `976c55d`
+
+**WIP → push czat 41 (UI):**
+- **Shell 1320px** (`--spacing-site-shell`) — homepage, artykuł, stopka, NAV
+- **Homepage v2** (`HOMEPAGE_LAYOUT_V2 = true` w `lib/site-layout.ts`): hero full width → Najnowsze 5-up → Temat tygodnia; 3 działy split-lead; Popularne 4×; **revert:** `HOMEPAGE_LAYOUT_V2 = false`
+- **Artykuł:** okładka w shellu (16:9 ~520px), siatka jak homepage, breadcrumb kompaktowy (bez szerokiego paska MISJE)
+- **Stopka:** jeden panel, kotwica marki, bez linku Subskrypcje w dolnym pasku
+- **NAV desktop:** pill track wyśrodkowany, akcenty działów, grupa akcji
 
 **Następny krok STEP_BY_STEP:** **4** — Sitemap + JSON-LD (+ GSC)
 
@@ -135,19 +142,15 @@ Przeczytaj ZAWSZE (w tej kolejności):
 
 REGUŁA: jeden krok STEP_BY_STEP · raport · test · CZEKAJ OK · commit/push tylko po OK.
 
-Stan remote main: `f93415a` · prod https://webspacestation.pl
-
-Po deploy: `npm run db:deploy` (migracja `20260604220000_article_byline_user`).
-
-Stan remote main: `2560fe1` · prod https://webspacestation.pl
+Stan remote main: po push czat 41 · prod https://webspacestation.pl
 
 ZACZNIJ OD KROKU 4: Sitemap + robots.txt + JSON-LD → GSC.
 
+UI czat 41 na main: HOMEPAGE_LAYOUT_V2 · shell 1320px · artykuł/stopka/NAV — QA usera po deploy.
+
 Krok 5: Odkrywaj · Krok 6: API ops panel
 
-Opcjonalnie: weave linki (min. tag) · publikacja REVIEW · `npm run db:deploy` (byline) jeśli brak
-Krok 5: Odkrywaj (/galeria, /wideo, /kalendarz, /mapa, /starty)
-Krok 6: API ops panel (zamiast LAUNCHES[] w ContentGrid)
+Opcjonalnie: weave linki · publikacja REVIEW · `npm run db:deploy` (byline) jeśli brak
 
 Reguły: object-cover · publishedAt=#1 · heroPosition w Najnowszych · tylko PUBLISHED public · ZERO dev copy na froncie.
 
@@ -159,6 +162,19 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 41) — UI homepage v2, artykuł, stopka, NAV
+
+| Obszar | Stan |
+|--------|------|
+| **Homepage** | v2: hero pełna szerokość shellu, Najnowsze 5 kart pod hero, Temat tygodnia pod spodem, 3 działy (Technologie/Astronomia/Misje), Popularne 4× |
+| **Revert layoutu** | `HOMEPAGE_LAYOUT_V2 = false` w `lib/site-layout.ts` → stary układ hero + rail |
+| **Artykuł** | Ten sam shell 1320px, szersza okładka, breadcrumb kompaktowy |
+| **Stopka** | Przebudowa — kotwica marki + newsletter w lewej kolumnie |
+| **NAV** | Pill track desktop, wyśrodkowane menu |
+| **Następny czat** | Krok 4 SEO (sitemap, JSON-LD, GSC) |
+
+**Pliki kluczowe:** `lib/site-layout.ts`, `HomepageTopZone.tsx`, `lib/ui/article-editorial-layout.ts`, `lib/ui/nav-desktop.ts`, `Footer.tsx`, `Navbar.tsx`
 
 ### Sesja 4.06.2026 (czat 40, koniec) — UI homepage + artykuł
 

@@ -12,6 +12,10 @@ import ArticleCard from "@/components/article/ArticleCard";
 import DepartmentSectionFrame from "@/components/sections/DepartmentSectionFrame";
 import DepartmentSectionHeader from "@/components/sections/DepartmentSectionHeader";
 import { HomeSectionMobileFeed } from "@/components/sections/HomeSectionArticleFeed";
+import {
+  HOMEPAGE_POPULAR_LIMIT,
+  homepageFourCardGrid,
+} from "@/lib/site-layout";
 
 interface Props {
   articles: NewsArticle[];
@@ -51,16 +55,18 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
     if (candidatePool.length === 0) return [];
 
     if (likeCounts === null) {
-      return rankPopular(candidatePool, { limit: 6 });
+      return rankPopular(candidatePool, { limit: HOMEPAGE_POPULAR_LIMIT });
     }
 
     return rankPopular(candidatePool, {
-      limit: 6,
+      limit: HOMEPAGE_POPULAR_LIMIT,
       engagementBySlug: likeCounts,
     });
   }, [articles, exclude, likeCounts]);
 
   if (popular.length === 0) return null;
+
+  const fourCardGrid = homepageFourCardGrid();
 
   return (
     <section className="reveal">
@@ -82,8 +88,8 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
                 />
               ))}
             </div>
-            <div className="hidden grid-cols-1 gap-5 sm:grid-cols-2 lg:grid lg:grid-cols-3">
-              {[0, 1, 2].map((i) => (
+            <div className={fourCardGrid}>
+              {Array.from({ length: HOMEPAGE_POPULAR_LIMIT }, (_, i) => (
                 <div
                   key={i}
                   className="h-[320px] animate-pulse rounded-xl border border-hairline bg-glass"
@@ -102,9 +108,9 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
                   : POPULAR_THEME.label
               }
             />
-            <div className="hidden grid-cols-1 gap-5 sm:grid-cols-2 lg:grid lg:grid-cols-3">
+            <div className={fourCardGrid}>
               {popular.map((article) => (
-                <ArticleCard key={article.id} article={article} />
+                <ArticleCard key={article.id} article={article} compact />
               ))}
             </div>
           </>

@@ -6,6 +6,7 @@ import { cloneElement, isValidElement, useEffect, useRef, useState } from "react
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { navLinkAccent, type NavMenuLink } from "@/lib/ui/nav-menu-config";
+import { navTrackDropdownTriggerClass } from "@/lib/ui/nav-desktop";
 
 const PANEL_STYLE = {
   background:
@@ -77,10 +78,7 @@ export function NavDropdownMenu({
       aria-expanded={open}
       aria-haspopup="menu"
       onClick={onToggle}
-      className={cn(
-        "flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-2 text-[12.5px] font-medium transition-colors duration-300 hover:bg-glass-hover hover:text-text-primary xl:px-3 xl:text-[13px]",
-        active || open ? "text-text-primary" : "text-text-secondary"
-      )}
+      className={navTrackDropdownTriggerClass(active, open)}
     >
       {label}
       <ChevronDown

@@ -16,6 +16,7 @@ import {
 } from "@/lib/article/weave-internal-links";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 import { previewCatMeta } from "@/lib/ui/article-preview-meta";
+import { ARTICLE_PROSE_MAX, ARTICLE_SHELL } from "@/lib/ui/article-editorial-layout";
 import { cn } from "@/lib/cn";
 
 export type ArticlePageBodyMainProps = {
@@ -44,8 +45,8 @@ export default function ArticlePageBodyMain({
   const wovenSegments = buildWovenBodySegments(restBlocks, weaveCandidates);
 
   const articleCard = (
-      <article className="p-7 sm:p-10">
-        <div className="max-w-[72ch]">
+      <article className="min-w-0 pt-1 sm:pt-2">
+        <div className={ARTICLE_PROSE_MAX}>
           {!isRss && lead ? (
             <p
               className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
@@ -93,7 +94,7 @@ export default function ArticlePageBodyMain({
         </div>
 
         {!preview ? (
-          <div className="article-panel card-surface mt-10 p-5 sm:p-6">
+          <div className="article-panel card-surface mt-10 w-full max-w-none p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <span className="h-px flex-1 bg-white/10" />
               <span className="overline text-text-muted">Web Space Station</span>
@@ -128,7 +129,7 @@ export default function ArticlePageBodyMain({
   return (
     <div
       className={cn(
-        "container-site py-6 max-sm:py-5 sm:py-10",
+        cn(ARTICLE_SHELL, "py-6 max-sm:py-5 sm:py-10"),
         preview ? "" : "reveal",
         className
       )}

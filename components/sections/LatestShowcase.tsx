@@ -148,6 +148,62 @@ function LatestRailLead({ article }: { article: NewsArticle }) {
   );
 }
 
+/** Kompaktowa karta w rzędzie 5-up pod hero (desktop v2). */
+function LatestStripCard({ article }: { article: NewsArticle }) {
+  const cat = getCategoryInfo(article.category);
+
+  return (
+    <Link
+      href={`/aktualnosci/${article.slug}`}
+      className="surface-interactive group flex min-w-0 flex-col overflow-hidden rounded-xl border border-hairline bg-space-card"
+    >
+      <div
+        className="img-sheen relative aspect-[16/10] w-full overflow-hidden"
+        style={{ background: categoryFallbackBg(article.category) }}
+      >
+        <CoverImage
+          src={article.image}
+          alt=""
+          fill
+          sizes="(max-width: 1320px) 20vw, 260px"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(5,7,9,0.75) 0%, transparent 55%)",
+          }}
+        />
+      </div>
+      <div className="flex flex-1 flex-col px-3 py-3 sm:px-3.5 sm:py-3.5">
+        <span
+          className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
+          style={{ color: cat.color }}
+        >
+          <span
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: cat.color }}
+          />
+          {cat.label}
+        </span>
+        <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-text-primary transition-colors group-hover:text-accent-cyan sm:text-[14.5px]">
+          {article.title}
+        </h3>
+        <div className="mt-auto flex items-center gap-2 pt-2 text-[11px] text-text-muted">
+          <span>{article.timeLabel}</span>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1">
+            <Clock size={11} aria-hidden />
+            {article.readTime ?? 3} min
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function LatestRailRow({ article }: { article: NewsArticle }) {
   const cat = getCategoryInfo(article.category);
 
@@ -216,7 +272,7 @@ export default function LatestShowcase({
   peekBelowHero = false,
 }: {
   articles: NewsArticle[];
-  variant?: "slider" | "rail" | "list";
+  variant?: "slider" | "rail" | "list" | "strip";
   mobileShell?: boolean;
   /** Tighter top spacing when stacked under mobile hero (peek next section). */
   peekBelowHero?: boolean;
@@ -245,6 +301,21 @@ export default function LatestShowcase({
           <div className="divide-y divide-hairline-faint border-t border-hairline-faint">
             {articles.map((article) => (
               <LatestRailRow key={article.id} article={article} />
+            ))}
+          </div>
+        </LatestPanel>
+      </section>
+    );
+  }
+
+  if (variant === "strip") {
+    return (
+      <section aria-label="Najnowsze artykuły" className="reveal">
+        <LatestPanel>
+          {header}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
+            {articles.map((article) => (
+              <LatestStripCard key={article.id} article={article} />
             ))}
           </div>
         </LatestPanel>

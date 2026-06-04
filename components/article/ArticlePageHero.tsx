@@ -63,7 +63,7 @@ export default function ArticlePageHero({
           }
           fill
           priority
-          sizes="100vw"
+          sizes="(max-width: 1320px) 100vw, 1320px"
           className="z-[1] object-cover object-center"
         />
       </div>

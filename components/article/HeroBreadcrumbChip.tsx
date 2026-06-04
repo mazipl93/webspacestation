@@ -24,7 +24,7 @@ export default function HeroBreadcrumbChip({
     "inline-flex items-center rounded-md border font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
     variant === "overlay"
       ? "px-2.5 py-1 text-[11px] shadow-[0_2px_14px_rgba(0,0,0,0.35)] backdrop-blur-md"
-      : "min-h-[36px] shrink-0 px-3 py-1.5 text-[11px] bg-glass text-text-secondary shadow-none",
+      : "shrink-0 px-2.5 py-1 text-[10px] bg-glass text-text-secondary shadow-none",
     href &&
       (variant === "overlay"
         ? "hover:bg-white/20"

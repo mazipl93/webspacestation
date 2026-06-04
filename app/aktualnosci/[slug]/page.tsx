@@ -19,7 +19,14 @@ import ArticlePageHero from "@/components/article/ArticlePageHero";
 import ArticleHeroMobileMeta from "@/components/article/ArticleHeroMobileMeta";
 import ArticleInfoPanel from "@/components/article/ArticleInfoPanel";
 import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
+import {
+  ARTICLE_HERO_SHELL_WRAP,
+  ARTICLE_PAGE_GRID,
+  ARTICLE_PAGE_SIDEBAR_STUB,
+  ARTICLE_SHELL,
+} from "@/lib/ui/article-editorial-layout";
 import { ARTICLE_PAGE_MAIN_OFFSET_CLASS } from "@/lib/ui/article-hero-frame";
+import { cn } from "@/lib/cn";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
 // DB access during `next build`; the page is rendered on first request, cached,
@@ -231,20 +238,16 @@ function ArticleBody({
 
   return (
     <div className="border-b border-hairline bg-[#05070d]">
-      <div className="container-site px-7 py-4 sm:px-10 lg:pt-6 lg:pb-10">
-        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className={cn(ARTICLE_SHELL, "py-5 sm:py-7 lg:py-8")}>
+        <div className={ARTICLE_PAGE_GRID}>
           <div className="min-w-0">
             <ArticleHeroMobileMeta
               article={article}
-              categoryLabel={meta.label}
-              categoryColor={meta.color}
               showBreadcrumb
               breadcrumbOnly
             />
             <ArticleHeroMobileMeta
               article={article}
-              categoryLabel={meta.label}
-              categoryColor={meta.color}
               showBreadcrumb={false}
               className="mt-4 xl:mt-5"
             />
@@ -287,7 +290,7 @@ function ArticleBody({
 function ReturnBand({ category }: { category: string }) {
   const meta = catMeta(category);
   return (
-    <div className="container-site mb-5">
+    <div className={cn(ARTICLE_SHELL, "mb-5")}>
       <div
         className="article-panel flex flex-col items-start justify-between gap-4 rounded-2xl border border-hairline px-6 py-5 sm:flex-row sm:items-center"
         style={{
@@ -331,7 +334,7 @@ function ReturnBand({ category }: { category: string }) {
 function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null;
   return (
-    <div className="container-site pb-14 reveal">
+    <div className={cn(ARTICLE_SHELL, "pb-14 reveal")}>
       <div className="article-panel card-surface p-5">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -398,8 +401,12 @@ export default async function ArticlePage({ params }: Props) {
       <Navbar />
       {/* Reading context bar — appears after hero scroll, tracks article progress */}
       <StickyArticleBar title={article.title} category={article.category} slug={article.slug} />
-      <main className={`relative z-[1] ${ARTICLE_PAGE_MAIN_OFFSET_CLASS}`}>
-        <ArticlePageHero article={article} embedded />
+      <main className={cn("relative z-[1]", ARTICLE_PAGE_MAIN_OFFSET_CLASS)}>
+        <div className={cn(ARTICLE_SHELL, "mt-1")}>
+          <div className={ARTICLE_HERO_SHELL_WRAP}>
+            <ArticlePageHero article={article} embedded />
+          </div>
+        </div>
         <ArticleBody
           article={article}
           sidebarRelated={sidebarRelated}

@@ -5,13 +5,12 @@ import HeroMetaChip from "@/components/article/HeroMetaChip";
 import ArticlePublicByline from "@/components/article/ArticlePublicByline";
 import type { PublicArticleByline } from "@/lib/article/resolve-public-byline";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
+import { ARTICLE_HEADLINE_MAX, ARTICLE_PROSE_MAX } from "@/lib/ui/article-editorial-layout";
 import { ARTICLE_HERO_MOBILE_META_CLASS } from "@/lib/ui/article-hero-frame";
 import { cn } from "@/lib/cn";
 
 type Props = {
   article: NewsArticle;
-  categoryLabel: string;
-  categoryColor: string;
   showBreadcrumb?: boolean;
   /** Tylko ścieżka nawigacji (nad siatką tytuł + Informacje). */
   breadcrumbOnly?: boolean;
@@ -22,27 +21,9 @@ type Props = {
   className?: string;
 };
 
-function CategoryBadge({ label, color }: { label: string; color: string }) {
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
-      style={{
-        color,
-        borderColor: `${color}44`,
-        background: `${color}12`,
-      }}
-    >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
-      {label}
-    </span>
-  );
-}
-
 /** Tytuł, meta i breadcrumb pod okładką — bez nakładki na zdjęciu. */
 export default function ArticleHeroMobileMeta({
   article,
-  categoryLabel,
-  categoryColor,
   showBreadcrumb = true,
   breadcrumbOnly = false,
   belowImage = true,
@@ -61,18 +42,11 @@ export default function ArticleHeroMobileMeta({
   });
 
   const breadcrumb = showBreadcrumb ? (
-    <div
-      className={cn(
-        "rounded-xl border border-hairline-faint px-3 py-2.5 sm:px-3.5",
-        !breadcrumbOnly && "mb-4",
-      )}
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
-      }}
-    >
-      <ArticleHeroBreadcrumb categorySlug={article.category} variant="panel" />
-    </div>
+    <ArticleHeroBreadcrumb
+      categorySlug={article.category}
+      variant="compact"
+      className={cn(!breadcrumbOnly && "mb-3")}
+    />
   ) : null;
 
   if (breadcrumbOnly) {
@@ -85,26 +59,20 @@ export default function ArticleHeroMobileMeta({
     <div
       className={cn(
         belowImage
-          ? "flex max-w-[72ch] flex-col gap-2"
+          ? "flex w-full min-w-0 flex-col gap-3"
           : ARTICLE_HERO_MOBILE_META_CLASS,
         className
       )}
     >
       {breadcrumb}
 
-      {article.isBreaking ? (
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
+      <div className="flex w-fit max-w-full flex-wrap items-center gap-2">
+        {article.isBreaking ? (
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-accent-live px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
             <span className="live-dot" style={{ background: "#fff" }} />
             Ważne
           </span>
         ) : null}
-
-        <CategoryBadge label={categoryLabel} color={categoryColor} />
-
-        <h1 className="max-w-[820px] text-balance text-[1.35rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-text-primary lg:text-[clamp(1.75rem,3vw,2.5rem)] lg:leading-[1.12]">
-          {article.title}
-        </h1>
-
         <div className="flex flex-wrap items-center gap-1.5">
           <HeroMetaChip icon={Calendar} compact variant="panel">
             <span className="lg:hidden">{dateShort}</span>
@@ -121,11 +89,26 @@ export default function ArticleHeroMobileMeta({
             </span>
           ) : null}
         </div>
+      </div>
+
+        <h1
+          className={cn(
+            ARTICLE_HEADLINE_MAX,
+            "text-balance text-[1.35rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-text-primary lg:text-[clamp(1.75rem,2.8vw,2.65rem)] lg:leading-[1.12]",
+          )}
+        >
+          {article.title}
+        </h1>
 
         {byline ? <ArticlePublicByline byline={byline} /> : null}
 
         {article.excerpt ? (
-          <p className="pt-0.5 text-[14px] leading-relaxed text-text-secondary">
+          <p
+            className={cn(
+              ARTICLE_PROSE_MAX,
+              "pt-0.5 text-[14px] leading-relaxed text-text-secondary",
+            )}
+          >
             {article.excerpt}
           </p>
         ) : null}

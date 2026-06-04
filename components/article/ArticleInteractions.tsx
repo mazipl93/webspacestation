@@ -1,5 +1,11 @@
 import ShareBar from "@/components/article/ShareBar";
 import Comments from "@/components/article/Comments";
+import {
+  ARTICLE_PAGE_GRID,
+  ARTICLE_PAGE_SIDEBAR_STUB,
+  ARTICLE_SHELL,
+} from "@/lib/ui/article-editorial-layout";
+import { cn } from "@/lib/cn";
 
 type Props = {
   slug: string;
@@ -10,8 +16,8 @@ type Props = {
 // The empty sidebar track keeps the main column the same width as ArticleBody.
 export default function ArticleInteractions({ slug, title }: Props) {
   return (
-    <div className="container-site overflow-x-hidden pb-6 pt-4">
-      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className={cn(ARTICLE_SHELL, "overflow-x-hidden pb-6 pt-4")}>
+      <div className={ARTICLE_PAGE_GRID}>
         <div className="flex min-w-0 flex-col gap-6">
           <div className="mb-4 flex items-center gap-3">
             <span className="h-px flex-1 bg-white/12" />
@@ -21,7 +27,7 @@ export default function ArticleInteractions({ slug, title }: Props) {
           <ShareBar title={title} slug={slug} />
           <Comments slug={slug} />
         </div>
-        <div aria-hidden="true" className="hidden xl:block" />
+        <div aria-hidden className={ARTICLE_PAGE_SIDEBAR_STUB} />
       </div>
     </div>
   );
