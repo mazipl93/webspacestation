@@ -2,12 +2,12 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 38 — krok 0 commit lokalny)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit lokalny:** `77681b0` — feat(ui): logo C, flat theme, article-panel  
-**Ostatni commit remote:** `a5ab17c` — in-body internal links (do 4) + weave fix
+**Ostatni commit lokalny:** `eb6fc60` — feat(ui): logo C, flat theme, article-panel  
+**Ostatni commit remote:** `eb6fc60` — logo C, flat theme, article-panel (krok 0)
 
-**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main` (po push `77681b0`)
+**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Krok 0 (czat 38) — commit lokalny, push czeka OK usera:**
+**Krok 0 (czat 38) — na prod:**
 - **LOGO** — wariant C (Oswald) · `WssWordmarkControl`
 - **Tło** — flat `#060810` · `data-portal-theme="slate-soft"`
 - **Artykuł dół** — `article-panel`
@@ -15,7 +15,9 @@
 - **Aktualności** — bez podtytułu CMS (`ArticleFeedSection`)
 - **Homepage ops** — mock w `ContentGrid.tsx` → krok 6
 
-**Następny krok po OK usera:** **1** — wyrzucić kod Ważne teraz (4 pliki sekcji)
+**Krok 1 (czat 38) — lokalnie:** usunięte 4 komponenty Ważne teraz; `rankImportantNow()` zostaje w `ContentGrid` (pula hero). Commit/push po OK usera.
+
+**Następny krok po OK:** **2** — licznik REVIEW w CMS
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -51,7 +53,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **Artykuł dół** | **User OK** | `article-panel` — share, komentarze, Wróć, Czytaj dalej |
 | **LOGO** | **C (Oswald)** — commit w kroku 0 | Martwe A/B w `wordmarks/` — posprzątać opcjonalnie |
 | **Tło** | **User OK** · hardcoded `slate-soft` / `#060810` | Dev switchery **usunięte** |
-| **Commit** | **`77681b0` lokalnie** | Push po OK usera |
+| **Commit** | **`eb6fc60` lokalnie** | Push po OK usera |
 
 **Theme (nie ruszać bez potrzeby):**
 - `lib/ui/portal-page-themes.ts` · `portal-page-theme-vars.ts` · `app/globals.css`
@@ -101,7 +103,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | Krok | Zadanie |
 |------|---------|
 | **0** | Commit WIP (logo C, tło, article-panel, bez dev UI) |
-| **1** | Usunąć kod „Ważne teraz” (ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster) |
+| **1** | Usunąć kod „Ważne teraz” — **zrobione lokalnie**, push po OK | `[x]` lokalnie |
 | **2** | Licznik REVIEW w CMS |
 | **3** | Komentarze Supabase |
 | **4** | Sitemap + JSON-LD |
@@ -133,7 +135,7 @@ REGUŁA OBOWIĄZKOWA:
 - Commit/push tylko po moim OK (krok 0 = commit WIP jeśli potwierdzę)
 
 Stan remote: main `a5ab17c` · prod https://webspacestation.pl
-Stan lokalny: `77681b0` (krok 0) — push po Twoim OK
+Stan lokalny: `eb6fc60` (krok 0) — push po Twoim OK
 
 Komendy: npm run dev · npm run type-check
 
@@ -173,14 +175,14 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 
 ## Historia sesji (skrót)
 
-### Sesja 4.06.2026 (czat 38) — krok 0: commit pakietu WIP UI
+### Sesja 4.06.2026 (czat 38) — krok 0 push + krok 1 cleanup
 
 | Obszar | Stan |
 |--------|------|
-| **Commit** | `77681b0` — logo C, `#060810`, article-panel, docs audyt/backlog |
+| **Krok 0** | `eb6fc60` na `origin/main` |
+| **Krok 1** | Usunięte: ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster · `rankImportantNow` w ContentGrid bez zmian |
 | **type-check** | OK |
-| **Push** | **Brak** — czeka OK usera |
-| **Następny** | Krok 1 po OK (usuń Ważne teraz komponenty) |
+| **Push krok 1** | Czeka OK usera |
 
 **Poza commitem (opcjonalnie później):** `WssWordmarkApex`, `WssWordmarkStation`, `WssLetterWCustom`, `wss-logo-variants.ts`, `build-log.txt`
 

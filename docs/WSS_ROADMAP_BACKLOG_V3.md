@@ -10,7 +10,7 @@
 | Krok | ID | Zadanie | Status |
 |------|-----|---------|--------|
 | **0** | **COMMIT-WIP** | Logo C + tło flat + article-panel (bez dev UI) | **Następne** `[ ]` |
-| **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[ ]` |
+| **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[x]` |
 | **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[ ]` |
 | **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[ ]` |
 | **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[ ]` |
