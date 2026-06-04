@@ -246,7 +246,7 @@ export default function Navbar() {
       >
         <div className={cn(SITE_CONTAINER, "flex h-[4.25rem] items-center gap-3 sm:h-16 sm:gap-4 xl:gap-5")}>
           {/* ── Logo + brand ───────────────────────────────────── */}
-          <WssLogo asLink showFullName showTagline />
+          <WssLogo asLink />
 
           {/* ── Desktop nav ────────────────────────────────────── */}
           <nav className="ml-1 hidden min-w-0 flex-1 items-center lg:flex">

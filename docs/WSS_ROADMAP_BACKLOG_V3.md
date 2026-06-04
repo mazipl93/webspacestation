@@ -11,7 +11,7 @@
 | 2 | **P1-6-QA** | Upload okładek na prod | |
 | 3 | **P2-WEEK-TOPIC prod** | weekTopic + revalidate na prod | |
 
-**Zamknięte w czacie 24–25:** UI-HOME-24 `[x]` · P0-AUTHOR-BYLINE `[x]` · UI-PROFIL-25 `[x]` · UI-MOBILE-NAV-25 `[x]` · UI-NO-SUBSCRIBE-LINKS `[x]` `06e2d4d`
+**Zamknięte w czacie 24–25:** UI-HOME-24 `[x]` · P0-AUTHOR-BYLINE `[x]` · UI-PROFIL-25 `[x]` · UI-MOBILE-NAV-25 `[x]` · UI-NO-SUBSCRIBE-LINKS `[x]` · **P1-10 LOGO** wordmark v2 `[x]` (PNG, nav/stopka)
 
 **P2-WEEK-TOPIC:** kod + push `[x]` `3e7139b` · **prod smoke** (weekTopic ON + revalidate) `[ ]`
 
@@ -85,7 +85,7 @@ _(brak)_
 | P1-7 | Live preview editor | `[~]` | Split + hero URL; QA okładki `[ ]` |
 | P1-8 | CMS redesign (The Verge) | `[~]` | Uproszczenie PR7; pełny redesign `[ ]` |
 | P1-9 | Hero article UX — kontrast daty/meta | `[x]` | `HeroMetaChip` — user OK (sesja 17) |
-| P1-10 | Zmiana logo / favicon | `[~]` | WssLogo + earth.jpg + favicon metadata (sesja 20 WIP) |
+| P1-10 | Zmiana logo / favicon | `[~]` | Wordmark v2 PNG w nav/stopce `[x]`; favicon / apple-touch `[ ]` |
 | P1-11 | Podpis zdjęcia okładki (coverImageCredit) | `[x]` | `39c8a9e`; migracja `20260603200000`; **prod: sprawdzić db:deploy** |
 
 ---

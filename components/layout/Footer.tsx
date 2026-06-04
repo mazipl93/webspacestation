@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SITE_CONTAINER } from "@/lib/site-layout";
+import WssLogoWordmark from "@/components/brand/WssLogoWordmark";
 
 const FOOTER_NAV = {
   Nawigacja: [
@@ -129,18 +130,8 @@ export default function Footer() {
       <div className={cn(SITE_CONTAINER, "pb-12 pt-4")}>
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
-            <div className="mb-4 flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent-blue to-[#1a4fd0] shadow-[0_4px_16px_-4px_rgba(47,109,255,0.6)]">
-                <FooterRocketIcon />
-              </div>
-              <div className="leading-none">
-                <span className="block text-[9px] font-bold uppercase tracking-[0.2em] text-accent-cyan">
-                  Web Space
-                </span>
-                <span className="block text-[13px] font-bold uppercase tracking-[0.13em] text-text-primary">
-                  Station
-                </span>
-              </div>
+            <div className="mb-4">
+              <WssLogoWordmark height={48} />
             </div>
             <p className="max-w-[260px] text-[13px] leading-relaxed text-text-tertiary">
               Największy polski portal informacyjny o kosmosie, astronomii i technologiach
@@ -179,12 +170,3 @@ export default function Footer() {
   );
 }
 
-function FooterRocketIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2C12 2 7 6 7 13H17C17 6 12 2 12 2Z" fill="white" fillOpacity="0.92" />
-      <path d="M9 13V17C9 17 10.5 19 12 19C13.5 19 15 17 15 17V13H9Z" fill="white" fillOpacity="0.68" />
-      <circle cx="12" cy="9.5" r="1.5" fill="#2f6dff" />
-    </svg>
-  );
-}

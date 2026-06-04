@@ -1,8 +1,8 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25 — push pełny WIP + profil + mobile nav)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 25 — logo wordmark v2 + handoff)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `0e85af8` (feat `f956ff0`)
+**Ostatni commit remote:** _(po push tej sesji — `git log -1`)_
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -49,12 +49,13 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **CMS daty** | `3e7139b` | Brak autosave; **Zaktualizuj** nie zmienia `publishedAt` |
 | **Temat tygodnia** | `3e7139b` + UI `4ca8d46` | Toggle CMS, sekcja pod hero |
 | **Deploy Vercel** | `4868232` | Build prod naprawiony (JSX `//`) |
+| **Logo wordmark v2** | _(ten push)_ | Oficjalny PNG WSS+łuk+WEB SPACE STATION (`wss-wordmark.png`), nav/stopka; skrypty `process-wss-wordmark.mjs` |
 
 ### Do zrobienia (backlog — kolejność sugerowana)
 
 | Priorytet | ID | Zadanie |
 |-----------|-----|---------|
-| 1 | **PROD-QA** | Smoke prod: homepage motywy, autor CMS→hero, profil, mobile szukaj/powiadomienia, Temat tygodnia, daty Najnowsze |
+| 1 | **PROD-QA** | Smoke prod: homepage, logo wordmark (nav/stopka), profil, mobile szukaj/powiadomienia, autor CMS, Temat tygodnia |
 | 2 | **OPS** | ~175 artykułów REVIEW + `npm run cache:revalidate` |
 | 3 | **P1-6-QA** | Upload okładek na prod (`SUPABASE_SERVICE_ROLE_KEY`, bucket SQL) |
 | 4 | **P2-WEEK-TOPIC prod** | weekTopic ON w CMS + revalidate na prod |
@@ -80,9 +81,9 @@ Przeczytaj ZAWSZE:
 
 REGUŁA: punkt po punkcie · raport → test usera → CZEKAJ na OK.
 
-Stan: czat 24–25 wdrożone na main (homepage UI, authorByline, profil, mobile search/notifications, bez linków Subskrypcje w UI).
+Stan: main — homepage UI, authorByline, profil, mobile nav, bez Subskrypcje w UI, **logo wordmark v2** (PNG bez tła).
 
-Następne: PROD-QA → OPS REVIEW → P1-6 prod.
+Następne: PROD-QA (w tym logo na prod) → OPS REVIEW → P1-6 prod.
 
 Komendy: npm run dev · npx prisma generate · npm run db:deploy · npm run cache:revalidate · npm run type-check
 
@@ -93,7 +94,15 @@ Na końcu sesji: aktualizuj ten plik + WSS_ROADMAP_BACKLOG_V3.md.
 
 ## Historia sesji (skrót)
 
-### Sesja 4.06.2026 (czat 25, koniec) — deploy + profil + mobile nav + docs MAPA
+### Sesja 4.06.2026 (czat 25, koniec) — logo wordmark v2 + zapis na nowy czat
+
+| Obszar | Stan |
+|--------|------|
+| **Logo** | User dostarczył wordmark v2 (WSS + łuk + WEB SPACE STATION); czarne tło → PNG; `WssLogoWordmark` w nav (52px) i stopce (48px) |
+| **Glob v1** | Zastąpiony wordmarkiem; pliki `wss-globe*.png` + skrypt zostają w repo |
+| **Commit** | push na `main` przed nowym czatem |
+
+### Sesja 4.06.2026 (czat 25) — deploy + profil + mobile nav + docs MAPA
 
 | Obszar | Stan |
 |--------|------|
@@ -767,7 +776,7 @@ lib/rss/image-credit.ts
 
 ### Commity czat 24–25 (referencja)
 
-`3e7139b` → `4ca8d46` → `48acd18` → `4868232` → `06e2d4d` → `f956ff0`
+`3e7139b` → `4ca8d46` → `4868232` → `06e2d4d` → `f956ff0` → _(logo wordmark)_
 
 ### Pliki kluczowe (czat 24–25)
 
@@ -779,6 +788,10 @@ lib/home/homepage-section-themes.ts
 components/article/HeroBreadcrumbChip.tsx
 prisma/migrations/20260604200000_article_author_byline/
 lib/ui/nav-overlay-panel.ts
+components/brand/WssLogoWordmark.tsx
+components/brand/WssLogoGlobe.tsx
+public/brand/wss-wordmark.png
+scripts/process-wss-wordmark.mjs
 components/profile/ProfileClient.tsx
 components/profile/ProfileSectionHeading.tsx
 components/layout/Navbar.tsx
