@@ -738,17 +738,25 @@ html[data-portal-theme] .site-cosmos-grain {
   overflow: hidden;
   border-radius: inherit;
 }
-/* Panel szczegółów zamiast popupów Leaflet (mobile + desktop) */
+/* Panel szczegółów pod mapą (nie Leaflet popup) */
 .ops-map-pin-detail {
-  max-height: min(56dvh, 480px);
+  max-height: min(42dvh, 360px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 @media (min-width: 768px) {
   .ops-map-pin-detail {
-    max-height: min(50dvh, 520px);
+    max-height: min(38dvh, 400px);
   }
+}
+.ops-map-popup--panel .ops-map-popup__hero--compact {
+  max-height: 168px;
+}
+.ops-map-popup--panel .ops-map-popup__hero--compact .ops-map-popup__img {
+  height: 168px;
+  width: 100%;
+  object-fit: cover;
 }
 /* /mapa — zawsze w szerokości kontenera (bez poziomego scrolla na mobile) */
 .ops-mapa-page {
@@ -796,17 +804,6 @@ html[data-portal-theme] .site-cosmos-grain {
   .ops-map-embed.ops-live-map {
     height: 460px !important;
     min-height: 460px;
-    max-height: 460px;
-  }
-}
-.homepage-ops-panel .ops-map-embed + div,
-.homepage-ops-panel .grid > div:last-child {
-  max-height: min(58dvh, 440px);
-  overflow-y: auto;
-}
-@media (min-width: 1024px) {
-  .homepage-ops-panel .ops-map-embed + div,
-  .homepage-ops-panel .grid > div:last-child {
     max-height: 460px;
   }
 }

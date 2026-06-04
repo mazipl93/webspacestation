@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import OpsMapPinDetail from "@/components/discover/OpsMapPinDetail";
 import OpsPinList from "@/components/discover/OpsPinList";
+import { cn } from "@/lib/cn";
 import { captionForMapPin } from "@/lib/ops/map-pin-caption";
 import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
@@ -12,8 +13,7 @@ const OpsLiveMap = dynamic(() => import("@/components/discover/OpsLiveMap"), {
   ssr: false,
   loading: () => (
     <div
-      className="flex animate-pulse items-center justify-center rounded-xl border border-hairline-faint bg-[#0a1018] text-[12px] text-text-muted"
-      style={{ height: 280 }}
+      className="ops-map-embed flex h-[min(48dvh,400px)] min-h-[280px] animate-pulse items-center justify-center rounded-xl border border-hairline-faint bg-[#0a1018] text-[12px] text-text-muted"
     >
       Ładowanie mapy satelitarnej…
     </div>
@@ -87,23 +87,30 @@ export default function OpsMissionMap({
 
   if (isSplit) {
     return (
-      <div className="grid min-w-0 w-full max-w-full gap-3 overflow-hidden sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)]">
-        <div className="min-h-0 min-w-0 overflow-hidden">{mapBlock}</div>
-        {pinList ? (
-          <div className="min-h-0 min-w-0 overflow-hidden rounded-xl border border-hairline-faint p-3 sm:p-4 lg:max-h-[460px] lg:overflow-y-auto">
-            {pinList}
-          </div>
-        ) : null}
-        {detailPanel ? <div className="min-w-0 lg:col-span-2">{detailPanel}</div> : null}
+      <div className="flex min-w-0 w-full max-w-full flex-col gap-3 sm:gap-4">
+        <div
+          className={cn(
+            "grid min-w-0 w-full gap-3 sm:gap-4",
+            "lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] lg:items-start"
+          )}
+        >
+          <div className="min-w-0 w-full shrink-0">{mapBlock}</div>
+          {pinList ? (
+            <div className="min-w-0 rounded-xl border border-hairline-faint p-3 sm:p-4 lg:max-h-[420px] lg:overflow-y-auto">
+              {pinList}
+            </div>
+          ) : null}
+        </div>
+        {detailPanel}
       </div>
     );
   }
 
   return (
-    <div className="flex min-w-0 w-full max-w-full flex-col gap-2 overflow-hidden sm:gap-3">
+    <div className="flex min-w-0 w-full max-w-full flex-col gap-3 overflow-hidden sm:gap-4">
       {mapBlock}
-      {detailPanel}
       {pinList}
+      {detailPanel}
     </div>
   );
 }

@@ -30,8 +30,8 @@ export default function OpsMapPinDetail({ spotlight, caption, onClose }: Props) 
         <X size={16} />
       </button>
 
-      <article className="ops-map-popup">
-        <div className="ops-map-popup__hero">
+      <article className="ops-map-popup ops-map-popup--panel">
+        <div className="ops-map-popup__hero ops-map-popup__hero--compact">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}

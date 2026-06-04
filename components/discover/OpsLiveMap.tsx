@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import {
   Circle,
@@ -13,6 +13,7 @@ import {
 import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
 import { cn } from "@/lib/cn";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
+import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import "leaflet/dist/leaflet.css";
 
@@ -21,7 +22,6 @@ type Props = {
   iss?: OpsIssPosition | null;
   issOrbit?: { lat: number; lon: number }[][];
   height?: number;
-  /** Scroll-wheel zoom (embed: off). Drag/touch stay enabled. */
   interactive?: boolean;
   className?: string;
   focusPinId?: string | null;
@@ -59,22 +59,17 @@ function MapViewController({
 
 function MapResizeFix() {
   const map = useMap();
-  const ran = useRef(false);
 
   useEffect(() => {
     const fix = () => map.invalidateSize({ animate: false });
-    if (!ran.current) {
-      ran.current = true;
-      fix();
-      const t = window.setTimeout(fix, 250);
-      return () => window.clearTimeout(t);
-    }
-    return undefined;
+    fix();
+    const t = window.setTimeout(fix, 300);
+    return () => window.clearTimeout(t);
   }, [map]);
 
   useEffect(() => {
     const onOrientation = () => {
-      window.setTimeout(() => map.invalidateSize({ animate: false }), 100);
+      window.setTimeout(() => map.invalidateSize({ animate: false }), 150);
     };
     window.addEventListener("orientationchange", onOrientation);
     return () => window.removeEventListener("orientationchange", onOrientation);
@@ -84,7 +79,8 @@ function MapResizeFix() {
 }
 
 function focusZoomForPin(pin: OpsMapPin): number {
-  const narrow = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  const narrow =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
   if (pin.kind === "iss") return narrow ? 3 : 4;
   return narrow ? 4 : 5;
 }
@@ -97,21 +93,15 @@ function PinFocusController({
   pins: OpsMapPin[];
 }) {
   const map = useMap();
-  const lastFocusRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!focusPinId) {
-      lastFocusRef.current = null;
-      return;
-    }
-    if (lastFocusRef.current === focusPinId) return;
-    lastFocusRef.current = focusPinId;
-
+    if (!focusPinId) return;
     const pin = pins.find((p) => p.id === focusPinId);
     if (!pin) return;
 
-    map.closePopup();
     map.setView([pin.lat, pin.lon], focusZoomForPin(pin), { animate: false });
+    const t = window.setTimeout(() => map.invalidateSize({ animate: false }), 80);
+    return () => window.clearTimeout(t);
   }, [focusPinId, pins, map]);
 
   return null;
@@ -130,7 +120,9 @@ function createIssIcon(active: boolean) {
 }
 
 function createPadIcon(color: string, active: boolean) {
-  const ring = active ? `box-shadow:0 0 0 3px #fff, 0 0 12px ${color};` : `box-shadow:0 0 10px ${color}aa;`;
+  const ring = active
+    ? `box-shadow:0 0 0 3px #fff, 0 0 12px ${color};`
+    : `box-shadow:0 0 10px ${color}aa;`;
   return L.divIcon({
     className: "ops-leaflet-pin",
     html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:${color};border:2px solid #fff;${ring}"></span>`,
@@ -176,18 +168,28 @@ export default function OpsLiveMap({
     return [20, 0];
   }, [iss, pins]);
 
+  const initialCenterRef = useRef<[number, number] | null>(null);
+  if (initialCenterRef.current === null) {
+    initialCenterRef.current = center;
+  }
+
   const visibilityRadiusM =
     iss?.altitudeKm != null ? issVisibilityRadiusM(iss.altitudeKm) : undefined;
 
-  const heightFromCss =
+  const shellClass = opsMapShellClass(className);
+  const useFixedShell =
     Boolean(className?.includes("ops-map-page-map")) ||
     Boolean(className?.includes("ops-map-embed"));
 
   if (pins.length === 0 && !iss) {
     return (
       <div
-        className="flex items-center justify-center rounded-xl border border-hairline-faint bg-[#0a1018] px-6 text-center"
-        style={{ height }}
+        className={cn(
+          "flex items-center justify-center rounded-xl border border-hairline-faint bg-[#0a1018] px-6 text-center",
+          shellClass,
+          className
+        )}
+        style={useFixedShell ? undefined : { height }}
       >
         <p className="max-w-[32ch] text-[13px] leading-relaxed text-text-tertiary">
           Mapa za chwilę — czekamy na pozycję ISS i współrzędne platform startowych.
@@ -199,19 +201,20 @@ export default function OpsLiveMap({
   return (
     <div
       className={cn(
-        "ops-live-map relative min-h-0 min-w-0 w-full max-w-full overflow-hidden rounded-xl border border-hairline-faint",
+        "ops-live-map relative w-full max-w-full shrink-0 overflow-hidden rounded-xl border border-hairline-faint",
+        shellClass,
         className
       )}
-      style={heightFromCss ? undefined : { height }}
+      style={useFixedShell ? undefined : { height }}
     >
       <MapContainer
-        center={center}
+        center={initialCenterRef.current ?? center}
         zoom={3}
         scrollWheelZoom={interactive}
         dragging
         touchZoom
         doubleClickZoom={interactive}
-        className="h-full w-full min-h-0"
+        className="!h-full !w-full"
         attributionControl
       >
         <TileLayer
@@ -279,7 +282,7 @@ export default function OpsLiveMap({
       )}
 
       <p className="pointer-events-none absolute bottom-2 left-2 z-[1000] max-w-[min(100%,280px)] rounded bg-black/50 px-2 py-1 text-[9px] leading-snug text-white/70">
-        Kliknij pinezkę lub etykietę poniżej
+        Wybierz punkt poniżej mapy
       </p>
     </div>
   );

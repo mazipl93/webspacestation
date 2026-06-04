@@ -185,6 +185,37 @@ const SITES: SiteRule[] = [
 
   {
 
+    test: (h) =>
+      /platforma lc-1\b|\blc-1\b|launch pad lc-1/i.test(h) && !/lc-10|lc-11|lc-101/i.test(h),
+
+    spotlight: {
+
+      title: "LC-1 (Jiuquan, Chiny)",
+
+      description:
+
+        "Jedna z głównych platform w Centrum Startowym Jiuquan w pustyni Gobi — historyczne starty programu załogowego i dziś misje komercyjne oraz naukowe.",
+
+      imageUrl: `${OPS_PAD_IMG}/jiuquan-launch-area-96a-landspace.png`,
+
+      imageCredit: "Materiał WSS",
+
+      facts: [
+
+        "Jiuquan to najstarszy chiński kosmodrom, działający od lat 50.",
+
+        "Stąd startowały misje Shenzhou z chińskimi taikonautami.",
+
+        "Pustynny klimat ułatwia obserwację trajektorii startu.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
     test: (h) => /lc-101|platforma lc-101|commercial lc-101/i.test(h),
 
     spotlight: {
