@@ -13,43 +13,9 @@ import {
   X,
 } from "lucide-react";
 import { useSessionUser } from "@/hooks/useSessionUser";
+import { useArticleComments } from "@/hooks/useArticleComments";
+import type { ArticleComment } from "@/lib/comments/article-comments";
 import Avatar from "@/components/profile/Avatar";
-
-type StoredComment = {
-  id: string;
-  author: string;
-  authorEmail?: string; // owner identity — enables edit/delete by author
-  authorAvatarUrl?: string; // profile picture at post time (from user_metadata)
-  body: string;
-  createdAt: string; // ISO
-  editedAt?: string; // ISO, set when the author edits
-};
-
-// NOTE: comments are persisted in localStorage for now. The data shape mirrors
-// what a Supabase `comments` table will store later (author / body / createdAt),
-// so swapping the storage layer won't require UI changes.
-function storageKey(slug: string) {
-  return `wss:comments:${slug}`;
-}
-
-function readComments(slug: string): StoredComment[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(storageKey(slug));
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeComments(slug: string, comments: StoredComment[]) {
-  try {
-    window.localStorage.setItem(storageKey(slug), JSON.stringify(comments));
-  } catch {
-    /* storage unavailable — keep in-memory only */
-  }
-}
 
 function formatWhen(iso: string): string {
   return new Date(iso).toLocaleDateString("pl-PL", {
@@ -62,71 +28,61 @@ function formatWhen(iso: string): string {
 }
 
 function commentAvatarSrc(
-  comment: StoredComment,
-  currentUser: { email: string; avatarUrl?: string } | null
+  comment: ArticleComment,
+  currentUser: { avatarUrl?: string } | null,
+  isOwner: boolean
 ): string | undefined {
   if (comment.authorAvatarUrl) return comment.authorAvatarUrl;
-  if (
-    currentUser?.avatarUrl &&
-    comment.authorEmail &&
-    comment.authorEmail === currentUser.email
-  ) {
-    return currentUser.avatarUrl;
-  }
+  if (isOwner && currentUser?.avatarUrl) return currentUser.avatarUrl;
   return undefined;
 }
 
 export default function Comments({ slug }: { slug: string }) {
-  const { user, loading } = useSessionUser();
+  const { user, loading: authLoading } = useSessionUser();
   const pathname = usePathname();
   const loginHref = pathname
     ? `/logowanie?redirectTo=${encodeURIComponent(pathname)}`
     : "/logowanie";
-  const [comments, setComments] = useState<StoredComment[]>([]);
+
+  const {
+    comments,
+    loading: commentsLoading,
+    saving,
+    error,
+    currentUserId,
+    postComment,
+    editComment,
+    removeComment,
+  } = useArticleComments(slug);
+
   const [draft, setDraft] = useState("");
   const [posted, setPosted] = useState(false);
   const [lastPostedId, setLastPostedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
 
-  useEffect(() => {
-    setComments(readComments(slug));
-  }, [slug]);
+  const loading = authLoading || commentsLoading;
 
-  // Auto-clear the success confirmation.
   useEffect(() => {
     if (!posted) return;
     const id = window.setTimeout(() => setPosted(false), 2800);
     return () => window.clearTimeout(id);
   }, [posted]);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const body = draft.trim();
-    if (!body || !user) return;
+    if (!body || !user || saving) return;
 
-    const next: StoredComment[] = [
-      {
-        id:
-          typeof crypto !== "undefined" && "randomUUID" in crypto
-            ? crypto.randomUUID()
-            : String(Date.now()),
-        author: user.name,
-        authorEmail: user.email,
-        authorAvatarUrl: user.avatarUrl,
-        body,
-        createdAt: new Date().toISOString(),
-      },
-      ...comments,
-    ];
-    setComments(next);
+    const newId = await postComment(body);
+    if (!newId) return;
+
     setDraft("");
     setPosted(true);
-    setLastPostedId(next[0].id);
-    writeComments(slug, next);
+    setLastPostedId(newId);
   }
 
-  function startEdit(comment: StoredComment) {
+  function startEdit(comment: ArticleComment) {
     setEditingId(comment.id);
     setEditDraft(comment.body);
   }
@@ -136,28 +92,25 @@ export default function Comments({ slug }: { slug: string }) {
     setEditDraft("");
   }
 
-  function saveEdit(id: string) {
-    const body = editDraft.trim();
-    if (!body) return;
-    const next = comments.map((c) =>
-      c.id === id ? { ...c, body, editedAt: new Date().toISOString() } : c
-    );
-    setComments(next);
-    writeComments(slug, next);
+  async function saveEdit(id: string) {
+    if (!editDraft.trim() || saving) return;
+    const ok = await editComment(id, editDraft);
+    if (!ok) return;
     setEditingId(null);
     setEditDraft("");
   }
 
-  function deleteComment(id: string) {
-    const next = comments.filter((c) => c.id !== id);
-    setComments(next);
-    writeComments(slug, next);
+  async function deleteComment(id: string) {
+    if (saving) return;
+    const ok = await removeComment(id);
+    if (!ok) return;
     if (editingId === id) cancelEdit();
   }
 
   const count = comments.length;
   const heading = useMemo(
-    () => `${count} ${count === 1 ? "komentarz" : count >= 2 && count <= 4 ? "komentarze" : "komentarzy"}`,
+    () =>
+      `${count} ${count === 1 ? "komentarz" : count >= 2 && count <= 4 ? "komentarze" : "komentarzy"}`,
     [count]
   );
 
@@ -169,7 +122,15 @@ export default function Comments({ slug }: { slug: string }) {
         <span className="text-[12px] text-text-muted">· {heading}</span>
       </div>
 
-      {/* ── Composer / login gate ── */}
+      {error && (
+        <p
+          role="alert"
+          className="mb-4 rounded-xl border border-accent-live/30 bg-accent-live/10 px-4 py-2.5 text-[12.5px] text-text-secondary"
+        >
+          {error}
+        </p>
+      )}
+
       <div className="mb-6 min-h-[108px]">
         {loading ? (
           <div className="h-[92px] animate-pulse rounded-xl border border-hairline bg-glass" />
@@ -202,7 +163,7 @@ export default function Comments({ slug }: { slug: string }) {
               </span>
               <button
                 type="submit"
-                disabled={!draft.trim()}
+                disabled={!draft.trim() || saving}
                 className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-accent-blue px-4 py-2.5 text-[12.5px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 <Send size={14} />
@@ -230,35 +191,49 @@ export default function Comments({ slug }: { slug: string }) {
         )}
       </div>
 
-      {/* ── Comment list ── */}
       {count === 0 ? (
         <p className="rounded-xl border border-dashed border-hairline px-5 py-8 text-center text-[13px] text-text-muted">
-          Brak komentarzy. {user ? "Bądź pierwszą osobą, która skomentuje." : "Zaloguj się, aby skomentować jako pierwszy."}
+          Brak komentarzy.{" "}
+          {user
+            ? "Bądź pierwszą osobą, która skomentuje."
+            : "Zaloguj się, aby skomentować jako pierwszy."}
         </p>
       ) : (
         <ul className="flex flex-col gap-4">
           {comments.map((c) => {
-            const isOwner = !!user && !!c.authorEmail && c.authorEmail === user.email;
+            const isOwner =
+              !!currentUserId && c.userId === currentUserId;
             const isEditing = editingId === c.id;
             return (
               <li
                 key={c.id}
                 className="flex gap-3"
-                style={c.id === lastPostedId ? {
-                  animation: "reveal-fade 0.4s cubic-bezier(0.22,1,0.36,1) both"
-                } : undefined}
+                style={
+                  c.id === lastPostedId
+                    ? {
+                        animation:
+                          "reveal-fade 0.4s cubic-bezier(0.22,1,0.36,1) both",
+                      }
+                    : undefined
+                }
               >
                 <Avatar
                   name={c.author}
-                  src={commentAvatarSrc(c, user)}
+                  src={commentAvatarSrc(c, user, isOwner)}
                   size={36}
                 />
                 <div className="min-w-0 flex-1 rounded-xl border border-hairline bg-space-card px-4 py-3">
                   <div className="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <span className="text-[13px] font-semibold text-text-primary">{c.author}</span>
-                    <span className="text-[11px] text-text-muted">{formatWhen(c.createdAt)}</span>
+                    <span className="text-[13px] font-semibold text-text-primary">
+                      {c.author}
+                    </span>
+                    <span className="text-[11px] text-text-muted">
+                      {formatWhen(c.createdAt)}
+                    </span>
                     {c.editedAt && (
-                      <span className="text-[11px] text-text-muted">(edytowano)</span>
+                      <span className="text-[11px] text-text-muted">
+                        (edytowano)
+                      </span>
                     )}
                   </div>
 
@@ -274,7 +249,7 @@ export default function Comments({ slug }: { slug: string }) {
                         <button
                           type="button"
                           onClick={() => saveEdit(c.id)}
-                          disabled={!editDraft.trim()}
+                          disabled={!editDraft.trim() || saving}
                           className="inline-flex items-center gap-1.5 rounded-lg bg-accent-blue px-3 py-2 text-[12px] font-semibold text-white transition-all duration-300 hover:bg-accent-blue-hover active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <CheckCircle2 size={13} />
@@ -300,7 +275,8 @@ export default function Comments({ slug }: { slug: string }) {
                           <button
                             type="button"
                             onClick={() => startEdit(c)}
-                            className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-text-muted transition-colors duration-200 hover:text-accent-cyan"
+                            disabled={saving}
+                            className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-text-muted transition-colors duration-200 hover:text-accent-cyan disabled:opacity-50"
                           >
                             <Pencil size={12} />
                             Edytuj
@@ -308,7 +284,8 @@ export default function Comments({ slug }: { slug: string }) {
                           <button
                             type="button"
                             onClick={() => deleteComment(c.id)}
-                            className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-text-muted transition-colors duration-200 hover:text-accent-live"
+                            disabled={saving}
+                            className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-text-muted transition-colors duration-200 hover:text-accent-live disabled:opacity-50"
                           >
                             <Trash2 size={12} />
                             Usuń

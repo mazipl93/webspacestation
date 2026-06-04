@@ -1,8 +1,8 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 39 — push na `main`, nowy czat)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 40 — krok 3 komentarze Supabase, **bez commita**)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `f93415a` — feat(cms): editor layout, byline, bulk actions, hero meta  
+**Ostatni commit (remote):** `f93415a` — feat(cms): editor layout, byline, bulk actions, hero meta  
 **Historia:** `e16931b` REVIEW count · `18fc9a3` Ważne teraz · `eb6fc60` logo C + theme
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -16,7 +16,15 @@
 - Admin: nazwa + avatar z profilu Supabase (`/api/profile/sync`)
 - Migracja: `20260604220000_article_byline_user` — **`npm run db:deploy` na prod**
 
-**Następny krok STEP_BY_STEP:** **3** — komentarze Supabase
+**WIP lokalnie (krok 3 — czeka OK usera + SQL Supabase):**
+- `supabase/article_comments.sql` — tabela `article_comments`, RLS (read public, write own)
+- `lib/comments/article-comments.ts` · `hooks/useArticleComments.ts`
+- `components/article/Comments.tsx` — **bez localStorage**, Supabase jak lajki
+- Testy: `npm run test:comments` · `npm run type-check` OK
+
+**Przed testem usera:** w Supabase SQL Editor uruchom `supabase/article_comments.sql` (jak `user_article_likes.sql`).
+
+**Następny krok po OK + commit:** **4** — Sitemap + JSON-LD
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -104,7 +112,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **0** | Commit WIP UI | `[x]` `eb6fc60` |
 | **1** | Usunąć Ważne teraz | `[x]` `18fc9a3` |
 | **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
-| **3** | Komentarze Supabase | `[ ]` **START** |
+| **3** | Komentarze Supabase | `[~]` WIP lokalnie — czeka SQL + OK |
 | **4** | Sitemap + JSON-LD |
 | **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) |
 | **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
@@ -134,9 +142,9 @@ Stan remote main: `f93415a` · prod https://webspacestation.pl
 
 Po deploy: `npm run db:deploy` (migracja `20260604220000_article_byline_user`).
 
-ZACZNIJ OD KROKU 3: Komentarze Supabase (zamiast localStorage w Comments.tsx).
+Krok 3: Komentarze Supabase — WIP lokalnie; uruchom `supabase/article_comments.sql`, potem test → OK → commit.
 
-Krok 4: Sitemap + JSON-LD
+Krok 4: Sitemap + JSON-LD (po OK kroku 3)
 Krok 5: Odkrywaj (/galeria, /wideo, /kalendarz, /mapa, /starty)
 Krok 6: API ops panel (zamiast LAUNCHES[] w ContentGrid)
 
@@ -150,6 +158,16 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 40) — krok 3 komentarze Supabase (WIP)
+
+| Obszar | Stan |
+|--------|------|
+| **Storage** | `article_comments` w Supabase zamiast `localStorage` |
+| **UX** | Ten sam UI: dodaj / edytuj / usuń (właściciel po `user_id`) |
+| **SQL** | `supabase/article_comments.sql` — **user musi wkleić w Supabase** |
+| **Testy** | `npm run type-check` · `npm run test:comments` OK |
+| **Commit** | **Brak** — czeka OK usera |
 
 ### Sesja 4.06.2026 (czat 39) — push pakietu CMS/hero + nowy czat
 

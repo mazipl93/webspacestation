@@ -13,7 +13,7 @@
 | **WIP-CMS** | **CMS-HERO-BYLINE** | Hero meta, bulk CMS, edytor, byline, profil admin | `[x]` `f93415a` |
 | **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[x]` |
 | **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[x]` `e16931b` |
-| **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[ ]` |
+| **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[~]` WIP — SQL + OK |
 | **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[ ]` |
 | **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content | `[ ]` |
 | **6** | **OPS-API** | Homepage ops z API (nie LAUNCHES[] mock) | `[ ]` |
@@ -90,7 +90,7 @@ P0-SCHED · P0-SCHED-QA · P0-DEPLOY · P0-HOME-LATEST · P0-ARCH · P0-AUTHOR-B
 | P2-14 | Homepage layout (slider, działy) | `[x]` |
 | P2-16 | Temat tygodnia | `[~]` kod `[x]` prod smoke `[ ]` |
 | P2-13 | Popularne / lajki | `[~]` |
-| P2-15 | Komentarze | `[~]` localStorage only |
+| P2-15 | Komentarze | `[~]` Supabase WIP (`article_comments.sql`) |
 
 ---
 
