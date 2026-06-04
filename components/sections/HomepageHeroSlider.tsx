@@ -90,7 +90,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
         className={cn(
           "relative w-full overflow-hidden",
           "max-lg:h-[clamp(42svh,46svh,50svh)] max-lg:max-h-[50svh] max-lg:min-h-[40svh]",
-          "lg:h-[min(58vh,500px)] lg:min-h-[400px] lg:max-h-[500px]",
+          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(42vh,420px)] lg:min-h-[220px]",
         )}
       >
         <div

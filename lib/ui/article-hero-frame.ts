@@ -34,9 +34,9 @@ export const ARTICLE_HERO_SECTION_EMBEDDED_CLASS =
 
 /**
 
- * Ramka okładki — wysokości jak HomepageHeroSlider (pełne zdjęcie, object-cover).
+ * Ramka okładki — 16:9 na desktop, max ~1080px (mniej „rozciągnięte” niż 2:1 full-bleed).
 
- * Media queries (lg), nie container queries — hero jest pełnej szerokości viewport.
+ * Mobile: jak wcześniej (svh). object-cover zachowany.
 
  */
 
@@ -46,7 +46,7 @@ export const ARTICLE_HERO_FRAME_CLASS = [
 
   "max-lg:h-[clamp(40svh,46svh,50svh)] max-lg:max-h-[min(52svh,480px)] max-lg:min-h-[200px]",
 
-  "lg:aspect-[2/1] lg:h-[min(58vh,500px)] lg:min-h-[400px] lg:max-h-[min(68svh,780px)]",
+  "lg:mx-auto lg:max-w-[min(100%,1080px)] lg:aspect-[16/9] lg:h-auto lg:max-h-[min(46svh,460px)] lg:min-h-[240px]",
 
 ].join(" ");
 
@@ -54,7 +54,7 @@ export const ARTICLE_HERO_FRAME_CLASS = [
 
 export const ARTICLE_HERO_FRAME_DESKTOP_CLASS =
 
-  "relative w-full shrink-0 overflow-hidden aspect-[2/1] h-[min(58vh,500px)] min-h-[400px] max-h-[min(68svh,780px)]";
+  "relative mx-auto w-full max-w-[min(100%,1080px)] shrink-0 overflow-hidden aspect-[16/9] h-auto max-h-[min(46svh,460px)] min-h-[240px]";
 
 
 

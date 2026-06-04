@@ -7,7 +7,8 @@ import { CATEGORY_INFO } from "@/lib/categories";
 import {
   BELOW_FIXED_NAV_OFFSET_CLASS,
   SITE_CONTAINER,
-  HOMEPAGE_MAIN_SIDEBAR_GRID,
+  HOMEPAGE_HERO_DOUBLE_GRID,
+  HOMEPAGE_HERO_TRIPLE_GRID,
 } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import {
@@ -50,6 +51,8 @@ const LATEST_FEED_LIMIT = 12;
 const LATEST_MOBILE_LIST_LIMIT = 6;
 /** Panel boczny desktop — pionowa lista. */
 const LATEST_RAIL_LIMIT = 5;
+/** Lewy rail desktop — Temat tygodnia (jak Najnowsze). */
+const WEEK_TOPIC_RAIL_LIMIT = 5;
 
 // ─── Category presentation ────────────────────────────────────────────────────
 
@@ -686,6 +689,8 @@ export default async function ContentGrid() {
   const latestRail = latest.slice(0, LATEST_RAIL_LIMIT);
   markSlugsUsed(latest, usedSlugs);
 
+  const weekTopicRail = weekTopicPick.articles.slice(0, WEEK_TOPIC_RAIL_LIMIT);
+
   const categoryArticles = CATEGORY_ORDER.map((slug) => {
     const fromPublished = allPublished.filter((a) => a.category === slug);
     const ranked = rankLatest(fromPublished, 4);
@@ -703,15 +708,32 @@ export default async function ContentGrid() {
 
   return (
     <div className={cn(SITE_CONTAINER, "relative z-[1]")}>
-      {/* Hero slider (wszystkie urządzenia) + Najnowsze pod hero (mobile) + rail (desktop) */}
+      {/* Desktop: Temat tygodnia (L) · hero (środek) · Najnowsze (P). Mobile: hero → Najnowsze → Temat tygodnia. */}
       <div className={BELOW_FIXED_NAV_OFFSET_CLASS}>
         <div
           className={cn(
-            "grid items-start gap-8 lg:gap-8",
-            HOMEPAGE_MAIN_SIDEBAR_GRID,
+            "gap-8 lg:items-stretch",
+            weekTopicRail.length > 0
+              ? HOMEPAGE_HERO_TRIPLE_GRID
+              : HOMEPAGE_HERO_DOUBLE_GRID,
           )}
         >
-          <div className="flex min-w-0 flex-col">
+          {weekTopicRail.length > 0 ? (
+            <aside className="hidden min-w-0 flex-col lg:flex lg:sticky lg:top-[5.25rem] lg:z-[2] lg:max-h-[calc(100vh-5.5rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pl-0.5">
+              <WeekTopicSection
+                articles={weekTopicRail}
+                config={weekTopicConfig}
+                variant="rail"
+              />
+            </aside>
+          ) : null}
+
+          <div
+            className={cn(
+              "flex min-w-0 flex-col",
+              weekTopicRail.length > 0 && "lg:col-start-2",
+            )}
+          >
             <HomepageHeroSlider articles={heroSlides} />
 
             <div className="mt-3 max-lg:scroll-mt-4 lg:hidden">
@@ -724,16 +746,17 @@ export default async function ContentGrid() {
             </div>
 
             {weekTopicPick.articles.length > 0 ? (
-              <div className="mt-8 max-lg:mt-6 lg:mt-10">
+              <div className="mt-8 max-lg:mt-6 lg:hidden">
                 <WeekTopicSection
                   articles={weekTopicPick.articles}
                   config={weekTopicConfig}
+                  variant="slider"
                 />
               </div>
             ) : null}
           </div>
 
-          <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
+          <aside className="hidden min-w-0 flex-col lg:flex lg:sticky lg:top-[5.25rem] lg:z-[2] lg:max-h-[calc(100vh-5.5rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-0.5">
             <LatestShowcase articles={latestRail} variant="rail" />
           </aside>
         </div>

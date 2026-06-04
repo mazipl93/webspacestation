@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
@@ -17,6 +17,7 @@ import ArticleInteractions from "@/components/article/ArticleInteractions";
 import CoverImage from "@/components/article/CoverImage";
 import ArticlePageHero from "@/components/article/ArticlePageHero";
 import ArticleHeroMobileMeta from "@/components/article/ArticleHeroMobileMeta";
+import ArticleInfoPanel from "@/components/article/ArticleInfoPanel";
 import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
 import { ARTICLE_PAGE_MAIN_OFFSET_CLASS } from "@/lib/ui/article-hero-frame";
 
@@ -185,6 +186,27 @@ function RelatedCard({ article }: { article: NewsArticle }) {
 // ─── Article body + sidebar ───────────────────────────────────────────────────
 // id="article-body" is used by StickyArticleBar to measure reading progress.
 
+function SidebarRelatedArticles({ articles }: { articles: NewsArticle[] }) {
+  if (articles.length === 0) return null;
+
+  return (
+    <div className="article-panel card-surface p-5">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span
+          className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"
+          style={{ boxShadow: "0 0 10px rgba(47,109,255,0.45)" }}
+        />
+        <h2 className="overline text-text-secondary">Powiązane artykuły</h2>
+      </div>
+      <div className="flex flex-col gap-3">
+        {articles.map((a) => (
+          <RelatedMiniCard key={a.id} article={a} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ArticleBody({
   article,
   sidebarRelated,
@@ -195,108 +217,66 @@ function ArticleBody({
   weaveCandidates: import("@/lib/article/weave-internal-links").InternalLinkCandidate[];
 }) {
   const meta = catMeta(article.category);
-  const fullDate = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+
+  const sidebar = (
+    <>
+      <ArticleInfoPanel
+        article={article}
+        categoryLabel={meta.label}
+        categoryColor={meta.color}
+      />
+      <SidebarRelatedArticles articles={sidebarRelated} />
+    </>
+  );
 
   return (
-    <>
-      <div className="border-b border-hairline bg-[#05070d]">
-        <div className="container-site pt-4 pb-5 lg:pt-6 lg:pb-8">
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-            <div className="min-w-0 px-7 sm:px-10">
-              <ArticleHeroMobileMeta
+    <div className="border-b border-hairline bg-[#05070d]">
+      <div className="container-site px-7 py-4 sm:px-10 lg:pt-6 lg:pb-10">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="min-w-0">
+            <ArticleHeroMobileMeta
+              article={article}
+              categoryLabel={meta.label}
+              categoryColor={meta.color}
+              showBreadcrumb
+              breadcrumbOnly
+            />
+            <ArticleHeroMobileMeta
+              article={article}
+              categoryLabel={meta.label}
+              categoryColor={meta.color}
+              showBreadcrumb={false}
+              className="mt-4 xl:mt-5"
+            />
+            <ArticleInfoPanel
+              article={article}
+              categoryLabel={meta.label}
+              categoryColor={meta.color}
+              className="mt-5 xl:hidden"
+            />
+
+            <div
+              id="article-body"
+              className="reveal py-6 max-sm:py-5 sm:py-8 xl:pt-8"
+            >
+              <ArticlePageBodyMain
                 article={article}
-                categoryLabel={meta.label}
-                categoryColor={meta.color}
+                weaveCandidates={weaveCandidates}
+                layout="in-grid"
+                articleId={article.id}
               />
+              <div className="mt-6 xl:hidden">
+                <SidebarRelatedArticles articles={sidebarRelated} />
+              </div>
             </div>
-            <div className="hidden min-h-px xl:block" aria-hidden="true" />
           </div>
+
+          <aside className="hidden flex-col gap-4 xl:flex xl:sticky xl:top-[5.25rem] xl:max-h-[calc(100vh-5.5rem)] xl:overflow-y-auto xl:overscroll-contain">
+            {sidebar}
+          </aside>
         </div>
       </div>
-
-      <div id="article-body" className="container-site py-6 reveal max-sm:py-5 sm:py-10">
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-
-        <ArticlePageBodyMain
-          article={article}
-          weaveCandidates={weaveCandidates}
-          layout="in-grid"
-          articleId={article.id}
-        />
-
-        {/* ── Sidebar ── */}
-        <aside className="flex flex-col gap-4">
-          {/* Article metadata */}
-          <div className="article-panel card-surface p-5">
-            <h2 className="overline mb-4 text-text-tertiary">Informacje</h2>
-            <dl className="flex flex-col gap-3.5">
-              <div>
-                <dt className="mb-1 text-[10px] uppercase tracking-[0.1em] text-text-muted">
-                  Kategoria
-                </dt>
-                <dd
-                  className="flex items-center gap-1.5 text-[13px] font-semibold"
-                  style={{ color: meta.color }}
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: meta.color }}
-                  />
-                  {meta.label}
-                </dd>
-              </div>
-
-              <span className="h-px" style={{ background: "var(--hairline)" }} />
-
-              <div>
-                <dt className="mb-1 text-[10px] uppercase tracking-[0.1em] text-text-muted">
-                  Opublikowano
-                </dt>
-                <dd className="capitalize text-[12px] text-text-secondary">
-                  {fullDate}
-                </dd>
-              </div>
-
-              <span className="h-px" style={{ background: "var(--hairline)" }} />
-
-              <div>
-                <dt className="mb-1 text-[10px] uppercase tracking-[0.1em] text-text-muted">
-                  Czas czytania
-                </dt>
-                <dd className="flex items-center gap-1.5 text-[12px] text-text-secondary">
-                  <Clock size={12} className="text-text-muted" />
-                  {article.readTime ?? 3} min
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          {/* Sidebar related — same-category-first priority */}
-          {sidebarRelated.length > 0 && (
-            <div className="article-panel card-surface p-5">
-              <div className="mb-4 flex items-center gap-2.5">
-                <span
-                  className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"
-                  style={{ boxShadow: "0 0 10px rgba(47,109,255,0.45)" }}
-                />
-                <h2 className="overline text-text-secondary">Powiązane artykuły</h2>
-              </div>
-              <div className="flex flex-col gap-3">
-                {sidebarRelated.map((a) => (
-                  <RelatedMiniCard key={a.id} article={a} />
-                ))}
-              </div>
-            </div>
-          )}
-        </aside>
-      </div>
     </div>
-    </>
   );
 }
 

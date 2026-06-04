@@ -1,10 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 40 — push krok 3 komentarze)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 40 — UI homepage + artykuł + push)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit (remote):** `14d1675` — feat(comments): Supabase `article_comments`  
-**Poprzedni:** `f93415a` — CMS/hero/byline  
-**Historia:** `e16931b` REVIEW count · `18fc9a3` Ważne teraz · `eb6fc60` logo C + theme
+**Ostatni commit:** `91bfb4e` — feat(ui): homepage triple rail + article sidebar  
+**Historia:** `14d1675` komentarze · `ef6c933` docs · `f93415a` CMS/hero
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -17,11 +16,12 @@
 - Admin: nazwa + avatar z profilu Supabase (`/api/profile/sync`)
 - Migracja: `20260604220000_article_byline_user` — **`npm run db:deploy` na prod**
 
-**Na `main` (krok 3):**
-- Komentarze w Supabase (`article_comments`) — `14d1675`
-- SQL: `supabase/article_comments.sql` — **prod:** jeśli komentarze 404, wklej w Supabase SQL Editor (lokalnie wykonane przez `prisma db execute`)
+**Na `main` (krok 3 + UI czat 40):**
+- Komentarze Supabase — `14d1675` · SQL `supabase/article_comments.sql` (prod: SQL Editor jeśli 404)
+- **Homepage desktop:** Temat tygodnia (L) · hero 16:9 (środek) · Najnowsze (P) — `91bfb4e`
+- **Artykuł:** Informacje przy tytule; Powiązane pod Informacjami; okładka bez border — `91bfb4e`
 
-**Następny krok:** **4** — Sitemap + JSON-LD · potem redakcja artykułów / weave / REVIEW
+**Następny krok STEP_BY_STEP:** **4** — Sitemap + JSON-LD (+ GSC)
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -110,7 +110,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **1** | Usunąć Ważne teraz | `[x]` `18fc9a3` |
 | **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | Komentarze Supabase | `[x]` `14d1675` |
-| **4** | Sitemap + JSON-LD |
+| **4** | Sitemap + JSON-LD | `[ ]` **START** |
 | **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) |
 | **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
 
@@ -139,9 +139,13 @@ Stan remote main: `f93415a` · prod https://webspacestation.pl
 
 Po deploy: `npm run db:deploy` (migracja `20260604220000_article_byline_user`).
 
-Krok 3: Komentarze Supabase — WIP lokalnie; uruchom `supabase/article_comments.sql`, potem test → OK → commit.
+Stan remote main: `91bfb4e` · prod https://webspacestation.pl
 
-Krok 4: Sitemap + JSON-LD (po OK kroku 3)
+ZACZNIJ OD KROKU 4: Sitemap + robots.txt + JSON-LD → GSC.
+
+Krok 5: Odkrywaj · Krok 6: API ops panel
+
+Opcjonalnie: weave linki (min. tag) · publikacja REVIEW · `npm run db:deploy` (byline) jeśli brak
 Krok 5: Odkrywaj (/galeria, /wideo, /kalendarz, /mapa, /starty)
 Krok 6: API ops panel (zamiast LAUNCHES[] w ContentGrid)
 

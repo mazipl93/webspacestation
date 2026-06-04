@@ -13,6 +13,8 @@ type Props = {
   categoryLabel: string;
   categoryColor: string;
   showBreadcrumb?: boolean;
+  /** Tylko ścieżka nawigacji (nad siatką tytuł + Informacje). */
+  breadcrumbOnly?: boolean;
   /** Tekst pod czystą okładką (domyślnie tak na wszystkich breakpointach). */
   belowImage?: boolean;
   /** Podgląd CMS — gdy brak w article.publicByline */
@@ -42,6 +44,7 @@ export default function ArticleHeroMobileMeta({
   categoryLabel,
   categoryColor,
   showBreadcrumb = true,
+  breadcrumbOnly = false,
   belowImage = true,
   previewByline,
   className,
@@ -57,6 +60,27 @@ export default function ArticleHeroMobileMeta({
     year: "numeric",
   });
 
+  const breadcrumb = showBreadcrumb ? (
+    <div
+      className={cn(
+        "rounded-xl border border-hairline-faint px-3 py-2.5 sm:px-3.5",
+        !breadcrumbOnly && "mb-4",
+      )}
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
+      }}
+    >
+      <ArticleHeroBreadcrumb categorySlug={article.category} variant="panel" />
+    </div>
+  ) : null;
+
+  if (breadcrumbOnly) {
+    return breadcrumb ? (
+      <div className={className}>{breadcrumb}</div>
+    ) : null;
+  }
+
   return (
     <div
       className={cn(
@@ -66,20 +90,7 @@ export default function ArticleHeroMobileMeta({
         className
       )}
     >
-      {showBreadcrumb ? (
-        <div
-          className="mb-4 rounded-xl border border-hairline-faint px-3 py-2.5 sm:px-3.5"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
-          }}
-        >
-          <ArticleHeroBreadcrumb
-            categorySlug={article.category}
-            variant="panel"
-          />
-        </div>
-      ) : null}
+      {breadcrumb}
 
       {article.isBreaking ? (
           <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
