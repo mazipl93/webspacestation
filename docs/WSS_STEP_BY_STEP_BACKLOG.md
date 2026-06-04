@@ -9,7 +9,7 @@
 - `docs/WSS_NEXT_CHAT_HANDOFF.md` — WIP lokalny, reguły, STARTING PROMPT
 - `docs/WSS_ROADMAP_BACKLOG_V3.md` — checkboxy
 
-**Stan:** prod `main` `93f710b` · https://webspacestation.pl · krok 4 na main (czat 42)
+**Stan:** prod `main` `93f710b` · https://webspacestation.pl · **krok 5+6 WIP lokalnie** (czat 43, czeka commit)
 
 ---
 
@@ -160,5 +160,7 @@ Pełna wersja → **`docs/WSS_SITE_MAP_AUDIT.md`**.
 | OPS redakcja | **Licznik REVIEW** (krok 2) |
 
 ---
+
+**Krok 5+6:** DONE lokalnie (czat 43) — commit + push w **następnym czacie** (user).
 
 *Po każdym zamkniętym kroku: dopisz wpis w `docs/WSS_NEXT_CHAT_HANDOFF.md` (historia sesji).*

@@ -15,8 +15,8 @@
 | **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[x]` `14d1675` |
 | **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[x]` `93f710b` |
-| **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content | `[ ]` |
-| **6** | **OPS-API** | Homepage ops z API (nie LAUNCHES[] mock) | `[ ]` |
+| **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content + API | `[x]` WIP lokalnie — czeka commit |
+| **6** | **OPS-API** | Homepage ops z API (nie LAUNCHES[] mock) | `[x]` WIP lokalnie — czeka commit |
 | — | **OPS-REVIEW** | User publikuje ~175 w CMS | `[ ]` redakcja |
 | **2** | **CMS-OPS-UX** | Dev | Licznik REVIEW + bulk publish | `[ ]` opcjonalnie |
 | **2** | **P1-6-QA** | User+Dev | Upload okładek prod (`SUPABASE_SERVICE_ROLE_KEY`, bucket) | `[ ]` |

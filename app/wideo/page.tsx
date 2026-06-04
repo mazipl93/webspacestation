@@ -1,28 +1,31 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ComingSoon from "@/components/sections/ComingSoon";
-
-import { SEO_COMING_SOON_ROBOTS } from "@/lib/seo/metadata";
+import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
+import VideoGrid from "@/components/discover/VideoGrid";
+import { getOpsData } from "@/lib/ops/get-ops-data";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Wideo | Web Space Station",
-  description: "Filmy i transmisje na żywo ze startów i misji kosmicznych.",
-  robots: SEO_COMING_SOON_ROBOTS,
+  title: "Wideo",
+  description:
+    "Materiały wideo NASA — starty, ISS i eksploracja kosmosu z archiwum NASA Video Library.",
+  alternates: { canonical: `${getSiteUrl()}/wideo` },
 };
 
-export default function WideoPage() {
+export const revalidate = 300;
+
+export default async function WideoPage() {
+  const ops = await getOpsData();
+
   return (
-    <>
-      <Navbar />
-      <main className="pt-16">
-        <ComingSoon
-          title="Wideo"
-          description="Transmisje na żywo, relacje ze startów, wywiady i materiały dokumentalne ze świata eksploracji kosmicznej. Sekcja w przygotowaniu."
-          icon="📡"
-        />
-      </main>
-      <Footer />
-    </>
+    <DiscoverPageShell
+      overline="Odkrywaj"
+      title="Wideo"
+      description="Archiwum wideo NASA (Image and Video Library) — materiały o startach, stacji orbitalnej i misjach."
+      accent="#f472b6"
+      opsLive={ops.live}
+      opsFetchedAt={ops.fetchedAt}
+    >
+      <VideoGrid items={ops.videos} />
+    </DiscoverPageShell>
   );
 }

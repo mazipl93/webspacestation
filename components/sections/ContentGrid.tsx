@@ -40,6 +40,12 @@ import {
   getWeekTopicConfig,
   pickWeekTopicArticles,
 } from "@/lib/home/week-topic";
+import LaunchCard from "@/components/discover/LaunchCard";
+import LaunchCountdown from "@/components/discover/LaunchCountdown";
+import OpsMissionMap from "@/components/discover/OpsMissionMap";
+import OpsTimeline from "@/components/discover/OpsTimeline";
+import { getOpsData } from "@/lib/ops/get-ops-data";
+import type { OpsSnapshot } from "@/lib/ops/types";
 
 const IMPORTANT_POOL = 14;
 /** Homepage Najnowsze — pełna lista wg publishedAt (hero nie wyklucza). */
@@ -366,174 +372,48 @@ function CategorySection({
 
 // ─── Dashboard widgets (demoted below editorial content) ───────────────────────
 
-const IMG = {
-  falcon: `
-    radial-gradient(ellipse at 50% 94%, rgba(90,140,255,0.34) 0%, transparent 36%),
-    linear-gradient(160deg, #050a13 0%, #070e1a 100%)`,
-  launchHue: (h: number) => `
-    radial-gradient(ellipse at 50% 90%, hsla(${h},80%,56%,0.46) 0%, hsla(${h},66%,36%,0.2) 22%, transparent 48%),
-    linear-gradient(180deg, #060b14 0%, #08111f 100%)`,
-};
+function LiveMissionCenter({ ops }: { ops: OpsSnapshot }) {
+  const next = ops.launches[0];
+  const issLabel = ops.iss
+    ? `${ops.iss.latitude.toFixed(1)}°, ${ops.iss.longitude.toFixed(1)}°`
+    : "pozycja niedostępna";
 
-function PreviewBadge() {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-glass px-2 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
-      Podgląd
-    </span>
-  );
-}
-
-function LiveMissionCenter() {
   return (
     <section className="card-surface flex flex-col gap-3 p-5">
-      <SectionHeader label="Centrum misji na żywo" accent="#ff453a" />
+      <SectionHeader label="Centrum operacyjne" accent="#ff453a" />
       <p className="-mt-3 text-[10px] text-text-muted">
-        Integracja ze strumieniem na żywo — wkrótce
+        {ops.live ? "ISS + najbliższy start · cache 5 min" : "Dane zapasowe — API offline"}
       </p>
       <div className="well flex-1 p-3.5">
-        <div className="mb-2">
-          <PreviewBadge />
-        </div>
-        <h3 className="text-[15px] font-bold text-text-primary">ISS nad Europą</h3>
-        <p className="mt-2 text-[11px] text-text-tertiary">7 astronautów na pokładzie · przelot za ~90 min</p>
-      </div>
-      <div className="well flex-1 p-3.5">
-        <div className="mb-2">
-          <PreviewBadge />
-        </div>
-        <h3 className="text-[15px] font-bold text-text-primary">Nadchodzący start Falcon 9</h3>
-        <p className="mt-2 text-[11px] text-text-tertiary">
-          SLC-40, Cape Canaveral · szczegóły w sekcji startów
-        </p>
+        <h3 className="text-[15px] font-bold text-text-primary">ISS na orbicie</h3>
+        <p className="mt-2 text-[11px] text-text-tertiary">{issLabel}</p>
         <Link
-          href="/starty"
-          className="mt-3 inline-flex text-[11px] font-medium text-accent-cyan transition-colors hover:text-accent-cyan/80"
+          href="/mapa"
+          className="mt-3 inline-flex text-[11px] font-medium text-accent-cyan hover:text-accent-cyan/80"
         >
-          Zobacz odliczanie →
+          Mapa →
         </Link>
       </div>
+      {next && (
+        <div className="well flex-1 p-3.5">
+          <h3 className="text-[15px] font-bold text-text-primary">{next.mission}</h3>
+          <p className="mt-2 text-[11px] text-text-tertiary">{next.site}</p>
+          <div className="mt-2">
+            <LaunchCountdown net={next.net} />
+          </div>
+          <Link
+            href="/starty"
+            className="mt-3 inline-flex text-[11px] font-medium text-accent-cyan hover:text-accent-cyan/80"
+          >
+            Wszystkie starty →
+          </Link>
+        </div>
+      )}
     </section>
   );
 }
 
-type LaunchData = {
-  provider: string;
-  mission: string;
-  prefix?: string;
-  h: string;
-  m: string;
-  s: string;
-  site: string;
-  hue: number;
-  image: string;
-};
-
-const LAUNCHES: LaunchData[] = [
-  {
-    provider: "SpaceX",
-    mission: "Falcon 9",
-    h: "02",
-    m: "31",
-    s: "12",
-    site: "SLC-40, Cape Canaveral",
-    hue: 212,
-    image:
-      "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=520&q=70",
-  },
-  {
-    provider: "SpaceX",
-    mission: "Starship Flight 14",
-    prefix: "5 dni",
-    h: "14",
-    m: "22",
-    s: "41",
-    site: "Starbase, Teksas",
-    hue: 26,
-    image:
-      "https://images.unsplash.com/photo-1457364887197-9150188c107b?auto=format&fit=crop&w=520&q=70",
-  },
-  {
-    provider: "ArianeGroup",
-    mission: "Ariane 6",
-    prefix: "12 dni",
-    h: "06",
-    m: "11",
-    s: "07",
-    site: "Kourou, Gujana Fr.",
-    hue: 156,
-    image:
-      "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=520&q=70",
-  },
-  {
-    provider: "Blue Origin",
-    mission: "New Glenn",
-    prefix: "18 dni",
-    h: "03",
-    m: "45",
-    s: "32",
-    site: "LC-36, Cape Canaveral",
-    hue: 268,
-    image:
-      "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=520&q=70",
-  },
-];
-
-function LaunchCard({
-  provider,
-  mission,
-  prefix,
-  h,
-  m,
-  s,
-  site,
-  hue,
-  image,
-}: LaunchData) {
-  return (
-    <a
-      href="/starty"
-      className="surface-interactive group flex flex-col overflow-hidden rounded-xl border border-hairline bg-space-card"
-    >
-      <div
-        className="img-sheen relative h-[84px] shrink-0 overflow-hidden"
-        style={{ background: IMG.launchHue(hue) }}
-      >
-        <Image
-          src={image}
-          alt={`${provider} ${mission}`}
-          fill
-          sizes="260px"
-          className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-[1.08]"
-          style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
-        />
-        <span className="absolute bottom-2 left-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white/75">
-          {provider}
-        </span>
-      </div>
-      <div className="flex flex-1 flex-col justify-between p-3">
-        <p className="mb-3 text-[12.5px] font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan">
-          {mission}
-        </p>
-        <div>
-          <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">
-            Start za
-          </p>
-          <p className="tabular-nums text-[13px] font-bold leading-none text-text-primary">
-            {prefix && (
-              <span className="mr-1 font-semibold text-text-secondary">
-                {prefix},
-              </span>
-            )}
-            {h}:{m}:{s}
-          </p>
-          <p className="mt-1.5 truncate text-[9.5px] text-text-muted">{site}</p>
-        </div>
-      </div>
-    </a>
-  );
-}
-
-function NadchodzaceStarty() {
+function NadchodzaceStarty({ ops }: { ops: OpsSnapshot }) {
   return (
     <section className="homepage-ops-panel card-surface p-5">
       <SectionHeader
@@ -542,94 +422,28 @@ function NadchodzaceStarty() {
         href="/starty"
       />
       <div className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        {LAUNCHES.map((l) => (
-          <LaunchCard key={l.mission} {...l} />
+        {ops.launches.slice(0, 4).map((launch) => (
+          <LaunchCard key={launch.id} launch={launch} href="/starty" />
         ))}
       </div>
     </section>
   );
 }
 
-type MissionPin = {
-  name: string;
-  planet: string;
-  color: string;
-  style: React.CSSProperties;
-};
+function AktyweneMisje({ ops }: { ops: OpsSnapshot }) {
+  const issLabel = ops.iss
+    ? `${ops.iss.latitude.toFixed(2)}°, ${ops.iss.longitude.toFixed(2)}°`
+    : undefined;
 
-const MISSION_PINS: MissionPin[] = [
-  { name: "Perseverance", planet: "Mars", color: "#e0683a", style: { top: "12%", right: "30%" } },
-  { name: "Europa Clipper", planet: "Jowisz", color: "#2f6dff", style: { top: "14%", right: "7%" } },
-  { name: "Artemis II", planet: "Księżyc", color: "#a3afc7", style: { top: "56%", right: "42%" } },
-  { name: "ISS", planet: "Ziemia", color: "#38bdf8", style: { top: "52%", left: "30%" } },
-  { name: "Solar Orbiter", planet: "Słońce", color: "#ffb830", style: { top: "44%", right: "2%" } },
-];
-
-function AktyweneMisje() {
   return (
     <section className="homepage-ops-panel card-surface p-5">
-      <SectionHeader label="Aktywne misje" href="/mapa" cta="Mapa kosmosu" />
-      <div
-        className="relative overflow-hidden rounded-xl border border-hairline-faint"
-        style={{
-          height: 240,
-          background:
-            "radial-gradient(ellipse at 92% 50%, rgba(255,165,35,0.16) 0%, transparent 36%), #060a12",
-        }}
-      >
-        <div
-          className="absolute rounded-full"
-          style={{
-            width: 16,
-            height: 16,
-            left: "30%",
-            top: "52%",
-            transform: "translate(-50%,-50%)",
-            background: "radial-gradient(circle at 35% 32%, #4fc0ff, #0055a8)",
-            boxShadow: "0 0 12px rgba(56,189,248,0.6)",
-          }}
-        />
-        {MISSION_PINS.map((pin) => (
-          <div
-            key={pin.name}
-            className="absolute flex flex-col items-center"
-            style={pin.style}
-          >
-            <div
-              className="mb-1 h-2 w-2 rounded-full"
-              style={{ background: pin.color, boxShadow: `0 0 8px ${pin.color}aa` }}
-            />
-            <span
-              className="whitespace-nowrap text-[10px] font-bold leading-none text-text-primary"
-              style={{ textShadow: "0 1px 6px rgba(0,0,0,0.95)" }}
-            >
-              {pin.planet}
-            </span>
-            <span
-              className="mt-1 flex items-center gap-1 whitespace-nowrap text-[8px] leading-none text-text-tertiary"
-              style={{ textShadow: "0 1px 6px rgba(0,0,0,0.95)" }}
-            >
-              <span className="h-1 w-1 rounded-full" style={{ background: pin.color }} />
-              {pin.name}
-            </span>
-          </div>
-        ))}
-      </div>
+      <SectionHeader label="Mapa operacyjna" href="/mapa" cta="Mapa kosmosu" />
+      <OpsMissionMap pins={ops.mapPins} issCoords={issLabel} height={240} />
     </section>
   );
 }
 
-type TimelineEvent = { quarter: string; title: string; active?: boolean };
-
-const EVENTS: TimelineEvent[] = [
-  { quarter: "Q1", title: "Starship\nFlight 14", active: true },
-  { quarter: "Q2", title: "Artemis II\nMisja załogowa" },
-  { quarter: "Q2", title: "Ariane 6\nKuiper Launch" },
-  { quarter: "Q3", title: "Lunar Gateway\nElementy" },
-  { quarter: "Q4", title: "Mars Sample\nReturn" },
-];
-
-function TimelineWydarzen() {
+function TimelineWydarzen({ ops }: { ops: OpsSnapshot }) {
   return (
     <section className="card-surface p-5">
       <SectionHeader
@@ -637,51 +451,12 @@ function TimelineWydarzen() {
         href="/kalendarz"
         cta="Zobacz kalendarz"
       />
-      <div className="flex items-start gap-6 overflow-x-auto pb-1 scrollbar-none">
-        <div className="shrink-0 pt-2">
-          <span
-            className="text-[28px] font-extrabold leading-none text-text-primary"
-            style={{ letterSpacing: "-0.03em" }}
-          >
-            2026
-          </span>
-        </div>
-        <div className="relative min-w-0 flex-1 pt-2">
-          <div
-            className="absolute left-0 right-0 top-[19px] h-px"
-            style={{ background: "var(--hairline)" }}
-          />
-          <div className="relative flex gap-6">
-            {EVENTS.map((ev, i) => (
-              <div
-                key={i}
-                className="flex shrink-0 flex-col items-center"
-                style={{ minWidth: 88 }}
-              >
-                <div
-                  className={cn(
-                    "z-10 mb-2.5 h-2.5 w-2.5 rounded-full border-2",
-                    ev.active
-                      ? "border-accent-blue bg-accent-blue shadow-[0_0_12px_rgba(47,109,255,0.7)]"
-                      : "border-space-muted bg-space-surface"
-                  )}
-                />
-                <span className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-text-tertiary">
-                  {ev.quarter}
-                </span>
-                <p className="whitespace-pre-line text-center text-[10.5px] leading-snug text-text-secondary">
-                  {ev.title}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <OpsTimeline events={ops.calendar} variant="strip" />
     </section>
   );
 }
 
-function DashboardWidgets() {
+function DashboardWidgets({ ops }: { ops: OpsSnapshot }) {
   return (
     <section className="reveal">
       <DepartmentSectionFrame
@@ -691,12 +466,12 @@ function DashboardWidgets() {
       >
         <DepartmentSectionHeader config={OPS_THEME} />
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <NadchodzaceStarty />
-          <LiveMissionCenter />
+          <NadchodzaceStarty ops={ops} />
+          <LiveMissionCenter ops={ops} />
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <AktyweneMisje />
-          <TimelineWydarzen />
+          <AktyweneMisje ops={ops} />
+          <TimelineWydarzen ops={ops} />
         </div>
       </DepartmentSectionFrame>
     </section>
@@ -706,9 +481,10 @@ function DashboardWidgets() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default async function ContentGrid() {
-  const [allPublished, cmsHeroSlides] = await Promise.all([
+  const [allPublished, cmsHeroSlides, ops] = await Promise.all([
     getAllArticles(),
     getHeroSlideArticles(),
+    getOpsData(),
   ]);
 
   if (allPublished.length === 0) {
@@ -797,7 +573,7 @@ export default async function ContentGrid() {
           ))}
         </div>
 
-        <DashboardWidgets />
+        <DashboardWidgets ops={ops} />
       </div>
     </div>
   );

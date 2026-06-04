@@ -1,20 +1,28 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 42 — krok 4 SEO push `93f710b`)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 43 — krok 5+6 Odkrywaj + ops API, lokalnie)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `93f710b` · poprzednio: `0063e33` (UI v2) · `a9630e9`  
+**Ostatni commit:** `93f710b` (remote) · **WIP lokalnie:** krok 5+6 bez pusha  
 **Historia:** `976c55d` UI czat 40 · `14d1675` komentarze · `f93415a` CMS/hero
 
-**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main` (deploy po `93f710b` — sprawdź zielony build)
+**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
+
+**Następny krok STEP_BY_STEP:** **commit + push krok 5+6** (po Twoim „commit”) · potem **P1-6** upload okładek prod lub **GSC** env
+
+**Krok 5+6 DONE (lokalnie, czat 43):**
+- Odkrywaj: `/starty` `/kalendarz` `/mapa` `/galeria` `/wideo` + homepage ops
+- API: Launch Library **2.3** `/launches/upcoming/`, ISS, NASA, artykuły Astronomia
+- Fix: zły URL `/launch/` → `/launches/`; etykiety misji (Starlink…) zamiast samego „Falcon 9 Block 5”
+- `lib/ops/*`, `components/discover/*`, sitemap Odkrywaj
 
 **Na `main` (krok 4 — czat 42, `93f710b`):**
 - **SEO:** `app/sitemap.ts`, `app/robots.ts`, JSON-LD (`lib/seo/`), `app/manifest.ts`
 - **GSC env:** `GOOGLE_SITE_VERIFICATION` w layout (Vercel Production — ustaw ręcznie)
 - **E-E-A-T:** `/polityka-prywatnosci`, `/kontakt` + stopka
-- **noindex:** 404, auth, Odkrywaj (Wkrótce), `/search` **poza** sitemap
+- **noindex:** 404, auth, `/search` (Odkrywaj **w** sitemap od kroku 5+6 lokalnie)
 - **Artykuł dół:** `ArticleMainColumnShell` — Koniec / Czytaj dalej = szerokość Komentarze
 
-**Następny krok STEP_BY_STEP:** **5** — Odkrywaj (galeria, wideo, kalendarz, mapa, starty)
+**Po deploy kroku 5+6 — Vercel:** `NASA_API_KEY` · `NEXT_PUBLIC_SITE_URL`
 
 **Po deploy — GSC (user, ręcznie):**
 1. Vercel Production: `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl`
@@ -133,8 +141,8 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | Komentarze Supabase | `[x]` `14d1675` |
 | **4** | Sitemap + JSON-LD | `[x]` `93f710b` |
-| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) | **START** |
-| **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
+| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) | `[x]` lokalnie |
+| **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) | `[x]` lokalnie |
 
 **Reguła:** po każdym kroku → raport → test usera → **CZEKAJ OK** → następny.
 
@@ -155,25 +163,30 @@ Przeczytaj ZAWSZE (w tej kolejności):
 3. docs/WSS_NEXT_CHAT_HANDOFF.md
 4. docs/WSS_ROADMAP_BACKLOG_V3.md
 
-REGUŁA: jeden krok STEP_BY_STEP · raport · test · CZEKAJ OK · commit/push tylko po OK.
+REGUŁA: jeden krok · raport · test · CZEKAJ OK · commit/push tylko po explicit OK usera.
 
 Stan remote main: `93f710b` · prod https://webspacestation.pl
+Stan lokalny: krok 5+6 DONE — **NIE na main** (brak commita/pusha z czatu 43).
 
-Krok 4 DONE (`93f710b`): sitemap · robots · JSON-LD · manifest · polityka/kontakt · noindex fixes.
+ZACZNIJ OD:
+1) **Commit + push** całego pakietu Odkrywaj + ops API (user chce to w tym czacie).
+2) Vercel Production: `NASA_API_KEY`, `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl`
+3) GSC: `GOOGLE_SITE_VERIFICATION` + sitemap.xml
+4) Smoke prod: `/starty` (misje Starlink… + odliczenie), `/`, galeria, wideo, mapa
 
-ZACZNIJ OD KROKU 5: Odkrywaj — /starty, /kalendarz, /mapa, /galeria, /wideo (zamiast ComingSoon).
+Krok 5+6 DONE lokalnie (czat 43):
+- Odkrywaj: /starty /kalendarz /mapa /galeria /wideo — żywe API
+- lib/ops/: Launch Library 2.3 `/launches/upcoming/` (NIE `/launch/`), ISS, NASA, Astronomia z CMS
+- Homepage ContentGrid: getOpsData(), LaunchCountdown live
+- Fix: fallback 24h (zły URL API); karty: mission + rocketName (nie samo „Falcon 9 Block 5”)
 
-Po deploy kroku 4: GSC sitemap + GOOGLE_SITE_VERIFICATION + NEXT_PUBLIC_SITE_URL na Vercel.
+Kluczowe pliki: lib/ops/*, components/discover/*, app/{starty,kalendarz,mapa,galeria,wideo}/page.tsx, ContentGrid.tsx, lib/seo/public-routes.ts
 
-UI czat 41: shell 1320px · artykuł/stopka/NAV (HOMEPAGE_LAYOUT_V2=false).
-
-Krok 6: API ops panel (LAUNCHES[] mock na homepage).
-
-Opcjonalnie: weave linki · publikacja REVIEW · `npm run db:deploy` (byline) jeśli brak
+Po deploy — kolejny backlog: P1-6 upload okładek prod · OPS-REVIEW w CMS · P2-WEEK-TOPIC smoke
 
 Reguły: object-cover · publishedAt=#1 · heroPosition w Najnowszych · tylko PUBLISHED public · ZERO dev copy na froncie.
 
-Komendy: npm run dev · npm run type-check · npm run db:deploy
+Komendy: npm run dev · npm run type-check · npm run db:deploy · npm run cache:revalidate
 
 Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ```
@@ -181,6 +194,20 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 43, koniec) — krok 5+6 Odkrywaj + ops API (lokalnie, bez commita)
+
+| Obszar | Stan |
+|--------|------|
+| **Krok 5** | `/starty` `/kalendarz` `/mapa` `/galeria` `/wideo` — DiscoverPageShell + żywe feedy |
+| **Krok 6** | Homepage ops z `getOpsData()` — bez mock LAUNCHES[] |
+| **API** | LL2 **2.3.0** `/launches/upcoming/` · ISS wheretheiss.at · NASA · WSS Astronomia |
+| **Bugfix** | URL `/launch/`→404→fallback 24:00:00; etykiety misji z `mission.name` |
+| **SEO** | Wszystkie Odkrywaj w `SEO_SITEMAP_PATHS` |
+| **User** | OK na starty · „lećmy dalej” · **zapisz na następny czat** (commit tam) |
+| **Następny czat** | **Commit + push** → Vercel env → GSC → P1-6 lub REVIEW |
+
+**Pliki kluczowe:** `lib/ops/get-ops-data.ts`, `launch-library.ts`, `components/discover/LaunchCard.tsx`, `LaunchCountdown.tsx`, `ContentGrid.tsx`, `app/starty|kalendarz|mapa|galeria|wideo/page.tsx`
 
 ### Sesja 4.06.2026 (czat 42) — krok 4 SEO push + handoff na czat 43
 

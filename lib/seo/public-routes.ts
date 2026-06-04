@@ -11,14 +11,12 @@ export const SEO_SITEMAP_PATHS = [
   "/rss",
   "/polityka-prywatnosci",
   "/kontakt",
-] as const;
-
-/** Odkrywaj + search — publiczne, ale wyłączone z sitemap (noindex lub utility). */
-export const SEO_NOINDEX_PUBLIC_PATHS = [
-  "/search",
   "/starty",
   "/kalendarz",
   "/mapa",
   "/galeria",
   "/wideo",
 ] as const;
+
+/** Utility — poza sitemap. */
+export const SEO_NOINDEX_PUBLIC_PATHS = ["/search"] as const;

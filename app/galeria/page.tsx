@@ -1,28 +1,31 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ComingSoon from "@/components/sections/ComingSoon";
-
-import { SEO_COMING_SOON_ROBOTS } from "@/lib/seo/metadata";
+import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
+import GalleryGrid from "@/components/discover/GalleryGrid";
+import { getOpsData } from "@/lib/ops/get-ops-data";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Galeria zdjęć | Web Space Station",
-  description: "Najpiękniejsze zdjęcia z kosmosu — fotografie z teleskopów, misji i orbit.",
-  robots: SEO_COMING_SOON_ROBOTS,
+  title: "Galeria zdjęć",
+  description:
+    "Zdjęcia z kosmosu — NASA APOD, NASA Image Library i okładki artykułów redakcji WSS.",
+  alternates: { canonical: `${getSiteUrl()}/galeria` },
 };
 
-export default function GaleriaPage() {
+export const revalidate = 300;
+
+export default async function GaleriaPage() {
+  const ops = await getOpsData();
+
   return (
-    <>
-      <Navbar />
-      <main className="pt-16">
-        <ComingSoon
-          title="Galeria zdjęć"
-          description="Kolekcja najpiękniejszych fotografii z kosmosu — zdjęcia z teleskopu Webba, misji NASA, ESA i astronautów z pokładu ISS. Wkrótce dostępna."
-          icon="🌌"
-        />
-      </main>
-      <Footer />
-    </>
+    <DiscoverPageShell
+      overline="Odkrywaj"
+      title="Galeria zdjęć"
+      description="Astronomiczne zdjęcie dnia NASA, archiwum NASA oraz kadry z publikacji działu Astronomia."
+      accent="#c084fc"
+      opsLive={ops.live}
+      opsFetchedAt={ops.fetchedAt}
+    >
+      <GalleryGrid items={ops.gallery} />
+    </DiscoverPageShell>
   );
 }
