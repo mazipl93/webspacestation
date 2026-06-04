@@ -92,8 +92,11 @@ export function AuthProvider({
         if (!active) return;
 
         if (session?.user) {
-          setUser(toSessionUser(session.user));
-          setLoading(false);
+          void fetchServerUser().then((serverUser) => {
+            if (!active) return;
+            setUser(serverUser ?? toSessionUser(session.user));
+            setLoading(false);
+          });
           return;
         }
 

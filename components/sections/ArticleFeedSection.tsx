@@ -7,6 +7,7 @@ const LATEST_FEED_LIMIT = 40;
 import { getCategoryInfo } from "@/lib/categories";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import ArticleCard from "@/components/article/ArticleCard";
+import DepartmentSubscribeButton from "@/components/departments/DepartmentSubscribeButton";
 import { cn } from "@/lib/cn";
 
 // Category filter strip — each entry routes to a real page
@@ -97,6 +98,11 @@ export default async function ArticleFeedSection({ category }: Props) {
                 <p className="mt-2 text-[16px] leading-relaxed text-text-tertiary md:text-[14px]">
                   {subtitle}
                 </p>
+              ) : null}
+              {category ? (
+                <div className="mt-4">
+                  <DepartmentSubscribeButton categorySlug={category} />
+                </div>
               ) : null}
             </div>
 

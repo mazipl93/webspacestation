@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, LogOut, User } from "lucide-react";
+import { Bell, ChevronDown, LayoutDashboard, LogOut, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/components/auth/AuthProvider";
 import LogoutButton from "@/components/auth/LogoutButton";
@@ -57,6 +57,19 @@ export default function AccountMenu() {
         <User size={15} />
         Profil
       </Link>
+
+      {user.canAccessCms ? (
+        <Link
+          href="/admin/dashboard"
+          role="menuitem"
+          onClick={() => setOpen(false)}
+          className="nav-menu-item-enter flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-[13px] text-text-secondary transition-colors duration-200 hover:border-hairline hover:bg-glass-hover hover:text-text-primary"
+          style={{ animationDelay: "22ms" }}
+        >
+          <LayoutDashboard size={15} />
+          Panel redakcyjny
+        </Link>
+      ) : null}
 
       <Link
         href="/notifications"

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Bookmark, Heart, LogOut, Settings, Sparkles } from "lucide-react";
+import { Bookmark, Heart, LayoutDashboard, LogOut, Settings, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useBookmarks } from "@/hooks/useBookmarks";
@@ -16,6 +16,7 @@ import type { NewsArticle } from "@/types";
 import ArticleCard from "@/components/article/ArticleCard";
 import AvatarUploader from "@/components/profile/AvatarUploader";
 import AccountSettings from "@/components/profile/AccountSettings";
+import ProfileDepartmentSubscriptions from "@/components/profile/ProfileDepartmentSubscriptions";
 import ProfileSectionHeading from "@/components/profile/ProfileSectionHeading";
 
 function PageShell({ children }: { children: React.ReactNode }) {
@@ -254,13 +255,24 @@ export default function ProfileClient() {
                 </div>
               </div>
 
-              <LogoutButton
-                next="/"
-                className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-black/20 px-4 py-2.5 text-[13px] font-semibold text-text-secondary transition-colors duration-300 hover:border-accent-live/50 hover:text-accent-live sm:w-auto"
-              >
-                <LogOut size={15} />
-                Wyloguj się
-              </LogoutButton>
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[200px]">
+                {user.canAccessCms ? (
+                  <Link
+                    href="/admin/dashboard"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent-blue px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-accent-blue-hover"
+                  >
+                    <LayoutDashboard size={16} />
+                    Panel redakcyjny
+                  </Link>
+                ) : null}
+                <LogoutButton
+                  next="/"
+                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-black/20 px-4 py-2.5 text-[13px] font-semibold text-text-secondary transition-colors duration-300 hover:border-accent-live/50 hover:text-accent-live"
+                >
+                  <LogOut size={15} />
+                  Wyloguj się
+                </LogoutButton>
+              </div>
             </div>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3 sm:justify-start">
@@ -269,6 +281,8 @@ export default function ProfileClient() {
             </div>
           </div>
         </section>
+
+        <ProfileDepartmentSubscriptions />
 
         <section className="mt-10">
           <ProfileSectionHeading

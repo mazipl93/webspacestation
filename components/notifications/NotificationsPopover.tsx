@@ -37,7 +37,16 @@ type Props = {
 export default function NotificationsPopover({ open, onClose, loginHref }: Props) {
   const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
-  const { items, hasUnread, markRead, markAllRead, isLoggedIn } = useNotifications();
+  const {
+    items,
+    hasUnread,
+    markRead,
+    markAllRead,
+    isLoggedIn,
+    loading,
+    fetchError,
+    subscribedDepartments,
+  } = useNotifications();
 
   useEffect(() => {
     if (!open) return;
@@ -107,10 +116,34 @@ export default function NotificationsPopover({ open, onClose, loginHref }: Props
               Zaloguj się
             </Link>
           </div>
-        ) : items.length === 0 ? (
+        ) : loading ? (
+          <ul className="space-y-2 p-2">
+            {[0, 1, 2].map((i) => (
+              <li
+                key={i}
+                className="h-[72px] animate-pulse rounded-xl border border-hairline bg-glass"
+              />
+            ))}
+          </ul>
+        ) : fetchError ? (
           <p className="px-4 py-10 text-center text-[13px] text-text-muted">
-            Brak powiadomień.
+            Nie udało się wczytać powiadomień. Spróbuj za chwilę.
           </p>
+        ) : items.length === 0 ? (
+          <div className="px-4 py-8 text-center text-[13px] leading-relaxed text-text-muted">
+            <p>
+              {subscribedDepartments.length === 0
+                ? "Dodaj dział do ulubionych na stronie Misje, Astronomia, Technologie itd., aby dostawać alerty o nowych artykułach."
+                : "Brak nowych alertów — nadchodzące starty i świeże artykuły z obserwowanych działów pojawią się tutaj."}
+            </p>
+            <Link
+              href="/profil"
+              onClick={onClose}
+              className="mt-4 inline-flex text-[12.5px] font-semibold text-accent-cyan hover:underline"
+            >
+              Zarządzaj ulubionymi działami
+            </Link>
+          </div>
         ) : (
           <ul className="max-h-[min(60vh,420px)] overflow-y-auto p-2">
             {items.map((n) => {

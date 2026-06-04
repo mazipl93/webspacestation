@@ -12,51 +12,7 @@ export type NotificationItem = {
   body: string;
   time: string;
   href: string;
-  /** Initial unread flag — overridden once the user reads the item. */
-  unread?: boolean;
 };
-
-export const NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "n1",
-    icon: "rocket",
-    accent: "#38bdf8",
-    title: "Start Falcon 9 już za 2 godziny",
-    body: "Misja Starlink Group 12-4 startuje z SLC-40 na Cape Canaveral.",
-    time: "12 min temu",
-    href: "/starty",
-    unread: true,
-  },
-  {
-    id: "n2",
-    icon: "sparkles",
-    accent: "#a855f7",
-    title: "Nowy artykuł w kategorii Astronomia",
-    body: "JWST uchwycił nowe szczegóły mgławicy w gwiazdozbiorze Oriona.",
-    time: "1 godz. temu",
-    href: "/aktualnosci/jwst-kosmiczna-meduza",
-    unread: true,
-  },
-  {
-    id: "n3",
-    icon: "message",
-    accent: "#2f6dff",
-    title: "Odpowiedź na Twój komentarz",
-    body: "Ktoś odpowiedział w dyskusji pod artykułem o misji Artemis II.",
-    time: "5 godz. temu",
-    href: "/aktualnosci/starship-flight-14-pelny-sukces",
-    unread: true,
-  },
-  {
-    id: "n4",
-    icon: "calendar",
-    accent: "#ffb830",
-    title: "Przypomnienie o wydarzeniu",
-    body: "Starship Flight 14 — okno startowe otwiera się jutro o 14:00.",
-    time: "wczoraj",
-    href: "/starty",
-  },
-];
 
 export const NOTIFICATIONS_CHANGE_EVENT = "wss:notifications-changed";
 
@@ -69,7 +25,9 @@ export function getReadIds(email: string | null): Set<string> {
   try {
     const raw = window.localStorage.getItem(storageKey(email));
     const parsed = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : []);
+    return new Set(
+      Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : []
+    );
   } catch {
     return new Set();
   }
@@ -88,16 +46,14 @@ export function isNotificationUnread(
   item: NotificationItem,
   readIds: Set<string>
 ): boolean {
-  if (readIds.has(item.id)) return false;
-  return item.unread !== false;
+  return !readIds.has(item.id);
 }
 
 export function hasUnreadNotifications(
-  email: string | null,
+  items: NotificationItem[],
   readIds: Set<string>
 ): boolean {
-  if (!email) return false;
-  return NOTIFICATIONS.some((n) => isNotificationUnread(n, readIds));
+  return items.some((n) => isNotificationUnread(n, readIds));
 }
 
 export function markNotificationRead(email: string, id: string) {
@@ -106,7 +62,8 @@ export function markNotificationRead(email: string, id: string) {
   writeReadIds(email, ids);
 }
 
-export function markAllNotificationsRead(email: string) {
-  const ids = new Set(NOTIFICATIONS.map((n) => n.id));
-  writeReadIds(email, ids);
+export function markAllNotificationsRead(email: string, ids: string[]) {
+  const read = getReadIds(email);
+  ids.forEach((id) => read.add(id));
+  writeReadIds(email, read);
 }

@@ -1,11 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 47 — **dział Rozrywka** + okładki gaming + sitemap)  
-**→ Okładki (kontekst):** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 1 częściowo DONE)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 49 — **powiadomienia żywe** + **ulubione działy** + panel redakcyjny w profilu)  
+**→ Okładki:** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 2 tematyczne NASA — otwarte)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `e422838` docs · `22b0fb6` perf · `a069877` Odkrywaj+ops  
-**WIP lokalnie (bez commita):** dział `rozrywka`, migracja gaming, fix okładek, markdown `**`  
-**Historia:** patrz sesja czat 47 poniżej
+**Ostatni commit:** `a57fc36` rozrywka+sitemap · **następny commit:** powiadomienia+ulubione działy (lokalnie, push po teście)  
+**Historia:** patrz sesja czat 49 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -176,64 +175,70 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 ```
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
-Przeczytaj ZAWSZE (w tej kolejności):
-1. docs/WSS_NEXT_CHAT_HANDOFF.md          ← ten plik (stan + Rozrywka)
+Przeczytaj ZAWSZE:
+1. docs/WSS_NEXT_CHAT_HANDOFF.md
 2. docs/WSS_SITE_MAP_AUDIT.md
-3. docs/WSS_COVER_IMAGES_FIX_PROMPT.md    ← okładki (krok 1 częściowo DONE)
-4. docs/WSS_STEP_BY_STEP_BACKLOG.md
+3. docs/WSS_STEP_BY_STEP_BACKLOG.md
 
-REGUŁA: jeden krok · raport · test · CZEKAJ OK · commit/push tylko po explicit OK usera.
+REGUŁA: jeden krok · raport · test · CZEKAJ OK · push prod tylko po explicit OK usera.
 
-Prod: https://webspacestation.pl · remote main @ `e422838` (WIP Rozrywka + okładki — BEZ commita).
-PageSpeed mobile: 83. NASA_API_KEY na Vercel ✅. GSC: zweryfikowany; po pushu — odśwież sitemap w GSC.
+Prod: https://webspacestation.pl · main @ `a57fc36` (Rozrywka na prod po pushu tego commita).
+Lokalnie (commit po czacie 49, przed pushem): powiadomienia + ulubione działy + Panel redakcyjny w profilu.
 
-=== ZROBIONE LOKALNIE (czat 47, bez commita) ===
+=== BLOCKER PRZED TESTEM POWIADOMIEŃ ===
+Uruchom w Supabase SQL Editor (lokal + prod):
+  supabase/user_department_subscriptions.sql
+Bez tego: toggle „Dodaj dział do ulubionych” → błąd 500.
 
-DZIAŁ ROZRYWKA (gaming / filmy / sci-fi):
-- Kategoria `rozrywka` (#f472b6) — types, lib/categories.ts, prisma/seed.ts
-- Strona /rozrywka (app/rozrywka/page.tsx) — feed jak inne działy
-- Nav + Footer + filtr /aktualnosci (ArticleFeedSection) + homepage v2 (Technologie · Astronomia · Rozrywka zamiast Misji)
-- 7 artykułów gaming przeniesione z technologie → rozrywka (migrate); State of Play zachowuje okładkę wydawcy z DB
-- Źródła: lib/editorial/rozrywka.ts (ROZRYWKA_ARTICLE_SLUGS, ROZRYWKA_COVER_BY_SLUG)
-- Treść: bez surowych ** (strip w DB + render-inline-markdown.tsx)
-- Podpis okładki: wydawca gry (nie „NASA”) dla rozrywki
+=== TEST PLAN (czat 50) ===
+1) SQL powyżej · `npm run dev`
+2) Zaloguj konto USER → dzwonek: tylko starty (brak ulubionych działów)
+3) /rozrywka → „Dodaj Rozrywka do ulubionych” → profil: chip Rozrywka aktywny
+4) Opublikuj NOWY artykuł w rozrywka (po czasie subskrypcji) → dzwonek: alert artykułu
+5) Konto EDITOR → /profil → „Panel redakcyjny” · menu konta też
+6) Oznacz przeczytane · odśwież — kropka znika
 
-OKŁADKI (P0 czat 46 — częściowo naprawione):
-- resolve-editorial-cover: najpierw rozrywka map → 14 slugów misji/astronomii (EDITORIAL_COVER_NASA_ID) → DB
-- Usunięto globalny fallback PIA25236 dla każdego slug
-- Gaming wycięty z editorial-cover-ids.ts (bez łazika Mars PIA19807 w Technologie)
-- DO ZROBIENIA: tematyczne NASA dla 14 slugów redakcyjnych; P1-6 własne grafiki gier zamiast stock NASA
+POWIADOMIENIA (jak działają):
+- Tylko zalogowani (API 401 bez sesji)
+- Starty: Launch Library, 7 dni do przodu (wszyscy zalogowani)
+- Artykuły: TYLKO z działów w ulubionych, opublikowane PO dodaniu do ulubionych
+- Przeczytane: localStorage per email (jak wcześniej)
 
-SITEMAP (SEO — WAŻNE):
-- lib/seo/public-routes.ts → SEO_SITEMAP_PATHS zawiera "/rozrywka"
-- app/sitemap.ts buduje statyczne URL z SEO_SITEMAP_PATHS + wszystkie PUBLISHED /aktualnosci/[slug]
-- Po commit/push na prod: GSC → Sitemaps → ponownie prześlij https://webspacestation.pl/sitemap.xml (lub „Sprawdź”)
-- Artykuły rozrywki w sitemap jako /aktualnosci/{slug} (jak każdy opublikowany artykuł)
+ULUBIONE DZIAŁY:
+- Przycisk na każdym dziale (ArticleFeedSection)
+- Profil → sekcja „Ulubione działy” (7 chipów)
+- API: GET/POST /api/department-subscriptions
 
-KOMENDY (lokalnie już uruchomione):
-  npm run rozrywka:migrate      # kategoria + przeniesienie + okładki + strip **
-  npm run cache:revalidate      # po migracji — wymagane przy cache 300s
-  npm run editorial:strip-bold  # źródła TS w lib/editorial/
-  npm run editorial:fix-covers  # sync okładek (dev OFF — pool Supabase)
+PANEL REDAKCYJNY:
+- canAccessCms w /api/auth/session (AUTHOR|EDITOR|MODERATOR|ADMIN)
+- Link w /profil i AccountMenu → /admin/dashboard
 
-PUBLIKACJA: --publish + cache:revalidate na prod TYLKO po explicit OK usera.
-KSP2: brak w DB przy migrate (skip) — po seed: rozrywka:migrate ponownie.
+NA PROD (po OK testu): git push → Vercel · SQL na prod Supabase
 
-ZACZNIJ OD (czat 48 — propozycja):
-1) User test: /rozrywka, Star Citizen, State of Play, homepage sekcja Rozrywka, /sitemap.xml (szukaj /rozrywka)
-2) CZEKAJ OK → commit/push WIP Rozrywka + okładki
-3) Krok 2 okładek: przepisać editorial-cover-ids.ts tematycznie (14 slugów, bez gamingu)
-4) Opcjonalnie: treści filmowe w Rozrywce; P1-6 upload okładek gier
-
-Kategorie redakcji: misje | astronomia | technologie | rozrywka
-Pliki: lib/editorial/rozrywka.ts · lib/editorial/resolve-editorial-cover.ts · lib/seo/public-routes.ts
-
-Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md (+ WSS_SITE_MAP_AUDIT jeśli nowe trasy).
+Pliki: lib/notifications/build-feed.ts · hooks/useDepartmentSubscriptions.ts · components/departments/DepartmentSubscribeButton.tsx
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 49) — powiadomienia żywe + ulubione działy + panel w profilu
+
+| Obszar | Stan |
+|--------|------|
+| **Powiadomienia** | Usunięte mocki; `GET /api/notifications` — starty LL2 + artykuły z subskrybowanych działów |
+| **Ulubione działy** | `user_department_subscriptions` (Supabase SQL) · przycisk na stronach działów · profil |
+| **Panel CMS** | `canAccessCms` w sesji · link „Panel redakcyjny” w profilu i menu konta |
+| **Push** | **Czeka test usera** — commit lokalny, bez push w tej sesji |
+
+**SQL wymagany:** `supabase/user_department_subscriptions.sql`
+
+### Sesja 4.06.2026 (czat 47–48) — dział Rozrywka + push `a57fc36`
+
+| Obszar | Stan |
+|--------|------|
+| **Rozrywka** | `/rozrywka`, homepage v2, sitemap, migrate gaming |
+| **Commit** | `a57fc36` — **na prod po deploy** |
 
 ### Sesja 4.06.2026 (czat 47) — dział Rozrywka + okładki gaming + sitemap
 

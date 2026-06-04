@@ -39,11 +39,20 @@ function PageShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function NotificationsClient() {
-  const { user, loading } = useSessionUser();
+  const { user, loading: sessionLoading } = useSessionUser();
   const router = useRouter();
-  const { items, markRead, markAllRead, hasUnread } = useNotifications();
+  const {
+    items,
+    markRead,
+    markAllRead,
+    hasUnread,
+    loading: feedLoading,
+    fetchError,
+    refresh,
+    subscribedDepartments,
+  } = useNotifications();
 
-  if (loading) {
+  if (sessionLoading) {
     return (
       <PageShell>
         <ul className="flex flex-col gap-3">
@@ -116,6 +125,40 @@ export default function NotificationsClient() {
         )}
       </div>
 
+      {fetchError ? (
+        <div className="rounded-2xl border border-hairline bg-glass px-6 py-10 text-center">
+          <p className="text-[14px] text-text-secondary">
+            Nie udało się wczytać powiadomień.
+          </p>
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            className="mt-4 inline-flex min-h-[44px] items-center rounded-xl bg-accent-blue px-5 text-[13px] font-semibold text-white"
+          >
+            Spróbuj ponownie
+          </button>
+        </div>
+      ) : feedLoading && items.length === 0 ? (
+        <ul className="flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <li key={i} className="card-surface h-[100px] animate-pulse p-5" />
+          ))}
+        </ul>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-hairline bg-glass/40 px-6 py-12 text-center">
+          <p className="mx-auto max-w-[420px] text-[14px] leading-relaxed text-text-muted">
+            {subscribedDepartments.length === 0
+              ? "Dodaj działy do ulubionych — na stronie każdego działu lub w profilu — aby dostawać powiadomienia o nowych artykułach. Starty rakiet zawsze trafiają do dzwonka po zalogowaniu."
+              : "Na razie nic nowego. Tu pojawią się starty z najbliższych 7 dni oraz artykuły z obserwowanych działów opublikowane po dodaniu do ulubionych."}
+          </p>
+          <Link
+            href="/profil"
+            className="mt-5 inline-flex min-h-[44px] items-center rounded-xl bg-accent-blue px-5 text-[13px] font-semibold text-white"
+          >
+            Ulubione działy w profilu
+          </Link>
+        </div>
+      ) : (
       <ul className="flex flex-col gap-3">
         {items.map((n) => {
           const Icon = ICONS[n.icon] ?? Bell;
@@ -160,10 +203,7 @@ export default function NotificationsClient() {
           );
         })}
       </ul>
-
-      <p className="mt-6 text-center text-[12px] text-text-muted">
-        To są przykładowe powiadomienia. Wkrótce pojawią się tu prawdziwe alerty.
-      </p>
+      )}
     </PageShell>
   );
 }

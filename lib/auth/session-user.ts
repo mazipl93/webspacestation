@@ -3,6 +3,8 @@ export interface SessionUser {
   name: string;
   /** Profile picture from Supabase user_metadata.avatar_url */
   avatarUrl?: string;
+  /** AUTHOR / EDITOR / MODERATOR / ADMIN — portal staff, not plain USER. */
+  canAccessCms?: boolean;
 }
 
 export function avatarFromMetadata(
