@@ -32,7 +32,7 @@ export default function OpsPinList({
   return (
     <div className={cn(compact ? "space-y-2" : "space-y-3")}>
       <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">
-        {interactive ? "Kliknij — opis pod mapą" : "Punkty na mapie"}
+        {interactive ? "Wybierz punkt — opis pojawi się pod mapą" : "Punkty na mapie"}
       </p>
       <div
         className={cn(

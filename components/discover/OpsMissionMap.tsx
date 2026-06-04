@@ -31,6 +31,32 @@ type Props = {
   mapClassName?: string;
 };
 
+function OpsMapDetailSlot({
+  focusPinId,
+  focusedPin,
+  iss,
+  onClose,
+}: {
+  focusPinId: string | null;
+  focusedPin: OpsMapPin | undefined;
+  iss?: OpsIssPosition | null;
+  onClose: () => void;
+}) {
+  if (!focusPinId || !focusedPin) return null;
+
+  return (
+    <div className="ops-map-detail-slot min-w-0 w-full" aria-live="polite">
+      <OpsMapPinDetail
+        key={focusPinId}
+        pinId={focusPinId}
+        spotlight={resolveMapPinSpotlight(focusedPin)}
+        caption={captionForMapPin(focusedPin, iss)}
+        onClose={onClose}
+      />
+    </div>
+  );
+}
+
 export default function OpsMissionMap({
   pins,
   iss,
@@ -53,14 +79,14 @@ export default function OpsMissionMap({
     [focusPinId, pins]
   );
 
-  const detailPanel =
-    focusedPin != null ? (
-      <OpsMapPinDetail
-        spotlight={resolveMapPinSpotlight(focusedPin)}
-        caption={captionForMapPin(focusedPin, iss)}
-        onClose={() => setFocusPinId(null)}
-      />
-    ) : null;
+  const detailSlot = (
+    <OpsMapDetailSlot
+      focusPinId={focusPinId}
+      focusedPin={focusedPin}
+      iss={iss}
+      onClose={() => setFocusPinId(null)}
+    />
+  );
 
   const mapBlock = (
     <OpsLiveMap
@@ -101,7 +127,7 @@ export default function OpsMissionMap({
             </div>
           ) : null}
         </div>
-        {detailPanel}
+        {detailSlot}
       </div>
     );
   }
@@ -110,7 +136,7 @@ export default function OpsMissionMap({
     <div className="flex min-w-0 w-full max-w-full flex-col gap-3 overflow-hidden sm:gap-4">
       {mapBlock}
       {pinList}
-      {detailPanel}
+      {detailSlot}
     </div>
   );
 }
