@@ -34,19 +34,20 @@ export default function OpsMapPinDetail({
       aria-label={spotlight.title}
       data-pin-id={pinId}
     >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-sm hover:bg-black/80"
+        aria-label="Zamknij"
+      >
+        <X size={14} />
+      </button>
+
       <div className="ops-map-pin-detail__grid">
-        <div className="ops-map-pin-detail__media relative shrink-0 overflow-hidden bg-[#0f172a]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-1 top-1 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/55 text-white hover:bg-black/75"
-            aria-label="Zamknij"
-          >
-            <X size={14} />
-          </button>
+        <div className="ops-map-pin-detail__media">
           {!imgReady ? (
             <div
-              className="absolute inset-0 animate-pulse bg-gradient-to-br from-slate-800 to-slate-900"
+              className="ops-map-pin-detail__img-placeholder animate-pulse"
               aria-hidden
             />
           ) : null}
