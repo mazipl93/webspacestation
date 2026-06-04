@@ -24,6 +24,7 @@ type Props = {
   iss?: OpsIssPosition | null;
   issOrbit?: { lat: number; lon: number }[][];
   height?: number;
+  /** Scroll-wheel zoom (embed: off). Drag/touch stay enabled. */
   interactive?: boolean;
   className?: string;
   focusPinId?: string | null;
@@ -91,17 +92,18 @@ function panMapToCenterPopup(map: L.Map, padding = 24) {
   }
 
   if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-    map.panBy(L.point(dx, dy), { animate: true, duration: 0.4 });
+    map.panBy(L.point(dx, dy), { animate: false });
   }
 }
 
+let popupCenterTimer: ReturnType<typeof setTimeout> | null = null;
+
 function schedulePopupCentering(map: L.Map) {
-  const run = () => panMapToCenterPopup(map);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(run);
-  });
-  window.setTimeout(run, 120);
-  window.setTimeout(run, 380);
+  if (popupCenterTimer) clearTimeout(popupCenterTimer);
+  popupCenterTimer = setTimeout(() => {
+    popupCenterTimer = null;
+    panMapToCenterPopup(map);
+  }, 80);
 }
 
 function PopupCenterOnOpen() {
@@ -109,12 +111,9 @@ function PopupCenterOnOpen() {
 
   useEffect(() => {
     const onOpen = () => schedulePopupCentering(map);
-    const onLayout = () => schedulePopupCentering(map);
     map.on("popupopen", onOpen);
-    window.addEventListener("ops-map-popup-layout", onLayout);
     return () => {
       map.off("popupopen", onOpen);
-      window.removeEventListener("ops-map-popup-layout", onLayout);
     };
   }, [map]);
 
@@ -131,22 +130,25 @@ function PinFocusController({
   markerRefs: MutableRefObject<Record<string, L.Marker | null>>;
 }) {
   const map = useMap();
+  const lastFocusRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!focusPinId) return;
+    if (!focusPinId) {
+      lastFocusRef.current = null;
+      return;
+    }
+    if (lastFocusRef.current === focusPinId) return;
+    lastFocusRef.current = focusPinId;
+
     const pin = pins.find((p) => p.id === focusPinId);
     if (!pin) return;
 
     const zoom = pin.kind === "iss" ? 4 : 5;
-    map.flyTo([pin.lat, pin.lon], zoom, { duration: 0.55 });
+    map.setView([pin.lat, pin.lon], zoom, { animate: false });
 
     const marker = markerRefs.current[focusPinId];
-    const open = () => {
-      marker?.openPopup();
-      schedulePopupCentering(map);
-    };
-    const t = window.setTimeout(open, 520);
-    return () => window.clearTimeout(t);
+    marker?.openPopup();
+    schedulePopupCentering(map);
   }, [focusPinId, pins, map, markerRefs]);
 
   return null;
@@ -185,10 +187,8 @@ const POPUP_OPTIONS = {
   minWidth: 260,
   className: "ops-map-leaflet-popup",
   closeButton: true,
-  autoPan: true,
-  keepInView: true,
-  autoPanPaddingTopLeft: L.point(56, 64),
-  autoPanPaddingBottomRight: L.point(56, 64),
+  autoPan: false,
+  keepInView: false,
 };
 
 export default function OpsLiveMap({
@@ -204,6 +204,18 @@ export default function OpsLiveMap({
   const markerRefs = useRef<Record<string, L.Marker | null>>({});
   const issPin = pins.find((p) => p.kind === "iss");
   const padPins = pins.filter((p) => p.kind === "pad");
+
+  const issIcon = useMemo(
+    () => (issPin ? createIssIcon(focusPinId === issPin.id) : null),
+    [issPin, focusPinId]
+  );
+  const padIcons = useMemo(() => {
+    const icons: Record<string, L.DivIcon> = {};
+    for (const pin of padPins) {
+      icons[pin.id] = createPadIcon(pin.color, focusPinId === pin.id);
+    }
+    return icons;
+  }, [padPins, focusPinId]);
 
   const center = useMemo<[number, number]>(() => {
     if (iss) return [iss.latitude, iss.longitude];
@@ -289,10 +301,10 @@ export default function OpsLiveMap({
           />
         )}
 
-        {issPin && (
+        {issPin && issIcon && (
           <Marker
             position={[issPin.lat, issPin.lon]}
-            icon={createIssIcon(focusPinId === issPin.id)}
+            icon={issIcon}
             ref={bindMarker(issPin.id)}
             eventHandlers={{
               click: () => onPinSelect?.(issPin.id),
@@ -317,7 +329,7 @@ export default function OpsLiveMap({
           <Marker
             key={pin.id}
             position={[pin.lat, pin.lon]}
-            icon={createPadIcon(pin.color, focusPinId === pin.id)}
+            icon={padIcons[pin.id]}
             ref={bindMarker(pin.id)}
             eventHandlers={{
               click: () => onPinSelect?.(pin.id),

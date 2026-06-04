@@ -446,7 +446,6 @@ function MapaStartow({ ops }: { ops: OpsSnapshot }) {
           pins={ops.mapPins}
           iss={ops.iss}
           issOrbit={ops.issOrbit}
-          height={400}
           layout="split"
           mapClassName="ops-map-embed"
         />

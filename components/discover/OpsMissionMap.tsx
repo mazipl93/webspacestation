@@ -41,7 +41,6 @@ export default function OpsMissionMap({
   const [focusPinId, setFocusPinId] = useState<string | null>(null);
   const isSplit = layout === "split";
   const mapHeight = height;
-  const mapInteractive = interactive || Boolean(focusPinId);
 
   const handleSelectPin = useCallback((pinId: string) => {
     setFocusPinId((prev) => (prev === pinId ? prev : pinId));
@@ -53,7 +52,7 @@ export default function OpsMissionMap({
       iss={iss}
       issOrbit={issOrbit}
       height={mapHeight}
-      interactive={mapInteractive}
+      interactive={interactive}
       className={mapClassName}
       focusPinId={focusPinId}
       onPinSelect={handleSelectPin}
@@ -72,7 +71,7 @@ export default function OpsMissionMap({
 
   if (isSplit) {
     return (
-      <div className="grid min-w-0 w-full max-w-full gap-4 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)]">
+      <div className="grid min-w-0 w-full max-w-full gap-3 overflow-hidden sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)]">
         <div className="min-h-0 min-w-0 overflow-hidden">{mapBlock}</div>
         {pinList ? (
           <div className="min-w-0 overflow-hidden rounded-xl border border-hairline-faint p-3 sm:p-4">

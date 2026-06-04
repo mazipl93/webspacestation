@@ -757,6 +757,37 @@ html[data-portal-theme] .site-cosmos-grain {
   overflow: hidden;
   border-radius: 12px;
 }
+/* Strona główna — wyższa mapa, osobno mobile / desktop */
+.ops-map-embed.ops-live-map {
+  height: min(58dvh, 440px) !important;
+  min-height: 300px;
+  max-height: min(58dvh, 440px);
+}
+@media (min-width: 480px) {
+  .ops-map-embed.ops-live-map {
+    height: min(52dvh, 480px) !important;
+    min-height: 340px;
+    max-height: min(52dvh, 480px);
+  }
+}
+@media (min-width: 1024px) {
+  .ops-map-embed.ops-live-map {
+    height: 460px !important;
+    min-height: 460px;
+    max-height: 460px;
+  }
+}
+.homepage-ops-panel .ops-map-embed + div,
+.homepage-ops-panel .grid > div:last-child {
+  max-height: min(58dvh, 440px);
+  overflow-y: auto;
+}
+@media (min-width: 1024px) {
+  .homepage-ops-panel .ops-map-embed + div,
+  .homepage-ops-panel .grid > div:last-child {
+    max-height: 460px;
+  }
+}
 .ops-live-map .leaflet-map-pane,
 .ops-live-map .leaflet-tile-pane {
   max-width: 100%;

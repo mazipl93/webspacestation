@@ -25,9 +25,6 @@ export default function OpsMapPinPopup({ spotlight, caption }: Props) {
           className="ops-map-popup__img"
           loading="lazy"
           decoding="async"
-          onLoad={() => {
-            window.dispatchEvent(new CustomEvent("ops-map-popup-layout"));
-          }}
           onError={() => {
             if (imgSrc !== FALLBACK_IMAGE) setImgSrc(FALLBACK_IMAGE);
           }}
