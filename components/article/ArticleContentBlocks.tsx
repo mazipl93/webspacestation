@@ -1,4 +1,5 @@
 import type { ArticleContentBlock } from "@/lib/articles/parse-content-blocks";
+import { renderInlineMarkdown } from "@/lib/articles/render-inline-markdown";
 
 const BODY_TEXT_STYLE = {
   fontSize: "var(--text-body)",
@@ -29,7 +30,7 @@ export default function ArticleContentBlocks({
           >
             {block.items.map((item, j) => (
               <li key={j} className={itemClassName}>
-                {item}
+                {renderInlineMarkdown(item)}
               </li>
             ))}
           </ul>
@@ -39,7 +40,7 @@ export default function ArticleContentBlocks({
             className={paragraphClassName}
             style={BODY_TEXT_STYLE}
           >
-            {block.text}
+            {renderInlineMarkdown(block.text)}
           </p>
         )
       )}

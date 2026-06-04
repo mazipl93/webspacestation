@@ -13,6 +13,7 @@ const FOOTER_NAV = {
     { label: "Misje", href: "/misje" },
     { label: "Astronomia", href: "/astronomia" },
     { label: "Technologie", href: "/technologie" },
+    { label: "Rozrywka", href: "/rozrywka" },
     { label: "AI", href: "/ai" },
     { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },
     { label: "ISS", href: "/iss" },

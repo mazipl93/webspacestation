@@ -62,6 +62,7 @@ const CATEGORY_LAYOUT: Record<
   }
 > = {
   technologie: { variant: "hero-strip", prominent: true },
+  rozrywka: { variant: "accent-bar" },
   misje: { variant: "hero-strip" },
   astronomia: { variant: "accent-bar" },
   "ziemia-z-kosmosu": { variant: "banner" },
@@ -90,6 +91,7 @@ const CATEGORY_META = Object.fromEntries(
 
 const CATEGORY_ORDER = [
   "technologie",
+  "rozrywka",
   "astronomia",
   "misje",
   "ziemia-z-kosmosu",

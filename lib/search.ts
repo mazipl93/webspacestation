@@ -1,10 +1,10 @@
 import type { AdminArticle } from "@/lib/admin/types";
 import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
+import { DEFAULT_COVER_FALLBACK } from "@/lib/cover-fallbacks";
 import type { NewsArticle } from "@/types";
 
 // Graceful cover fallback so a result card never renders an empty <Image>.
-export const SEARCH_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1000&q=70";
+export const SEARCH_FALLBACK_IMAGE = DEFAULT_COVER_FALLBACK;
 
 function formatPl(iso: string): string {
   return new Date(iso).toLocaleDateString("pl-PL", {

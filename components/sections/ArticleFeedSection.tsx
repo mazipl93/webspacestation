@@ -15,6 +15,7 @@ const FEED_FILTERS = [
   { label: "Misje",            href: "/misje",            key: "misje"            },
   { label: "Astronomia",       href: "/astronomia",       key: "astronomia"       },
   { label: "Technologie",      href: "/technologie",      key: "technologie"      },
+  { label: "Rozrywka",         href: "/rozrywka",         key: "rozrywka"         },
   { label: "AI",               href: "/ai",               key: "ai"               },
   { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu", key: "ziemia-z-kosmosu" },
   { label: "ISS",              href: "/iss",              key: "iss"              },

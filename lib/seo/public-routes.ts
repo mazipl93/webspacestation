@@ -5,6 +5,7 @@ export const SEO_SITEMAP_PATHS = [
   "/misje",
   "/astronomia",
   "/technologie",
+  "/rozrywka",
   "/ai",
   "/ziemia-z-kosmosu",
   "/iss",

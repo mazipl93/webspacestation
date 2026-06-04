@@ -4,6 +4,7 @@ export type NewsCategory =
   | "misje"
   | "astronomia"
   | "technologie"
+  | "rozrywka"
   | "ai"
   | "ziemia-z-kosmosu"
   | "iss";

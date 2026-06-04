@@ -1,13 +1,15 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 44, koniec — handoff na czat 45)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 47 — **dział Rozrywka** + okładki gaming + sitemap)  
+**→ Okładki (kontekst):** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 1 częściowo DONE)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Ostatni commit:** `e422838` docs · `22b0fb6` perf · `a069877` Odkrywaj+ops  
-**Historia:** patrz sesja czat 44 poniżej
+**WIP lokalnie (bez commita):** dział `rozrywka`, migracja gaming, fix okładek, markdown `**`  
+**Historia:** patrz sesja czat 47 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Następny czat (45) — PRIORYTET usera:** **artykuły redakcyjne PRO** (długie, konkretne, newsroom) — NIE krótkie szkice 2 akapity. Potem P1-6 · OPS-REVIEW.
+**Decyzja usera:** więcej artykułów → **publikacja dopiero na samym końcu** (`--publish` + `cache:revalidate` tylko po explicit OK). **Bez commit/push** do OK.
 
 **Perf homepage:** `22b0fb6` — PageSpeed mobile **83** (było 68).
 
@@ -15,10 +17,15 @@
 
 **GSC (user):** właściciel OK · sitemap `/sitemap.xml` przesłany — odświeżyć indeks po publikacjach.
 
-**Artykuły testowe (czat 44, lokalna DB):**
-- `npm run editorial:seed-test` — skrypt `scripts/seed-editorial-test-articles.ts` + `lib/editorial/test-articles-june-2026.ts`
-- **Roman** → REVIEW w bazie (`roman-space-telescope-start-30-sierpnia-2026`) — user: **za krótki / słaby**, do przepisania lub usunięcia
-- **MAVEN** — seed padł na `originalUrl` unique (RSS zajął link SpaceNews) → **fix w skrypcie** (`resolveOriginalUrlForSeed`) — **uruchomić ponownie** `npm run editorial:seed-test`
+**Artykuły redakcyjne PRO (czat 46 — 21 szt. w repo):**
+- Pliki: `test-articles-june-2026.ts` (4) · `news-batch-june-04-2026.ts` (11) · `news-batch-june-05-2026.ts` (6) · `editorial-june-2026-all.ts` · `nasa-cover.ts`
+- Seed: `npm run editorial:seed-test -- --update` (REVIEW) · **`--publish` tylko na koniec**
+- **Okładki:** `images-assets.nasa.gov` (`nasaCoverUrl`) — stare URL-e (nasa.gov/wp-content, esa.int/pillars, apod) = **404** → jeden fallback Unsplash; naprawione w kodzie + `CoverImage` per-slug fallback
+- **Linki w treści:** automatyczne — **nie** `<a>` ręcznie
+- **Seed czat 46:** nie wykonany — `max clients reached` (pool Supabase); uruchom po zatrzymaniu `npm run dev` lub retry
+- **WIP bez commita:** `lib/editorial/`, `components/article/CoverImage.tsx`, `ArticleCard`, `HeroArticle`, `resolve-image.ts`, handoff
+
+**21 slugów (4+11+6):** poprzednie 15 + `europa-clipper-przelot-jowisz-ganimedes-czerwiec-2026` · `perseverance-zapas-probek-mars-czerwiec-2026` · `parker-solar-probe-perihelion-2026-najszybszy-obiekt` · `nasa-dragonfly-titan-testy-wiatrakow-2026` · `kerbal-space-program-2-eksploracja-2026-update` · `hubble-36-lat-obserwacji-orbita-2026`
 - Google Analytics / AdSense — **odłożone** (user: niech strona się rozkręci)
 
 **Krok 5+6 DONE (lokalnie, czat 43):**
@@ -170,41 +177,103 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
 Przeczytaj ZAWSZE (w tej kolejności):
-1. docs/WSS_SITE_MAP_AUDIT.md
-2. docs/WSS_STEP_BY_STEP_BACKLOG.md
-3. docs/WSS_NEXT_CHAT_HANDOFF.md
-4. docs/WSS_ROADMAP_BACKLOG_V3.md
+1. docs/WSS_NEXT_CHAT_HANDOFF.md          ← ten plik (stan + Rozrywka)
+2. docs/WSS_SITE_MAP_AUDIT.md
+3. docs/WSS_COVER_IMAGES_FIX_PROMPT.md    ← okładki (krok 1 częściowo DONE)
+4. docs/WSS_STEP_BY_STEP_BACKLOG.md
 
 REGUŁA: jeden krok · raport · test · CZEKAJ OK · commit/push tylko po explicit OK usera.
 
-Stan remote main: `e422838` (docs) · `22b0fb6` perf · `a069877` Odkrywaj · prod https://webspacestation.pl
-PageSpeed mobile: **83**. NASA_API_KEY na Vercel ✅. GSC: user zweryfikowany, sitemap OK.
+Prod: https://webspacestation.pl · remote main @ `e422838` (WIP Rozrywka + okładki — BEZ commita).
+PageSpeed mobile: 83. NASA_API_KEY na Vercel ✅. GSC: zweryfikowany; po pushu — odśwież sitemap w GSC.
 
-ZACZNIJ OD (czat 45 — user):
-1) **Artykuły redakcyjne PRO** — 2–4 sztuki, newsroom PL, KONKRETNE (patrz standard jakości poniżej)
-2) Dokończ seed: `npm run editorial:seed-test` (MAVEN po fix originalUrl); Roman w REVIEW — przepisać lub usunąć
-3) Potem: **P1-6** okładki prod · **OPS-REVIEW** w CMS
+=== ZROBIONE LOKALNIE (czat 47, bez commita) ===
 
-STANDARD ARTYKUŁU (user odrzucił „2 akapity”):
-- min. **5–7 akapitów** merytorycznych + mocny lead (excerpt) + **Kontekst WSS** (3–4 zdania trendu)
-- **800–1200+ słów**, fakty: daty, liczby, nazwy misji/rakiet, „co to znaczy dla czytelnika”
-- contentOrigin **EDITORIAL** · źródła w stopce (source + originalUrl jeśli wolne — RSS blokuje duplicate URL)
-- Research: NASA, ESA, SpaceNews — nie generyczny filler
-- Wstawianie: `lib/editorial/` + `npm run editorial:seed-test` / `--publish` + `cache:revalidate`
-- **NIE** auto-publish masowo bez podglądu usera w CMS
+DZIAŁ ROZRYWKA (gaming / filmy / sci-fi):
+- Kategoria `rozrywka` (#f472b6) — types, lib/categories.ts, prisma/seed.ts
+- Strona /rozrywka (app/rozrywka/page.tsx) — feed jak inne działy
+- Nav + Footer + filtr /aktualnosci (ArticleFeedSection) + homepage v2 (Technologie · Astronomia · Rozrywka zamiast Misji)
+- 7 artykułów gaming przeniesione z technologie → rozrywka (migrate); State of Play zachowuje okładkę wydawcy z DB
+- Źródła: lib/editorial/rozrywka.ts (ROZRYWKA_ARTICLE_SLUGS, ROZRYWKA_COVER_BY_SLUG)
+- Treść: bez surowych ** (strip w DB + render-inline-markdown.tsx)
+- Podpis okładki: wydawca gry (nie „NASA”) dla rozrywki
 
-Pliki editorial: lib/editorial/test-articles-june-2026.ts · scripts/seed-editorial-test-articles.ts
-Kluczowe prod: lib/ops/*, ContentGrid, CMS /admin/articles
+OKŁADKI (P0 czat 46 — częściowo naprawione):
+- resolve-editorial-cover: najpierw rozrywka map → 14 slugów misji/astronomii (EDITORIAL_COVER_NASA_ID) → DB
+- Usunięto globalny fallback PIA25236 dla każdego slug
+- Gaming wycięty z editorial-cover-ids.ts (bez łazika Mars PIA19807 w Technologie)
+- DO ZROBIENIA: tematyczne NASA dla 14 slugów redakcyjnych; P1-6 własne grafiki gier zamiast stock NASA
 
-Reguły: object-cover · publishedAt=#1 · tylko PUBLISHED public · ZERO dev copy na froncie.
-Komendy: npm run editorial:seed-test · npm run cache:revalidate · npm run dev
+SITEMAP (SEO — WAŻNE):
+- lib/seo/public-routes.ts → SEO_SITEMAP_PATHS zawiera "/rozrywka"
+- app/sitemap.ts buduje statyczne URL z SEO_SITEMAP_PATHS + wszystkie PUBLISHED /aktualnosci/[slug]
+- Po commit/push na prod: GSC → Sitemaps → ponownie prześlij https://webspacestation.pl/sitemap.xml (lub „Sprawdź”)
+- Artykuły rozrywki w sitemap jako /aktualnosci/{slug} (jak każdy opublikowany artykuł)
 
-Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
+KOMENDY (lokalnie już uruchomione):
+  npm run rozrywka:migrate      # kategoria + przeniesienie + okładki + strip **
+  npm run cache:revalidate      # po migracji — wymagane przy cache 300s
+  npm run editorial:strip-bold  # źródła TS w lib/editorial/
+  npm run editorial:fix-covers  # sync okładek (dev OFF — pool Supabase)
+
+PUBLIKACJA: --publish + cache:revalidate na prod TYLKO po explicit OK usera.
+KSP2: brak w DB przy migrate (skip) — po seed: rozrywka:migrate ponownie.
+
+ZACZNIJ OD (czat 48 — propozycja):
+1) User test: /rozrywka, Star Citizen, State of Play, homepage sekcja Rozrywka, /sitemap.xml (szukaj /rozrywka)
+2) CZEKAJ OK → commit/push WIP Rozrywka + okładki
+3) Krok 2 okładek: przepisać editorial-cover-ids.ts tematycznie (14 slugów, bez gamingu)
+4) Opcjonalnie: treści filmowe w Rozrywce; P1-6 upload okładek gier
+
+Kategorie redakcji: misje | astronomia | technologie | rozrywka
+Pliki: lib/editorial/rozrywka.ts · lib/editorial/resolve-editorial-cover.ts · lib/seo/public-routes.ts
+
+Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md (+ WSS_SITE_MAP_AUDIT jeśli nowe trasy).
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 47) — dział Rozrywka + okładki gaming + sitemap
+
+| Obszar | Stan |
+|--------|------|
+| **Rozrywka** | Nowy dział `/rozrywka` — gaming przeniesiony z Technologie (7 slugów w DB + State of Play) |
+| **Okładki** | Osobna mapa `ROZRYWKA_COVER_BY_SLUG`; State of Play = DB wydawcy; bez fałszywego „NASA”; bez PIA19807 w Technologie |
+| **Treść** | Strip `**` w DB + `render-inline-markdown.tsx` |
+| **Sitemap** | `SEO_SITEMAP_PATHS` + `/rozrywka` w `lib/seo/public-routes.ts` → `app/sitemap.ts` |
+| **Migrate** | `npm run rozrywka:migrate` + `cache:revalidate` lokalnie |
+| **Commit** | Brak — **czekaj OK** usera |
+
+**Pliki kluczowe:** `lib/editorial/rozrywka.ts`, `scripts/migrate-gaming-to-rozrywka.ts`, `app/rozrywka/page.tsx`, `lib/seo/public-routes.ts`, `lib/editorial/resolve-editorial-cover.ts`
+
+### Sesja 4.06.2026 (czat 46) — 21 artykułów + naprawa okładek
+
+| Obszar | Stan |
+|--------|------|
+| **Editorial +6** | Europa Clipper, Perseverance/MSR, Parker Solar Probe, Dragonfly/Titan, KSP2, Hubble 36 lat |
+| **Okładki** | Przyczyna „jedno zdjęcie”: URL-e 404 → `CoverImage` → jeden Unsplash; fix: `nasaCoverUrl()` + HTTP 200 `images-assets.nasa.gov` |
+| **Kod** | `CoverImage` fallbackSeed/category · `resolve-image` slug fallback · `nasa-cover.ts` |
+| **Seed** | `--update` **nie** poszedł (Supabase max clients) — user: retry bez dev lub później |
+| **Commit** | Brak — **czekaj OK** usera |
+
+### Sesja 4.06.2026 (czat 45, koniec) — 15 artykułów w repo · handoff na czat 46
+
+| Obszar | Stan |
+|--------|------|
+| **Editorial** | **15** artykułów w `lib/editorial/` (misje, astronomia, technologie+gaming), news **4.06.2026** |
+| **DB lokalna** | Było `--publish` w sesji — user: **finalna publikacja dopiero na końcu** |
+| **Okładki** | User: **wszędzie to samo zdjęcie** — priorytet czat 46 przed publikacją |
+| **Następny czat** | Więcej artykułów → unikalne okładki → na koniec publish + P1-6 + OPS-REVIEW |
+| **Commit** | Brak — WIP `lib/editorial/`, seed, handoff |
+
+### Sesja 4.06.2026 (czat 45, cd.) — 15× seed + publish (technicznie)
+
+| Obszar | Stan |
+|--------|------|
+| **Seed** | `ALL_EDITORIAL_JUNE_2026` · `--update --publish` · cache revalidate |
+| **Partia +11** | Tc1, 3I/ATLAS, Starlink 4.06, NMS, Star Fox, X4, Stellaris, SC, EVE, New Glenn, CRS-34 |
 
 ### Sesja 4.06.2026 (czat 44, koniec) — handoff na czat 45 · artykuły testowe odrzucone
 

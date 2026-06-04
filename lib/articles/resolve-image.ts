@@ -1,4 +1,5 @@
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
+import { resolveEditorialCoverImage } from "@/lib/editorial/resolve-editorial-cover";
 import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import type { NewsArticle, NewsCategory } from "@/types";
@@ -21,7 +22,10 @@ export function resolveImage(
   article: ResolveImageInput,
   options?: { withFallback?: boolean }
 ): string | null {
-  const fromDb = article.image?.trim() || article.coverImage?.trim() || null;
+  const fromDb =
+    resolveEditorialCoverImage(article.slug, article.coverImage) ||
+    article.image?.trim() ||
+    null;
   if (fromDb) return fromDb;
 
   const withFallback = options?.withFallback ?? true;
@@ -29,10 +33,13 @@ export function resolveImage(
 
   const category = (article.category ?? "technologie") as NewsCategory;
   const isRss = isRssArticle(article.contentOrigin);
-  if (isRss && article.slug) {
+  if (article.slug) {
     return pickCategoryCoverFallback(category, article.slug);
   }
-  return SEARCH_FALLBACK_IMAGE;
+  if (isRss) {
+    return SEARCH_FALLBACK_IMAGE;
+  }
+  return pickCategoryCoverFallback(category, "editorial");
 }
 
 /** Public surfaces always get a renderable URL. */
@@ -45,7 +52,10 @@ export function resolveImageOrFallback(article: ResolveImageInput): string {
  * Public portal uses resolveImage() with category/stock fallbacks instead.
  */
 export function resolveHeroDisplayUrl(article: ResolveImageInput): string | null {
-  const direct = article.image?.trim() || article.coverImage?.trim() || null;
+  const direct =
+    resolveEditorialCoverImage(article.slug, article.coverImage) ||
+    article.image?.trim() ||
+    null;
   if (direct && /^https?:\/\//i.test(direct)) return direct;
   return null;
 }

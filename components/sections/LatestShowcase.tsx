@@ -46,6 +46,8 @@ function LatestSliderCard({
         <CoverImage
           src={article.image}
           alt=""
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           loading="lazy"
           sizes={featured ? "(max-width: 640px) 92vw, 460px" : "(max-width: 640px) 88vw, 420px"}
@@ -107,6 +109,8 @@ function LatestRailLead({ article }: { article: NewsArticle }) {
         <CoverImage
           src={article.image}
           alt=""
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           loading="lazy"
           sizes="400px"

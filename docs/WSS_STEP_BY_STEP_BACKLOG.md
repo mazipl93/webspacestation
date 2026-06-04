@@ -79,7 +79,7 @@
 **Cel:** SEO techniczne.
 
 **Sitemap:**
-- `app/sitemap.ts` (Next.js) — `/`, działy, `/aktualnosci`, wszystkie `PUBLISHED` slugi
+- `app/sitemap.ts` (Next.js) — `/`, działy (`lib/seo/public-routes.ts`, w tym **`/rozrywka`**), `/aktualnosci`, wszystkie `PUBLISHED` slugi
 - `robots.txt` jeśli brak
 
 **JSON-LD:**

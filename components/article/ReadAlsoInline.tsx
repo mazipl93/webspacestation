@@ -18,12 +18,14 @@ function ReadAlsoCard({ article }: { article: NewsArticle }) {
         <span className="mt-2 text-[10px] text-text-muted">{article.timeLabel}</span>
       </div>
       <div
-        className="img-sheen relative w-[72px] shrink-0 overflow-hidden sm:w-[80px]"
+        className="img-sheen relative w-[72px] shrink-0 self-stretch overflow-hidden sm:w-[80px] min-h-[72px]"
         style={{ background: categoryFallbackBg(article.category) }}
       >
         <CoverImage
           src={article.image}
           alt=""
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           sizes="80px"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"

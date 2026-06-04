@@ -61,6 +61,8 @@ export default function ArticlePageHero({
               ? `Ilustracja — materiał ${article.source}`
               : article.title)
           }
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           priority
           sizes="(max-width: 1320px) 100vw, 1320px"

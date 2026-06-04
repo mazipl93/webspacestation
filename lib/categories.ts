@@ -28,6 +28,13 @@ export const CATEGORY_INFO: Record<CategorySlug, CategoryInfo> = {
     href: "/technologie",
     description: "Rakiety, satelity i innowacje napędzające erę kosmiczną.",
   },
+  rozrywka: {
+    label: "Rozrywka",
+    color: "#f472b6",
+    href: "/rozrywka",
+    description:
+      "Gry, filmy i seriale — kosmos w kulturze popularnej, bez newsów o startach.",
+  },
   ai: {
     label: "AI",
     color: "#e879f9",
@@ -70,6 +77,9 @@ export const CATEGORY_FALLBACK_BG: Record<string, string> = {
   technologie: `
     radial-gradient(ellipse at 50% 94%, rgba(90,140,255,0.34) 0%, transparent 36%),
     linear-gradient(160deg, #050a13 0%, #070e1a 100%)`,
+  rozrywka: `
+    radial-gradient(ellipse at 55% 40%, rgba(244,114,182,0.42) 0%, transparent 52%),
+    linear-gradient(145deg, #120810 0%, #0a0610 100%)`,
   ai: `
     radial-gradient(ellipse at 40% 50%, rgba(232,121,249,0.4) 0%, transparent 50%),
     linear-gradient(135deg, #0a0612 0%, #12081a 100%)`,

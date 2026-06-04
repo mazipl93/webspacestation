@@ -17,6 +17,7 @@ import {
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 import { previewCatMeta } from "@/lib/ui/article-preview-meta";
 import { ARTICLE_PROSE_MAX, ARTICLE_SHELL } from "@/lib/ui/article-editorial-layout";
+import { renderInlineMarkdown } from "@/lib/articles/render-inline-markdown";
 import { cn } from "@/lib/cn";
 
 export type ArticlePageBodyMainProps = {
@@ -56,7 +57,7 @@ export default function ArticlePageBodyMain({
                 borderColor: meta.color,
               }}
             >
-              {lead}
+              {renderInlineMarkdown(lead)}
             </p>
           ) : null}
 
@@ -67,7 +68,7 @@ export default function ArticlePageBodyMain({
                 className="mb-6 text-text-secondary"
                 style={{ fontSize: "var(--text-body)", lineHeight: 1.8 }}
               >
-                {segment.text}
+                {renderInlineMarkdown(segment.text)}
               </p>
             ) : segment.kind === "list" ? (
               <ArticleContentBlocks

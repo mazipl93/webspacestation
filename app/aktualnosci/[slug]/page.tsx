@@ -50,6 +50,7 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   misje:              { label: "Misje",            color: "#2f6dff" },
   astronomia:         { label: "Astronomia",        color: "#a855f7" },
   technologie:        { label: "Technologie",       color: "#38bdf8" },
+  rozrywka:           { label: "Rozrywka",          color: "#f472b6" },
   "ziemia-z-kosmosu": { label: "Ziemia z kosmosu", color: "#22c55e" },
   iss:                { label: "ISS",               color: "#ffb830" },
   ai:                 { label: "AI",                color: "#e879f9" },
@@ -65,6 +66,9 @@ const CATEGORY_FALLBACK: Record<string, string> = {
   technologie: `
     radial-gradient(ellipse at 50% 94%, rgba(90,140,255,0.34) 0%, transparent 36%),
     linear-gradient(160deg, #050a13 0%, #070e1a 100%)`,
+  rozrywka: `
+    radial-gradient(ellipse at 55% 40%, rgba(244,114,182,0.42) 0%, transparent 52%),
+    linear-gradient(145deg, #120810 0%, #0a0610 100%)`,
   "ziemia-z-kosmosu": `
     radial-gradient(circle at 66% 44%, rgba(40,108,225,0.58) 0%, rgba(14,52,150,0.28) 32%, transparent 56%),
     linear-gradient(135deg, #04101f 0%, #061224 100%)`,
@@ -138,12 +142,14 @@ function RelatedMiniCard({ article }: { article: NewsArticle }) {
         <span className="mt-2 text-[10px] text-text-muted">{article.timeLabel}</span>
       </div>
       <div
-        className="img-sheen relative w-[80px] shrink-0 overflow-hidden"
+        className="img-sheen relative w-[80px] shrink-0 self-stretch overflow-hidden min-h-[80px]"
         style={{ background: catFallback(article.category) }}
       >
         <CoverImage
           src={article.image}
           alt={article.title}
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           sizes="80px"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.08]"
@@ -170,6 +176,8 @@ function RelatedCard({ article }: { article: NewsArticle }) {
         <CoverImage
           src={article.image}
           alt={article.title}
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           sizes="(max-width: 768px) 100vw, 400px"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"

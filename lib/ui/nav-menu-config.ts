@@ -8,6 +8,7 @@ import {
   Rocket,
   Telescope,
   Cpu,
+  Gamepad2,
   Globe2,
   Orbit,
 } from "lucide-react";
@@ -50,6 +51,13 @@ export const NAV_PRIMARY_LINKS: NavMenuLink[] = [
     accentKey: "technologie",
     description: CATEGORY_INFO.technologie.description,
     icon: Cpu,
+  },
+  {
+    label: "Rozrywka",
+    href: "/rozrywka",
+    accentKey: "rozrywka",
+    description: CATEGORY_INFO.rozrywka.description,
+    icon: Gamepad2,
   },
 ];
 

@@ -3,6 +3,7 @@ export type HomepageSectionTheme =
   | "latest"
   | "popular"
   | "technologie"
+  | "rozrywka"
   | "astronomia"
   | "misje"
   | "ziemia-z-kosmosu"
@@ -41,6 +42,7 @@ export const OPS_THEME: SectionThemeConfig = {
 
 const CATEGORY_KICKERS: Record<string, string> = {
   technologie: "Innowacje · hardware · orbita",
+  rozrywka: "Gry · filmy · sci-fi",
   astronomia: "Teleskopy · galaktyki · odkrycia",
   misje: "Lądowania · sondy · głęboka przestrzeń",
   "ziemia-z-kosmosu": "Obserwacje · klimat · planeta",
@@ -53,6 +55,7 @@ export function categorySectionTheme(
 ): SectionThemeConfig {
   const themeMap: Record<string, HomepageSectionTheme> = {
     technologie: "technologie",
+    rozrywka: "rozrywka",
     astronomia: "astronomia",
     misje: "misje",
     "ziemia-z-kosmosu": "ziemia-z-kosmosu",
@@ -62,6 +65,7 @@ export function categorySectionTheme(
   const accentAlt: Partial<Record<string, string>> = {
     astronomia: "#6366f1",
     technologie: "#2f6dff",
+    rozrywka: "#fb7185",
     misje: "#60a5fa",
     "ziemia-z-kosmosu": "#4ade80",
     iss: "#ff9500",

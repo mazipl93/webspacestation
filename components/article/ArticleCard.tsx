@@ -43,6 +43,8 @@ export default function ArticleCard({
         <CoverImage
           src={article.image}
           alt={article.title}
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           sizes={
             featured

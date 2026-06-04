@@ -47,6 +47,8 @@ export default function HeroArticle({
         <CoverImage
           src={article.image}
           alt=""
+          fallbackSeed={article.slug}
+          fallbackCategory={article.category}
           fill
           priority
           sizes="100vw"
