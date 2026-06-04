@@ -6,11 +6,17 @@ import type { UserRole } from "@/lib/auth/permissions";
 export interface AdminAuthValue {
   email: string;
   role: UserRole | null;
+  userId: string | null;
+  userName: string | null;
+  avatarUrl: string | null;
 }
 
 const AdminAuthContext = createContext<AdminAuthValue>({
   email: "",
   role: null,
+  userId: null,
+  userName: null,
+  avatarUrl: null,
 });
 
 export function AdminAuthProvider({

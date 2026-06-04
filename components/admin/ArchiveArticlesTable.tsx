@@ -2,6 +2,7 @@
 
 import type { AdminArticle } from "@/lib/admin/types";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { cn } from "@/lib/cn";
 import { getAdminDisplayTitle } from "@/lib/admin/rss-display";
 
 function formatDate(iso: string): string {
@@ -68,7 +69,10 @@ export default function ArchiveArticlesTable({
           {articles.map((a) => (
             <tr
               key={a.id}
-              className="border-b border-hairline-faint last:border-b-0 transition-colors hover:bg-white/[0.02]"
+              className={cn(
+                "border-b border-hairline-faint last:border-b-0 transition-colors hover:bg-white/[0.02]",
+                selectedIds.has(a.id) && "bg-accent-blue/[0.04]"
+              )}
             >
               <td className="px-4 py-3.5">
                 <input

@@ -60,6 +60,15 @@ const articleSelect = {
   coverImage: true,
   coverImageCredit: true,
   authorByline: true,
+  bylineUserId: true,
+  bylineUser: {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      avatarUrl: true,
+    },
+  },
   status: true,
   featured: true,
   heroPosition: true,
@@ -331,18 +340,26 @@ export interface ArticleStats {
   categories: number;
 }
 
-/** Aggregate counts for the dashboard. */
+/** Aggregate counts for the dashboard (single groupBy — avoids pool exhaustion). */
 export async function getArticleStats(): Promise<ArticleStats> {
-  const [total, published, draft, review, scheduled, archived, categories] =
-    await Promise.all([
-      prisma.article.count(),
-      prisma.article.count({ where: { status: ArticleStatus.PUBLISHED } }),
-      prisma.article.count({ where: { status: ArticleStatus.DRAFT } }),
-      prisma.article.count({ where: { status: ArticleStatus.REVIEW } }),
-      prisma.article.count({ where: { status: ArticleStatus.SCHEDULED } }),
-      prisma.article.count({ where: { status: ArticleStatus.ARCHIVED } }),
-      prisma.category.count(),
-    ]);
+  const [statusGroups, categories] = await Promise.all([
+    prisma.article.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    }),
+    prisma.category.count(),
+  ]);
+
+  const countFor = (status: ArticleStatus) =>
+    statusGroups.find((g) => g.status === status)?._count._all ?? 0;
+
+  const published = countFor(ArticleStatus.PUBLISHED);
+  const draft = countFor(ArticleStatus.DRAFT);
+  const review = countFor(ArticleStatus.REVIEW);
+  const scheduled = countFor(ArticleStatus.SCHEDULED);
+  const archived = countFor(ArticleStatus.ARCHIVED);
+  const total = published + draft + review + scheduled + archived;
+
   return { total, published, draft, review, scheduled, archived, categories };
 }
 
@@ -360,7 +377,14 @@ function buildPrismaContentUpdateInput(
   if (input.contextNote !== undefined) data.contextNote = input.contextNote;
   if (input.coverImage !== undefined) data.coverImage = input.coverImage;
   if (input.coverImageCredit !== undefined) data.coverImageCredit = input.coverImageCredit;
-  if (input.authorByline !== undefined) data.authorByline = input.authorByline;
+  if (input.bylineUserId !== undefined) {
+    data.bylineUserId = input.bylineUserId;
+    if (input.bylineUserId) data.authorByline = null;
+  }
+  if (input.authorByline !== undefined) {
+    data.authorByline = input.authorByline;
+    if (input.authorByline) data.bylineUserId = null;
+  }
   if (input.categoryId !== undefined) data.categoryId = input.categoryId;
   if (input.featured !== undefined) data.featured = input.featured;
   if (input.heroPosition !== undefined) data.heroPosition = input.heroPosition;
@@ -512,7 +536,8 @@ export async function createArticle(
       contextNote: input.contextNote,
       coverImage: input.coverImage,
       coverImageCredit: input.coverImageCredit,
-      authorByline: input.authorByline,
+      authorByline: input.bylineUserId ? null : input.authorByline,
+      bylineUserId: input.bylineUserId,
       status: ArticleStatus.DRAFT,
       featured: input.featured,
       heroPosition: input.heroPosition ?? 0,

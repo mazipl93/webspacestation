@@ -1,4 +1,5 @@
-import type { ArticleFormValues, AdminCategory } from "@/lib/admin/types";
+import type { ArticleFormValues, AdminCategory, BylineAuthorOption } from "@/lib/admin/types";
+import { resolvePublicArticleByline } from "@/lib/article/resolve-public-byline";
 import { resolveImageCreditFromForm } from "@/lib/articles/image-credit";
 import { previewCategorySlug } from "@/lib/ui/article-preview-meta";
 import type { NewsArticle } from "@/types";
@@ -10,6 +11,7 @@ export type PreviewArticleInput = {
   articleId?: string;
   /** Optional subtitle shown in hero (not on public API shape). */
   subtitle?: string;
+  bylineAuthors?: BylineAuthorOption[];
 };
 
 function splitContentParagraphs(content: string): string[] {
@@ -44,7 +46,7 @@ export function resolvePreviewImageFromForm(
 
 /** Client-side draft → NewsArticle for live CMS preview (no API). */
 export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
-  const { form, categories, contentOrigin, articleId } = input;
+  const { form, categories, contentOrigin, articleId, bylineAuthors } = input;
   const category = previewCategorySlug(form.categoryId, categories);
   const source = form.sourceName.trim() || undefined;
   const originalUrl = form.sourceUrl.trim() || undefined;
@@ -76,8 +78,32 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     originalUrl,
     imageCredit,
     authorByline: form.authorByline.trim() || undefined,
+    publicByline: resolvePreviewByline(form, bylineAuthors),
     tags: parseTags(form.tagsText),
   };
+}
+
+function resolvePreviewByline(
+  form: ArticleFormValues,
+  authors?: BylineAuthorOption[]
+) {
+  if (form.bylineUserId && authors?.length) {
+    const user = authors.find((a) => a.id === form.bylineUserId);
+    if (user) {
+      return resolvePublicArticleByline({
+        authorByline: null,
+        bylineUser: {
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          avatarUrl: user.avatarUrl,
+        },
+      });
+    }
+  }
+  const manual = form.authorByline.trim();
+  if (!manual) return undefined;
+  return resolvePublicArticleByline({ authorByline: manual, bylineUser: null });
 }
 
 /** Hero-only subtitle (form field not on NewsArticle). */

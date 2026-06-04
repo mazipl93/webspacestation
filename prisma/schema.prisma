@@ -47,9 +47,12 @@ model User {
   passwordHash String
   role         Role      @default(USER)
   name         String
+  /// Supabase profile avatar (optional) — for public byline display.
+  avatarUrl    String?
   createdAt    DateTime  @default(now())
 
-  articles     Article[]
+  articles       Article[]
+  bylineArticles Article[] @relation("ArticleBylineUser")
 
   @@index([role])
   @@map("users")
@@ -83,6 +86,9 @@ model Article {
   coverImageCredit String?  @db.Text
   /// Optional byline on public article (e.g. „Jan Kowalski, redakcja WSS”).
   authorByline  String?     @db.Text
+  /// Team member shown as author (name + avatar). Manual authorByline when null.
+  bylineUserId  String?
+  bylineUser    User?         @relation("ArticleBylineUser", fields: [bylineUserId], references: [id], onDelete: SetNull)
   status      ArticleStatus @default(DRAFT)
   featured    Boolean       @default(false)
   /// Homepage hero slider: 0 = off, 1–4 = slide order (ASC on homepage).

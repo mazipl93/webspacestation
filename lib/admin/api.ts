@@ -3,6 +3,7 @@ import type {
   AdminCategory,
   AdminUser,
   ArticleStatus,
+  BylineAuthorOption,
   UserRole,
 } from "@/lib/admin/types";
 
@@ -68,6 +69,7 @@ export interface ArticleWritePayload {
   coverImage?: string | null;
   coverImageCredit?: string | null;
   authorByline?: string | null;
+  bylineUserId?: string | null;
   categoryId?: string;
   status?: ArticleStatus;
   featured?: boolean;
@@ -91,6 +93,10 @@ export const adminApi = {
 
   getArticleStats() {
     return request<AdminArticleStats>(`/api/articles/stats`);
+  },
+
+  listBylineAuthors() {
+    return request<BylineAuthorOption[]>(`/api/articles/byline-authors`);
   },
 
   getArticle(id: string) {
@@ -123,6 +129,28 @@ export const adminApi = {
         body: JSON.stringify({ ids }),
       }
     );
+  },
+
+  bulkPublish(ids: string[]) {
+    return request<{
+      requested: number;
+      succeeded: number;
+      failed: Array<{ id: string; ok: boolean; reason?: string }>;
+    }>(`/api/articles/bulk-publish`, {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    });
+  },
+
+  bulkArchive(ids: string[]) {
+    return request<{
+      requested: number;
+      succeeded: number;
+      failed: Array<{ id: string; ok: boolean; reason?: string }>;
+    }>(`/api/articles/bulk-archive`, {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    });
   },
 
   reprocessRssArticle(id: string) {

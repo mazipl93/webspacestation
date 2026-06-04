@@ -45,6 +45,21 @@ export interface AdminArticleAuthor {
   role: string;
 }
 
+export interface BylineAuthorOption {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatarUrl: string | null;
+}
+
+export interface AdminArticleBylineUser {
+  id: string;
+  name: string;
+  role: string;
+  avatarUrl: string | null;
+}
+
 export interface AdminArticle {
   id: string;
   slug: string;
@@ -56,6 +71,8 @@ export interface AdminArticle {
   coverImage: string | null;
   coverImageCredit: string | null;
   authorByline: string | null;
+  bylineUserId: string | null;
+  bylineUser: AdminArticleBylineUser | null;
   status: ArticleStatus;
   featured: boolean;
   heroPosition: number;
@@ -85,6 +102,7 @@ export interface ArticleFormValues {
   coverImage: string;
   coverImageCredit: string;
   authorByline: string;
+  bylineUserId: string;
   categoryId: string;
   featured: boolean;
   heroPosition: number;

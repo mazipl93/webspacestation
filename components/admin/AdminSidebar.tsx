@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import LogoutButton from "@/components/auth/LogoutButton";
+import Avatar from "@/components/profile/Avatar";
 import type { UserRole } from "@/lib/auth/permissions";
 import {
   canCreateArticle,
@@ -91,6 +92,8 @@ function SidebarNavLink({
 
 export default function AdminSidebar({
   email,
+  name,
+  avatarUrl,
   role,
   collapsed,
   onToggleCollapse,
@@ -99,6 +102,8 @@ export default function AdminSidebar({
   onCloseMobile,
 }: {
   email: string;
+  name: string;
+  avatarUrl: string | null;
   role: UserRole;
   collapsed: boolean;
   onToggleCollapse: () => void;
@@ -107,7 +112,6 @@ export default function AdminSidebar({
   onCloseMobile: () => void;
 }) {
   const pathname = usePathname();
-  const initial = (email.trim()[0] || "?").toUpperCase();
   const roleLabel = ROLE_LABEL[role];
   const showNewArticle = canCreateArticle(role);
   const navItems = NAV.filter(
@@ -243,18 +247,20 @@ export default function AdminSidebar({
             showCollapsed ? "justify-center p-2" : "gap-3 px-3 py-2.5"
           )}
         >
-          <div
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-space-muted text-meta font-semibold text-text-secondary"
-            title={showCollapsed ? email || "Zalogowano" : undefined}
-          >
-            {initial}
-          </div>
+          <Avatar
+            name={name}
+            src={avatarUrl}
+            size={32}
+            squared
+            className={showCollapsed ? "shrink-0" : "shrink-0"}
+          />
           {!showCollapsed ? (
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-meta font-medium text-text-primary">
-                {email || "Zalogowano"}
+                {name}
               </span>
-              <span className="mt-0.5 inline-flex w-fit items-center rounded-badge border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-overline font-semibold text-accent-cyan">
+              <span className="truncate text-[10px] text-text-muted">{email}</span>
+              <span className="mt-1 inline-flex w-fit items-center rounded-badge border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-overline font-semibold text-accent-cyan">
                 {roleLabel}
               </span>
             </div>

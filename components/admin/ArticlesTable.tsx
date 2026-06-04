@@ -22,6 +22,7 @@ import {
   hasSourceAttribution,
 } from "@/lib/ui/article-kind";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { cn } from "@/lib/cn";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pl-PL", {
@@ -38,6 +39,9 @@ function canModerateStatus(status: AdminArticle["status"]): boolean {
 export default function ArticlesTable({
   articles,
   busyId,
+  selectedIds,
+  onToggle,
+  onToggleAll,
   onPublish,
   onReject,
   onArchive,
@@ -45,11 +49,18 @@ export default function ArticlesTable({
 }: {
   articles: AdminArticle[];
   busyId: string | null;
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onToggleAll: (checked: boolean) => void;
   onPublish: (article: AdminArticle) => void;
   onReject: (article: AdminArticle) => void;
   onArchive: (article: AdminArticle) => void;
   canDelete?: boolean;
 }) {
+  const allSelected =
+    articles.length > 0 && articles.every((a) => selectedIds.has(a.id));
+  const someSelected = articles.some((a) => selectedIds.has(a.id));
+
   if (articles.length === 0) {
     return (
       <div className="card-surface px-6 py-12 text-center">
@@ -63,6 +74,18 @@ export default function ArticlesTable({
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-b border-hairline text-text-tertiary">
+            <th className="w-12 px-4 py-3">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-hairline accent-accent-blue"
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someSelected && !allSelected;
+                }}
+                onChange={(e) => onToggleAll(e.target.checked)}
+                aria-label="Zaznacz wszystkie"
+              />
+            </th>
             <th className="px-5 py-3 text-overline font-semibold">Tytuł / streszczenie</th>
             <th className="hidden px-5 py-3 text-overline font-semibold md:table-cell">
               Typ
@@ -93,8 +116,20 @@ export default function ArticlesTable({
             return (
               <tr
                 key={a.id}
-                className="border-b border-hairline-faint last:border-b-0 transition-colors hover:bg-white/[0.02]"
+                className={cn(
+                  "border-b border-hairline-faint last:border-b-0 transition-colors hover:bg-white/[0.02]",
+                  selectedIds.has(a.id) && "bg-accent-blue/[0.04]"
+                )}
               >
+                <td className="px-4 py-3.5">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-hairline accent-accent-blue"
+                    checked={selectedIds.has(a.id)}
+                    onChange={() => onToggle(a.id)}
+                    aria-label={`Zaznacz ${getAdminDisplayTitle(a)}`}
+                  />
+                </td>
                 <td className="max-w-md px-5 py-3.5">
                   <Link
                     href={`/admin/articles/${a.id}/edit`}

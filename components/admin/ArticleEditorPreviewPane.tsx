@@ -2,7 +2,12 @@
 
 import { memo, useMemo, useState } from "react";
 import { Monitor, Smartphone } from "lucide-react";
-import type { AdminCategory, ArticleFormValues, ArticleStatus } from "@/lib/admin/types";
+import type {
+  AdminCategory,
+  ArticleFormValues,
+  ArticleStatus,
+  BylineAuthorOption,
+} from "@/lib/admin/types";
 import {
   formToPreviewArticle,
   previewSubtitle,
@@ -12,6 +17,7 @@ import ArticlePublicPreview, {
   type ArticlePreviewViewport,
 } from "@/components/article/ArticlePublicPreview";
 import { useDebouncedValue } from "@/lib/ui/use-debounced-value";
+import { cn } from "@/lib/cn";
 
 const PREVIEW_DEBOUNCE_MS = 300;
 
@@ -21,6 +27,7 @@ export type ArticleEditorPreviewPaneProps = {
   status: ArticleStatus;
   contentOrigin?: NewsArticle["contentOrigin"];
   articleId?: string | null;
+  bylineAuthors?: BylineAuthorOption[];
   className?: string;
 };
 
@@ -73,12 +80,12 @@ function ArticleEditorPreviewPaneInner({
   status,
   contentOrigin,
   articleId,
+  bylineAuthors,
   className = "",
 }: ArticleEditorPreviewPaneProps) {
   const [viewport, setViewport] = useState<ArticlePreviewViewport>("desktop");
   const debouncedForm = useDebouncedValue(form, PREVIEW_DEBOUNCE_MS);
 
-  /** Text fields debounced; cover/source update live so hero image is instant. */
   const previewForm = useMemo(
     () => ({
       ...debouncedForm,
@@ -86,12 +93,7 @@ function ArticleEditorPreviewPaneInner({
       sourceName: form.sourceName,
       sourceUrl: form.sourceUrl,
     }),
-    [
-      debouncedForm,
-      form.coverImage,
-      form.sourceName,
-      form.sourceUrl,
-    ]
+    [debouncedForm, form.coverImage, form.sourceName, form.sourceUrl]
   );
 
   const previewArticle = useMemo(
@@ -101,33 +103,41 @@ function ArticleEditorPreviewPaneInner({
         categories,
         contentOrigin,
         articleId: articleId ?? undefined,
+        bylineAuthors,
       }),
-    [previewForm, categories, contentOrigin, articleId]
+    [previewForm, categories, contentOrigin, articleId, bylineAuthors]
   );
 
   const subtitle = useMemo(() => previewSubtitle(form), [form]);
 
   return (
-    <div
-      className={`flex flex-col overflow-hidden rounded-[0.65rem] border border-hairline bg-space-bg ${className}`}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline bg-white/[0.02] px-3 py-2.5">
+    <div className={cn("flex flex-col gap-3", className)}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <p className="text-meta font-semibold text-text-primary">Live preview</p>
           <p className="text-[10px] text-text-muted">
-            Mobile = telefon · Desktop = nav + okładka 1024px (jak portal)
+            Obok tytułu i treści — zmiany widać od razu.
           </p>
         </div>
         <ViewportToggle viewport={viewport} onChange={setViewport} />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto overscroll-contain bg-space-bg">
-        <ArticlePublicPreview
-          article={previewArticle}
-          subtitle={subtitle}
-          viewport={viewport}
-          embedded
-        />
+      <div className="overflow-hidden rounded-[0.65rem] border border-hairline bg-space-bg">
+        <div className="max-h-[min(78vh,820px)] overflow-x-auto overflow-y-auto overscroll-contain">
+          <div
+            className={cn(
+              "mx-auto",
+              viewport === "desktop" ? "w-full max-w-4xl" : "w-full max-w-[390px]"
+            )}
+          >
+            <ArticlePublicPreview
+              article={previewArticle}
+              subtitle={subtitle}
+              viewport={viewport}
+              embedded
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

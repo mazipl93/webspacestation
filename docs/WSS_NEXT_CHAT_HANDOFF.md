@@ -1,25 +1,24 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 38 — krok 0 commit lokalny)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 38 — idzie na nowy czat)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit lokalny:** `eb6fc60` — feat(ui): logo C, flat theme, article-panel  
-**Ostatni commit remote:** `eb6fc60` — logo C, flat theme, article-panel (krok 0)
+**Ostatni commit:** `e16931b` — feat(cms): REVIEW queue count  
+**Historia:** `18fc9a3` cleanup Ważne teraz · `eb6fc60` logo C + theme + article-panel
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Krok 0 (czat 38) — na prod:**
-- **LOGO** — wariant C (Oswald) · `WssWordmarkControl`
-- **Tło** — flat `#060810` · `data-portal-theme="slate-soft"`
-- **Artykuł dół** — `article-panel`
-- **Dev UI** — brak switcherów na froncie
-- **Aktualności** — bez podtytułu CMS (`ArticleFeedSection`)
-- **Homepage ops** — mock w `ContentGrid.tsx` → krok 6
+**Na `main` (kroki 0–2 zamknięte):**
+- Krok 0: logo C, `#060810`, article-panel, bez dev UI
+- Krok 1: usunięte komponenty Ważne teraz (rankImportantNow zostaje pod hero)
+- Krok 2: licznik REVIEW — `GET /api/articles/stats`, badge na filtrze + pulpit
 
-**Krok 1 (czat 38):** `18fc9a3` na prod — cleanup Ważne teraz.
+**WIP lokalnie BEZ commita (następny czat — commit po Twoim OK):**
+- Hero artykułu: **brak tekstu na okładce** (meta pod zdjęciem)
+- CMS lista: **checkboxy + bulk** publikuj / archiwizuj / usuń z archiwum (`bulk-publish`, `bulk-archive`)
+- CMS edytor: **7 bloków** `EditorSection` + autor z redakcji (`bylineUserId`, `AuthorBylineField`, `ArticlePublicByline`)
+- Migracja: `20260604220000_article_byline_user` — **`npm run db:deploy` przed testem autora**
 
-**Krok 2 (czat 38) — lokalnie:** licznik REVIEW (`GET /api/articles/stats`) na `/admin/articles` i pulpicie. Push po OK usera.
-
-**Następny krok po OK:** **3** — komentarze Supabase
+**Następny krok STEP_BY_STEP:** **3** — komentarze Supabase (po commit WIP jeśli user chce)
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -55,7 +54,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **Artykuł dół** | **User OK** | `article-panel` — share, komentarze, Wróć, Czytaj dalej |
 | **LOGO** | **C (Oswald)** — commit w kroku 0 | Martwe A/B w `wordmarks/` — posprzątać opcjonalnie |
 | **Tło** | **User OK** · hardcoded `slate-soft` / `#060810` | Dev switchery **usunięte** |
-| **Commit** | **`eb6fc60` lokalnie** | Push po OK usera |
+| **Commit** | `e16931b` na main · **duży WIP bez commita** (patrz wyżej) |
 
 **Theme (nie ruszać bez potrzeby):**
 - `lib/ui/portal-page-themes.ts` · `portal-page-theme-vars.ts` · `app/globals.css`
@@ -85,7 +84,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 
 ---
 
-## MAPA STANU — prod (`main` a5ab17c)
+## MAPA STANU — prod (`main` → `e16931b` + WIP lokalny)
 
 ### Zrobione i na `main` (prod)
 
@@ -104,10 +103,10 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 
 | Krok | Zadanie |
 |------|---------|
-| **0** | Commit WIP (logo C, tło, article-panel, bez dev UI) |
-| **1** | Usunąć kod „Ważne teraz” — **zrobione lokalnie**, push po OK | `[x]` lokalnie |
-| **2** | Licznik REVIEW w CMS |
-| **3** | Komentarze Supabase |
+| **0** | Commit WIP UI | `[x]` `eb6fc60` |
+| **1** | Usunąć Ważne teraz | `[x]` `18fc9a3` |
+| **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
+| **3** | Komentarze Supabase | `[ ]` **START** |
 | **4** | Sitemap + JSON-LD |
 | **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) |
 | **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
@@ -126,49 +125,32 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
 Przeczytaj ZAWSZE (w tej kolejności):
-1. docs/WSS_SITE_MAP_AUDIT.md — PEŁNY audyt: co jest na każdej stronie / plikach
-2. docs/WSS_STEP_BY_STEP_BACKLOG.md — kolejność kroków 0–6
-3. docs/WSS_NEXT_CHAT_HANDOFF.md — WIP lokalny
+1. docs/WSS_SITE_MAP_AUDIT.md
+2. docs/WSS_STEP_BY_STEP_BACKLOG.md
+3. docs/WSS_NEXT_CHAT_HANDOFF.md
 4. docs/WSS_ROADMAP_BACKLOG_V3.md
 
-REGUŁA OBOWIĄZKOWA:
-- JEDEN krok z STEP_BY_STEP na raz
-- Raport → ja testuję → CZEKAJ na moje OK → dopiero następny krok
-- Commit/push tylko po moim OK (krok 0 = commit WIP jeśli potwierdzę)
+REGUŁA: jeden krok STEP_BY_STEP · raport · test · CZEKAJ OK · commit/push tylko po OK.
 
-Stan remote: main `a5ab17c` · prod https://webspacestation.pl
-Stan lokalny: `eb6fc60` (krok 0) — push po Twoim OK
+Stan remote main: `e16931b` (kroki 0–2) · prod https://webspacestation.pl
 
-Komendy: npm run dev · npm run type-check
+WIP lokalnie BEZ commita (czat 38, koniec):
+- Hero: tekst POD okładką (nie na zdjęciu)
+- CMS: checkboxy + bulk publish/archive + panel CmsPanel
+- CMS edytor: EditorSection 1–7 + AuthorBylineField (bylineUserId, avatar z profilu)
+- Migracja: npm run db:deploy (20260604220000_article_byline_user)
 
-Reguły niepodważalne:
-- Okładka object-cover · publishedAt = #1 · heroPosition nie wyklucza z Najnowszych
-- Public tylko PUBLISHED · NIE auto-publish RSS
-- ZERO dev copy na froncie (żadnych „CMS”, switcherów, podglądów dev)
+Opcjonalnie na start nowego czatu: commitnij WIP powyżej (jeden pakiet), potem krok 3.
 
----
+ZACZNIJ OD KROKU 3: Komentarze Supabase (zamiast localStorage w Comments.tsx).
 
-ZACZNIJ OD KROKU 0 (docs/WSS_STEP_BY_STEP_BACKLOG.md):
-Commit pakietu WIP: logo C (Oswald), flat tło #060810, article-panel, bez dev switcherów.
-
-Potem krok 1 — user: WYRZUCIĆ „Ważne teraz” z kodu (nie będzie sekcji; hero wystarcza):
-- Usuń: ImportantNowSlider.tsx, HomeSidebar.tsx, TopStoriesList.tsx, HeroEditorialCluster.tsx
-- Zostaw rankImportantNow() tylko jako fallback puli pod hero w ContentGrid
-
-Krok 2: Licznik REVIEW w CMS (~175)
-Krok 3: Komentarze Supabase (zamiast localStorage)
 Krok 4: Sitemap + JSON-LD
-Krok 5: Zbudować „Odkrywaj” (/galeria, /wideo, /kalendarz, /mapa, /starty — nie ComingSoon)
-Krok 6: Prawdziwe API pod ops panel (zamiast LAUNCHES[] na sztywno w ContentGrid.tsx)
+Krok 5: Odkrywaj (/galeria, /wideo, /kalendarz, /mapa, /starty)
+Krok 6: API ops panel (zamiast LAUNCHES[] w ContentGrid)
 
-Audyt — fakty na dziś:
-- Homepage: hero + Najnowsze + Popularne + 5 działów + Centrum operacyjne (MOCK starty/misje/timeline)
-- /aktualnosci: lista bez podtytułu CMS
-- Artykuł: B+, komentarze = localStorage
-- Menu Więcej → 5× „Wkrótce”
-- Ważne teraz: komponent w repo, NIE na / — do usunięcia (krok 1)
+Reguły: object-cover · publishedAt=#1 · heroPosition w Najnowszych · tylko PUBLISHED public · ZERO dev copy na froncie.
 
-NIE przeskakuj kroków. Po każdym: czekaj OK.
+Komendy: npm run dev · npm run type-check · npm run db:deploy
 
 Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ```
@@ -181,12 +163,17 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 
 | Obszar | Stan |
 |--------|------|
-| **Krok 0** | `eb6fc60` na `origin/main` |
-| **Krok 1** | Usunięte: ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster · `rankImportantNow` w ContentGrid bez zmian |
-| **type-check** | OK |
-| **Push krok 1** | Czeka OK usera |
+| **Krok 0** | `eb6fc60` |
+| **Krok 1** | `18fc9a3` |
 
 **Poza commitem (opcjonalnie później):** `WssWordmarkApex`, `WssWordmarkStation`, `WssLetterWCustom`, `wss-logo-variants.ts`, `build-log.txt`
+
+### Sesja 4.06.2026 (czat 38, koniec) — kroki 0–2 na main + WIP CMS/hero/autor
+
+| Obszar | Stan |
+|--------|------|
+| **Commity** | `e16931b` (krok 2) · WIP bez commita: bulk CMS, edytor bloków, autor, hero |
+| **Następny czat** | Commit WIP (opcjonalnie) → krok 3 Supabase |
 
 ### Sesja 4.06.2026 (czat 37, koniec) — audyt pełny + backlog krok po kroku na czat 38
 

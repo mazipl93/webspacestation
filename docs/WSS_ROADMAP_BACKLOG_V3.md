@@ -11,7 +11,7 @@
 |------|-----|---------|--------|
 | **0** | **COMMIT-WIP** | Logo C + tło flat + article-panel (bez dev UI) | **Następne** `[ ]` |
 | **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[x]` |
-| **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[x]` |
+| **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[ ]` |
 | **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[ ]` |
 | **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content | `[ ]` |

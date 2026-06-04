@@ -16,6 +16,7 @@ import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
 import CoverImage from "@/components/article/CoverImage";
 import ArticlePageHero from "@/components/article/ArticlePageHero";
+import ArticleHeroMobileMeta from "@/components/article/ArticleHeroMobileMeta";
 import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
 import { ARTICLE_PAGE_MAIN_OFFSET_CLASS } from "@/lib/ui/article-hero-frame";
 
@@ -202,8 +203,24 @@ function ArticleBody({
   });
 
   return (
-    <div id="article-body" className="container-site py-6 reveal max-sm:py-5 sm:py-10">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <>
+      <div className="border-b border-hairline bg-[#05070d]">
+        <div className="container-site pt-4 pb-5 lg:pt-6 lg:pb-8">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="min-w-0 px-7 sm:px-10">
+              <ArticleHeroMobileMeta
+                article={article}
+                categoryLabel={meta.label}
+                categoryColor={meta.color}
+              />
+            </div>
+            <div className="hidden min-h-px xl:block" aria-hidden="true" />
+          </div>
+        </div>
+      </div>
+
+      <div id="article-body" className="container-site py-6 reveal max-sm:py-5 sm:py-10">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
 
         <ArticlePageBodyMain
           article={article}
@@ -279,6 +296,7 @@ function ArticleBody({
         </aside>
       </div>
     </div>
+    </>
   );
 }
 

@@ -15,16 +15,24 @@ import { cn } from "@/lib/cn";
 export default function AdminShell({
   email,
   role,
+  name,
+  avatarUrl,
   children,
 }: {
   email: string;
   role: UserRole;
+  name: string;
+  avatarUrl: string | null;
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const pathname = usePathname();
+  const isArticleEditor =
+    pathname === "/admin/articles/new" ||
+    /^\/admin\/articles\/[^/]+\/edit$/.test(pathname ?? "");
+
 
   useEffect(() => {
     setCollapsed(readSidebarCollapsed());
@@ -78,6 +86,8 @@ export default function AdminShell({
 
       <AdminSidebar
         email={email}
+        name={name}
+        avatarUrl={avatarUrl}
         role={role}
         collapsed={collapsed}
         onToggleCollapse={toggleCollapsed}
@@ -104,8 +114,12 @@ export default function AdminShell({
 
         <div
           className={cn(
-            "mx-auto w-full flex-1 px-6 py-8 transition-[max-width] duration-300 ease-out md:px-10 md:py-10",
-            collapsed ? "max-w-none xl:max-w-[1600px]" : "max-w-5xl"
+            "mx-auto w-full flex-1 transition-[max-width] duration-300 ease-out",
+            isArticleEditor
+              ? "max-w-none px-4 py-5 md:px-6 lg:px-8"
+              : "px-6 py-8 md:px-10 md:py-10",
+            !isArticleEditor &&
+              (collapsed ? "max-w-none xl:max-w-[1600px]" : "max-w-5xl")
           )}
         >
           {children}

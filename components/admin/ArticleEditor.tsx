@@ -10,6 +10,7 @@ import type {
   AdminCategory,
   ArticleFormValues,
   ArticleStatus,
+  BylineAuthorOption,
 } from "@/lib/admin/types";
 import { slugify } from "@/lib/admin/slugify";
 import {
@@ -35,6 +36,12 @@ import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import CoverImageUploader from "@/components/admin/CoverImageUploader";
 import ArticleEditorPreviewPane from "@/components/admin/ArticleEditorPreviewPane";
+import EditorSection from "@/components/admin/EditorSection";
+import {
+  EditorControlPanel,
+  EditorFieldPanel,
+} from "@/components/admin/EditorFieldPanel";
+import AuthorBylineField from "@/components/admin/AuthorBylineField";
 import {
   combineDateIso,
   combineDatetimeLocal,
@@ -65,6 +72,7 @@ const EMPTY_FORM: ArticleFormValues = {
   coverImage: "",
   coverImageCredit: "",
   authorByline: "",
+  bylineUserId: "",
   categoryId: "",
   featured: false,
   heroPosition: 0,
@@ -100,6 +108,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     coverImage: a.coverImage ?? "",
     coverImageCredit: a.coverImageCredit ?? "",
     authorByline: a.authorByline ?? "",
+    bylineUserId: a.bylineUserId ?? "",
     categoryId: a.category.id,
     featured: a.featured,
     heroPosition: a.heroPosition ?? 0,
@@ -122,7 +131,8 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     contextNote: form.contextNote || null,
     coverImage: form.coverImage.trim() || null,
     coverImageCredit: form.coverImageCredit.trim() || null,
-    authorByline: form.authorByline.trim() || null,
+    authorByline: form.bylineUserId ? null : form.authorByline.trim() || null,
+    bylineUserId: form.bylineUserId.trim() || null,
     categoryId: form.categoryId,
     tags: parseTagsText(form.tagsText),
     featured: form.featured,
@@ -348,7 +358,8 @@ function SchedulePublishFields({
 }
 
 export default function ArticleEditor({ articleId }: { articleId?: string }) {
-  const { role } = useAdminAuth();
+  const { role, userId } = useAdminAuth();
+  const [bylineAuthors, setBylineAuthors] = useState<BylineAuthorOption[]>([]);
   const mayPublish = canPublishArticle(role);
 
   const [categories, setCategories] = useState<AdminCategory[]>([]);
@@ -408,6 +419,16 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const scheduleDueLabel = loadedArticle?.publishAt
     ? formatScheduleLabel(new Date(loadedArticle.publishAt))
     : null;
+
+  useEffect(() => {
+    let active = true;
+    adminApi.listBylineAuthors().then((rows) => {
+      if (active) setBylineAuthors(rows);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -935,67 +956,79 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </Card>
       ) : null}
 
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
-        <div className="min-w-0 flex-1 xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto xl:pr-1">
-      <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
-        <div className="flex flex-col gap-5">
-          <Card className="flex flex-col gap-4">
-            <Field label="Tytuł" htmlFor="title">
-              <TextInput
-                id="title"
-                value={form.title}
-                placeholder="Nagłówek artykułu"
-                onChange={(e) => update("title", e.target.value)}
-              />
-            </Field>
-
-            <Field label="Podtytuł" htmlFor="subtitle">
-              <TextInput
-                id="subtitle"
-                value={form.subtitle}
-                placeholder="Krótki dek pod tytułem"
-                onChange={(e) => update("subtitle", e.target.value)}
-              />
-            </Field>
-
-            <Field
-              label="Slug"
-              htmlFor="slug"
-              hint="Generowany automatycznie z tytułu — można nadpisać."
+      <div className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,38%)] xl:items-start">
+          <div className="flex min-w-0 flex-col gap-6">
+            <EditorSection
+              step={1}
+              title="Tytuł i lead"
+              description="To widzi czytelnik na górze artykułu — tytuł, zajawka i adres URL."
+              tone="content"
             >
-              <TextInput
-                id="slug"
-                value={form.slug}
-                placeholder="slug-artykulu"
-                onChange={(e) => {
-                  slugTouched.current = true;
-                  update("slug", slugify(e.target.value));
-                }}
-              />
-            </Field>
+              <EditorFieldPanel>
+                <Field label="Tytuł" htmlFor="title">
+                  <TextInput
+                    id="title"
+                    value={form.title}
+                    placeholder="Nagłówek artykułu"
+                    onChange={(e) => update("title", e.target.value)}
+                  />
+                </Field>
+              </EditorFieldPanel>
 
-            <Field label="Zajawka" htmlFor="excerpt">
-              <TextArea
-                id="excerpt"
-                rows={3}
-                value={form.excerpt}
-                placeholder="Lead wyświetlany pod tytułem."
-                onChange={(e) => update("excerpt", e.target.value)}
-              />
-            </Field>
-          </Card>
+              <EditorFieldPanel>
+                <Field label="Podtytuł" htmlFor="subtitle">
+                  <TextInput
+                    id="subtitle"
+                    value={form.subtitle}
+                    placeholder="Krótki dek pod tytułem"
+                    onChange={(e) => update("subtitle", e.target.value)}
+                  />
+                </Field>
+              </EditorFieldPanel>
 
-          <Card className="flex flex-col gap-2">
-            <Field
-              label="Treść"
-              htmlFor="content"
-              hint="Akapity oddzielaj pustą linią. Listę buduj przyciskiem — każdy punkt w nowej linii (•)."
+              <EditorFieldPanel>
+                <Field
+                  label="Slug"
+                  htmlFor="slug"
+                  hint="Generowany automatycznie z tytułu — można nadpisać."
+                >
+                  <TextInput
+                    id="slug"
+                    value={form.slug}
+                    placeholder="slug-artykulu"
+                    onChange={(e) => {
+                      slugTouched.current = true;
+                      update("slug", slugify(e.target.value));
+                    }}
+                  />
+                </Field>
+              </EditorFieldPanel>
+
+              <EditorFieldPanel>
+                <Field label="Zajawka" htmlFor="excerpt">
+                  <TextArea
+                    id="excerpt"
+                    rows={3}
+                    value={form.excerpt}
+                    placeholder="Lead wyświetlany pod tytułem."
+                    onChange={(e) => update("excerpt", e.target.value)}
+                  />
+                </Field>
+              </EditorFieldPanel>
+            </EditorSection>
+
+            <EditorSection
+              step={2}
+              title="Treść artykułu"
+              description="Akapity oddziel pustą linią. Listę dodasz przyciskiem poniżej."
+              tone="content"
             >
-              <div className="flex flex-col gap-2">
+              <EditorFieldPanel>
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-fit px-2.5 py-1.5 text-meta"
+                  className="w-full justify-center px-2.5 py-2 text-meta sm:w-fit"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     const el = contentRef.current;
@@ -1015,112 +1048,134 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   <ListPlus size={14} aria-hidden />
                   Dodaj punkt listy
                 </Button>
-                <TextArea
-                  ref={contentRef}
-                  id="content"
-                  rows={16}
-                  value={form.content}
-                  className="font-mono text-meta"
-                  placeholder="Treść artykułu…"
-                  onChange={(e) => update("content", e.target.value)}
-                  onSelect={syncContentSelection}
-                  onKeyUp={syncContentSelection}
-                  onClick={syncContentSelection}
-                  onFocus={syncContentSelection}
-                />
-              </div>
-            </Field>
-          </Card>
+              </EditorFieldPanel>
 
-          <Card className="flex flex-col gap-2">
-            <Field
-              label="Kontekst WSS"
-              htmlFor="contextNote"
-              hint="Ramowanie redakcyjne — ogólny trend, nie cytat ze źródła."
-            >
-              <TextArea
-                id="contextNote"
-                rows={3}
-                value={form.contextNote}
-                placeholder="Opcjonalny kontekst dla czytelnika."
-                onChange={(e) => update("contextNote", e.target.value)}
+              <EditorFieldPanel>
+                <Field
+                  label="Treść"
+                  htmlFor="content"
+                  hint="Akapity oddzielaj pustą linią. Listę buduj przyciskiem — każdy punkt w nowej linii (•)."
+                >
+                  <TextArea
+                    ref={contentRef}
+                    id="content"
+                    rows={14}
+                    value={form.content}
+                    className="font-mono text-meta"
+                    placeholder="Treść artykułu…"
+                    onChange={(e) => update("content", e.target.value)}
+                    onSelect={syncContentSelection}
+                    onKeyUp={syncContentSelection}
+                    onClick={syncContentSelection}
+                    onFocus={syncContentSelection}
+                  />
+                </Field>
+              </EditorFieldPanel>
+            </EditorSection>
+          </div>
+
+          <aside className="min-w-0 xl:sticky xl:top-4">
+            <div className="overflow-hidden rounded-[0.75rem] border border-hairline bg-white/[0.03] p-3 sm:p-4">
+              <ArticleEditorPreviewPane
+                form={form}
+                categories={categories}
+                status={status}
+                contentOrigin={loadedArticle?.contentOrigin}
+                articleId={currentId}
+                bylineAuthors={bylineAuthors}
               />
-            </Field>
-          </Card>
+            </div>
+          </aside>
         </div>
 
-        <div className="flex flex-col gap-5">
-          <Card className="flex flex-col gap-4">
-            <Field label="Kategoria" htmlFor="category" hint="Wymagana przed publikacją.">
-              <Select
-                id="category"
-                value={form.categoryId}
-                onChange={(e) => update("categoryId", e.target.value)}
-              >
-                <option value="">Wybierz kategorię…</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <Field
-              label="Tagi"
-              htmlFor="tags"
-              hint="Oddziel przecinkami (maks. 5)."
-            >
-              <TextInput
-                id="tags"
-                value={form.tagsText}
-                placeholder="np. Space, NASA, Starship"
-                onChange={(e) => update("tagsText", e.target.value)}
-              />
-            </Field>
-
-            <Field label="Czas czytania (min)" htmlFor="readingTime">
-              <TextInput
-                id="readingTime"
-                type="number"
-                min={0}
-                value={form.readingTime ?? ""}
-                placeholder="np. 4"
-                onChange={(e) =>
-                  update(
-                    "readingTime",
-                    e.target.value === "" ? null : Number(e.target.value)
-                  )
-                }
-              />
-            </Field>
-
-            <Field
-              label="Autor (opcjonalnie)"
-              htmlFor="authorByline"
-              hint="Podpis na stronie artykułu. Puste = nie wyświetla się."
-            >
-              <TextInput
-                id="authorByline"
-                value={form.authorByline}
-                placeholder="np. Anna Nowak, redakcja WSS"
-                onChange={(e) => update("authorByline", e.target.value)}
-              />
-            </Field>
-
-            <div className="flex flex-col gap-4 border-t border-hairline-faint pt-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <span className="text-meta text-text-secondary">Wyróżniony</span>
-                  <p className="mt-0.5 text-[10px] leading-snug text-text-muted">
-                    Wyższy ranking — większa szansa na główny hero
-                  </p>
-                </div>
-                <Toggle
-                  checked={form.featured}
-                  onChange={(v) => update("featured", v)}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <EditorSection
+            step={3}
+            title="Kontekst WSS"
+            description="Ramowanie redakcyjne pod treścią — ogólny trend, nie cytat ze źródła."
+            tone="meta"
+          >
+            <EditorFieldPanel>
+              <Field label="Kontekst" htmlFor="contextNote">
+                <TextArea
+                  id="contextNote"
+                  rows={4}
+                  value={form.contextNote}
+                  placeholder="Opcjonalny kontekst dla czytelnika."
+                  onChange={(e) => update("contextNote", e.target.value)}
                 />
-              </div>
+              </Field>
+            </EditorFieldPanel>
+          </EditorSection>
+
+          <EditorSection
+            step={4}
+            title="Kategoria i wyróżnienia"
+            description="Dział na stronie, tagi oraz ustawienia na homepage."
+            tone="meta"
+          >
+            <EditorFieldPanel>
+              <Field label="Kategoria" htmlFor="category" hint="Wymagana przed publikacją.">
+                <Select
+                  id="category"
+                  value={form.categoryId}
+                  onChange={(e) => update("categoryId", e.target.value)}
+                >
+                  <option value="">Wybierz kategorię…</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </EditorFieldPanel>
+
+            <EditorFieldPanel>
+              <Field
+                label="Tagi"
+                htmlFor="tags"
+                hint="Oddziel przecinkami (maks. 5)."
+              >
+                <TextInput
+                  id="tags"
+                  value={form.tagsText}
+                  placeholder="np. Space, NASA, Starship"
+                  onChange={(e) => update("tagsText", e.target.value)}
+                />
+              </Field>
+            </EditorFieldPanel>
+
+            <EditorFieldPanel>
+              <Field label="Czas czytania (min)" htmlFor="readingTime">
+                <TextInput
+                  id="readingTime"
+                  type="number"
+                  min={0}
+                  value={form.readingTime ?? ""}
+                  placeholder="np. 4"
+                  onChange={(e) =>
+                    update(
+                      "readingTime",
+                      e.target.value === "" ? null : Number(e.target.value)
+                    )
+                  }
+                />
+              </Field>
+            </EditorFieldPanel>
+
+            <EditorControlPanel
+              title="Wyróżniony"
+              description="Podbija ranking w sekcji Popularne i puli pod hero (nie to samo co „Temat tygodnia” ani pozycja 1–4 w sliderze)."
+            >
+              <Toggle
+                checked={form.featured}
+                onChange={(v) => update("featured", v)}
+              />
+            </EditorControlPanel>
+
+            <EditorFieldPanel>
               <Field
                 label="Pozycja w hero (strona główna)"
                 htmlFor="heroPosition"
@@ -1140,106 +1195,129 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   <option value="4">4 — czwarty slajd</option>
                 </Select>
               </Field>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <span className="text-meta text-text-secondary">Temat tygodnia</span>
-                  <p className="mt-0.5 text-[10px] leading-snug text-text-muted">
-                    Slider pod hero na stronie głównej
-                  </p>
-                </div>
-                <Toggle
-                  checked={form.weekTopic}
-                  onChange={(v) => update("weekTopic", v)}
-                />
-              </div>
-            </div>
-          </Card>
+            </EditorFieldPanel>
 
-          <Card className="flex flex-col gap-4">
-            <p className="text-meta font-semibold text-text-primary">
-              Źródło (opcjonalne)
-            </p>
-            <Field label="Wydawca" htmlFor="sourceName">
-              <TextInput
-                id="sourceName"
-                value={form.sourceName}
-                placeholder="np. SpaceNews"
-                onChange={(e) => update("sourceName", e.target.value)}
-              />
-            </Field>
-            <Field label="Link do artykułu" htmlFor="sourceUrl">
-              <TextInput
-                id="sourceUrl"
-                value={form.sourceUrl}
-                placeholder="https://…"
-                onChange={(e) => update("sourceUrl", e.target.value)}
-              />
-            </Field>
-            {form.sourceUrl.trim() ? (
-              <a
-                href={form.sourceUrl.trim()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 break-all text-caption text-accent-cyan hover:underline"
-              >
-                <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
-                Otwórz u wydawcy
-              </a>
-            ) : null}
-          </Card>
-
-          <Card className="flex flex-col gap-4">
-            <Field label="Okładka artykułu" hint="Upload (WebP) lub URL zewnętrzny">
-              <CoverImageUploader
-                articleId={currentId}
-                coverUrl={form.coverImage.trim()}
-                onCoverUrl={(url) => update("coverImage", url)}
-                disabled={loading}
-              />
-            </Field>
-            <Field label="Obraz okładki (URL)" htmlFor="coverImage">
-              <TextInput
-                id="coverImage"
-                value={form.coverImage}
-                placeholder="https://… lub upload powyżej"
-                onChange={(e) => update("coverImage", e.target.value)}
-              />
-            </Field>
-            <Field
-              label="Podpis zdjęcia"
-              htmlFor="coverImageCredit"
-              hint="Autor zdjęcia, licencja, źródło ilustracji. Puste = przy RSS auto-podpis z pola Źródło."
+            <EditorControlPanel
+              title="Temat tygodnia"
+              description="Slider pod hero na stronie głównej"
             >
-              <TextArea
-                id="coverImageCredit"
-                rows={3}
-                value={form.coverImageCredit}
-                placeholder="np. NASA / Joel Kowsky · CC BY-NC 2.0"
-                onChange={(e) => update("coverImageCredit", e.target.value)}
+              <Toggle
+                checked={form.weekTopic}
+                onChange={(v) => update("weekTopic", v)}
               />
-            </Field>
-            {previewCredit ? (
-              <CoverImageCredit
-                variant="compact"
-                credit={previewCredit}
-                source={sourceLabel ?? undefined}
-                originalUrl={form.sourceUrl.trim() || undefined}
-              />
-            ) : null}
-          </Card>
-        </div>
-      </div>
-        </div>
+            </EditorControlPanel>
+          </EditorSection>
 
-        <div className="w-full shrink-0 xl:sticky xl:top-4 xl:w-[min(48%,520px)] xl:max-w-[520px]">
-          <ArticleEditorPreviewPane
-            form={form}
-            categories={categories}
-            status={status}
-            contentOrigin={loadedArticle?.contentOrigin}
-            articleId={currentId}
-            className="h-[min(72vh,900px)] xl:h-[calc(100dvh-8rem)]"
-          />
+          <EditorSection
+            step={5}
+            title="Autor na stronie"
+            description="Redakcja (zdjęcie z profilu) albo ręczny podpis. Użytkownicy portalu (USER) nie pojawiają się na liście."
+            tone="author"
+          >
+            <AuthorBylineField
+              key={currentId ?? "new"}
+              bylineUserId={form.bylineUserId}
+              authorByline={form.authorByline}
+              authors={bylineAuthors}
+              onChangeBylineUserId={(id) => update("bylineUserId", id)}
+              onChangeAuthorByline={(text) => update("authorByline", text)}
+            />
+          </EditorSection>
+
+          <EditorSection
+            step={6}
+            title="Źródło zewnętrzne"
+            description="Dla materiałów z RSS lub cytowania wydawcy."
+            tone="default"
+          >
+            <EditorFieldPanel>
+              <Field label="Wydawca" htmlFor="sourceName">
+                <TextInput
+                  id="sourceName"
+                  value={form.sourceName}
+                  placeholder="np. SpaceNews"
+                  onChange={(e) => update("sourceName", e.target.value)}
+                />
+              </Field>
+            </EditorFieldPanel>
+            <EditorFieldPanel>
+              <Field label="Link do artykułu" htmlFor="sourceUrl">
+                <TextInput
+                  id="sourceUrl"
+                  value={form.sourceUrl}
+                  placeholder="https://…"
+                  onChange={(e) => update("sourceUrl", e.target.value)}
+                />
+              </Field>
+            </EditorFieldPanel>
+            {form.sourceUrl.trim() ? (
+              <EditorFieldPanel>
+                <a
+                  href={form.sourceUrl.trim()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 break-all text-caption text-accent-cyan hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+                  Otwórz u wydawcy
+                </a>
+              </EditorFieldPanel>
+            ) : null}
+          </EditorSection>
+          </div>
+
+          <EditorSection
+            step={7}
+            title="Okładka"
+            description="Zdjęcie hero artykułu — upload lub link. Podpis zdjęcia osobno."
+            tone="media"
+          >
+            <EditorFieldPanel>
+              <Field label="Plik lub URL okładki" hint="Upload (WebP) lub wklej link">
+                <CoverImageUploader
+                  articleId={currentId}
+                  coverUrl={form.coverImage.trim()}
+                  onCoverUrl={(url) => update("coverImage", url)}
+                  disabled={loading}
+                />
+              </Field>
+            </EditorFieldPanel>
+            <EditorFieldPanel>
+              <Field label="Obraz okładki (URL)" htmlFor="coverImage">
+                <TextInput
+                  id="coverImage"
+                  value={form.coverImage}
+                  placeholder="https://… lub upload powyżej"
+                  onChange={(e) => update("coverImage", e.target.value)}
+                />
+              </Field>
+            </EditorFieldPanel>
+            <EditorFieldPanel>
+              <Field
+                label="Podpis zdjęcia"
+                htmlFor="coverImageCredit"
+                hint="Autor zdjęcia, licencja, źródło ilustracji. Puste = przy RSS auto-podpis z pola Źródło."
+              >
+                <TextArea
+                  id="coverImageCredit"
+                  rows={3}
+                  value={form.coverImageCredit}
+                  placeholder="np. NASA / Joel Kowsky · CC BY-NC 2.0"
+                  onChange={(e) => update("coverImageCredit", e.target.value)}
+                />
+              </Field>
+            </EditorFieldPanel>
+            {previewCredit ? (
+              <EditorFieldPanel>
+                <CoverImageCredit
+                  variant="compact"
+                  credit={previewCredit}
+                  source={sourceLabel ?? undefined}
+                  originalUrl={form.sourceUrl.trim() || undefined}
+                />
+              </EditorFieldPanel>
+            ) : null}
+          </EditorSection>
         </div>
       </div>
     </div>

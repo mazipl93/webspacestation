@@ -2,6 +2,11 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser as getSupabaseUser } from "@/lib/auth/session";
+import {
+  resolveDisplayAvatarUrl,
+  resolveDisplayName,
+} from "@/lib/auth/display-profile";
+import { syncAppUserFromSupabase } from "@/lib/server/sync-user-profile";
 import type { UserRole } from "@/lib/auth/permissions";
 
 export interface AppUser {
@@ -9,6 +14,7 @@ export interface AppUser {
   email: string;
   name: string;
   role: UserRole;
+  avatarUrl: string | null;
 }
 
 /**
@@ -28,7 +34,7 @@ export async function getCurrentUser(): Promise<AppUser | null> {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, email: true, name: true, role: true },
+    select: { id: true, email: true, name: true, role: true, avatarUrl: true },
   });
   return user;
 }
@@ -40,6 +46,10 @@ export interface AuthContext {
   email: string | null;
   /** The mapped application user with role, or null if unprovisioned. */
   user: AppUser | null;
+  /** Name for UI — Supabase profile first, then Prisma. */
+  displayName: string;
+  /** Avatar URL — Supabase profile first, then Prisma. */
+  avatarUrl: string | null;
 }
 
 /**
@@ -50,13 +60,31 @@ export async function getAuthContext(): Promise<AuthContext> {
   const supaUser = await getSupabaseUser();
   const rawEmail = supaUser?.email ?? null;
   if (!rawEmail) {
-    return { authenticated: false, email: null, user: null };
+    return {
+      authenticated: false,
+      email: null,
+      user: null,
+      displayName: "Użytkownik",
+      avatarUrl: null,
+    };
   }
   const email = normalizeEmail(rawEmail);
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { email },
-    select: { id: true, email: true, name: true, role: true },
+    select: { id: true, email: true, name: true, role: true, avatarUrl: true },
   });
-  return { authenticated: true, email, user };
+
+  if (user) {
+    await syncAppUserFromSupabase(user.id, supaUser).catch(() => undefined);
+    user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, name: true, role: true, avatarUrl: true },
+    });
+  }
+
+  const displayName = resolveDisplayName(supaUser, user?.name, email);
+  const avatarUrl = resolveDisplayAvatarUrl(supaUser, user?.avatarUrl);
+
+  return { authenticated: true, email, user, displayName, avatarUrl };
 }

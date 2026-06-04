@@ -80,6 +80,7 @@ function NameForm() {
       return;
     }
     setFeedback({ tone: "success", message: "Nazwa została zaktualizowana." });
+    await fetch("/api/profile/sync", { method: "POST" }).catch(() => undefined);
     router.refresh();
   }
 

@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { Archive, CheckCircle, PlusCircle, Trash2 } from "lucide-react";
+import {
+  isBulkArchivableStatus,
+  isBulkPublishableStatus,
+} from "@/lib/admin/bulk-article-actions";
+import { canPublishArticle } from "@/lib/auth/permissions";
 import { adminApi, ApiError } from "@/lib/admin/api";
 import { traceArticleCmsRender } from "@/lib/admin/article-trace";
 import type { AdminArticle } from "@/lib/admin/types";
@@ -10,6 +15,7 @@ import PageHeader from "@/components/admin/PageHeader";
 import ArticlesTable from "@/components/admin/ArticlesTable";
 import ArchiveArticlesTable from "@/components/admin/ArchiveArticlesTable";
 import { Banner, Button } from "@/components/admin/primitives";
+import CmsPanel from "@/components/admin/CmsPanel";
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canDeleteArticle } from "@/lib/auth/permissions";
 import { cn } from "@/lib/cn";
@@ -29,6 +35,7 @@ type FilterId = (typeof FILTERS)[number]["id"];
 export default function ArticlesListPage() {
   const { role } = useAdminAuth();
   const mayDelete = canDeleteArticle(role);
+  const mayPublish = canPublishArticle(role);
 
   const [filter, setFilter] = useState<FilterId>("all");
   const [articles, setArticles] = useState<AdminArticle[]>([]);
@@ -37,6 +44,8 @@ export default function ArticlesListPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [publishingDue, setPublishingDue] = useState(false);
   const [permanentBusy, setPermanentBusy] = useState(false);
+  const [bulkPublishBusy, setBulkPublishBusy] = useState(false);
+  const [bulkArchiveBusy, setBulkArchiveBusy] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [reviewQueueCount, setReviewQueueCount] = useState<number | null>(null);
 
@@ -49,16 +58,36 @@ export default function ArticlesListPage() {
   const allIds = useMemo(() => articles.map((a) => a.id), [articles]);
   const selectedCount = selectedIds.size;
 
+  const selectedArticles = useMemo(
+    () => articles.filter((a) => selectedIds.has(a.id)),
+    [articles, selectedIds]
+  );
+
+  const publishableSelectedCount = useMemo(
+    () => selectedArticles.filter((a) => isBulkPublishableStatus(a.status)).length,
+    [selectedArticles]
+  );
+
+  const archivableSelectedCount = useMemo(
+    () => selectedArticles.filter((a) => isBulkArchivableStatus(a.status)).length,
+    [selectedArticles]
+  );
+
+  const refreshReviewCount = useCallback(async () => {
+    try {
+      const stats = await adminApi.getArticleStats();
+      setReviewQueueCount(stats.review);
+    } catch {
+      // Badge optional — lista działa bez licznika
+    }
+  }, []);
+
   const load = useCallback(async (current: FilterId) => {
     setLoading(true);
     setError(null);
     try {
       const status = FILTERS.find((f) => f.id === current)?.status ?? "ALL";
-      const [data, stats] = await Promise.all([
-        adminApi.listArticles({ status }),
-        adminApi.getArticleStats(),
-      ]);
-      setReviewQueueCount(stats.review);
+      const data = await adminApi.listArticles({ status });
       traceArticleCmsRender(data);
       setArticles(data);
       setSelectedIds((prev) => {
@@ -80,14 +109,21 @@ export default function ArticlesListPage() {
   }, [filter, load]);
 
   useEffect(() => {
-    const onPublished = () => void load(filter);
+    void refreshReviewCount();
+  }, [refreshReviewCount]);
+
+  useEffect(() => {
+    const onPublished = () => {
+      void load(filter);
+      void refreshReviewCount();
+    };
     window.addEventListener("wss:scheduled-published", onPublished);
     return () => window.removeEventListener("wss:scheduled-published", onPublished);
-  }, [filter, load]);
+  }, [filter, load, refreshReviewCount]);
 
   const handleFilterChange = (id: FilterId) => {
     setFilter(id);
-    if (id !== "archive") setSelectedIds(new Set());
+    setSelectedIds(new Set());
   };
 
   const handlePublish = async (article: AdminArticle) => {
@@ -95,6 +131,7 @@ export default function ArticlesListPage() {
     try {
       await adminApi.updateArticle(article.id, { status: "PUBLISHED" });
       await load(filter);
+      await refreshReviewCount();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się opublikować.");
     } finally {
@@ -108,6 +145,7 @@ export default function ArticlesListPage() {
     try {
       await adminApi.archiveArticle(article.id);
       await load(filter);
+      await refreshReviewCount();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się odrzucić.");
     } finally {
@@ -126,6 +164,7 @@ export default function ArticlesListPage() {
         );
       }
       await load(filter);
+      await refreshReviewCount();
     } catch (e) {
       setError(
         e instanceof ApiError ? e.message : "Nie udało się opublikować zaplanowanych."
@@ -141,6 +180,7 @@ export default function ArticlesListPage() {
     try {
       await adminApi.archiveArticle(article.id);
       await load(filter);
+      await refreshReviewCount();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się zarchiwizować.");
     } finally {
@@ -161,6 +201,84 @@ export default function ArticlesListPage() {
     setSelectedIds(checked ? new Set(allIds) : new Set());
   };
 
+  const formatBulkResult = (
+    label: string,
+    result: { succeeded: number; failed: Array<{ id: string; reason?: string }> }
+  ) => {
+    if (result.failed.length === 0) return null;
+    const sample = result.failed
+      .slice(0, 3)
+      .map((f) => f.reason ?? "Błąd")
+      .join(" · ");
+    const more =
+      result.failed.length > 3 ? ` (+${result.failed.length - 3} więcej)` : "";
+    return `${label}: ${result.succeeded} OK, ${result.failed.length} pominięte. ${sample}${more}`;
+  };
+
+  const handleBulkPublish = async () => {
+    if (publishableSelectedCount === 0) return;
+    const ids = selectedArticles
+      .filter((a) => isBulkPublishableStatus(a.status))
+      .map((a) => a.id);
+    const label =
+      ids.length === 1
+        ? "Opublikować 1 artykuł na stronie?"
+        : `Opublikować ${ids.length} artykułów na stronie?`;
+    if (!window.confirm(label)) return;
+
+    setBulkPublishBusy(true);
+    setError(null);
+    try {
+      const result = await adminApi.bulkPublish(ids);
+      const partial = formatBulkResult("Publikacja", result);
+      if (result.succeeded === 0) {
+        setError(partial ?? "Żaden artykuł nie został opublikowany.");
+      } else if (partial) {
+        setError(partial);
+      }
+      await load(filter);
+      await refreshReviewCount();
+      setSelectedIds(new Set());
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Nie udało się opublikować zaznaczonych.");
+    } finally {
+      setBulkPublishBusy(false);
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (archivableSelectedCount === 0) return;
+    const ids = selectedArticles
+      .filter((a) => isBulkArchivableStatus(a.status))
+      .map((a) => a.id);
+    const label =
+      ids.length === 1
+        ? "Przenieść 1 artykuł do archiwum?"
+        : `Przenieść ${ids.length} artykułów do archiwum? (stamtąd można usunąć na stałe)`;
+    if (!window.confirm(label)) return;
+
+    setBulkArchiveBusy(true);
+    setError(null);
+    try {
+      const result = await adminApi.bulkArchive(ids);
+      const partial = formatBulkResult("Archiwizacja", result);
+      if (result.succeeded === 0) {
+        setError(partial ?? "Żaden artykuł nie został zarchiwizowany.");
+      } else if (partial) {
+        setError(partial);
+      }
+      await load(filter);
+      await refreshReviewCount();
+      setSelectedIds(new Set());
+    } catch (e) {
+      setError(
+        e instanceof ApiError ? e.message : "Nie udało się zarchiwizować zaznaczonych."
+      );
+    } finally {
+      setBulkArchiveBusy(false);
+    }
+  };
+
   const handlePermanentDelete = async () => {
     if (selectedCount === 0) return;
     const label =
@@ -179,6 +297,7 @@ export default function ArticlesListPage() {
         setError("Nie usunięto żadnego artykułu (mogły już nie być w archiwum).");
       }
       await load(filter);
+      await refreshReviewCount();
       setSelectedIds(new Set());
     } catch (e) {
       setError(
@@ -270,23 +389,69 @@ export default function ArticlesListPage() {
         </div>
       ) : null}
 
-      {isArchiveView && mayDelete && articles.length > 0 ? (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[0.6rem] border border-hairline bg-white/[0.02] px-4 py-3">
+      {!loading && articles.length > 0 ? (
+        <CmsPanel className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <p className="text-meta text-text-secondary">
             {selectedCount > 0
               ? `Zaznaczono: ${selectedCount} z ${articles.length}`
-              : `W archiwum: ${articles.length}`}
+              : isArchiveView
+                ? `W archiwum: ${articles.length}`
+                : `Na liście: ${articles.length} — zaznacz kwadraciki przy artykułach`}
           </p>
-          <Button
-            variant="primary"
-            disabled={permanentBusy || loading || selectedCount === 0}
-            onClick={() => void handlePermanentDelete()}
-            className="inline-flex items-center gap-2 !bg-accent-live hover:!bg-accent-live/90"
-          >
-            <Trash2 className="h-4 w-4" />
-            {permanentBusy ? "Usuwanie…" : "Usuń zaznaczone na stałe"}
-          </Button>
-        </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {!isArchiveView && mayPublish ? (
+              <Button
+                variant="primary"
+                disabled={
+                  bulkPublishBusy ||
+                  bulkArchiveBusy ||
+                  loading ||
+                  publishableSelectedCount === 0
+                }
+                onClick={() => void handleBulkPublish()}
+                className="inline-flex items-center gap-2"
+              >
+                <CheckCircle className="h-4 w-4" />
+                {bulkPublishBusy
+                  ? "Publikowanie…"
+                  : publishableSelectedCount > 0
+                    ? `Opublikuj zaznaczone (${publishableSelectedCount})`
+                    : "Opublikuj zaznaczone"}
+              </Button>
+            ) : null}
+            {!isArchiveView && mayDelete ? (
+              <Button
+                variant="ghost"
+                disabled={
+                  bulkPublishBusy ||
+                  bulkArchiveBusy ||
+                  loading ||
+                  archivableSelectedCount === 0
+                }
+                onClick={() => void handleBulkArchive()}
+                className="inline-flex items-center gap-2"
+              >
+                <Archive className="h-4 w-4" />
+                {bulkArchiveBusy
+                  ? "Archiwizowanie…"
+                  : archivableSelectedCount > 0
+                    ? `Zarchiwizuj zaznaczone (${archivableSelectedCount})`
+                    : "Zarchiwizuj zaznaczone"}
+              </Button>
+            ) : null}
+            {isArchiveView && mayDelete ? (
+              <Button
+                variant="primary"
+                disabled={permanentBusy || loading || selectedCount === 0}
+                onClick={() => void handlePermanentDelete()}
+                className="inline-flex items-center gap-2 !bg-accent-live hover:!bg-accent-live/90"
+              >
+                <Trash2 className="h-4 w-4" />
+                {permanentBusy ? "Usuwanie…" : "Usuń zaznaczone na stałe"}
+              </Button>
+            ) : null}
+          </div>
+        </CmsPanel>
       ) : null}
 
       {isArchiveView && !mayDelete ? (
@@ -318,6 +483,9 @@ export default function ArticlesListPage() {
         <ArticlesTable
           articles={articles}
           busyId={busyId}
+          selectedIds={selectedIds}
+          onToggle={handleToggle}
+          onToggleAll={handleToggleAll}
           onPublish={handlePublish}
           onReject={handleReject}
           onArchive={handleArchive}

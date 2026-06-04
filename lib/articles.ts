@@ -32,6 +32,7 @@ import {
   formatRelativePublishLabel,
   resolvePublicPublishTime,
 } from "@/lib/articles/public-publish-time";
+import { resolvePublicArticleByline } from "@/lib/article/resolve-public-byline";
 import type { NewsArticle, NewsCategory } from "@/types";
 
 // Public reads now come from the Prisma DB (single source of truth shared with
@@ -96,6 +97,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
       contentOrigin: a.contentOrigin,
     }),
     authorByline: a.authorByline?.trim() || undefined,
+    publicByline: resolvePublicArticleByline(a),
     tags: a.tags?.length ? a.tags : undefined,
   };
 }

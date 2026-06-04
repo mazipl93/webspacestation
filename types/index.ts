@@ -42,8 +42,15 @@ export interface NewsArticle {
   originalUrl?: string;
   /** RSS cover caption (publisher + site) */
   imageCredit?: string;
-  /** Editorial byline — optional, from CMS. */
+  /** Editorial byline — optional free text (legacy / manual). */
   authorByline?: string;
+  /** CMS team author with avatar (preferred when set). */
+  publicByline?: {
+    name: string;
+    avatarUrl?: string;
+    roleLabel?: string;
+    fromTeam: boolean;
+  };
   /** Editorial / RSS tags — related-articles ranking (frontend). */
   tags?: string[];
 }

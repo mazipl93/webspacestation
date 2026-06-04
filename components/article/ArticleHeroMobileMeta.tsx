@@ -2,16 +2,22 @@ import { Calendar, Clock, User } from "lucide-react";
 import type { NewsArticle } from "@/types";
 import ArticleHeroBreadcrumb from "@/components/article/ArticleHeroBreadcrumb";
 import HeroMetaChip from "@/components/article/HeroMetaChip";
+import ArticlePublicByline from "@/components/article/ArticlePublicByline";
+import type { PublicArticleByline } from "@/lib/article/resolve-public-byline";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { ARTICLE_HERO_MOBILE_META_CLASS } from "@/lib/ui/article-hero-frame";
+import { cn } from "@/lib/cn";
 
 type Props = {
   article: NewsArticle;
   categoryLabel: string;
   categoryColor: string;
   showBreadcrumb?: boolean;
-  /** Podgląd CMS — wymuś układ pod okładką (niezależnie od breakpointu lg). */
-  forceBelowImage?: boolean;
+  /** Tekst pod czystą okładką (domyślnie tak na wszystkich breakpointach). */
+  belowImage?: boolean;
+  /** Podgląd CMS — gdy brak w article.publicByline */
+  previewByline?: PublicArticleByline;
+  className?: string;
 };
 
 function CategoryBadge({ label, color }: { label: string; color: string }) {
@@ -30,26 +36,35 @@ function CategoryBadge({ label, color }: { label: string; color: string }) {
   );
 }
 
-/** Mobile + tablet (<lg): cały tekst pod czystą okładką (bez overlay na zdjęciu). */
+/** Tytuł, meta i breadcrumb pod okładką — bez nakładki na zdjęciu. */
 export default function ArticleHeroMobileMeta({
   article,
   categoryLabel,
   categoryColor,
   showBreadcrumb = true,
-  forceBelowImage = false,
+  belowImage = true,
+  previewByline,
+  className,
 }: Props) {
+  const byline = article.publicByline ?? previewByline;
   const dateShort = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
     day: "numeric",
     month: "short",
   });
+  const dateLong = new Date(article.publishedAt).toLocaleDateString("pl-PL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div
-      className={
-        forceBelowImage
-          ? "block border-b border-hairline bg-[#05070d] px-4 pb-5 pt-4"
-          : ARTICLE_HERO_MOBILE_META_CLASS
-      }
+      className={cn(
+        belowImage
+          ? "flex max-w-[72ch] flex-col gap-2"
+          : ARTICLE_HERO_MOBILE_META_CLASS,
+        className
+      )}
     >
       {showBreadcrumb ? (
         <div
@@ -66,8 +81,7 @@ export default function ArticleHeroMobileMeta({
         </div>
       ) : null}
 
-      <div className="flex max-w-[72ch] flex-col gap-2">
-        {article.isBreaking ? (
+      {article.isBreaking ? (
           <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-accent-live px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white">
             <span className="live-dot" style={{ background: "#fff" }} />
             Ważne
@@ -76,25 +90,28 @@ export default function ArticleHeroMobileMeta({
 
         <CategoryBadge label={categoryLabel} color={categoryColor} />
 
-        <h1
-          className="text-balance text-[1.35rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-text-primary"
-        >
+        <h1 className="max-w-[820px] text-balance text-[1.35rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-text-primary lg:text-[clamp(1.75rem,3vw,2.5rem)] lg:leading-[1.12]">
           {article.title}
         </h1>
 
         <div className="flex flex-wrap items-center gap-1.5">
           <HeroMetaChip icon={Calendar} compact variant="panel">
-            {dateShort}
+            <span className="lg:hidden">{dateShort}</span>
+            <span className="hidden lg:inline">{dateLong}</span>
           </HeroMetaChip>
           <HeroMetaChip icon={Clock} compact variant="panel">
             {article.readTime ?? 3} min
           </HeroMetaChip>
-          {article.authorByline ? (
-            <HeroMetaChip icon={User} compact variant="panel">
-              {article.authorByline}
-            </HeroMetaChip>
+          {!byline && article.authorByline ? (
+            <span className="hidden sm:contents">
+              <HeroMetaChip icon={User} compact variant="panel">
+                {article.authorByline}
+              </HeroMetaChip>
+            </span>
           ) : null}
         </div>
+
+        {byline ? <ArticlePublicByline byline={byline} /> : null}
 
         {article.excerpt ? (
           <p className="pt-0.5 text-[14px] leading-relaxed text-text-secondary">
@@ -112,7 +129,6 @@ export default function ArticleHeroMobileMeta({
             />
           </div>
         ) : null}
-      </div>
     </div>
   );
 }

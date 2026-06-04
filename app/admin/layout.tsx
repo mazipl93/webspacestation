@@ -17,7 +17,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { authenticated, email, user } = await getAuthContext();
+  const { authenticated, email, user, displayName, avatarUrl } = await getAuthContext();
   if (!authenticated) redirect("/login");
   if (!user || !canAccessCms(user.role)) redirect("/");
 
@@ -25,8 +25,21 @@ export default async function AdminLayout({
   const displayEmail = user.email ?? email ?? "";
 
   return (
-    <AdminAuthProvider value={{ email: displayEmail, role }}>
-      <AdminShell email={displayEmail} role={role}>
+    <AdminAuthProvider
+      value={{
+        email: displayEmail,
+        role,
+        userId: user.id,
+        userName: displayName,
+        avatarUrl,
+      }}
+    >
+      <AdminShell
+        email={displayEmail}
+        role={role}
+        name={displayName}
+        avatarUrl={avatarUrl}
+      >
         {children}
       </AdminShell>
     </AdminAuthProvider>

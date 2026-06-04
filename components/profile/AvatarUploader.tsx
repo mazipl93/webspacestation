@@ -107,6 +107,7 @@ export default function AvatarUploader({ avatarSize = 72 }: Props) {
 
       await supabase.auth.refreshSession();
       await refreshUser();
+      await fetch("/api/profile/sync", { method: "POST" }).catch(() => undefined);
       router.refresh();
     } catch {
       setError("Wystąpił błąd podczas przesyłania.");
@@ -128,6 +129,7 @@ export default function AvatarUploader({ avatarSize = 72 }: Props) {
         setError("Nie udało się usunąć zdjęcia.");
         return;
       }
+      await fetch("/api/profile/sync", { method: "POST" }).catch(() => undefined);
       router.refresh();
     } finally {
       setBusy(false);

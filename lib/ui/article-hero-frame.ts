@@ -64,63 +64,30 @@ export const ARTICLE_HERO_FRAME_MOBILE_CLASS =
 
 
 
-export const ARTICLE_HERO_COPY_SHELL_CLASS =
+/** @deprecated Overlay na zdjęciu wyłączony — tekst w ArticleHeroMobileMeta pod okładką. */
+export const ARTICLE_HERO_COPY_SHELL_CLASS = "hidden";
 
-  "pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden flex-col justify-end max-lg:hidden lg:inset-0 lg:flex";
-
-
-
-export const ARTICLE_HERO_COPY_SHELL_DESKTOP_CLASS =
-
-  "pointer-events-none absolute inset-0 z-10 flex flex-col justify-end";
-
-
+export const ARTICLE_HERO_COPY_SHELL_DESKTOP_CLASS = "hidden";
 
 export const ARTICLE_HERO_COPY_SHELL_MOBILE_CLASS = "hidden";
 
+export const ARTICLE_HERO_COPY_INNER_CLASS = "hidden";
 
+export const ARTICLE_HERO_COPY_INNER_DESKTOP_CLASS = "hidden";
 
-export const ARTICLE_HERO_COPY_INNER_CLASS =
+export const ARTICLE_HERO_GRADIENT_CLASS = "hidden";
 
-  "pointer-events-auto w-full container-site px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 lg:pb-12";
-
-
-
-export const ARTICLE_HERO_COPY_INNER_DESKTOP_CLASS =
-
-  "pointer-events-auto w-full container-site px-4 pb-12 sm:px-6";
-
-
-
-export const ARTICLE_HERO_GRADIENT_CLASS =
-
-  "pointer-events-none absolute inset-x-0 bottom-0 z-[2] hidden h-[48%] max-lg:hidden lg:block";
-
-
-
-export const ARTICLE_HERO_GRADIENT_DESKTOP_CLASS =
-
-  "pointer-events-none absolute inset-x-0 bottom-0 z-[2] block h-[48%]";
-
-
+export const ARTICLE_HERO_GRADIENT_DESKTOP_CLASS = "hidden";
 
 export const ARTICLE_HERO_GRADIENT_MOBILE_CLASS = "hidden";
 
-
-
+/** Legacy — używaj belowImage w ArticleHeroMobileMeta. */
 export const ARTICLE_HERO_MOBILE_META_CLASS =
-  "container-site border-b border-hairline bg-[#05070d] px-4 pb-5 pt-4 max-lg:block lg:hidden";
+  "container-site border-b border-hairline bg-[#05070d] px-4 pb-5 pt-4";
 
-export const ARTICLE_HERO_BREADCRUMB_NAV_CLASS =
-  "pointer-events-auto absolute inset-x-0 top-0 z-20 container-site hidden max-lg:hidden lg:block lg:px-4 lg:pt-4";
+export const ARTICLE_HERO_BREADCRUMB_NAV_CLASS = "hidden";
 
-
-
-export const ARTICLE_HERO_BREADCRUMB_NAV_DESKTOP_CLASS =
-
-  "absolute inset-x-0 top-0 z-20 container-site flex flex-wrap items-center gap-2 px-4 pt-3";
-
-
+export const ARTICLE_HERO_BREADCRUMB_NAV_DESKTOP_CLASS = "hidden";
 
 export const ARTICLE_HERO_BREADCRUMB_NAV_MOBILE_CLASS = "hidden";
 

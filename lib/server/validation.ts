@@ -89,6 +89,17 @@ function parseHeroPositionField(
   return n;
 }
 
+function parseBylineUserIdField(
+  body: Record<string, unknown>
+): string | null | undefined {
+  if (body.bylineUserId === undefined) return undefined;
+  if (body.bylineUserId === null || body.bylineUserId === "") return null;
+  if (typeof body.bylineUserId === "string" && body.bylineUserId.trim()) {
+    return body.bylineUserId.trim();
+  }
+  return null;
+}
+
 function parsePublishAtField(
   body: Record<string, unknown>
 ): Date | null | undefined {
@@ -113,6 +124,7 @@ export interface ArticleCreateInput {
   coverImage: string | null;
   coverImageCredit: string | null;
   authorByline: string | null;
+  bylineUserId: string | null;
   categoryId: string;
   status: ArticleStatus;
   featured: boolean;
@@ -186,6 +198,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       coverImage: parseCoverImageForCreate(body),
       coverImageCredit: asTrimmedString(body.coverImageCredit) ?? null,
       authorByline: asTrimmedString(body.authorByline) ?? null,
+      bylineUserId: parseBylineUserIdField(body) ?? null,
       categoryId,
       status,
       featured: body.featured === true,
@@ -251,6 +264,8 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   if (body.authorByline !== undefined) {
     out.authorByline = asTrimmedString(body.authorByline) ?? null;
   }
+  const bylineUserId = parseBylineUserIdField(body);
+  if (bylineUserId !== undefined) out.bylineUserId = bylineUserId;
   const coverImage = parseCoverImageForUpdate(body);
   if (coverImage !== undefined) out.coverImage = coverImage;
   if (body.featured !== undefined) out.featured = body.featured === true;

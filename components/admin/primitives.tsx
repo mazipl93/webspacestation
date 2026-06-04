@@ -131,14 +131,14 @@ export function Toggle({
     >
       <span
         className={cn(
-          "relative h-5 w-9 rounded-full transition-colors duration-200",
+          "relative inline-flex h-6 w-11 shrink-0 overflow-hidden rounded-full transition-colors duration-200",
           checked ? "bg-accent-blue" : "bg-space-muted"
         )}
       >
         <span
           className={cn(
-            "absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200",
-            checked ? "translate-x-[1.15rem]" : "translate-x-0.5"
+            "pointer-events-none absolute top-1 left-1 size-4 rounded-full bg-white shadow-sm transition-transform duration-200",
+            checked ? "translate-x-5" : "translate-x-0"
           )}
         />
       </span>
