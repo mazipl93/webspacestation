@@ -15,9 +15,11 @@
 - **Aktualności** — bez podtytułu CMS (`ArticleFeedSection`)
 - **Homepage ops** — mock w `ContentGrid.tsx` → krok 6
 
-**Krok 1 (czat 38) — lokalnie:** usunięte 4 komponenty Ważne teraz; `rankImportantNow()` zostaje w `ContentGrid` (pula hero). Commit/push po OK usera.
+**Krok 1 (czat 38):** `18fc9a3` na prod — cleanup Ważne teraz.
 
-**Następny krok po OK:** **2** — licznik REVIEW w CMS
+**Krok 2 (czat 38) — lokalnie:** licznik REVIEW (`GET /api/articles/stats`) na `/admin/articles` i pulpicie. Push po OK usera.
+
+**Następny krok po OK:** **3** — komentarze Supabase
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 

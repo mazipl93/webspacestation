@@ -48,6 +48,16 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 // ─── Articles ───────────────────────────────────────────────────────────────
 
+export interface AdminArticleStats {
+  total: number;
+  published: number;
+  draft: number;
+  review: number;
+  scheduled: number;
+  archived: number;
+  categories: number;
+}
+
 export interface ArticleWritePayload {
   title?: string;
   slug?: string;
@@ -77,6 +87,10 @@ export const adminApi = {
     params.set("status", opts.status && opts.status !== "all" ? opts.status : "ALL");
     if (opts.category) params.set("category", opts.category);
     return request<AdminArticle[]>(`/api/articles?${params.toString()}`);
+  },
+
+  getArticleStats() {
+    return request<AdminArticleStats>(`/api/articles/stats`);
   },
 
   getArticle(id: string) {

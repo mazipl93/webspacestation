@@ -38,6 +38,7 @@ export default function ArticlesListPage() {
   const [publishingDue, setPublishingDue] = useState(false);
   const [permanentBusy, setPermanentBusy] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [reviewQueueCount, setReviewQueueCount] = useState<number | null>(null);
 
   const isArchiveView = filter === "archive";
 
@@ -53,7 +54,11 @@ export default function ArticlesListPage() {
     setError(null);
     try {
       const status = FILTERS.find((f) => f.id === current)?.status ?? "ALL";
-      const data = await adminApi.listArticles({ status });
+      const [data, stats] = await Promise.all([
+        adminApi.listArticles({ status }),
+        adminApi.getArticleStats(),
+      ]);
+      setReviewQueueCount(stats.review);
       traceArticleCmsRender(data);
       setArticles(data);
       setSelectedIds((prev) => {
@@ -221,9 +226,29 @@ export default function ArticlesListPage() {
             )}
           >
             {f.label}
+            {f.id === "review" && reviewQueueCount !== null ? (
+              <span className="ml-1.5 tabular-nums text-text-secondary">
+                ({reviewQueueCount})
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
+
+      {filter === "review" && reviewQueueCount !== null && !loading ? (
+        <p className="mb-5 text-meta text-text-tertiary">
+          W kolejce:{" "}
+          <span className="font-medium tabular-nums text-text-secondary">
+            {reviewQueueCount}
+          </span>
+          {articles.length !== reviewQueueCount ? (
+            <span>
+              {" "}
+              · wyświetlono {articles.length}
+            </span>
+          ) : null}
+        </p>
+      ) : null}
 
       {filter === "scheduled" && dueScheduledCount > 0 ? (
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[0.6rem] border border-hairline bg-white/[0.02] px-4 py-3">
