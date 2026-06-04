@@ -1,24 +1,22 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 38 — idzie na nowy czat)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 39 — push na `main`, nowy czat)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `e16931b` — feat(cms): REVIEW queue count  
-**Historia:** `18fc9a3` cleanup Ważne teraz · `eb6fc60` logo C + theme + article-panel
+**Ostatni commit:** `f93415a` — feat(cms): editor layout, byline, bulk actions, hero meta  
+**Historia:** `e16931b` REVIEW count · `18fc9a3` Ważne teraz · `eb6fc60` logo C + theme
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Na `main` (kroki 0–2 zamknięte):**
-- Krok 0: logo C, `#060810`, article-panel, bez dev UI
-- Krok 1: usunięte komponenty Ważne teraz (rankImportantNow zostaje pod hero)
-- Krok 2: licznik REVIEW — `GET /api/articles/stats`, badge na filtrze + pulpit
+**Na `main` (kroki 0–2 + pakiet CMS/hero z czat 38–39):**
+- Krok 0–2: logo C, cleanup Ważne teraz, licznik REVIEW
+- Hero: meta **pod okładką** (siatka jak treść artykułu)
+- CMS lista: checkboxy + **bulk** publish/archive (`bulk-publish`, `bulk-archive`)
+- CMS edytor: `EditorSection` 1–7, live preview obok tytułu/treści, `EditorFieldPanel`
+- Autor: `bylineUserId`, `AuthorBylineField`, `ArticlePublicByline`
+- Admin: nazwa + avatar z profilu Supabase (`/api/profile/sync`)
+- Migracja: `20260604220000_article_byline_user` — **`npm run db:deploy` na prod**
 
-**WIP lokalnie BEZ commita (następny czat — commit po Twoim OK):**
-- Hero artykułu: **brak tekstu na okładce** (meta pod zdjęciem)
-- CMS lista: **checkboxy + bulk** publikuj / archiwizuj / usuń z archiwum (`bulk-publish`, `bulk-archive`)
-- CMS edytor: **7 bloków** `EditorSection` + autor z redakcji (`bylineUserId`, `AuthorBylineField`, `ArticlePublicByline`)
-- Migracja: `20260604220000_article_byline_user` — **`npm run db:deploy` przed testem autora**
-
-**Następny krok STEP_BY_STEP:** **3** — komentarze Supabase (po commit WIP jeśli user chce)
+**Następny krok STEP_BY_STEP:** **3** — komentarze Supabase
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -54,7 +52,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **Artykuł dół** | **User OK** | `article-panel` — share, komentarze, Wróć, Czytaj dalej |
 | **LOGO** | **C (Oswald)** — commit w kroku 0 | Martwe A/B w `wordmarks/` — posprzątać opcjonalnie |
 | **Tło** | **User OK** · hardcoded `slate-soft` / `#060810` | Dev switchery **usunięte** |
-| **Commit** | `e16931b` na main · **duży WIP bez commita** (patrz wyżej) |
+| **Commit** | `f93415a` na main (CMS/hero/autor) |
 
 **Theme (nie ruszać bez potrzeby):**
 - `lib/ui/portal-page-themes.ts` · `portal-page-theme-vars.ts` · `app/globals.css`
@@ -84,7 +82,7 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 
 ---
 
-## MAPA STANU — prod (`main` → `e16931b` + WIP lokalny)
+## MAPA STANU — prod (`main` → `f93415a`)
 
 ### Zrobione i na `main` (prod)
 
@@ -132,15 +130,9 @@ Przeczytaj ZAWSZE (w tej kolejności):
 
 REGUŁA: jeden krok STEP_BY_STEP · raport · test · CZEKAJ OK · commit/push tylko po OK.
 
-Stan remote main: `e16931b` (kroki 0–2) · prod https://webspacestation.pl
+Stan remote main: `f93415a` · prod https://webspacestation.pl
 
-WIP lokalnie BEZ commita (czat 38, koniec):
-- Hero: tekst POD okładką (nie na zdjęciu)
-- CMS: checkboxy + bulk publish/archive + panel CmsPanel
-- CMS edytor: EditorSection 1–7 + AuthorBylineField (bylineUserId, avatar z profilu)
-- Migracja: npm run db:deploy (20260604220000_article_byline_user)
-
-Opcjonalnie na start nowego czatu: commitnij WIP powyżej (jeden pakiet), potem krok 3.
+Po deploy: `npm run db:deploy` (migracja `20260604220000_article_byline_user`).
 
 ZACZNIJ OD KROKU 3: Komentarze Supabase (zamiast localStorage w Comments.tsx).
 
@@ -158,6 +150,16 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 39) — push pakietu CMS/hero + nowy czat
+
+| Obszar | Stan |
+|--------|------|
+| **Commit/push** | `f93415a` → `origin/main` |
+| **CMS** | bulk, edytor 7 sekcji, preview obok tytułu/treści, autor, toggle fix |
+| **Public** | hero meta pod okładką, Avatar use client |
+| **Admin** | profil = nazwa + avatar w sidebarze |
+| **Następny czat** | krok 3 Supabase komentarze |
 
 ### Sesja 4.06.2026 (czat 38) — krok 0 push + krok 1 cleanup
 
