@@ -8,6 +8,7 @@ export default function HeroBreadcrumbChip({
   accent,
   variant = "overlay",
   className,
+  title,
 }: {
   href?: string;
   children: React.ReactNode;
@@ -16,6 +17,8 @@ export default function HeroBreadcrumbChip({
   /** overlay = na zdjęciu; panel = pod okładką (mobile). */
   variant?: "overlay" | "panel";
   className?: string;
+  /** Tooltip przy obciętym tekście (np. długa nazwa działu). */
+  title?: string;
 }) {
   const chipClass = cn(
     "inline-flex items-center rounded-md border font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
@@ -52,14 +55,14 @@ export default function HeroBreadcrumbChip({
 
   if (href) {
     return (
-      <Link href={href} className={chipClass} style={style}>
+      <Link href={href} className={chipClass} style={style} title={title}>
         {children}
       </Link>
     );
   }
 
   return (
-    <span className={chipClass} style={style}>
+    <span className={chipClass} style={style} title={title}>
       {children}
     </span>
   );
