@@ -1,14 +1,14 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 30)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 31)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `c68b896` · **WIP lokalny (czat 26–30, bez commita)** — patrz MAPA STANU
+**Ostatni commit remote:** `f399d9b` — pakiet czat 26–30 wdrożony na prod
 
-**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
+**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main` · deploy `f399d9b` ✅ Ready
 
-**Następny czat — PRIORYTET:** Dyskusja mobile pod artykułem → **COMMIT WIP** → PROD-QA (`db:deploy` prod `heroPosition`).
+**Następny czat — PRIORYTET:** ~175 REVIEW w CMS · P1-6 upload okładek · P2-WEEK-TOPIC prod smoke
 
-**Lokalna DB:** migracja `20260604210000` — OK lokalnie. **Prod:** `db:deploy` przed deployem `heroPosition`.
+**Migracja `20260604210000` (`heroPosition`):** lokalnie + prod — `db:deploy` bez pending migrations (4.06.2026)
 
 **Wdrożone (czat 23):** `3e7139b` — week topic fix, `publishedAt` immutable, CMS manual save, UI bez podtytułów dev
 
@@ -35,12 +35,13 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 
 ---
 
-## MAPA STANU — zrobione vs do zrobienia (aktualizacja czat 30)
+## MAPA STANU — zrobione vs do zrobienia (aktualizacja czat 31)
 
 ### Zrobione i na `main` (prod po zielonym Vercel)
 
 | Obszar | Commit(y) | Co |
 |--------|-----------|-----|
+| **Pakiet czat 26–30** | `ea7e3b0`, `f399d9b` | Hero slider + `heroPosition`; mobile działy homepage; artykuł hero/breadcrumb/Czytaj dalej; stopka nav grid; CMS listy + live preview; linki wewnętrzne; nav menu; dyskusja mobile share |
 | **Homepage UI** | `4ca8d46`, `4868232` | Motywy per sekcja (`DepartmentSectionFrame/Header`, `homepage-section-themes`); Temat tygodnia; Najnowsze/Popularne/działy; hero mobile; `//` ESLint fix |
 | **Artykuł public** | `4ca8d46` | Breadcrumb chipy (`HeroBreadcrumbChip`); opcjonalny **Autor** na hero |
 | **CMS `authorByline`** | `4ca8d46` | Pole w edytorze, API, walidacja, migracja `20260604200000` |
@@ -53,40 +54,19 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **Deploy Vercel** | `4868232` | Build prod naprawiony (JSX `//`) |
 | **Logo wordmark v2** | `c68b896` | Oficjalny PNG WSS+łuk+WEB SPACE STATION (`wss-wordmark.png`), nav/stopka; skrypty `process-wss-wordmark.mjs` |
 
-### WIP lokalnie (czat 26–30 — bez commita na remote)
-
-| Obszar | Pliki | Co |
-|--------|-------|-----|
-| **Homepage hero slider** | `HomepageHeroSlider.tsx`, `ContentGrid.tsx`, `lib/home/hero-slides.ts` | Slider; `heroPosition` CMS; hero ~40–50svh mobile |
-| **Najnowsze** | `LatestShowcase.tsx`, `rank-articles.ts` | Mobile lista 6 szt.; hero nie wyklucza z Najnowszych |
-| **Działy homepage &lt;lg** | `HomeSectionArticleFeed.tsx`, `ContentGrid.tsx`, `PopularArticles.tsx`, `DepartmentSectionHeader.tsx` | Lead + lista; fix nachodzenia nagłówków; Technologie „Więcej” — **user OK** |
-| **Hero artykułu** | `ArticlePageHero.tsx`, `article-hero-frame.ts`, `CoverImage.tsx` | Offset `<main>`; okładka PC (`lg:` zamiast container queries); mobile meta pod zdjęciem |
-| **Breadcrumb hero** | `ArticleHeroBreadcrumb.tsx`, `HeroBreadcrumbChip.tsx` | WSS → Aktualności → dział (mobile panel + desktop overlay) — user: zostaje |
-| **Czytaj dalej** | `ReadNextSection.tsx`, `related-articles.ts`, `page.tsx` | Lista do 5 artykułów + CTA „Zobacz wszystkie artykuły z działu …” — **user OK** |
-| **Stopka nawigacja** | `Footer.tsx` | Grid 2+1 mobile, 3 kolumny tablet+, logo wyśrodkowane — **user OK** |
-| **CMS listy** | `parse-content-blocks.ts`, `ArticleEditor.tsx` | Przycisk „Dodaj punkt listy”; `<ul>` |
-| **Live preview CMS** | `ArticlePublicPreview.tsx` | `previewLayout` mobile/desktop |
-| **Linki wewnętrzne** | `weave-internal-links.ts`, `InternalLinkTeaser.tsx` | Wplecenie co 2–3 akapity |
-| **Nav menu** | `NavMenuPrimitives.tsx`, `Navbar.tsx` | Dropdowny + mobile akordeon |
-| **CMS `heroPosition`** | migracja `20260604210000` | Lokalnie deployed; **prod: db:deploy przed deploy** |
-| **ReadAlsoInline** | `ReadAlsoInline.tsx` | Wycofane ze strony artykułu |
-
 **Reguła okładki artykułu (OBOWIĄZKOWO):** `object-cover object-center` — **nigdy** `object-contain`. Ramka: `lib/ui/article-hero-frame.ts`.
 
 ### Do zrobienia (backlog — kolejność sugerowana)
 
 | Priorytet | ID | Zadanie |
 |-----------|-----|---------|
-| 0 | **UI-ARTICLE-DISCUSSION** | Dyskusja pod artykułem — przyciski/share na mobile (flex wrap / stack) |
-| 1 | **COMMIT-WIP-30** | Commit całego pakietu czat 26–30 po OK dyskusji (lub wcześniej jeśli user każe) |
-| 2 | **PROD-QA** | `npm run db:deploy` prod (`heroPosition`) + smoke + `cache:revalidate` |
-| 3 | **OPS** | ~175 REVIEW w CMS |
-| 4 | **P1-6-QA** | Upload okładek na prod |
-| 5 | **P2-WEEK-TOPIC prod** | weekTopic ON + revalidate |
+| 0 | **OPS** | ~175 REVIEW w CMS |
+| 1 | **P1-6-QA** | Upload okładek na prod |
+| 2 | **P2-WEEK-TOPIC prod** | weekTopic ON + revalidate |
 
-**Zamknięte lokalnie (czat 28–30, user OK):** Najnowsze mobile · działy homepage mobile · Czytaj dalej lista · stopka nav · okładka artykułu PC
+**Zamknięte czat 31 (prod):** UI-ARTICLE-DISCUSSION · COMMIT-WIP-30 · PROD-QA · heroPosition migracja
 
-**Uwaga:** Hero breadcrumb (3 segmenty) to bonus z czatu 30 — nie mylić ze stopką; user zaakceptował zostawienie.
+**Zamknięte wcześniej (czat 28–30, user OK):** Najnowsze mobile · działy homepage mobile · Czytaj dalej lista · stopka nav · okładka artykułu PC · hero breadcrumb bonus
 
 **Nie robimy:** pełny RSS body na stronie (hybryda B+); scheduler co minutę na Hobby bez CMS.
 
@@ -1044,6 +1024,13 @@ PR1–PR2B contentOrigin · PR3 RSS alignment · PR5 UX · PR6/6.1/7 terminology
 ---
 
 ## 10. Commity (ostatnie sesje — chronologicznie)
+
+**Sesja 31 (czat 31):**
+```
+f399d9b fix(ui): add title prop to HeroBreadcrumbChip for prod build
+ea7e3b0 feat(ui): homepage hero slider, article UX, CMS lists, heroPosition
+5735f02 docs: handoff c68b896 — start nowego czatu
+```
 
 **Sesja 18:**
 ```

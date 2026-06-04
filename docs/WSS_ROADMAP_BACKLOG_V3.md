@@ -1,19 +1,18 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 30)  
-**Deploy remote:** `c68b896` · WIP lokalny czat 26–30 (patrz handoff MAPA)
+**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 31)  
+**Deploy remote:** `f399d9b` · prod smoke OK (4.06.2026)
 
 | # | ID | Zadanie | Status |
 |---|-----|---------|--------|
-| 0 | **UI-ARTICLE-DISCUSSION** | Dyskusja / share pod artykułem — mobile layout | **Następne** |
-| 1 | **COMMIT-WIP-30** | Commit pakietu czat 26–30 | |
-| 2 | **PROD-QA** | Smoke prod + `db:deploy` prod (`heroPosition`) | |
-| 3 | **OPS** | ~175 REVIEW + revalidate | |
+| 0 | **OPS** | ~175 REVIEW + revalidate | **Następne** |
+| 1 | **P1-6-QA** | Upload okładek na prod | |
+| 2 | **P2-WEEK-TOPIC prod** | weekTopic ON + revalidate | |
 
-**Zamknięte lokalnie (czat 30, user OK):** UI-HOME-DEPTS-MOBILE `[x]` · UI-FOOTER-NAV `[x]` · UI-ARTICLE-READ-NEXT `[x]` · hero okładka PC `[x]`
+**Zamknięte czat 31:** UI-ARTICLE-DISCUSSION `[x]` · COMMIT-WIP-30 `[x]` `ea7e3b0` · PROD-QA `[x]` · build fix `[x]` `f399d9b`
 
-**WIP czat 26–30 (lokalnie, bez commit):** CMS listy `[~]` · live preview `[~]` · hero breadcrumb `[x]` bonus
+**Zamknięte czat 26–30 (prod):** hero slider · mobile depts · read-next · footer nav · CMS listy · hero breadcrumb · heroPosition migracja
 
 **Zamknięte w czacie 24–25:** UI-HOME-24 `[x]` · P0-AUTHOR-BYLINE `[x]` · UI-PROFIL-25 `[x]` · UI-MOBILE-NAV-25 `[x]` · UI-NO-SUBSCRIBE-LINKS `[x]` · **P1-10 LOGO** wordmark v2 `[x]` (PNG, nav/stopka)
 
