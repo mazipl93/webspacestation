@@ -741,13 +741,26 @@ html[data-portal-theme] .site-cosmos-grain {
 .ops-live-map .leaflet-popup-pane {
   z-index: 700;
 }
-/* Pełna strona /mapa — popup może wychodzić poza kafel (pan mapy centruje kartę) */
+/* /mapa — zawsze w szerokości kontenera (bez poziomego scrolla na mobile) */
+.ops-mapa-page {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
 .ops-map-page-map.ops-live-map {
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .ops-map-page-map.ops-live-map .leaflet-container {
-  overflow: visible;
+  overflow: hidden;
   border-radius: 14px;
+}
+.ops-map-page-map .leaflet-map-pane,
+.ops-map-page-map .leaflet-tile-pane,
+.ops-map-page-map .leaflet-overlay-pane {
+  max-width: 100%;
 }
 .homepage-ops-panel .ops-live-map {
   overflow: hidden;
@@ -812,26 +825,27 @@ html[data-portal-theme] .site-cosmos-grain {
 }
 .ops-live-map .ops-map-leaflet-popup .leaflet-popup-content {
   margin: 0;
-  width: min(380px, calc(100vw - 28px)) !important;
-  max-width: calc(100vw - 28px);
+  width: min(380px, calc(100% - 16px)) !important;
+  max-width: calc(100% - 16px);
   line-height: 1.45;
 }
-.ops-map-page-map {
-  height: min(46dvh, 400px) !important;
-  min-height: 0;
-  max-height: min(46dvh, 400px);
+.ops-map-page-map.ops-live-map {
+  height: min(52dvh, calc(100dvh - 15rem)) !important;
+  min-height: 260px;
+  max-height: min(52dvh, calc(100dvh - 15rem));
 }
 @media (min-width: 640px) {
-  .ops-map-page-map {
+  .ops-map-page-map.ops-live-map {
     height: min(58dvh, 560px) !important;
+    min-height: 360px;
     max-height: min(58dvh, 560px);
   }
 }
 @media (min-width: 1024px) {
-  .ops-map-page-map {
-    height: min(82dvh, 1020px) !important;
-    max-height: min(82dvh, 1020px);
-    min-height: min(72dvh, 720px);
+  .ops-map-page-map.ops-live-map {
+    height: min(72dvh, 900px) !important;
+    max-height: min(72dvh, 900px);
+    min-height: min(56dvh, 560px);
   }
 }
 .ops-live-map .ops-map-leaflet-popup .leaflet-popup-close-button {

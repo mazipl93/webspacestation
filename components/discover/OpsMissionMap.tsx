@@ -83,7 +83,7 @@ export default function OpsMissionMap({
   }
 
   return (
-    <div className="flex min-w-0 w-full max-w-full flex-col gap-2 overflow-x-clip sm:gap-3">
+    <div className="flex min-w-0 w-full max-w-full flex-col gap-2 overflow-hidden sm:gap-3">
       {mapBlock}
       {pinList}
     </div>

@@ -120,6 +120,32 @@ function PopupCenterOnOpen() {
   return null;
 }
 
+/** Leaflet często liczy złą szerokość po mount / zmianie układu (mobile). */
+function MapResizeFix() {
+  const map = useMap();
+
+  useEffect(() => {
+    const fix = () => {
+      map.invalidateSize();
+    };
+    const t0 = window.setTimeout(fix, 0);
+    const t1 = window.setTimeout(fix, 200);
+    const ro = new ResizeObserver(fix);
+    ro.observe(map.getContainer());
+    window.addEventListener("resize", fix);
+    window.addEventListener("orientationchange", fix);
+    return () => {
+      window.clearTimeout(t0);
+      window.clearTimeout(t1);
+      ro.disconnect();
+      window.removeEventListener("resize", fix);
+      window.removeEventListener("orientationchange", fix);
+    };
+  }, [map]);
+
+  return null;
+}
+
 function PinFocusController({
   focusPinId,
   pins,
@@ -230,6 +256,10 @@ export default function OpsLiveMap({
     markerRefs.current[pinId] = ref;
   };
 
+  const heightFromCss =
+    Boolean(className?.includes("ops-map-page-map")) ||
+    Boolean(className?.includes("ops-map-embed"));
+
   if (pins.length === 0 && !iss) {
     return (
       <div
@@ -249,7 +279,7 @@ export default function OpsLiveMap({
         "ops-live-map relative min-h-0 min-w-0 w-full max-w-full overflow-hidden rounded-xl border border-hairline-faint",
         className
       )}
-      style={{ height }}
+      style={heightFromCss ? undefined : { height }}
     >
       <MapContainer
         center={center}
@@ -258,7 +288,7 @@ export default function OpsLiveMap({
         dragging
         touchZoom
         doubleClickZoom={interactive}
-        className="h-full w-full"
+        className="h-full w-full min-h-0"
         attributionControl
       >
         <TileLayer
@@ -266,6 +296,7 @@ export default function OpsLiveMap({
           url={SATELLITE_TILE}
         />
         <TileLayer attribution="" url={LABELS_TILE} opacity={0.55} />
+        <MapResizeFix />
         <MapViewController iss={iss} pins={pins} focusPinId={focusPinId} />
         <PinFocusController
           focusPinId={focusPinId}

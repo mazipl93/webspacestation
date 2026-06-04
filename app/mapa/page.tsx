@@ -27,12 +27,11 @@ export default async function MapaPage() {
       opsLive={ops.live}
       opsFetchedAt={ops.fetchedAt}
     >
-      <div className="min-w-0 w-full max-w-full">
+      <div className="ops-mapa-page min-w-0 w-full max-w-full overflow-hidden">
         <OpsMissionMap
           pins={ops.mapPins}
           iss={ops.iss}
           issOrbit={ops.issOrbit}
-          height={720}
           layout="stack"
           interactive
           mapClassName="ops-map-page-map"
