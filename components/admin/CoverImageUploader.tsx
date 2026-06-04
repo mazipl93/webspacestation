@@ -127,7 +127,7 @@ export default function CoverImageUploader({
           "grid aspect-video w-full cursor-pointer place-items-center gap-2 rounded-[0.6rem] border border-dashed px-4 py-6 text-center transition-colors duration-200",
           dragOver
             ? "border-accent-cyan/60 bg-accent-cyan/5"
-            : "border-hairline hover:border-hairline-strong hover:bg-white/[0.02]",
+            : "border-white/20 bg-[#090d13] hover:border-white/28 hover:bg-[#0b1018]",
           (disabled || busy) && "pointer-events-none opacity-60"
         )}
       >
@@ -174,7 +174,7 @@ export default function CoverImageUploader({
           className="aspect-video w-full rounded-[0.6rem] border border-hairline object-cover"
         />
       ) : (
-        <div className="grid aspect-video w-full place-items-center rounded-[0.6rem] border border-hairline bg-black/20 text-caption text-text-muted">
+        <div className="grid aspect-video w-full place-items-center rounded-[0.65rem] border border-white/16 bg-[#090d13] text-caption text-text-muted shadow-[inset_0_1px_3px_rgba(0,0,0,0.35)]">
           Brak okładki
         </div>
       )}

@@ -42,6 +42,7 @@ export default function NotificationsPopover({ open, onClose, loginHref }: Props
     hasUnread,
     markRead,
     markAllRead,
+    clearAll,
     isLoggedIn,
     loading,
     fetchError,
@@ -89,14 +90,25 @@ export default function NotificationsPopover({ open, onClose, loginHref }: Props
               </span>
             )}
           </div>
-          {isLoggedIn && hasUnread && (
-            <button
-              type="button"
-              onClick={markAllRead}
-              className="text-[11px] font-medium text-text-tertiary transition-colors hover:text-accent-cyan"
-            >
-              Oznacz wszystkie
-            </button>
+          {isLoggedIn && items.length > 0 && (
+            <div className="flex items-center gap-3">
+              {hasUnread ? (
+                <button
+                  type="button"
+                  onClick={markAllRead}
+                  className="text-[11px] font-medium text-text-tertiary transition-colors hover:text-accent-cyan"
+                >
+                  Oznacz wszystkie
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-[11px] font-medium text-text-tertiary transition-colors hover:text-accent-live"
+              >
+                Wyczyść
+              </button>
+            </div>
           )}
         </div>
 
@@ -134,7 +146,7 @@ export default function NotificationsPopover({ open, onClose, loginHref }: Props
             <p>
               {subscribedDepartments.length === 0
                 ? "Dodaj dział do ulubionych na stronie Misje, Astronomia, Technologie itd., aby dostawać alerty o nowych artykułach."
-                : "Brak nowych alertów — nadchodzące starty i świeże artykuły z obserwowanych działów pojawią się tutaj."}
+                : "Lista wyczyszczona lub brak alertów. Nowe starty i artykuły z ulubionych działów pojawią się tutaj automatycznie."}
             </p>
             <Link
               href="/profil"

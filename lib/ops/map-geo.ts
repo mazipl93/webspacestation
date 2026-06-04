@@ -1,66 +1,48 @@
 import type { OpsMapPin } from "@/lib/ops/types";
 import type { OpsIssPosition } from "@/lib/ops/types";
-import type { OpsLaunch } from "@/lib/ops/types";
 import { providerHue } from "@/lib/ops/launch-library";
-
-/** Simplified equirectangular → % on editorial map panel */
-export function lonLatToMapPercent(
-  longitude: number,
-  latitude: number
-): { left: string; top: string } {
-  const left = `${((longitude + 180) / 360) * 88 + 6}%`;
-  const top = `${((90 - latitude) / 180) * 76 + 12}%`;
-  return { left, top };
-}
+import { localizePadLabel, localizeProvider } from "@/lib/ops/localize-ops";
 
 export function buildMapPins(
   iss: OpsIssPosition | null,
-  launches: OpsLaunch[],
-  padCoords: { id: string; lat: number; lon: number; label: string; sublabel: string }[]
+  padCoords: {
+    id: string;
+    lat: number;
+    lon: number;
+    label: string;
+    sublabel: string;
+    imageUrl?: string;
+  }[]
 ): OpsMapPin[] {
   const pins: OpsMapPin[] = [];
 
   if (iss) {
-    const pos = lonLatToMapPercent(iss.longitude, iss.latitude);
     pins.push({
       id: "iss-live",
       label: "ISS",
-      sublabel: "Na orbicie",
+      sublabel: "Międzynarodowa Stacja Kosmiczna",
       color: "#38bdf8",
-      left: pos.left,
-      top: pos.top,
+      lat: iss.latitude,
+      lon: iss.longitude,
       kind: "iss",
     });
   }
 
   const seen = new Set<string>();
-  for (const pad of padCoords.slice(0, 6)) {
-    const key = `${pad.lat.toFixed(1)}:${pad.lon.toFixed(1)}`;
+  for (const pad of padCoords.slice(0, 8)) {
+    const key = `${pad.lat.toFixed(2)}:${pad.lon.toFixed(2)}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const pos = lonLatToMapPercent(pad.lon, pad.lat);
+    const provider = localizeProvider(pad.sublabel);
     pins.push({
       id: pad.id,
-      label: pad.label,
-      sublabel: pad.sublabel,
-      color: `hsl(${providerHue(pad.label)}, 72%, 58%)`,
-      left: pos.left,
-      top: pos.top,
+      label: localizePadLabel(pad.label),
+      sublabel: provider,
+      color: `hsl(${providerHue(provider)}, 72%, 58%)`,
+      lat: pad.lat,
+      lon: pad.lon,
       kind: "pad",
-    });
-  }
-
-  if (pins.length === 0 && launches.length > 0) {
-    launches.slice(0, 4).forEach((l, i) => {
-      pins.push({
-        id: `launch-${l.id}`,
-        label: l.provider,
-        sublabel: l.mission,
-        color: `hsl(${l.hue}, 72%, 58%)`,
-        left: `${18 + i * 18}%`,
-        top: `${30 + (i % 2) * 20}%`,
-        kind: "pad",
-      });
+      imageUrl: pad.imageUrl,
     });
   }
 

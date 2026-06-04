@@ -94,17 +94,17 @@ export const NAV_MORE_LINKS: NavMenuLink[] = [
     icon: Play,
   },
   {
-    label: "Kalendarz startów",
+    label: "Harmonogram startów",
     href: "/kalendarz",
     accentKey: "kalendarz",
-    description: "Nadchodzące starty rakiet",
+    description: "Terminy NET z Launch Library",
     icon: Calendar,
   },
   {
-    label: "Mapa kosmosu",
+    label: "Mapa startów i ISS",
     href: "/mapa",
     accentKey: "mapa",
-    description: "Interaktywna mapa obiektów",
+    description: "ISS na orbicie i platformy startowe",
     icon: Map,
   },
 ];

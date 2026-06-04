@@ -34,9 +34,11 @@ export const OPS_THEME: SectionThemeConfig = {
   theme: "ops",
   accent: "#ff453a",
   accentAlt: "#ff9500",
-  kicker: "Na żywo · podgląd",
+  kicker: "Na żywo z kosmosu",
   label: "Centrum operacyjne",
-  subtitle: "Starty, misje i wydarzenia — pełne dane wkrótce",
+  subtitle:
+    "Skrót tego, co dzieje się na orbicie i na platformach startowych — starty, ISS i mapa satelitarna. Dane z publicznych API.",
+  href: "/starty",
   live: true,
 };
 

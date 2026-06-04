@@ -3,6 +3,7 @@ import { getArticlesByCategory } from "@/lib/articles";
 import { rankLatest } from "@/lib/home/rank-articles";
 import { buildCalendarFromLaunches } from "@/lib/ops/calendar-from-launches";
 import { buildFallbackOpsSnapshot } from "@/lib/ops/fallback";
+import { computeIssOrbitSegments } from "@/lib/ops/iss-orbit";
 import { fetchIssPosition } from "@/lib/ops/iss-tracker";
 import { fetchUpcomingLaunches } from "@/lib/ops/launch-library";
 import { fetchLaunchPadCoords } from "@/lib/ops/launch-pads";
@@ -13,10 +14,17 @@ import {
   fetchNasaVideos,
 } from "@/lib/ops/nasa-media";
 import type { OpsGalleryItem, OpsSnapshot } from "@/lib/ops/types";
+import { withTimeout } from "@/lib/ops/with-timeout";
 
 export const OPS_CACHE_TAG = "ops-data";
 
+const MAP_OPS_TIMEOUT_MS =
+  process.env.NODE_ENV === "development" ? 14_000 : 25_000;
+const FULL_OPS_TIMEOUT_MS =
+  process.env.NODE_ENV === "development" ? 18_000 : 30_000;
+
 async function fetchOpsSnapshot(): Promise<OpsSnapshot> {
+  const isDev = process.env.NODE_ENV === "development";
   let launches: OpsSnapshot["launches"] = [];
   let live = false;
 
@@ -32,14 +40,23 @@ async function fetchOpsSnapshot(): Promise<OpsSnapshot> {
     return buildFallbackOpsSnapshot();
   }
 
-  const [iss, pads, apod, nasaImages, nasaVideos, astroArticles] =
+  const [iss, issOrbit, pads, apod, nasaImages, nasaVideos, astroArticles] =
     await Promise.all([
       fetchIssPosition().catch(() => null),
+      computeIssOrbitSegments().catch(() => [] as { lat: number; lon: number }[][]),
       fetchLaunchPadCoords(12).catch(() => []),
-      fetchNasaApod().catch(() => null),
-      fetchNasaGalleryImages(10).catch(() => []),
-      fetchNasaVideos(12).catch(() => []),
-      getArticlesByCategory("astronomia").catch(() => []),
+      isDev
+        ? Promise.resolve(null)
+        : fetchNasaApod().catch(() => null),
+      isDev
+        ? Promise.resolve([])
+        : fetchNasaGalleryImages(10).catch(() => []),
+      isDev
+        ? Promise.resolve([])
+        : fetchNasaVideos(12).catch(() => []),
+      isDev
+        ? Promise.resolve([])
+        : getArticlesByCategory("astronomia").catch(() => []),
     ]);
 
   const gallery: OpsGalleryItem[] = [];
@@ -65,7 +82,8 @@ async function fetchOpsSnapshot(): Promise<OpsSnapshot> {
     launches,
     calendar,
     iss,
-    mapPins: buildMapPins(iss, launches, pads),
+    issOrbit,
+    mapPins: buildMapPins(iss, pads),
     gallery,
     videos: nasaVideos,
     live,
@@ -73,16 +91,57 @@ async function fetchOpsSnapshot(): Promise<OpsSnapshot> {
   };
 }
 
-export async function getOpsData(): Promise<OpsSnapshot> {
-  if (process.env.NODE_ENV === "development") {
-    return unstable_cache(fetchOpsSnapshot, ["ops-snapshot-dev"], {
-      revalidate: 120,
-      tags: [OPS_CACHE_TAG],
-    })();
-  }
+/** Tylko ISS + platformy — szybsze /mapa, mniej obciążenia dev serwera. */
+async function fetchMapSnapshot(): Promise<OpsSnapshot> {
+  const [iss, issOrbit, pads] = await Promise.all([
+    fetchIssPosition().catch(() => null),
+    computeIssOrbitSegments().catch(() => [] as { lat: number; lon: number }[][]),
+    fetchLaunchPadCoords(12).catch(() => []),
+  ]);
 
-  return unstable_cache(fetchOpsSnapshot, ["ops-snapshot-v3"], {
-    revalidate: 300,
-    tags: [OPS_CACHE_TAG],
-  })();
+  const live = iss != null || pads.length > 0;
+
+  return {
+    launches: [],
+    calendar: [],
+    iss,
+    issOrbit,
+    mapPins: buildMapPins(iss, pads),
+    gallery: [],
+    videos: [],
+    live,
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
+export async function getMapOpsData(): Promise<OpsSnapshot> {
+  try {
+    const load =
+      process.env.NODE_ENV === "development"
+        ? fetchMapSnapshot()
+        : unstable_cache(fetchMapSnapshot, ["ops-map-snapshot-v1"], {
+            revalidate: 300,
+            tags: [OPS_CACHE_TAG],
+          })();
+    return await withTimeout(load, MAP_OPS_TIMEOUT_MS, buildFallbackOpsSnapshot());
+  } catch (error) {
+    console.error("[ops] getMapOpsData failed — fallback", error);
+    return buildFallbackOpsSnapshot();
+  }
+}
+
+export async function getOpsData(): Promise<OpsSnapshot> {
+  try {
+    const load =
+      process.env.NODE_ENV === "development"
+        ? fetchOpsSnapshot()
+        : unstable_cache(fetchOpsSnapshot, ["ops-snapshot-v4"], {
+            revalidate: 300,
+            tags: [OPS_CACHE_TAG],
+          })();
+    return await withTimeout(load, FULL_OPS_TIMEOUT_MS, buildFallbackOpsSnapshot());
+  } catch (error) {
+    console.error("[ops] getOpsData failed — fallback", error);
+    return buildFallbackOpsSnapshot();
+  }
 }

@@ -3,50 +3,41 @@ import Link from "next/link";
 import { Rocket, ChevronRight } from "lucide-react";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import OpsMissionMap from "@/components/discover/OpsMissionMap";
-import { getOpsData } from "@/lib/ops/get-ops-data";
+import { getMapOpsData } from "@/lib/ops/get-ops-data";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Mapa kosmosu",
+  title: "Mapa startów i ISS",
   description:
-    "Pozycja ISS na orbicie i wyrzutnie nadchodzących startów — dane na żywo i Launch Library.",
+    "Gdzie dziś leci Międzynarodowa Stacja Kosmiczna i skąd startują nadchodzące rakiety — mapa Ziemi z danymi Launch Library i trackera ISS.",
   alternates: { canonical: `${getSiteUrl()}/mapa` },
 };
 
 export const revalidate = 300;
 
 export default async function MapaPage() {
-  const ops = await getOpsData();
-  const issLabel = ops.iss
-    ? `${ops.iss.latitude.toFixed(2)}°, ${ops.iss.longitude.toFixed(2)}°`
-    : undefined;
+  const ops = await getMapOpsData();
 
   return (
     <DiscoverPageShell
       overline="Odkrywaj"
-      title="Mapa kosmosu"
-      description="Uproszczona mapa orbitalna: pozycja Międzynarodowej Stacji Kosmicznej (Where the ISS at) oraz wyrzutnie z harmonogramu startów."
+      title="Mapa startów i ISS"
+      description="Satelitarna mapa Ziemi: orbita ISS (czerwona linia), pozycja stacji na żywo i platformy startowe nadchodzących rakiet — współrzędne z Launch Library i trackera ISS."
       accent="#a78bfa"
       opsLive={ops.live}
       opsFetchedAt={ops.fetchedAt}
     >
-      <OpsMissionMap pins={ops.mapPins} issCoords={issLabel} height={380} />
-
-      <ul className="mt-6 grid gap-2 sm:grid-cols-2">
-        {ops.mapPins.map((pin) => (
-          <li
-            key={pin.id}
-            className="flex items-center gap-2 rounded-lg border border-hairline-faint px-3 py-2 text-[12px]"
-          >
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ background: pin.color }}
-            />
-            <span className="font-semibold text-text-primary">{pin.label}</span>
-            <span className="text-text-muted">— {pin.sublabel}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="min-w-0 w-full max-w-full">
+        <OpsMissionMap
+          pins={ops.mapPins}
+          iss={ops.iss}
+          issOrbit={ops.issOrbit}
+          height={720}
+          layout="stack"
+          interactive
+          mapClassName="ops-map-page-map"
+        />
+      </div>
 
       <Link
         href="/starty"
@@ -61,7 +52,7 @@ export default async function MapaPage() {
             <ChevronRight size={14} />
           </span>
           <span className="mt-1 block text-[12px] text-text-tertiary">
-            Pełna lista nadchodzących startów
+            Pełna lista z odliczaniem do startu
           </span>
         </span>
       </Link>

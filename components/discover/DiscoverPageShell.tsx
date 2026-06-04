@@ -75,7 +75,9 @@ export default function DiscoverPageShell({
           </div>
         </div>
 
-        <div className={cn(SITE_CONTAINER, "py-8 sm:py-10")}>{children}</div>
+        <div className={cn(SITE_CONTAINER, "min-w-0 max-w-full overflow-x-clip py-8 sm:py-10")}>
+          {children}
+        </div>
       </main>
       <Footer />
     </>

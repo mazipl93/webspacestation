@@ -64,7 +64,7 @@ export function Field({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={htmlFor}
-        className="overline text-text-tertiary"
+        className="text-[11px] font-bold uppercase tracking-[0.07em] text-text-secondary"
       >
         {label}
       </label>
@@ -77,8 +77,11 @@ export function Field({
 }
 
 const FIELD_BASE =
-  "w-full rounded-[0.6rem] bg-space-surface border border-hairline px-3 py-2 text-body text-text-primary " +
-  "placeholder:text-text-muted transition-colors duration-200 focus:border-accent-blue focus:outline-none";
+  "w-full min-h-[44px] rounded-[0.65rem] border border-white/[0.16] bg-[#090d13] px-3.5 py-2.5 " +
+  "text-[14px] leading-snug text-text-primary shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)] " +
+  "placeholder:text-text-muted/90 transition-[border-color,box-shadow,background-color] duration-200 " +
+  "hover:border-white/24 hover:bg-[#0b1018] " +
+  "focus:border-accent-blue focus:bg-[#0c131f] focus:outline-none focus:ring-2 focus:ring-accent-blue/30";
 
 export function TextInput(
   props: React.InputHTMLAttributes<HTMLInputElement>
@@ -94,7 +97,11 @@ export const TextArea = forwardRef<
     <textarea
       ref={ref}
       {...props}
-      className={cn(FIELD_BASE, "resize-y leading-relaxed", props.className)}
+      className={cn(
+        FIELD_BASE,
+        "min-h-[100px] resize-y leading-relaxed",
+        props.className
+      )}
     />
   );
 });

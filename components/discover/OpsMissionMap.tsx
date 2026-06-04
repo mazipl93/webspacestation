@@ -1,74 +1,92 @@
-import type { OpsMapPin } from "@/lib/ops/types";
+"use client";
+
+import { useCallback, useState } from "react";
+import dynamic from "next/dynamic";
+import OpsPinList from "@/components/discover/OpsPinList";
+import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
+
+const OpsLiveMap = dynamic(() => import("@/components/discover/OpsLiveMap"), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="flex animate-pulse items-center justify-center rounded-xl border border-hairline-faint bg-[#0a1018] text-[12px] text-text-muted"
+      style={{ height: 280 }}
+    >
+      Ładowanie mapy satelitarnej…
+    </div>
+  ),
+});
 
 type Props = {
   pins: OpsMapPin[];
-  issCoords?: string;
+  iss?: OpsIssPosition | null;
+  issOrbit?: { lat: number; lon: number }[][];
   height?: number;
+  layout?: "stack" | "split";
+  showPinList?: boolean;
+  interactive?: boolean;
+  mapClassName?: string;
 };
 
-export default function OpsMissionMap({ pins, issCoords, height = 320 }: Props) {
-  return (
-    <div
-      className="relative overflow-hidden rounded-xl border border-hairline-faint"
-      style={{
-        height,
-        background:
-          "radial-gradient(ellipse at 92% 50%, rgba(255,165,35,0.16) 0%, transparent 36%), #060a12",
-      }}
-    >
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 18,
-          height: 18,
-          left: "30%",
-          top: "52%",
-          transform: "translate(-50%,-50%)",
-          background: "radial-gradient(circle at 35% 32%, #4fc0ff, #0055a8)",
-          boxShadow: "0 0 12px rgba(56,189,248,0.6)",
-        }}
-        aria-hidden
+export default function OpsMissionMap({
+  pins,
+  iss,
+  issOrbit = [],
+  height = 320,
+  layout = "stack",
+  showPinList = true,
+  interactive = false,
+  mapClassName,
+}: Props) {
+  const [focusPinId, setFocusPinId] = useState<string | null>(null);
+  const isSplit = layout === "split";
+  const mapHeight = height;
+  const mapInteractive = interactive || Boolean(focusPinId);
+
+  const handleSelectPin = useCallback((pinId: string) => {
+    setFocusPinId((prev) => (prev === pinId ? prev : pinId));
+  }, []);
+
+  const mapBlock = (
+    <OpsLiveMap
+      pins={pins}
+      iss={iss}
+      issOrbit={issOrbit}
+      height={mapHeight}
+      interactive={mapInteractive}
+      className={mapClassName}
+      focusPinId={focusPinId}
+      onPinSelect={handleSelectPin}
+    />
+  );
+
+  const pinList =
+    showPinList && pins.length > 0 ? (
+      <OpsPinList
+        pins={pins}
+        compact
+        activePinId={focusPinId}
+        onSelectPin={handleSelectPin}
       />
-      {pins.map((pin) => (
-        <div
-          key={pin.id}
-          className="absolute flex flex-col items-center"
-          style={{ left: pin.left, top: pin.top }}
-        >
-          <div
-            className={
-              pin.kind === "iss"
-                ? "h-2.5 w-2.5 animate-pulse rounded-full"
-                : "h-2 w-2 rounded-full"
-            }
-            style={{
-              background: pin.color,
-              boxShadow: `0 0 8px ${pin.color}aa`,
-            }}
-          />
-          <span
-            className="mt-1 whitespace-nowrap text-[10px] font-bold leading-none text-text-primary"
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,0.95)" }}
-          >
-            {pin.label}
-          </span>
-          <span
-            className="mt-0.5 flex max-w-[120px] items-center gap-1 truncate text-[8px] leading-none text-text-tertiary"
-            style={{ textShadow: "0 1px 6px rgba(0,0,0,0.95)" }}
-          >
-            <span
-              className="h-1 w-1 shrink-0 rounded-full"
-              style={{ background: pin.color }}
-            />
-            {pin.sublabel}
-          </span>
-        </div>
-      ))}
-      {issCoords && (
-        <p className="absolute bottom-3 left-3 text-[10px] text-text-muted">
-          ISS: {issCoords}
-        </p>
-      )}
+    ) : null;
+
+  if (isSplit) {
+    return (
+      <div className="grid min-w-0 w-full max-w-full gap-4 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)]">
+        <div className="min-h-0 min-w-0 overflow-hidden">{mapBlock}</div>
+        {pinList ? (
+          <div className="min-w-0 overflow-hidden rounded-xl border border-hairline-faint p-3 sm:p-4">
+            {pinList}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-w-0 w-full max-w-full flex-col gap-2 overflow-x-clip sm:gap-3">
+      {mapBlock}
+      {pinList}
     </div>
   );
 }

@@ -59,7 +59,7 @@ export default function ProfileDepartmentSubscriptions() {
                 className="h-2 w-2 rounded-full"
                 style={{ background: meta.color }}
               />
-              {meta.label}
+              {active ? meta.label : `Dodaj · ${meta.label}`}
             </button>
           );
         })}

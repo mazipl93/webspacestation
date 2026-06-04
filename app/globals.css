@@ -726,3 +726,202 @@ html[data-portal-theme] .site-cosmos-grain {
     transition: none !important;
   }
 }
+
+/* ── Leaflet: mapa operacyjna ISS + wyrzutnie ─────────────────────────── */
+.ops-live-map .leaflet-container {
+  background: #0a1018;
+  font-family: inherit;
+  z-index: 0;
+  width: 100% !important;
+  max-width: 100%;
+  height: 100% !important;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.ops-live-map .leaflet-popup-pane {
+  z-index: 700;
+}
+/* Pełna strona /mapa — popup może wychodzić poza kafel (pan mapy centruje kartę) */
+.ops-map-page-map.ops-live-map {
+  overflow: visible;
+}
+.ops-map-page-map.ops-live-map .leaflet-container {
+  overflow: visible;
+  border-radius: 14px;
+}
+.homepage-ops-panel .ops-live-map {
+  overflow: hidden;
+  max-width: 100%;
+}
+.homepage-ops-panel .ops-live-map .leaflet-container {
+  overflow: hidden;
+  border-radius: 12px;
+}
+.ops-live-map .leaflet-map-pane,
+.ops-live-map .leaflet-tile-pane {
+  max-width: 100%;
+}
+.ops-live-map .leaflet-control-attribution {
+  font-size: 9px;
+  background: rgba(6, 10, 18, 0.82) !important;
+  color: #6e7894 !important;
+}
+.ops-live-map .leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
+.ops-leaflet-pin {
+  background: transparent !important;
+  border: none !important;
+}
+.ops-live-map .ops-map-leaflet-popup .leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+.ops-live-map .ops-map-leaflet-popup .leaflet-popup-content {
+  margin: 0;
+  width: min(380px, calc(100vw - 28px)) !important;
+  max-width: calc(100vw - 28px);
+  line-height: 1.45;
+}
+.ops-map-page-map {
+  height: min(46dvh, 400px) !important;
+  min-height: 0;
+  max-height: min(46dvh, 400px);
+}
+@media (min-width: 640px) {
+  .ops-map-page-map {
+    height: min(58dvh, 560px) !important;
+    max-height: min(58dvh, 560px);
+  }
+}
+@media (min-width: 1024px) {
+  .ops-map-page-map {
+    height: min(82dvh, 1020px) !important;
+    max-height: min(82dvh, 1020px);
+    min-height: min(72dvh, 720px);
+  }
+}
+.ops-live-map .ops-map-leaflet-popup .leaflet-popup-close-button {
+  color: #fff !important;
+  font-size: 22px;
+  top: 6px;
+  right: 8px;
+  z-index: 2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+.ops-live-map .ops-map-leaflet-popup .leaflet-popup-tip {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.ops-map-popup__hero {
+  position: relative;
+  aspect-ratio: 5 / 3;
+  width: 100%;
+  overflow: hidden;
+  background: #0f172a;
+}
+.ops-map-popup__img {
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.ops-map-popup__hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 10, 18, 0.05) 0%,
+    rgba(6, 10, 18, 0.35) 45%,
+    rgba(6, 10, 18, 0.92) 100%
+  );
+  pointer-events: none;
+}
+.ops-map-popup__hero-text {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 12px 14px 14px;
+}
+.ops-map-popup__title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+}
+.ops-map-popup__caption {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #7dd3fc;
+}
+.ops-map-popup__credit {
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(248, 250, 252, 0.55);
+}
+.ops-map-popup__body {
+  padding: 12px 14px 14px;
+  background: #f8fafc;
+}
+.ops-map-popup__desc {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #334155;
+}
+.ops-map-popup__facts {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+.ops-map-popup__facts-label {
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.ops-map-popup__facts-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ops-map-popup__facts-list li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #475569;
+}
+.ops-map-popup__facts-list li + li {
+  margin-top: 8px;
+}
+.ops-map-popup__facts-list li::before {
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: #38bdf8;
+  content: "";
+}
+@keyframes ops-iss-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.88;
+  }
+}

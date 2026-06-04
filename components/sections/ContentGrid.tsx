@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO } from "@/lib/categories";
@@ -41,10 +41,12 @@ import {
   pickWeekTopicArticles,
 } from "@/lib/home/week-topic";
 import LaunchCard from "@/components/discover/LaunchCard";
-import LaunchCountdown from "@/components/discover/LaunchCountdown";
 import OpsMissionMap from "@/components/discover/OpsMissionMap";
-import OpsTimeline from "@/components/discover/OpsTimeline";
+import OpsCenterExplainer from "@/components/discover/OpsCenterExplainer";
+import OpsScheduleList from "@/components/discover/OpsScheduleList";
+import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
 import { getOpsData } from "@/lib/ops/get-ops-data";
+import { formatIssForReader, formatOpsFetchedAt } from "@/lib/ops/format-ops-display";
 import type { OpsSnapshot } from "@/lib/ops/types";
 
 const IMPORTANT_POOL = 14;
@@ -375,42 +377,38 @@ function CategorySection({
 // ─── Dashboard widgets (demoted below editorial content) ───────────────────────
 
 function LiveMissionCenter({ ops }: { ops: OpsSnapshot }) {
-  const next = ops.launches[0];
-  const issLabel = ops.iss
-    ? `${ops.iss.latitude.toFixed(1)}°, ${ops.iss.longitude.toFixed(1)}°`
-    : "pozycja niedostępna";
+  const iss = formatIssForReader(ops.iss);
+  const refreshed = formatOpsFetchedAt(ops.fetchedAt);
 
   return (
     <section className="card-surface flex flex-col gap-3 p-5">
-      <SectionHeader label="Centrum operacyjne" accent="#ff453a" />
-      <p className="-mt-3 text-[10px] text-text-muted">
-        {ops.live ? "ISS + najbliższy start · cache 5 min" : "Dane zapasowe — API offline"}
-      </p>
-      <div className="well flex-1 p-3.5">
-        <h3 className="text-[15px] font-bold text-text-primary">ISS na orbicie</h3>
-        <p className="mt-2 text-[11px] text-text-tertiary">{issLabel}</p>
+      <SectionHeader label="Stacja ISS" accent="#38bdf8" href="/mapa" cta="Mapa" />
+      <div className="flex flex-wrap items-center gap-2">
+        {ops.live ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-accent-cyan">
+            <span className="live-dot shrink-0" style={{ background: "#38bdf8" }} />
+            Na żywo
+          </span>
+        ) : (
+          <OpsPreviewBadge />
+        )}
+        {refreshed && (
+          <span className="text-[10px] text-text-muted">Odświeżono {refreshed}</span>
+        )}
+      </div>
+      <div className="well flex-1 p-4">
+        <p className="text-[11px] leading-relaxed text-text-tertiary">
+          Międzynarodowa Stacja Kosmiczna krąży ~400 km nad Ziemią. Poniżej punkt na globie,
+          nad którym jest teraz.
+        </p>
+        <p className="mt-3 text-[20px] font-bold tracking-tight text-accent-cyan">{iss.coords}</p>
         <Link
           href="/mapa"
-          className="mt-3 inline-flex text-[11px] font-medium text-accent-cyan hover:text-accent-cyan/80"
+          className="mt-4 inline-flex text-[11px] font-medium text-accent-cyan hover:text-accent-cyan/80"
         >
-          Mapa →
+          Zobacz ISS na mapie →
         </Link>
       </div>
-      {next && (
-        <div className="well flex-1 p-3.5">
-          <h3 className="text-[15px] font-bold text-text-primary">{next.mission}</h3>
-          <p className="mt-2 text-[11px] text-text-tertiary">{next.site}</p>
-          <div className="mt-2">
-            <LaunchCountdown net={next.net} />
-          </div>
-          <Link
-            href="/starty"
-            className="mt-3 inline-flex text-[11px] font-medium text-accent-cyan hover:text-accent-cyan/80"
-          >
-            Wszystkie starty →
-          </Link>
-        </div>
-      )}
     </section>
   );
 }
@@ -423,6 +421,9 @@ function NadchodzaceStarty({ ops }: { ops: OpsSnapshot }) {
         accent="#38bdf8"
         href="/starty"
       />
+      <p className="-mt-2 mb-4 text-[12px] leading-relaxed text-text-tertiary">
+        Kolejne rakiety w kosmos — kliknij kartę, aby zobaczyć pełny harmonogram.
+      </p>
       <div className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
         {ops.launches.slice(0, 4).map((launch) => (
           <LaunchCard key={launch.id} launch={launch} href="/starty" />
@@ -432,15 +433,24 @@ function NadchodzaceStarty({ ops }: { ops: OpsSnapshot }) {
   );
 }
 
-function AktyweneMisje({ ops }: { ops: OpsSnapshot }) {
-  const issLabel = ops.iss
-    ? `${ops.iss.latitude.toFixed(2)}°, ${ops.iss.longitude.toFixed(2)}°`
-    : undefined;
-
+function MapaStartow({ ops }: { ops: OpsSnapshot }) {
   return (
     <section className="homepage-ops-panel card-surface p-5">
-      <SectionHeader label="Mapa operacyjna" href="/mapa" cta="Mapa kosmosu" />
-      <OpsMissionMap pins={ops.mapPins} issCoords={issLabel} height={240} />
+      <SectionHeader label="Gdzie to się dzieje?" href="/mapa" cta="Pełna mapa" />
+      <p className="-mt-2 mb-4 text-[12px] leading-relaxed text-text-tertiary">
+        Mapa satelitarna w stylu trackera ISS: czerwona linia to orbita stacji, pinezki to
+        realne platformy startowe z harmonogramu Launch Library.
+      </p>
+      <div className="min-w-0 overflow-hidden">
+        <OpsMissionMap
+          pins={ops.mapPins}
+          iss={ops.iss}
+          issOrbit={ops.issOrbit}
+          height={400}
+          layout="split"
+          mapClassName="ops-map-embed"
+        />
+      </div>
     </section>
   );
 }
@@ -448,12 +458,11 @@ function AktyweneMisje({ ops }: { ops: OpsSnapshot }) {
 function TimelineWydarzen({ ops }: { ops: OpsSnapshot }) {
   return (
     <section className="card-surface p-5">
-      <SectionHeader
-        label="Oś czasu wydarzeń"
-        href="/kalendarz"
-        cta="Zobacz kalendarz"
-      />
-      <OpsTimeline events={ops.calendar} variant="strip" />
+      <SectionHeader label="Kolejne terminy" href="/kalendarz" cta="Cały kalendarz" />
+      <p className="-mt-2 mb-4 text-[12px] leading-relaxed text-text-tertiary">
+        Te same starty co u góry — tutaj w formie listy dat (NET, czas UTC).
+      </p>
+      <OpsScheduleList events={ops.calendar} limit={5} />
     </section>
   );
 }
@@ -467,12 +476,15 @@ function DashboardWidgets({ ops }: { ops: OpsSnapshot }) {
         accentAlt={OPS_THEME.accentAlt}
       >
         <DepartmentSectionHeader config={OPS_THEME} />
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+        <OpsCenterExplainer />
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
           <NadchodzaceStarty ops={ops} />
           <LiveMissionCenter ops={ops} />
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-          <AktyweneMisje ops={ops} />
+        <div className="mt-4">
+          <MapaStartow ops={ops} />
+        </div>
+        <div className="mt-4 max-w-xl">
           <TimelineWydarzen ops={ops} />
         </div>
       </DepartmentSectionFrame>
@@ -480,13 +492,33 @@ function DashboardWidgets({ ops }: { ops: OpsSnapshot }) {
   );
 }
 
+function OpsDashboardSkeleton() {
+  return (
+    <div
+      className="homepage-ops-panel card-surface animate-pulse space-y-4 p-5"
+      aria-hidden
+    >
+      <div className="h-5 w-48 rounded bg-white/10" />
+      <div className="h-[280px] rounded-xl bg-white/5" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="h-24 rounded-xl bg-white/5" />
+        <div className="h-24 rounded-xl bg-white/5" />
+      </div>
+    </div>
+  );
+}
+
+async function HomepageOpsDashboardLoader() {
+  const ops = await getOpsData();
+  return <DashboardWidgets ops={ops} />;
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default async function ContentGrid() {
-  const [allPublished, cmsHeroSlides, ops] = await Promise.all([
+  const [allPublished, cmsHeroSlides] = await Promise.all([
     getAllArticles(),
     getHeroSlideArticles(),
-    getOpsData(),
   ]);
 
   if (allPublished.length === 0) {
@@ -575,7 +607,9 @@ export default async function ContentGrid() {
           ))}
         </div>
 
-        <DashboardWidgets ops={ops} />
+        <Suspense fallback={<OpsDashboardSkeleton />}>
+          <HomepageOpsDashboardLoader />
+        </Suspense>
       </div>
     </div>
   );

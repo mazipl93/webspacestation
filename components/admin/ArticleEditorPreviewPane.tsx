@@ -116,7 +116,7 @@ function ArticleEditorPreviewPaneInner({
         <div>
           <p className="text-meta font-semibold text-text-primary">Live preview</p>
           <p className="text-[10px] text-text-muted">
-            Obok tytułu i treści — zmiany widać od razu.
+            Podgląd jak na portalu — zmiany widać od razu (desktop / mobile).
           </p>
         </div>
         <ViewportToggle viewport={viewport} onChange={setViewport} />

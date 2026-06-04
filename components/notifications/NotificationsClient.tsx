@@ -45,6 +45,7 @@ export default function NotificationsClient() {
     items,
     markRead,
     markAllRead,
+    clearAll,
     hasUnread,
     loading: feedLoading,
     fetchError,
@@ -114,14 +115,25 @@ export default function NotificationsClient() {
             Powiadomienia
           </h1>
         </div>
-        {hasUnread && (
-          <button
-            type="button"
-            onClick={markAllRead}
-            className="text-[13px] font-medium text-text-tertiary transition-colors hover:text-accent-cyan"
-          >
-            Oznacz wszystkie jako przeczytane
-          </button>
+        {items.length > 0 && (
+          <div className="flex flex-wrap items-center justify-end gap-4">
+            {hasUnread ? (
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="text-[13px] font-medium text-text-tertiary transition-colors hover:text-accent-cyan"
+              >
+                Oznacz wszystkie jako przeczytane
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={clearAll}
+              className="text-[13px] font-medium text-text-tertiary transition-colors hover:text-accent-live"
+            >
+              Wyczyść powiadomienia
+            </button>
+          </div>
         )}
       </div>
 
@@ -149,7 +161,7 @@ export default function NotificationsClient() {
           <p className="mx-auto max-w-[420px] text-[14px] leading-relaxed text-text-muted">
             {subscribedDepartments.length === 0
               ? "Dodaj działy do ulubionych — na stronie każdego działu lub w profilu — aby dostawać powiadomienia o nowych artykułach. Starty rakiet zawsze trafiają do dzwonka po zalogowaniu."
-              : "Na razie nic nowego. Tu pojawią się starty z najbliższych 7 dni oraz artykuły z obserwowanych działów opublikowane po dodaniu do ulubionych."}
+              : "Lista wyczyszczona lub brak alertów. Tu pojawią się starty z najbliższych 7 dni oraz nowe artykuły z obserwowanych działów."}
           </p>
           <Link
             href="/profil"

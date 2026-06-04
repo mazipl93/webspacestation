@@ -1,9 +1,5 @@
-import { OPS_TIMELINE_EVENTS } from "@/lib/ops/discover-data";
-import type {
-  OpsCalendarEvent,
-  OpsLaunch,
-  OpsSnapshot,
-} from "@/lib/ops/types";
+import { buildCalendarFromLaunches } from "@/lib/ops/calendar-from-launches";
+import type { OpsLaunch, OpsSnapshot } from "@/lib/ops/types";
 import { buildMapPins } from "@/lib/ops/map-geo";
 
 /** Stałe daty zapasowe — NIE odświeżane co request (unikamy fałszywego 24:00:00). */
@@ -26,7 +22,7 @@ function mockLaunches(): OpsLaunch[] {
       image:
         "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=800&q=70",
       hue: 212,
-      statusLabel: "Offline API",
+      statusLabel: "API niedostępne",
       windowLabel: "Dane zapasowe",
     },
     {
@@ -38,7 +34,7 @@ function mockLaunches(): OpsLaunch[] {
       image:
         "https://images.unsplash.com/photo-1457364887197-9150188c107b?auto=format&fit=crop&w=800&q=70",
       hue: 26,
-      statusLabel: "Offline API",
+      statusLabel: "API niedostępne",
     },
     {
       id: "fallback-3",
@@ -49,7 +45,7 @@ function mockLaunches(): OpsLaunch[] {
       image:
         "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=800&q=70",
       hue: 156,
-      statusLabel: "Offline API",
+      statusLabel: "API niedostępne",
     },
     {
       id: "fallback-4",
@@ -60,29 +56,19 @@ function mockLaunches(): OpsLaunch[] {
       image:
         "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=70",
       hue: 268,
-      statusLabel: "Offline API",
+      statusLabel: "API niedostępne",
     },
   ];
-}
-
-function mockCalendar(): OpsCalendarEvent[] {
-  return OPS_TIMELINE_EVENTS.map((ev) => ({
-    id: ev.id,
-    quarter: ev.quarter,
-    title: ev.title,
-    hint: ev.hint,
-    active: ev.active,
-    net: FALLBACK_NET_ISO[0],
-  }));
 }
 
 export function buildFallbackOpsSnapshot(): OpsSnapshot {
   const launches = mockLaunches();
   return {
     launches,
-    calendar: mockCalendar(),
+    calendar: buildCalendarFromLaunches(launches),
     iss: null,
-    mapPins: buildMapPins(null, launches, []),
+    issOrbit: [],
+    mapPins: buildMapPins(null, []),
     gallery: [],
     videos: [],
     live: false,

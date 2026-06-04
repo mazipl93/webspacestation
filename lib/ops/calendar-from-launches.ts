@@ -1,4 +1,5 @@
 import type { OpsCalendarEvent, OpsLaunch } from "@/lib/ops/types";
+import { formatLaunchSummary } from "@/lib/ops/localize-ops";
 
 const QUARTER_LABEL: Record<number, string> = {
   0: "Q1",
@@ -16,26 +17,34 @@ const QUARTER_LABEL: Record<number, string> = {
 };
 
 export function buildCalendarFromLaunches(launches: OpsLaunch[]): OpsCalendarEvent[] {
-  const now = new Date();
-  const currentQ = QUARTER_LABEL[now.getUTCMonth()] ?? "Q1";
+  const sorted = [...launches].sort(
+    (a, b) => new Date(a.net).getTime() - new Date(b.net).getTime()
+  );
 
-  return launches.slice(0, 8).map((l) => {
+  return sorted.slice(0, 8).map((l, index) => {
     const d = new Date(l.net);
     const quarter = QUARTER_LABEL[d.getUTCMonth()] ?? "Q1";
     const dateStr = new Intl.DateTimeFormat("pl-PL", {
       day: "numeric",
-      month: "short",
+      month: "long",
       year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+    }).format(d);
+    const dateLabel = new Intl.DateTimeFormat("pl-PL", {
+      day: "numeric",
+      month: "short",
       timeZone: "UTC",
     }).format(d);
 
-    const rocket = l.rocketName ? ` · ${l.rocketName}` : "";
     return {
       id: l.id,
       quarter,
-      title: `${l.mission}\n${l.provider}${rocket}`,
-      hint: `${dateStr} · ${l.site}`,
-      active: quarter === currentQ,
+      dateLabel,
+      title: l.mission,
+      hint: `${dateStr} UTC · ${formatLaunchSummary(l)}`,
+      active: index === 0,
       net: l.net,
     };
   });

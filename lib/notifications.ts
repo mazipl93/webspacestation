@@ -16,14 +16,22 @@ export type NotificationItem = {
 
 export const NOTIFICATIONS_CHANGE_EVENT = "wss:notifications-changed";
 
-function storageKey(email: string): string {
+function readStorageKey(email: string): string {
   return `wss:notifications-read:${email}`;
 }
 
-export function getReadIds(email: string | null): Set<string> {
-  if (!email || typeof window === "undefined") return new Set();
+function dismissedStorageKey(email: string): string {
+  return `wss:notifications-dismissed:${email}`;
+}
+
+function dispatchNotificationsChange() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(NOTIFICATIONS_CHANGE_EVENT));
+  }
+}
+
+function parseIdSet(raw: string | null): Set<string> {
   try {
-    const raw = window.localStorage.getItem(storageKey(email));
     const parsed = raw ? JSON.parse(raw) : [];
     return new Set(
       Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : []
@@ -33,10 +41,32 @@ export function getReadIds(email: string | null): Set<string> {
   }
 }
 
+export function getReadIds(email: string | null): Set<string> {
+  if (!email || typeof window === "undefined") return new Set();
+  return parseIdSet(window.localStorage.getItem(readStorageKey(email)));
+}
+
+export function getDismissedIds(email: string | null): Set<string> {
+  if (!email || typeof window === "undefined") return new Set();
+  return parseIdSet(window.localStorage.getItem(dismissedStorageKey(email)));
+}
+
 function writeReadIds(email: string, ids: Set<string>) {
   try {
-    window.localStorage.setItem(storageKey(email), JSON.stringify([...ids]));
-    window.dispatchEvent(new Event(NOTIFICATIONS_CHANGE_EVENT));
+    window.localStorage.setItem(readStorageKey(email), JSON.stringify([...ids]));
+    dispatchNotificationsChange();
+  } catch {
+    /* ignore */
+  }
+}
+
+function writeDismissedIds(email: string, ids: Set<string>) {
+  try {
+    window.localStorage.setItem(
+      dismissedStorageKey(email),
+      JSON.stringify([...ids])
+    );
+    dispatchNotificationsChange();
   } catch {
     /* ignore */
   }
@@ -66,4 +96,12 @@ export function markAllNotificationsRead(email: string, ids: string[]) {
   const read = getReadIds(email);
   ids.forEach((id) => read.add(id));
   writeReadIds(email, read);
+}
+
+/** Ukrywa alerty z listy (localStorage). Nowe starty/artykuły nadal się pojawią. */
+export function clearNotifications(email: string, ids: string[]) {
+  const dismissed = getDismissedIds(email);
+  ids.forEach((id) => dismissed.add(id));
+  writeDismissedIds(email, dismissed);
+  markAllNotificationsRead(email, ids);
 }

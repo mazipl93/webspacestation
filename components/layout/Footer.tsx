@@ -20,8 +20,8 @@ const FOOTER_NAV = {
   ],
   Odkrywaj: [
     { label: "Starty rakiet", href: "/starty" },
-    { label: "Kalendarz misji", href: "/kalendarz" },
-    { label: "Mapa kosmosu", href: "/mapa" },
+    { label: "Harmonogram startów", href: "/kalendarz" },
+    { label: "Mapa startów i ISS", href: "/mapa" },
     { label: "Galeria zdjęć", href: "/galeria" },
     { label: "Wideo", href: "/wideo" },
   ],

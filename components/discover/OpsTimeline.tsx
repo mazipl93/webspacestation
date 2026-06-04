@@ -13,10 +13,15 @@ export default function OpsTimeline({
   variant = "strip",
 }: Props) {
   const isPage = variant === "page";
+  const sorted = [...events].sort(
+    (a, b) => new Date(a.net).getTime() - new Date(b.net).getTime()
+  );
 
-  if (events.length === 0) {
+  if (sorted.length === 0) {
     return (
-      <p className="text-[13px] text-text-tertiary">Brak zaplanowanych wydarzeń w feedzie.</p>
+      <p className="text-[13px] text-text-tertiary">
+        Brak zaplanowanych startów w feedzie Launch Library.
+      </p>
     );
   }
 
@@ -28,6 +33,13 @@ export default function OpsTimeline({
           : undefined
       }
     >
+      {!isPage && (
+        <p className="mb-3 text-[12px] leading-relaxed text-text-tertiary">
+          Każdy punkt to{" "}
+          <strong className="font-semibold text-text-secondary">rzeczywisty termin startu</strong>{" "}
+          (NET) z Launch Library — nie plan redakcyjny ani spekulacja.
+        </p>
+      )}
       <div
         className={cn(
           "flex items-start gap-6",
@@ -45,8 +57,8 @@ export default function OpsTimeline({
             {year}
           </span>
           {isPage && (
-            <p className="mt-2 max-w-[20ch] text-[12px] leading-relaxed text-text-tertiary">
-              Terminy z Launch Library (NET)
+            <p className="mt-2 max-w-[24ch] text-[12px] leading-relaxed text-text-tertiary">
+              Harmonogram nadchodzących startów rakiet (NET, UTC)
             </p>
           )}
         </div>
@@ -61,17 +73,17 @@ export default function OpsTimeline({
           <div
             className={cn(
               "relative flex",
-              isPage ? "flex-wrap gap-x-8 gap-y-10 sm:gap-x-10" : "gap-6"
+              isPage ? "flex-wrap gap-x-8 gap-y-10 sm:gap-x-10" : "gap-5"
             )}
           >
-            {events.map((ev) => (
+            {sorted.map((ev) => (
               <div
                 key={ev.id}
                 className={cn(
                   "flex shrink-0 flex-col items-center",
                   isPage ? "min-w-[100px] sm:min-w-[108px]" : ""
                 )}
-                style={isPage ? undefined : { minWidth: 88 }}
+                style={isPage ? undefined : { minWidth: 92 }}
               >
                 <div
                   className={cn(
@@ -84,22 +96,40 @@ export default function OpsTimeline({
                 />
                 <span
                   className={cn(
-                    "mb-1.5 font-bold uppercase tracking-[0.12em] text-text-tertiary",
+                    "mb-1 font-bold uppercase tracking-[0.1em]",
+                    ev.active ? "text-accent-blue" : "text-text-tertiary",
                     isPage ? "text-[10px]" : "text-[9px]"
                   )}
                 >
-                  {ev.quarter}
+                  {isPage ? ev.quarter : ev.dateLabel}
                 </span>
+                {ev.active && !isPage && (
+                  <span className="mb-1 text-[8px] font-bold uppercase tracking-[0.12em] text-accent-cyan">
+                    Najbliższy
+                  </span>
+                )}
                 <p
                   className={cn(
-                    "whitespace-pre-line text-center leading-snug text-text-secondary",
-                    isPage ? "text-[12px]" : "text-[10.5px]"
+                    "text-center leading-snug text-text-secondary",
+                    isPage ? "whitespace-pre-line text-[12px]" : "text-[11px] font-semibold"
                   )}
                 >
                   {ev.title}
                 </p>
-                {isPage && ev.hint && (
-                  <p className="mt-2 text-center text-[10px] text-text-muted">{ev.hint}</p>
+                {ev.hint && (
+                  <p
+                    className={cn(
+                      "mt-1.5 text-center text-text-muted",
+                      isPage ? "text-[10px]" : "text-[9px] leading-snug"
+                    )}
+                  >
+                    {ev.hint}
+                  </p>
+                )}
+                {ev.active && isPage && (
+                  <span className="mt-2 inline-flex rounded-full border border-accent-blue/30 bg-accent-blue/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-accent-blue">
+                    Najbliższy start
+                  </span>
                 )}
               </div>
             ))}

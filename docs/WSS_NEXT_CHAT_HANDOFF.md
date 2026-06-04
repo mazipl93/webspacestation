@@ -1,10 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 49 — **powiadomienia żywe** + **ulubione działy** + panel redakcyjny w profilu)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 53 — Centrum operacyjne: mapa satelitarna + ISS orbita + PL copy; **bez commit/push**)  
 **→ Okładki:** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 2 tematyczne NASA — otwarte)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `c28753b` powiadomienia+ulubione działy · `a57fc36` rozrywka+sitemap · **push:** po teście usera  
-**Historia:** patrz sesja czat 49 poniżej
+**Ostatni commit:** `c28753b` · lokalnie **ahead 2** (`e4654f4` docs) · **cały pakiet WIP niecommitowany** · **push:** po explicit OK  
+**Historia:** patrz sesja czat 53 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -173,54 +173,87 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 ## STARTING PROMPT — SKOPIUJ DO NOWEGO CZATU
 
 ```
-Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
+Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md (+ SITE_MAP_AUDIT, STEP_BY_STEP_BACKLOG).
 
-Przeczytaj ZAWSZE:
-1. docs/WSS_NEXT_CHAT_HANDOFF.md
-2. docs/WSS_SITE_MAP_AUDIT.md
-3. docs/WSS_STEP_BY_STEP_BACKLOG.md
+REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-REGUŁA: jeden krok · raport · test · CZEKAJ OK · push prod tylko po explicit OK usera.
+=== STAN (czat 53, lokalnie WIP — NIE NA PROD) ===
+Commit na main (remote): `c28753b` · lokalnie ahead 2 (`e4654f4` docs only).
+**WIP niecommitowane** — dwa pakiety czekają OK usera:
 
-Prod: https://webspacestation.pl · main @ `a57fc36` (Rozrywka na prod po pushu tego commita).
-Lokalnie (commit po czacie 49, przed pushem): powiadomienia + ulubione działy + Panel redakcyjny w profilu.
+**A) Powiadomienia + CMS (czat 50–51, user OK wizualnie):**
+- Powiadomienia: **Wyczyść** · feed live (starty + ulubione działy)
+- UX **Dodaj** / ulubione · profil · Panel redakcyjny
+- CMS: podgląd lg+, pola wyraźniejsze (`ArticleEditor`, `EditorFieldPanel`, `primitives`)
 
-=== BLOCKER PRZED TESTEM POWIADOMIEŃ ===
-Uruchom w Supabase SQL Editor (lokal + prod):
-  supabase/user_department_subscriptions.sql
-Bez tego: toggle „Dodaj dział do ulubionych” → błąd 500.
+**B) Centrum operacyjne / Odkrywaj (czat 52–53):**
+- **Dane:** starty LL2 ✅ · ISS wheretheiss.at ✅ · platformy = `pad.lat/lon` z LL2 ✅ · usunięte mocki timeline (Artemis/Gateway)
+- **Mapa:** Leaflet + **Esri World Imagery** · orbita ISS (TLE Celestrak + `satellite.js`) · telemetria ISS · pinezki platform startowych
+- **Copy PL:** `lib/ops/localize-ops.ts` · bez słowa „wyrzutnia” → **platforma startowa** / miejsce startu
+- **UX:** `OpsCenterExplainer`, `OpsScheduleList`, `OpsPinList`, `MapaStartow` w `ContentGrid` · usunięty podpis pod mapą
+- **Deps:** `leaflet`, `react-leaflet`, `satellite.js` → **`npm install`** po clone
+- **Fix build:** `OpsMissionMap.tsx` = `"use client"` (dynamic Leaflet)
 
-=== TEST PLAN (czat 50) ===
-1) SQL powyżej · `npm run dev`
-2) Zaloguj konto USER → dzwonek: tylko starty (brak ulubionych działów)
-3) /rozrywka → „Dodaj Rozrywka do ulubionych” → profil: chip Rozrywka aktywny
-4) Opublikuj NOWY artykuł w rozrywka (po czasie subskrypcji) → dzwonek: alert artykułu
-5) Konto EDITOR → /profil → „Panel redakcyjny” · menu konta też
-6) Oznacz przeczytane · odśwież — kropka znika
+**Otwarte (ops, opcjonalnie):**
+- Stałe pinezki głównych kosmodromów (jak isstracker.pl) obok harmonogramu
+- QA: orbita gdy Celestrak niedostępny · kafelki Esri na prod
 
-POWIADOMIENIA (jak działają):
-- Tylko zalogowani (API 401 bez sesji)
-- Starty: Launch Library, 7 dni do przodu (wszyscy zalogowani)
-- Artykuły: TYLKO z działów w ulubionych, opublikowane PO dodaniu do ulubionych
-- Przeczytane: localStorage per email (jak wcześniej)
+=== PRZED PUSHEM (USER) ===
+1. Supabase **prod** SQL: `supabase/user_department_subscriptions.sql`
+2. `npm install` (leaflet) · `npm run type-check`
+3. `npm run cache:revalidate`
+4. Smoke: dzwonek · Wyczyść · CMS podgląd · homepage **Centrum operacyjne** · `/mapa` (orbita + ISS)
+5. **OK** → jeden commit WIP (powiadomienia + CMS + ops) + git push
 
-ULUBIONE DZIAŁY:
-- Przycisk na każdym dziale (ArticleFeedSection)
-- Profil → sekcja „Ulubione działy” (7 chipów)
-- API: GET/POST /api/department-subscriptions
-
-PANEL REDAKCYJNY:
-- canAccessCms w /api/auth/session (AUTHOR|EDITOR|MODERATOR|ADMIN)
-- Link w /profil i AccountMenu → /admin/dashboard
-
-NA PROD (po OK testu): git push → Vercel · SQL na prod Supabase
-
-Pliki: lib/notifications/build-feed.ts · hooks/useDepartmentSubscriptions.ts · components/departments/DepartmentSubscribeButton.tsx
+Prod: https://webspacestation.pl
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 53) — mapa satelitarna ISS + nazewnictwo PL · handoff
+
+| Obszar | Stan |
+|--------|------|
+| **Mapa** | Leaflet + Esri imagery · ground track ISS (Celestrak TLE + `satellite.js`) · telemetria · strefa widoczności |
+| **ISS** | `wheretheiss.at` — lat/lon + wysokość + prędkość |
+| **Platformy** | Współrzędne z LL2 `pad.latitude/longitude` — realne miejsca startów z harmonogramu |
+| **Copy** | `localize-ops.ts` · **platforma startowa** zamiast wyrzutnia · statusy/misje po PL |
+| **UX** | Usunięty podpis pod mapą · `OpsScheduleList` · `OpsCenterExplainer` · fix `"use client"` |
+| **Deps** | `leaflet`, `react-leaflet`, `satellite.js` |
+| **Push** | **Nie** — user: zapisz handoff → nowy czat |
+
+**Pliki kluczowe (ops):** `lib/ops/iss-orbit.ts`, `localize-ops.ts`, `ops-terminology.ts`, `OpsLiveMap.tsx`, `OpsMissionMap.tsx`, `OpsIssTelemetry.tsx`, `ContentGrid.tsx`, `app/mapa/page.tsx`, `package.json`
+
+### Sesja 4.06.2026 (czat 52) — Centrum operacyjne: audyt danych + UX czytelnik
+
+| Obszar | Stan |
+|--------|------|
+| **Audyt danych** | Starty = LL2 ✅ · ISS = tracker ✅ · **oś czasu fallback** = wymyślone Artemis/Gateway/MSR ❌ → usunięte |
+| **Mapa** | Fałszywa „kula Ziemi” + losowe piny przy braku coords ❌ → rzut Ziemi + legenda + tylko geo z API |
+| **UX** | Opisy dla laika, „Na żywo teraz”, harmonogram z datami NET, rename: Mapa startów i ISS, Harmonogram startów |
+| **Pliki** | `lib/ops/format-ops-display.ts`, `OpsMissionMap`, `OpsTimeline`, `OpsWorldMapSvg`, `OpsMapLegend`, `ContentGrid`, `/mapa`, `/kalendarz`, nav/stopka |
+| **Push** | **Nie** — WIP lokalnie + wcześniejsze WIP powiadomienia/CMS czekają OK |
+
+### Sesja 4.06.2026 (czat 51) — domknięcie WIP powiadomienia + CMS
+
+| Obszar | Stan |
+|--------|------|
+| **Powiadomienia** | Test lokalny OK (czat 50) · dodane **Wyczyść** (ukrywa listę, nowe alerty wracają) |
+| **Ulubione** | UX **Dodaj** / **W ulubionych** (przycisk + chipy profilu) |
+| **CMS edytor** | Pełny podgląd (lg+), Preview przed publikacją, wyraźniejsze pola input |
+| **Push** | **Czeka** — commit WIP + SQL prod + explicit OK usera |
+
+### Sesja 4.06.2026 (czat 50) — test powiadomień + UX „Dodaj”
+
+| Obszar | Stan |
+|--------|------|
+| **SQL lokal** | `user_department_subscriptions.sql` przez Prisma execute — OK |
+| **Test E2E** | Dzwonek: starty + artykuł Rozrywka po ulubionych; toggle widoczny |
+| **UX** | Przycisk: **Dodaj** (nieaktywny) → nazwa działu + „W ulubionych…” (aktywny); profil: `Dodaj · Misje` / `Rozrywka` gdy aktywny |
+| **WIP lokalnie** | `DepartmentSubscribeButton.tsx`, `ProfileDepartmentSubscriptions.tsx` — **bez commita** |
+| **Push** | **Nie** — czeka OK usera + SQL prod |
 
 ### Sesja 4.06.2026 (czat 49) — powiadomienia żywe + ulubione działy + panel w profilu
 

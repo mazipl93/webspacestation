@@ -522,7 +522,11 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         setError("Tytuł jest wymagany.");
         return;
       }
-      if (!form.categoryId) {
+      if (
+        !form.categoryId &&
+        !opts.draft &&
+        (opts.publish || opts.schedule || opts.review || Boolean(articleIdRef.current))
+      ) {
         setError("Wybierz kategorię przed zapisem lub publikacją.");
         return;
       }
@@ -558,8 +562,9 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
         if (!activeId) {
           createInFlightRef.current = true;
+          const basePayload = opts.draft ? toDraftPayload(form) : toPayload(form);
           const createPayload: ArticleWritePayload = {
-            ...toPayload(form),
+            ...basePayload,
             status: opts.publish
               ? "PUBLISHED"
               : opts.schedule
@@ -728,24 +733,61 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
-          {currentId ? (
+          {publishedSlug ? (
             <Link
-              href={
-                publishedSlug
-                  ? `/aktualnosci/${publishedSlug}`
-                  : `/admin/articles/${currentId}/preview`
-              }
+              href={`/aktualnosci/${publishedSlug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className={
-                publishedSlug
-                  ? "inline-flex items-center gap-1.5 rounded-badge border border-hairline bg-glass px-3.5 py-2 text-meta font-semibold text-text-secondary transition-colors hover:text-text-primary"
-                  : "inline-flex items-center gap-1.5 rounded-badge border border-accent-cyan/40 bg-accent-cyan/15 px-3.5 py-2 text-meta font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/25"
-              }
+              className="inline-flex items-center gap-1.5 rounded-badge border border-hairline bg-glass px-3.5 py-2 text-meta font-semibold text-text-secondary transition-colors hover:text-text-primary"
             >
               <ExternalLink className="h-4 w-4 shrink-0" />
-              {publishedSlug ? "Podgląd na portalu" : "Preview publikacji"}
+              Podgląd na portalu
             </Link>
+          ) : currentId ? (
+            <Link
+              href={`/admin/articles/${currentId}/preview`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-badge border border-accent-cyan/40 bg-accent-cyan/15 px-3.5 py-2 text-meta font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/25"
+            >
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              Preview publikacji
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                document
+                  .getElementById("editor-live-preview")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="inline-flex items-center gap-1.5 rounded-badge border border-accent-cyan/40 bg-accent-cyan/15 px-3.5 py-2 text-meta font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/25"
+            >
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              Podgląd przed publikacją
+            </button>
+          )}
+          {!currentId ? (
+            <button
+              type="button"
+              disabled={saving || !form.title.trim()}
+              onClick={async () => {
+                await persist({ draft: true });
+                const id = articleIdRef.current;
+                if (id) {
+                  window.open(
+                    `/admin/articles/${id}/preview`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-badge border border-hairline bg-glass px-3.5 py-2 text-meta font-semibold text-text-secondary transition-colors hover:border-hairline-strong hover:text-text-primary disabled:opacity-50"
+              title="Zapisuje szkic i otwiera pełny podgląd w nowej karcie"
+            >
+              <ExternalLink className="h-4 w-4 shrink-0" />
+              Pełny podgląd (szkic)
+            </button>
           ) : null}
           {currentId && status !== "PUBLISHED" ? (
             <Button
@@ -956,9 +998,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
         </Card>
       ) : null}
 
-      <div className="flex flex-col gap-8">
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,38%)] xl:items-start">
-          <div className="flex min-w-0 flex-col gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,38%)] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-6">
             <EditorSection
               step={1}
               title="Tytuł i lead"
@@ -1072,23 +1113,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 </Field>
               </EditorFieldPanel>
             </EditorSection>
-          </div>
 
-          <aside className="min-w-0 xl:sticky xl:top-4">
-            <div className="overflow-hidden rounded-[0.75rem] border border-hairline bg-white/[0.03] p-3 sm:p-4">
-              <ArticleEditorPreviewPane
-                form={form}
-                categories={categories}
-                status={status}
-                contentOrigin={loadedArticle?.contentOrigin}
-                articleId={currentId}
-                bylineAuthors={bylineAuthors}
-              />
-            </div>
-          </aside>
-        </div>
-
-        <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <EditorSection
             step={3}
@@ -1319,6 +1344,23 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             ) : null}
           </EditorSection>
         </div>
+
+        <aside
+          id="editor-live-preview"
+          className="min-w-0 lg:sticky lg:top-4 lg:self-start"
+        >
+          <div className="overflow-hidden rounded-[0.75rem] border border-hairline bg-white/[0.03] p-3 sm:p-4">
+            <ArticleEditorPreviewPane
+              form={form}
+              categories={categories}
+              status={status}
+              contentOrigin={loadedArticle?.contentOrigin}
+              articleId={currentId}
+              bylineAuthors={bylineAuthors}
+              className="lg:min-h-[calc(100dvh-10rem)]"
+            />
+          </div>
+        </aside>
       </div>
     </div>
   );

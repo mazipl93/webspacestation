@@ -18,14 +18,14 @@ export const revalidate = 300;
 const DISCOVER_LINKS = [
   {
     href: "/kalendarz",
-    label: "Kalendarz wydarzeń",
-    description: "Terminy startów z API",
+    label: "Harmonogram startów",
+    description: "Terminy NET z Launch Library",
     icon: Calendar,
   },
   {
     href: "/mapa",
-    label: "Mapa misji",
-    description: "ISS i wyrzutnie startowe",
+    label: "Mapa startów i ISS",
+    description: "ISS na orbicie i platformy startowe",
     icon: Map,
   },
 ] as const;

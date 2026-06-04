@@ -1,3 +1,4 @@
+import { fetchExternal } from "@/lib/ops/fetch-external";
 import { providerHue } from "@/lib/ops/launch-library";
 
 const LL2_BASE =
@@ -9,6 +10,7 @@ type Ll2Pad = {
   name?: string;
   latitude?: number | string;
   longitude?: number | string;
+  map_image?: string | null;
   location?: { name?: string };
 };
 
@@ -24,6 +26,7 @@ export type LaunchPadCoord = {
   lon: number;
   label: string;
   sublabel: string;
+  imageUrl?: string;
 };
 
 function parseCoord(value: number | string | undefined): number | null {
@@ -38,7 +41,7 @@ export async function fetchLaunchPadCoords(limit = 12): Promise<LaunchPadCoord[]
     hide_recent_previous: "true",
   });
   const url = `${LL2_BASE}/launches/upcoming/?${params}`;
-  const res = await fetch(url, {
+  const res = await fetchExternal(url, {
     headers: { Accept: "application/json" },
     next: { revalidate: 300 },
   });
@@ -58,7 +61,7 @@ export async function fetchLaunchPadCoords(limit = 12): Promise<LaunchPadCoord[]
       id: `pad-${pad.id}-${launch.id}`,
       lat,
       lon,
-      label: pad.name ?? pad.location?.name ?? "Wyrzutnia",
+      label: pad.name ?? pad.location?.name ?? "Miejsce startu",
       sublabel: provider,
     });
   }

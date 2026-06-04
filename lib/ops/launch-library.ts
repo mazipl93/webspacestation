@@ -1,4 +1,6 @@
 import type { OpsLaunch } from "@/lib/ops/types";
+import { fetchExternal } from "@/lib/ops/fetch-external";
+import { localizeOpsLaunch, localizeStatus } from "@/lib/ops/localize-ops";
 
 /** LL2 prod — 2.3.0 stabilne; 2.4.0 bywa 500. Endpoint: /launches/ (liczba mnoga). */
 const LL2_BASE =
@@ -84,7 +86,7 @@ function mapLaunch(raw: Ll2Launch): OpsLaunch {
   const rocketName = launchRocketName(raw);
   const padName = raw.pad?.name?.trim();
   const loc = raw.pad?.location?.name?.trim();
-  const site = [padName, loc].filter(Boolean).join(" · ") || "Wyrzutnia";
+  const site = [padName, loc].filter(Boolean).join(" · ") || "Miejsce startu";
 
   const net = raw.net?.trim();
   if (!net) {
@@ -98,7 +100,7 @@ function mapLaunch(raw: Ll2Launch): OpsLaunch {
       timeZone: "UTC",
     }).format(new Date(net)) + " UTC";
 
-  return {
+  return localizeOpsLaunch({
     id: String(raw.id),
     provider,
     mission,
@@ -107,10 +109,10 @@ function mapLaunch(raw: Ll2Launch): OpsLaunch {
     site,
     image: resolveLaunchImage(raw),
     hue: providerHue(provider),
-    statusLabel: raw.status?.name || raw.status?.abbrev || "Zaplanowany",
+    statusLabel: localizeStatus(raw.status?.name || raw.status?.abbrev || "Zaplanowany"),
     windowLabel,
     detailUrl: `${LL2_BASE}/launches/${raw.id}/`,
-  };
+  });
 }
 
 export async function fetchUpcomingLaunches(limit = 12): Promise<OpsLaunch[]> {
@@ -119,7 +121,7 @@ export async function fetchUpcomingLaunches(limit = 12): Promise<OpsLaunch[]> {
     hide_recent_previous: "true",
   });
   const url = `${LL2_BASE}/launches/upcoming/?${params}`;
-  const res = await fetch(url, {
+  const res = await fetchExternal(url, {
     headers: { Accept: "application/json" },
     next: { revalidate: 300 },
   });

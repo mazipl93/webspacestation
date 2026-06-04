@@ -7,9 +7,9 @@ import { getOpsData } from "@/lib/ops/get-ops-data";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Kalendarz wydarzeń",
+  title: "Harmonogram startów",
   description:
-    "Terminarz startów rakiet i wydarzeń kosmicznych — dane z Launch Library 2.",
+    "Terminarz nadchodzących startów rakiet z Launch Library 2 — rzeczywiste daty NET, nie plan redakcyjny.",
   alternates: { canonical: `${getSiteUrl()}/kalendarz` },
 };
 
@@ -21,8 +21,8 @@ export default async function KalendarzPage() {
   return (
     <DiscoverPageShell
       overline="Odkrywaj"
-      title="Kalendarz wydarzeń"
-      description="Oś czasu i lista terminów wygenerowane z nadchodzących startów (NET). Kolejny krok: eksport iCal."
+      title="Harmonogram startów"
+      description="Terminy nadchodzących startów rakiet z Launch Library (NET, UTC). Każdy wpis to konkretna rakieta i platforma startowa — bez wymyślonych misji redakcyjnych."
       accent="#2f6dff"
       opsLive={ops.live}
       opsFetchedAt={ops.fetchedAt}
@@ -34,7 +34,7 @@ export default async function KalendarzPage() {
           id="events-list-heading"
           className="mb-4 text-[13px] font-bold uppercase tracking-[0.12em] text-text-primary"
         >
-          Nadchodzące terminy
+          Nadchodzące terminy startów
         </h2>
         <ul className="space-y-3">
           {ops.calendar.map((ev) => (
@@ -60,7 +60,7 @@ export default async function KalendarzPage() {
               </div>
               {ev.active && (
                 <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-accent-blue/30 bg-accent-blue/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-accent-blue">
-                  Bieżący kwartał
+                  Najbliższy start
                 </span>
               )}
             </li>

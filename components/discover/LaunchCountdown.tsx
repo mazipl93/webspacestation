@@ -10,6 +10,14 @@ type CountdownParts = {
   past: boolean;
 };
 
+/** Ten sam na SSR i pierwszym renderze klienta — bez mismatch hydratacji. */
+const HYDRATE_PLACEHOLDER: CountdownParts = {
+  h: "--",
+  m: "--",
+  s: "--",
+  past: false,
+};
+
 function computeCountdown(netIso: string): CountdownParts {
   const target = Date.parse(netIso);
   if (Number.isNaN(target)) {
@@ -46,13 +54,12 @@ type Props = {
 };
 
 export default function LaunchCountdown({ net, featured }: Props) {
-  const [parts, setParts] = useState(() => computeCountdown(net));
+  const [parts, setParts] = useState(HYDRATE_PLACEHOLDER);
 
   useEffect(() => {
-    setParts(computeCountdown(net));
-    const id = window.setInterval(() => {
-      setParts(computeCountdown(net));
-    }, 1000);
+    const tick = () => setParts(computeCountdown(net));
+    tick();
+    const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, [net]);
 

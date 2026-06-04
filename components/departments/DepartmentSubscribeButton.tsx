@@ -87,16 +87,16 @@ export default function DepartmentSubscribeButton({
       <span className="min-w-0">
         {subscribed ? (
           <>
-            Obserwujesz {meta.label}
+            <span className="text-text-primary">{meta.label}</span>
             <span className="mt-0.5 block text-[11px] font-medium text-text-muted">
-              Powiadomienia o nowych artykułach włączone
+              W ulubionych — kliknij, aby usunąć
             </span>
           </>
         ) : (
           <>
-            Dodaj {meta.label} do ulubionych
+            Dodaj
             <span className="mt-0.5 block text-[11px] font-medium text-text-muted">
-              Dostaniesz alert przy nowych artykułach w tym dziale
+              {meta.label} — alerty o nowych artykułach
             </span>
           </>
         )}

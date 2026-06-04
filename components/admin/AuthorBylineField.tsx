@@ -107,7 +107,7 @@ export default function AuthorBylineField({
               "rounded-badge border px-3 py-1.5 text-meta font-semibold transition-colors",
               activeMode === opt.id
                 ? "border-accent-blue/50 bg-accent-blue/20 text-text-primary"
-                : "border-hairline text-text-tertiary hover:text-text-secondary"
+                : "border-white/16 bg-[#090d13] text-text-secondary hover:border-white/24 hover:bg-[#0b1018]"
             )}
             aria-pressed={activeMode === opt.id}
           >
@@ -138,7 +138,7 @@ export default function AuthorBylineField({
                     "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors",
                     selected
                       ? "border-accent-blue/50 bg-accent-blue/15 ring-1 ring-accent-blue/30"
-                      : "border-hairline bg-space-surface hover:border-hairline-strong"
+                      : "border-white/16 bg-[#090d13] hover:border-white/24 hover:bg-[#0b1018]"
                   )}
                 >
                   <Avatar name={a.name} src={a.avatarUrl ?? undefined} size={36} squared />
