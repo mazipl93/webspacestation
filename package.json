@@ -31,6 +31,7 @@
     "rss:demote-backfill": "tsx scripts/rss-demote-backfill.ts",
     "cache:revalidate": "tsx scripts/cache-revalidate.ts",
     "week-topic:seed-dev": "node scripts/seed-week-topic.mjs",
+    "editorial:seed-test": "tsx scripts/seed-editorial-test-articles.ts",
     "rss:cleanup-db": "tsx scripts/rss-cleanup-db.ts",
     "scores:recalculate": "tsx scripts/recalculate-scores.ts",
     "publish:scheduled": "tsx scripts/publish-scheduled.ts",

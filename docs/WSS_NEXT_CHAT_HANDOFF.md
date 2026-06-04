@@ -1,17 +1,25 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 44 — push krok 5+6, smoke prod)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 44, koniec — handoff na czat 45)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `22b0fb6` (remote `main`) · perf homepage LCP na prod  
-**Historia:** `93f710b` SEO · `976c55d` UI czat 40 · `14d1675` komentarze
+**Ostatni commit:** `e422838` docs · `22b0fb6` perf · `a069877` Odkrywaj+ops  
+**Historia:** patrz sesja czat 44 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
-**Następny krok STEP_BY_STEP:** **OK + commit** perf homepage (czat 44 WIP) · potem **GSC** · **NASA_API_KEY** · **P1-6** · OPS-REVIEW
+**Następny czat (45) — PRIORYTET usera:** **artykuły redakcyjne PRO** (długie, konkretne, newsroom) — NIE krótkie szkice 2 akapity. Potem P1-6 · OPS-REVIEW.
 
-**Perf homepage (czat 44):** `22b0fb6` — Lighthouse mobile **83** (było 68) · LCP preload, preconnect, hero 1 img/slide
+**Perf homepage:** `22b0fb6` — PageSpeed mobile **83** (było 68).
 
-**Vercel env (czat 44):** `NEXT_PUBLIC_SITE_URL` ✅ · `NASA_API_KEY` ❌ · `GOOGLE_SITE_VERIFICATION` ❌ (user musi wkleić w Vercel)
+**Vercel env:** `NEXT_PUBLIC_SITE_URL` ✅ · `NASA_API_KEY` ✅ · `GOOGLE_SITE_VERIFICATION` ❌ (GSC: user **już zweryfikowany** plikiem HTML — meta opcjonalne).
+
+**GSC (user):** właściciel OK · sitemap `/sitemap.xml` przesłany — odświeżyć indeks po publikacjach.
+
+**Artykuły testowe (czat 44, lokalna DB):**
+- `npm run editorial:seed-test` — skrypt `scripts/seed-editorial-test-articles.ts` + `lib/editorial/test-articles-june-2026.ts`
+- **Roman** → REVIEW w bazie (`roman-space-telescope-start-30-sierpnia-2026`) — user: **za krótki / słaby**, do przepisania lub usunięcia
+- **MAVEN** — seed padł na `originalUrl` unique (RSS zajął link SpaceNews) → **fix w skrypcie** (`resolveOriginalUrlForSeed`) — **uruchomić ponownie** `npm run editorial:seed-test`
+- Google Analytics / AdSense — **odłożone** (user: niech strona się rozkręci)
 
 **Krok 5+6 DONE (lokalnie, czat 43):**
 - Odkrywaj: `/starty` `/kalendarz` `/mapa` `/galeria` `/wideo` + homepage ops
@@ -26,7 +34,7 @@
 - **noindex:** 404, auth, `/search` (Odkrywaj **w** sitemap od kroku 5+6 lokalnie)
 - **Artykuł dół:** `ArticleMainColumnShell` — Koniec / Czytaj dalej = szerokość Komentarze
 
-**Vercel Production (czat 44):** `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl` — **dodane** · `NASA_API_KEY` — **brak** (prod używa `DEMO_KEY` z kodu) · redeploy po env
+**Vercel Production (czat 44):** `NEXT_PUBLIC_SITE_URL` + `NASA_API_KEY` — **dodane**, redeploy OK
 
 **Po deploy — GSC (user, ręcznie):**
 1. Vercel Production: `NEXT_PUBLIC_SITE_URL=https://webspacestation.pl`
@@ -169,28 +177,27 @@ Przeczytaj ZAWSZE (w tej kolejności):
 
 REGUŁA: jeden krok · raport · test · CZEKAJ OK · commit/push tylko po explicit OK usera.
 
-Stan remote main: `a069877` · prod https://webspacestation.pl
-Krok 5+6: **na main i prod** (smoke OK 4.06.2026).
+Stan remote main: `e422838` (docs) · `22b0fb6` perf · `a069877` Odkrywaj · prod https://webspacestation.pl
+PageSpeed mobile: **83**. NASA_API_KEY na Vercel ✅. GSC: user zweryfikowany, sitemap OK.
 
-ZACZNIJ OD:
-1) Vercel: `NASA_API_KEY` (własny klucz z api.nasa.gov) + redeploy
-2) GSC: `GOOGLE_SITE_VERIFICATION` w Vercel Production → redeploy → Sitemaps `sitemap.xml`
-3) **P1-6** upload okładek prod · **OPS-REVIEW** ~175 w CMS
-4) Smoke: Rich Results Test na artykule po GSC
+ZACZNIJ OD (czat 45 — user):
+1) **Artykuły redakcyjne PRO** — 2–4 sztuki, newsroom PL, KONKRETNE (patrz standard jakości poniżej)
+2) Dokończ seed: `npm run editorial:seed-test` (MAVEN po fix originalUrl); Roman w REVIEW — przepisać lub usunąć
+3) Potem: **P1-6** okładki prod · **OPS-REVIEW** w CMS
 
-Krok 5+6 DONE lokalnie (czat 43):
-- Odkrywaj: /starty /kalendarz /mapa /galeria /wideo — żywe API
-- lib/ops/: Launch Library 2.3 `/launches/upcoming/` (NIE `/launch/`), ISS, NASA, Astronomia z CMS
-- Homepage ContentGrid: getOpsData(), LaunchCountdown live
-- Fix: fallback 24h (zły URL API); karty: mission + rocketName (nie samo „Falcon 9 Block 5”)
+STANDARD ARTYKUŁU (user odrzucił „2 akapity”):
+- min. **5–7 akapitów** merytorycznych + mocny lead (excerpt) + **Kontekst WSS** (3–4 zdania trendu)
+- **800–1200+ słów**, fakty: daty, liczby, nazwy misji/rakiet, „co to znaczy dla czytelnika”
+- contentOrigin **EDITORIAL** · źródła w stopce (source + originalUrl jeśli wolne — RSS blokuje duplicate URL)
+- Research: NASA, ESA, SpaceNews — nie generyczny filler
+- Wstawianie: `lib/editorial/` + `npm run editorial:seed-test` / `--publish` + `cache:revalidate`
+- **NIE** auto-publish masowo bez podglądu usera w CMS
 
-Kluczowe pliki: lib/ops/*, components/discover/*, app/{starty,kalendarz,mapa,galeria,wideo}/page.tsx, ContentGrid.tsx, lib/seo/public-routes.ts
+Pliki editorial: lib/editorial/test-articles-june-2026.ts · scripts/seed-editorial-test-articles.ts
+Kluczowe prod: lib/ops/*, ContentGrid, CMS /admin/articles
 
-Po deploy — kolejny backlog: P1-6 upload okładek prod · OPS-REVIEW w CMS · P2-WEEK-TOPIC smoke
-
-Reguły: object-cover · publishedAt=#1 · heroPosition w Najnowszych · tylko PUBLISHED public · ZERO dev copy na froncie.
-
-Komendy: npm run dev · npm run type-check · npm run db:deploy · npm run cache:revalidate
+Reguły: object-cover · publishedAt=#1 · tylko PUBLISHED public · ZERO dev copy na froncie.
+Komendy: npm run editorial:seed-test · npm run cache:revalidate · npm run dev
 
 Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ```
@@ -198,6 +205,17 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 44, koniec) — handoff na czat 45 · artykuły testowe odrzucone
+
+| Obszar | Stan |
+|--------|------|
+| **Prod** | krok 5+6 + perf 83 + NASA key |
+| **GSC** | User już właściciel (plik HTML) — bez ponownej weryfikacji |
+| **Editorial** | 2 szkice w `lib/editorial/` — Roman w DB REVIEW; MAVEN seed fix `originalUrl` |
+| **User** | Chce **długie, konkretne** artykuły w czacie 45 — nie krótkie szkice |
+| **Odłożone** | GA / AdSense |
+| **Następny czat** | Artykuły PRO → P1-6 → OPS-REVIEW |
 
 ### Sesja 4.06.2026 (czat 44, cd.) — perf push + PageSpeed OK
 
