@@ -2,8 +2,8 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 40 — UI homepage + artykuł + push)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `976c55d` — feat(ui): homepage triple rail + article sidebar  
-**Historia:** `14d1675` komentarze · `ef6c933` docs · `f93415a` CMS/hero
+**Ostatni commit:** `2560fe1` (docs) · feature UI: `976c55d` · komentarze: `14d1675`  
+**Historia:** `ef6c933` · `f93415a` CMS/hero
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -139,7 +139,7 @@ Stan remote main: `f93415a` · prod https://webspacestation.pl
 
 Po deploy: `npm run db:deploy` (migracja `20260604220000_article_byline_user`).
 
-Stan remote main: `976c55d` · prod https://webspacestation.pl
+Stan remote main: `2560fe1` · prod https://webspacestation.pl
 
 ZACZNIJ OD KROKU 4: Sitemap + robots.txt + JSON-LD → GSC.
 
