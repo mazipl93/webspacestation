@@ -2,7 +2,7 @@
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 37 — backlog krok po kroku czat 38)  
-**Deploy remote:** sprawdź `git log -1` (UI homepage + artykuł po `14d1675`)  
+**Deploy remote:** `976c55d`  
 **Plan:** `docs/WSS_STEP_BY_STEP_BACKLOG.md`
 
 ## Priorytety teraz (krok po kroku — czat 39)

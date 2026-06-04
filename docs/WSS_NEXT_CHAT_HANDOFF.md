@@ -2,7 +2,7 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 40 — UI homepage + artykuł + push)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `91bfb4e` — feat(ui): homepage triple rail + article sidebar  
+**Ostatni commit:** `976c55d` — feat(ui): homepage triple rail + article sidebar  
 **Historia:** `14d1675` komentarze · `ef6c933` docs · `f93415a` CMS/hero
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -18,8 +18,8 @@
 
 **Na `main` (krok 3 + UI czat 40):**
 - Komentarze Supabase — `14d1675` · SQL `supabase/article_comments.sql` (prod: SQL Editor jeśli 404)
-- **Homepage desktop:** Temat tygodnia (L) · hero 16:9 (środek) · Najnowsze (P) — `91bfb4e`
-- **Artykuł:** Informacje przy tytule; Powiązane pod Informacjami; okładka bez border — `91bfb4e`
+- **Homepage desktop:** Temat tygodnia (L) · hero 16:9 (środek) · Najnowsze (P) — `976c55d`
+- **Artykuł:** Informacje przy tytule; Powiązane pod Informacjami; okładka bez border — `976c55d`
 
 **Następny krok STEP_BY_STEP:** **4** — Sitemap + JSON-LD (+ GSC)
 
@@ -139,7 +139,7 @@ Stan remote main: `f93415a` · prod https://webspacestation.pl
 
 Po deploy: `npm run db:deploy` (migracja `20260604220000_article_byline_user`).
 
-Stan remote main: `91bfb4e` · prod https://webspacestation.pl
+Stan remote main: `976c55d` · prod https://webspacestation.pl
 
 ZACZNIJ OD KROKU 4: Sitemap + robots.txt + JSON-LD → GSC.
 
@@ -159,6 +159,14 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 40, koniec) — UI homepage + artykuł
+
+| Obszar | Stan |
+|--------|------|
+| **Push** | `976c55d` — homepage 3 kolumny, sticky Temat tygodnia, artykuł sidebar |
+| **Artykuł** | Informacje przy tytule; Powiązane pod Informacjami; okładka bez border |
+| **Następny czat** | Krok 4 SEO |
 
 ### Sesja 4.06.2026 (czat 40) — krok 3 komentarze + push
 
