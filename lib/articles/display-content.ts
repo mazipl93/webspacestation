@@ -1,6 +1,10 @@
 import type { NewsArticle } from "@/types";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import {
+  countInternalLinksForParagraphs,
+  countParagraphBlocks,
+} from "@/lib/article/weave-internal-links";
+import {
   parseArticleBodyBlocks,
   type ArticleContentBlock,
 } from "@/lib/articles/parse-content-blocks";
@@ -51,4 +55,16 @@ export function splitArticleLeadAndBody(
   }
   const fallbackLead = article.excerpt?.trim();
   return { lead: fallbackLead || null, restBlocks: blocks };
+}
+
+/** Paragraph count in body (after lead) — drives automatic in-body link density. */
+export function countWeaveableParagraphs(article: NewsArticle): number {
+  const blocks = getArticleBodyBlocks(article);
+  const { restBlocks } = splitArticleLeadAndBody(article, blocks);
+  return countParagraphBlocks(restBlocks);
+}
+
+/** Target number of in-body internal link teasers for this article. */
+export function targetInternalLinkCount(article: NewsArticle): number {
+  return countInternalLinksForParagraphs(countWeaveableParagraphs(article));
 }

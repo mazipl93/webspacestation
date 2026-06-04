@@ -22,6 +22,11 @@ import {
   pickRelatedArticles,
   pickSameCategoryRelated,
 } from "@/lib/article/related-articles";
+import {
+  pickWeaveInternalLinkCandidates,
+  type InternalLinkCandidate,
+} from "@/lib/article/weave-internal-links";
+import { targetInternalLinkCount } from "@/lib/articles/display-content";
 import { resolveImageOrFallback } from "@/lib/articles/resolve-image";
 import {
   formatRelativePublishLabel,
@@ -144,6 +149,31 @@ export async function getRelatedArticles(
 ): Promise<NewsArticle[]> {
   const all = await getAllArticles();
   return pickRelatedArticles(article, all, { min: 3, max: count });
+}
+
+/**
+ * Candidates for automatic in-body links (rule-based ranking, no AI).
+ * Excludes ids already used in read-next / sidebar when passed via `excludeIds`.
+ */
+export async function getWeaveInternalLinkCandidates(
+  article: NewsArticle,
+  options: { excludeIds?: Iterable<string>; limit?: number } = {}
+): Promise<InternalLinkCandidate[]> {
+  const limit = options.limit ?? targetInternalLinkCount(article);
+  if (limit <= 0) return [];
+
+  const all = await getAllArticles();
+  const picked = pickWeaveInternalLinkCandidates(article, all, limit, {
+    excludeIds: options.excludeIds,
+  });
+
+  return picked.map((a) => ({
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    excerpt: a.excerpt,
+    category: a.category,
+  }));
 }
 
 /** Three related articles from the same category (in-body „Czytaj również”). */

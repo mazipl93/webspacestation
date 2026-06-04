@@ -7,7 +7,7 @@ import {
   getArticleBySlug,
   getReadNextArticles,
   getRelatedArticles,
-  getSameCategoryRelatedArticles,
+  getWeaveInternalLinkCandidates,
 } from "@/lib/articles";
 import ReadNextSection from "@/components/article/ReadNextSection";
 import Navbar from "@/components/layout/Navbar";
@@ -17,7 +17,6 @@ import ArticleInteractions from "@/components/article/ArticleInteractions";
 import CoverImage from "@/components/article/CoverImage";
 import ArticlePageHero from "@/components/article/ArticlePageHero";
 import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
-import { mergeInternalLinkCandidates } from "@/lib/article/weave-internal-links";
 import { BELOW_FIXED_NAV_OFFSET_CLASS } from "@/lib/site-layout";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
@@ -376,22 +375,18 @@ export default async function ArticlePage({ params }: Props) {
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
 
-  const [allRelated, readNextList, categoryRelated] = await Promise.all([
+  // In-body links use their own ranking — do NOT exclude „Czytaj dalej” (same pool
+  // was leaving long articles with 0–1 weave candidate on prod).
+  const readNextList = await getReadNextArticles(article);
+
+  const [allRelated, weaveCandidates] = await Promise.all([
     getRelatedArticles(article, 6),
-    getReadNextArticles(article),
-    getSameCategoryRelatedArticles(article, 3),
+    getWeaveInternalLinkCandidates(article),
   ]);
 
   const reservedIds = new Set<string>([article.id]);
-  for (const a of readNextList) reservedIds.add(a.id);
-
-  const weaveCandidates = mergeInternalLinkCandidates(
-    categoryRelated,
-    allRelated
-  )
-    .filter((a) => !reservedIds.has(a.id))
-    .slice(0, 8);
   for (const a of weaveCandidates) reservedIds.add(a.id);
+  for (const a of readNextList) reservedIds.add(a.id);
 
   const sidebarRelated = allRelated
     .filter((a) => !reservedIds.has(a.id))
