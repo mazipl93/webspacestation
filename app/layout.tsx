@@ -4,7 +4,12 @@ import { GeistMono } from "geist/font/mono";
 import { Oswald } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import SiteBackground from "@/components/layout/SiteBackground";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildSiteJsonLd } from "@/lib/seo/json-ld";
+import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
 import "./globals.css";
+
+const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
 /** Logo WSS — wariant C · Oswald 700 (SpaceX / Bloomberg lockup) */
 const WssBrandOswald = Oswald({
@@ -42,7 +47,11 @@ export const metadata: Metadata = {
     title: "Web Space Station – Portal informacyjny o kosmosie",
     description:
       "Najważniejsze wydarzenia z kosmosu, astronomii i technologii kosmicznych.",
+    images: [{ url: getDefaultOgImageUrl(), width: 512, height: 512, alt: "Web Space Station" }],
   },
+  ...(googleVerification
+    ? { verification: { google: googleVerification } }
+    : {}),
   twitter: {
     card: "summary_large_image",
     title: "Web Space Station",
@@ -87,6 +96,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased">
+        <JsonLd data={buildSiteJsonLd()} />
         <SiteBackground />
         <AuthProvider>{children}</AuthProvider>
       </body>

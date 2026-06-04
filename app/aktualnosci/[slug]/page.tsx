@@ -10,7 +10,12 @@ import {
   getWeaveInternalLinkCandidates,
 } from "@/lib/articles";
 import ReadNextSection from "@/components/article/ReadNextSection";
+import ArticleMainColumnShell from "@/components/article/ArticleMainColumnShell";
+import JsonLd from "@/components/seo/JsonLd";
 import Navbar from "@/components/layout/Navbar";
+import { buildArticleJsonLd } from "@/lib/seo/json-ld";
+import { SEO_NOINDEX } from "@/lib/seo/metadata";
+import { getSiteUrl } from "@/lib/site-url";
 import Footer from "@/components/layout/Footer";
 import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
@@ -83,11 +88,16 @@ function catFallback(c: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
-  if (!article) return { title: "Artykuł nie znaleziony" };
+  if (!article) {
+    return { title: "Artykuł nie znaleziony", robots: SEO_NOINDEX };
+  }
+  const canonical = `${getSiteUrl()}/aktualnosci/${slug}`;
   return {
     title: article.title,
     description: article.excerpt,
+    alternates: { canonical },
     openGraph: {
+      url: canonical,
       title: article.title,
       description: article.excerpt,
       images: [{ url: article.image, width: 1280, height: 720 }],
@@ -290,7 +300,7 @@ function ArticleBody({
 function ReturnBand({ category }: { category: string }) {
   const meta = catMeta(category);
   return (
-    <div className={cn(ARTICLE_SHELL, "mb-5")}>
+    <ArticleMainColumnShell shellClassName="mb-5">
       <div
         className="article-panel flex flex-col items-start justify-between gap-4 rounded-2xl border border-hairline px-6 py-5 sm:flex-row sm:items-center"
         style={{
@@ -299,17 +309,10 @@ function ReturnBand({ category }: { category: string }) {
         }}
       >
         <div>
-          <p
-            className="overline mb-1 text-text-muted"
-          >
-            Koniec artykułu
-          </p>
+          <p className="overline mb-1 text-text-muted">Koniec artykułu</p>
           <p className="text-[14px] font-medium text-text-secondary">
             Więcej z kategorii{" "}
-            <span
-              className="font-semibold"
-              style={{ color: meta.color }}
-            >
+            <span className="font-semibold" style={{ color: meta.color }}>
               {meta.label}
             </span>{" "}
             i inne tematy
@@ -324,7 +327,7 @@ function ReturnBand({ category }: { category: string }) {
           Wróć do kanału
         </Link>
       </div>
-    </div>
+    </ArticleMainColumnShell>
   );
 }
 
@@ -334,7 +337,7 @@ function ReturnBand({ category }: { category: string }) {
 function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null;
   return (
-    <div className={cn(ARTICLE_SHELL, "pb-14 reveal")}>
+    <ArticleMainColumnShell shellClassName="pb-14 reveal">
       <div className="article-panel card-surface p-5">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -365,7 +368,7 @@ function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
           ))}
         </div>
       </div>
-    </div>
+    </ArticleMainColumnShell>
   );
 }
 
@@ -398,6 +401,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <>
+      <JsonLd data={buildArticleJsonLd(article)} />
       <Navbar />
       {/* Reading context bar — appears after hero scroll, tracks article progress */}
       <StickyArticleBar title={article.title} category={article.category} slug={article.slug} />

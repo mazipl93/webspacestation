@@ -1,11 +1,21 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 41 — UI homepage v2, artykuł, stopka, NAV)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 42 — krok 4 SEO + wyrównanie dół artykułu)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
 **Ostatni commit:** `0063e33` · UI: `a9630e9`  
 **Historia:** `976c55d` UI czat 40 · `14d1675` komentarze · `f93415a` CMS/hero
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
+
+**WIP lokalnie (czat 42, bez commita):**
+- **Krok 4 SEO:** sitemap, robots, JSON-LD, manifest, `GOOGLE_SITE_VERIFICATION`
+- **E-E-A-T:** `/polityka-prywatnosci`, `/kontakt` + linki w stopce
+- **noindex:** 404, auth, Odkrywaj (Wkrótce), `/search` poza sitemap
+- **Artykuł dół:** `ArticleMainColumnShell` — szerokość jak Komentarze
+
+**Następny krok STEP_BY_STEP:** **5** — Odkrywaj (po OK usera + push kroku 4)
+
+**GSC po deploy:** dodaj właściwość → Sitemaps → `https://webspacestation.pl/sitemap.xml` · Rich Results Test na artykule
 
 **Na `main` (kroki 0–2 + pakiet CMS/hero z czat 38–39):**
 - Krok 0–2: logo C, cleanup Ważne teraz, licznik REVIEW
@@ -27,8 +37,6 @@
 - **Artykuł:** okładka w shellu (16:9 ~520px), siatka jak homepage, breadcrumb kompaktowy (bez szerokiego paska MISJE)
 - **Stopka:** jeden panel, kotwica marki, bez linku Subskrypcje w dolnym pasku
 - **NAV desktop:** pill track wyśrodkowany, akcenty działów, grupa akcji
-
-**Następny krok STEP_BY_STEP:** **4** — Sitemap + JSON-LD (+ GSC)
 
 **Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
@@ -117,8 +125,8 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 | **1** | Usunąć Ważne teraz | `[x]` `18fc9a3` |
 | **2** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | Komentarze Supabase | `[x]` `14d1675` |
-| **4** | Sitemap + JSON-LD | `[ ]` **START** |
-| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) |
+| **4** | Sitemap + JSON-LD | `[~]` WIP lokalnie — czeka OK + push |
+| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) | **START po kroku 4** |
 | **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
 
 **Reguła:** po każdym kroku → raport → test usera → **CZEKAJ OK** → następny.
@@ -144,9 +152,9 @@ REGUŁA: jeden krok STEP_BY_STEP · raport · test · CZEKAJ OK · commit/push t
 
 Stan remote main: po push czat 41 · prod https://webspacestation.pl
 
-ZACZNIJ OD KROKU 4: Sitemap + robots.txt + JSON-LD → GSC.
+Krok 4 WIP lokalnie: sitemap.xml · robots.txt · JSON-LD (WebSite, Organization, NewsArticle) → po push: GSC sitemap.
 
-UI czat 41 na main: HOMEPAGE_LAYOUT_V2 · shell 1320px · artykuł/stopka/NAV — QA usera po deploy.
+UI czat 41 na main: HOMEPAGE_LAYOUT_V2 · shell 1320px · artykuł/stopka/NAV.
 
 Krok 5: Odkrywaj · Krok 6: API ops panel
 
@@ -162,6 +170,19 @@ Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 42) — krok 4 SEO + szerokość dół artykułu
+
+| Obszar | Stan |
+|--------|------|
+| **Sitemap** | `app/sitemap.ts` — `/`, działy, Odkrywaj, wszystkie PUBLISHED slugi |
+| **robots.txt** | `app/robots.ts` — disallow admin/api/profil/auth; `sitemap` + `host` |
+| **JSON-LD** | layout: WebSite + Organization; artykuł: NewsArticle + canonical URL |
+| **Artykuł UI** | `ArticleMainColumnShell` — Koniec / Czytaj dalej / Powiązane = szerokość Komentarze |
+| **Test lokalny** | `/sitemap.xml` OK · JSON-LD w źródle · panele 912px / left 208px @ xl |
+| **Commit** | **Brak** — czeka OK usera |
+
+**Pliki:** `app/sitemap.ts`, `app/robots.ts`, `lib/seo/*`, `components/seo/JsonLd.tsx`, `components/article/ArticleMainColumnShell.tsx`, `ReadNextSection.tsx`, `aktualnosci/[slug]/page.tsx`, `app/layout.tsx`
 
 ### Sesja 4.06.2026 (czat 41) — UI homepage v2, artykuł, stopka, NAV
 

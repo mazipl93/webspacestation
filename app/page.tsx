@@ -2,9 +2,16 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ContentGrid from "@/components/sections/ContentGrid";
+import { getSiteUrl } from "@/lib/site-url";
+import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
 
 export const metadata: Metadata = {
   title: "Web Space Station – Aktualności kosmiczne",
+  alternates: { canonical: getSiteUrl() },
+  openGraph: {
+    url: getSiteUrl(),
+    images: [{ url: getDefaultOgImageUrl(), width: 512, height: 512 }],
+  },
 };
 
 // DB-backed but cacheable: ISR revalidates every 5 min and on-demand via

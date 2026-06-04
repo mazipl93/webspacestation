@@ -31,6 +31,8 @@ export interface NewsArticle {
   weekTopic?: boolean;
   /** Original create time — editorial metadata; „Najnowsze” uses publishedAt first. */
   createdAt?: string;
+  /** Last DB update — JSON-LD dateModified. */
+  updatedAt?: string;
   content?: string[];  // article body paragraphs
   readTime?: number;   // estimated reading time in minutes
   /** WSS editorial context (RSS hybrid articles) */

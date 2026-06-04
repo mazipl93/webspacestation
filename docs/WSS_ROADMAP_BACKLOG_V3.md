@@ -14,7 +14,7 @@
 | **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[x]` |
 | **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[x]` `e16931b` |
 | **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[x]` `14d1675` |
-| **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[ ]` **START** |
+| **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[~]` WIP lokalnie (czat 42) |
 | **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content | `[ ]` |
 | **6** | **OPS-API** | Homepage ops z API (nie LAUNCHES[] mock) | `[ ]` |
 | — | **OPS-REVIEW** | User publikuje ~175 w CMS | `[ ]` redakcja |

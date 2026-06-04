@@ -33,7 +33,11 @@ const FOOTER_NAV = {
   ],
 } as const;
 
-const FOOTER_LEGAL = [{ label: "Szukaj", href: "/search" }] as const;
+const FOOTER_LEGAL = [
+  { label: "Kontakt", href: "/kontakt" },
+  { label: "Polityka prywatności", href: "/polityka-prywatnosci" },
+  { label: "Szukaj", href: "/search" },
+] as const;
 
 export default function Footer() {
   const [email, setEmail] = useState("");

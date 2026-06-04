@@ -3,11 +3,12 @@ import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import SearchClient from "./SearchClient";
+import { SEO_NOINDEX_FOLLOW } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {
   title: "Szukaj | Web Space Station",
   description: "Wyszukaj artykuły o kosmosie, misjach, astronomii i technologiach.",
-  robots: { index: false, follow: true },
+  robots: SEO_NOINDEX_FOLLOW,
 };
 
 export default function SearchPage() {

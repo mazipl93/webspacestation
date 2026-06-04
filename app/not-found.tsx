@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { SEO_NOINDEX } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = {
+  title: "Strona nie znaleziona",
+  robots: SEO_NOINDEX,
+};
 
 const QUICK_LINKS = [
   { label: "Aktualności",       href: "/aktualnosci",      accent: "#2f6dff" },

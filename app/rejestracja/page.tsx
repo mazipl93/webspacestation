@@ -6,9 +6,12 @@ import Footer from "@/components/layout/Footer";
 import { getCurrentUser } from "@/lib/auth/session";
 import RegisterForm from "./RegisterForm";
 
+import { SEO_NOINDEX } from "@/lib/seo/metadata";
+
 export const metadata: Metadata = {
   title: "Rejestracja",
   description: "Załóż darmowe konto Web Space Station.",
+  robots: SEO_NOINDEX,
 };
 
 type Props = {

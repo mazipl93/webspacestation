@@ -81,6 +81,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     heroPosition: a.heroPosition ?? 0,
     weekTopic: a.weekTopic,
     createdAt: new Date(a.createdAt).toISOString(),
+    updatedAt: new Date(a.updatedAt).toISOString(),
     content: paragraphs.length > 0 ? paragraphs : undefined,
     readTime: a.readingTime ?? undefined,
     contextNote: a.contextNote?.trim()

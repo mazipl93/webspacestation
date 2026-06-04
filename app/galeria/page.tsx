@@ -3,9 +3,12 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ComingSoon from "@/components/sections/ComingSoon";
 
+import { SEO_COMING_SOON_ROBOTS } from "@/lib/seo/metadata";
+
 export const metadata: Metadata = {
   title: "Galeria zdjęć | Web Space Station",
   description: "Najpiękniejsze zdjęcia z kosmosu — fotografie z teleskopów, misji i orbit.",
+  robots: SEO_COMING_SOON_ROBOTS,
 };
 
 export default function GaleriaPage() {

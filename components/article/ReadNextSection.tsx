@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { getCategoryInfo } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import { HomeSectionListRow } from "@/components/sections/HomeSectionArticleFeed";
-import { ARTICLE_SHELL } from "@/lib/ui/article-editorial-layout";
+import ArticleMainColumnShell from "@/components/article/ArticleMainColumnShell";
 
 type Props = {
   articles: NewsArticle[];
@@ -18,7 +18,11 @@ export default function ReadNextSection({ articles, category }: Props) {
   const cat = getCategoryInfo(category);
 
   return (
-    <section className={`${ARTICLE_SHELL} pb-8 reveal`} aria-label="Czytaj dalej">
+    <ArticleMainColumnShell
+      as="section"
+      shellClassName="pb-8 reveal"
+      aria-label="Czytaj dalej"
+    >
       <div className="article-panel card-surface overflow-hidden p-0">
         <div className="flex items-center gap-2.5 border-b border-hairline px-5 py-4">
           <span
@@ -76,6 +80,6 @@ export default function ReadNextSection({ articles, category }: Props) {
           </Link>
         </div>
       </div>
-    </section>
+    </ArticleMainColumnShell>
   );
 }

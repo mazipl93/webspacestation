@@ -6,9 +6,12 @@ import Footer from "@/components/layout/Footer";
 import { getCurrentUser } from "@/lib/auth/session";
 import LoginForm from "./LoginForm";
 
+import { SEO_NOINDEX } from "@/lib/seo/metadata";
+
 export const metadata: Metadata = {
   title: "Logowanie",
   description: "Zaloguj się do swojego konta Web Space Station.",
+  robots: SEO_NOINDEX,
 };
 
 type Props = {
