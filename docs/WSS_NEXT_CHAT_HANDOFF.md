@@ -2,7 +2,7 @@
 
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 41 — UI homepage v2, artykuł, stopka, NAV)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `a9630e9` (UI homepage v2, artykuł, stopka, NAV)  
+**Ostatni commit:** `0063e33` · UI: `a9630e9`  
 **Historia:** `976c55d` UI czat 40 · `14d1675` komentarze · `f93415a` CMS/hero
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
