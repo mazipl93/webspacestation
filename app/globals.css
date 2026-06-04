@@ -6,12 +6,27 @@
    ════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* ── Surfaces (layered elevation) ───────────────────────────────────── */
-  --color-space-bg:        #050709;   /* page base                       */
-  --color-space-surface:   #0a0d14;   /* recessed wells                   */
-  --color-space-card:      #0c1018;   /* base card                        */
-  --color-space-elevated:  #11151f;   /* raised card / nested             */
-  --color-space-border:    #191e2b;   /* legacy solid border (rarely used)*/
+  /* ── Dev domyślny: głęboki granat (sync portal-page-theme-vars.ts) ─ */
+  --color-page-fill:         #060810;
+  --color-page-fill-deep:    #0a0e1a;
+  --color-nav-surface:       #060810;
+  --color-nav-surface-deep:  #060810;
+  --color-nav-fg:            #f3f5fa;
+  --color-nav-fg-muted:      #d4dae8;
+  --color-nav-fg-soft:       #6e7894;
+  --color-page-bg:           #060810;
+  --color-page-bg-top:       #0a0e1a;
+  --color-on-page:           #f3f5fa;
+  --color-on-page-muted:     #a0a8bc;
+  --color-panel-bg:          transparent;
+  --color-panel-border:      transparent;
+
+  /* ── Surfaces boksów / kart (ciemny newsroom — bez zmian) ───────────── */
+  --color-space-bg:        #050709;
+  --color-space-surface:   #0a0d14;
+  --color-space-card:      #0c1018;
+  --color-space-elevated:  #11151f;
+  --color-space-border:    #191e2b;
   --color-space-muted:     #232a3a;
 
   /* ── Accents ─────────────────────────────────────────────────────────── */
@@ -21,13 +36,13 @@
   --color-accent-live:       #ff453a;   /* iOS-style red                  */
   --color-accent-amber:      #ffb830;
 
-  /* ── Text scale ──────────────────────────────────────────────────────── */
+  /* ── Text w boksach (jasny na ciemnym) ───────────────────────────────── */
   --color-text-primary:    #f5f7fb;
   --color-text-secondary:  #a3afc7;
   --color-text-tertiary:   #6b7892;
   --color-text-muted:      #4a5670;
 
-  /* ── Hairlines & glass (alpha-based, the premium look) ───────────────── */
+  /* ── Hairlines & glass (ciemne karty) ────────────────────────────────── */
   --hairline:        rgba(255, 255, 255, 0.07);
   --hairline-strong: rgba(255, 255, 255, 0.11);
   --hairline-faint:  rgba(255, 255, 255, 0.045);
@@ -37,6 +52,9 @@
   /* ── Typography ──────────────────────────────────────────────────────── */
   --font-sans: var(--font-geist-sans), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+  --font-wss-station: var(--font-wss-station-loaded), "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-wss-apex: var(--font-wss-station-loaded), "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-wss-control: var(--font-wss-control-loaded), "Arial Narrow", ui-sans-serif, sans-serif;
 
   /* Fluid type scale (8pt-aligned, editorial) */
   --text-overline:  0.6875rem;  /* 11 — uppercase labels                 */
@@ -60,6 +78,201 @@
   --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ── Dev presety: płaskie ciemne tło (fallback = 4 · slate-soft) ─ */
+:root,
+html[data-portal-theme="slate-soft"] {
+  --color-page-fill: #060810;
+  --color-page-fill-deep: #060810;
+  --color-nav-surface: #060810;
+  --color-nav-surface-deep: #060810;
+  --color-page-bg: #060810;
+  --color-page-bg-top: #060810;
+  --color-nav-fg: #f3f5fa;
+  --color-nav-fg-muted: #d4dae8;
+  --color-nav-fg-soft: #6e7894;
+  --color-on-page: #f3f5fa;
+  --color-on-page-muted: #a0a8bc;
+  --color-panel-bg: transparent;
+  --color-panel-border: transparent;
+  --portal-nav-line: #7dd3fc;
+  --portal-nav-border: #1a2238;
+  --portal-panel-shadow: none;
+  --portal-panel-shadow-hover: none;
+  --portal-card-border: transparent;
+  --color-space-bg: transparent;
+  --color-space-card: transparent;
+  --color-space-surface: transparent;
+  --color-space-elevated: transparent;
+  --color-space-border: transparent;
+  --color-space-muted: transparent;
+  --hairline: transparent;
+  --hairline-strong: transparent;
+  --hairline-faint: transparent;
+  --color-text-primary: #f3f5fa;
+  --color-text-secondary: #a0a8bc;
+  --color-text-tertiary: #6e7894;
+  --color-text-muted: #6e7894;
+  --glass-fill: rgba(255, 255, 255, 0.06);
+  --glass-fill-hover: rgba(255, 255, 255, 0.1);
+}
+
+/*
+ * Flat layout: treść na tle strony — zero ramek, cieni, boksów.
+ */
+html[data-portal-theme] .card-surface,
+html[data-portal-theme] .editorial-surface,
+html[data-portal-theme] .bg-space-card,
+html[data-portal-theme] .bg-space-surface,
+html[data-portal-theme] .bg-space-elevated,
+html[data-portal-theme] .surface-interactive {
+  background: transparent !important;
+  color: var(--color-panel-fg, var(--color-text-primary));
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+html[data-portal-theme] .editorial-surface > div[aria-hidden] {
+  display: none !important;
+}
+
+html[data-portal-theme] .surface-interactive {
+  transition: opacity 0.2s ease;
+}
+
+html[data-portal-theme] .surface-interactive:hover {
+  transform: none;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 0.92;
+}
+
+/*
+ * Artykuł — wyraźne boksy na dole (dyskusja, share, komentarze, czytaj dalej).
+ * Reszta portalu zostaje flat.
+ */
+html[data-portal-theme] .article-panel {
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.14);
+  --hairline-faint: rgba(255, 255, 255, 0.05);
+  --color-space-card: #0c1018;
+  --color-space-surface: #101620;
+  --color-text-primary: #f3f5fa;
+  --color-text-secondary: #a0a8bc;
+  --color-text-tertiary: #6e7894;
+  --color-text-muted: #6e7894;
+  --glass-fill: rgba(255, 255, 255, 0.06);
+  --glass-fill-hover: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(56, 189, 248, 0.04) 0%,
+      rgba(255, 255, 255, 0.02) 28%,
+      rgba(255, 255, 255, 0) 42%
+    ),
+    #0c1018 !important;
+  color: var(--color-text-primary);
+  border: 1px solid var(--hairline) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 1px 2px 0 rgba(0, 0, 0, 0.4),
+    0 12px 32px -16px rgba(0, 0, 0, 0.7) !important;
+}
+
+html[data-portal-theme] .article-panel.surface-interactive:hover {
+  border-color: var(--hairline-strong) !important;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px 0 rgba(0, 0, 0, 0.4),
+    0 20px 44px -18px rgba(0, 0, 0, 0.8) !important;
+  opacity: 1;
+}
+
+html[data-portal-theme] main .article-panel .border-hairline,
+html[data-portal-theme] main .article-panel .border-hairline-strong,
+html[data-portal-theme] main .article-panel .border-hairline-faint,
+html[data-portal-theme] main .article-panel .border-t.border-hairline,
+html[data-portal-theme] main .article-panel .border.border-hairline,
+html[data-portal-theme] main .article-panel .divide-hairline-faint > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--hairline-faint) !important;
+  border-width: 1px !important;
+}
+
+html[data-portal-theme] main .article-panel .border-hairline-strong {
+  border-color: var(--hairline-strong) !important;
+}
+
+/*
+ * Homepage — subtelne obramowanie widgetów ops (starty, misje).
+ */
+.homepage-ops-panel {
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.11);
+  --hairline-faint: rgba(255, 255, 255, 0.05);
+  --color-text-primary: #f3f5fa;
+  --color-text-secondary: #a0a8bc;
+  --color-text-tertiary: #6e7894;
+  --color-text-muted: #6e7894;
+  --glass-fill: rgba(255, 255, 255, 0.04);
+  --glass-fill-hover: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-card);
+  background: rgba(12, 16, 24, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 6px 28px -14px rgba(0, 0, 0, 0.55);
+}
+
+html[data-portal-theme] .homepage-ops-panel.card-surface {
+  background: rgba(255, 255, 255, 0.028) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 6px 28px -14px rgba(0, 0, 0, 0.55) !important;
+}
+
+html[data-portal-theme] .homepage-ops-panel .border-hairline,
+html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
+  border-color: var(--hairline-faint) !important;
+}
+
+html[data-portal-theme] main .border-hairline,
+html[data-portal-theme] main .border-hairline-strong,
+html[data-portal-theme] main .border-hairline-faint,
+html[data-portal-theme] main .border-t.border-hairline,
+html[data-portal-theme] main .border.border-hairline {
+  border-color: transparent !important;
+  border-width: 0 !important;
+}
+
+html[data-portal-theme] .wss-nav-bar .border-hairline,
+html[data-portal-theme] .border-on-page {
+  border-color: var(--portal-nav-border);
+}
+
+html[data-portal-theme] .wss-nav-bar .hover\:bg-glass-hover:hover {
+  background-color: var(--glass-fill-hover);
+}
+
+html[data-portal-theme] .wss-nav-bar::before {
+  height: 2px;
+}
+
+/* Płaskie ciemne tło — sam kolor, bez wzorów (dev presety) */
+html[data-portal-theme] .site-cosmos-base {
+  background: var(--color-page-fill, var(--color-page-bg));
+}
+
+html[data-portal-theme] .site-cosmos-wallpaper,
+html[data-portal-theme] .site-cosmos-glow,
+html[data-portal-theme] .site-cosmos-stars,
+html[data-portal-theme] .site-cosmos-vignette,
+html[data-portal-theme] .site-cosmos-grain {
+  display: none;
+}
+
 /* ════════════════════════════════════════════════════════════════════════
    BASE
    ════════════════════════════════════════════════════════════════════════ */
@@ -81,8 +294,8 @@
   }
 
   body {
-    background-color: var(--color-space-bg);
-    color: var(--color-text-primary);
+    background-color: var(--color-page-fill, var(--color-page-bg));
+    color: var(--color-on-page);
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
     font-synthesis: none;
@@ -117,8 +330,20 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
 
   ::selection {
-    background-color: rgba(47, 109, 255, 0.32);
-    color: #fff;
+    background-color: rgba(47, 109, 255, 0.28);
+    color: var(--color-on-page);
+  }
+
+  /* Ciemne boksy — tekst jak wcześniej (nie dziedziczy koloru strony) */
+  :where(
+    .editorial-surface,
+    .card-surface,
+    .bg-space-card,
+    .bg-space-surface,
+    .bg-space-elevated,
+    [class*="bg-space-card"]
+  ) {
+    color: var(--color-text-primary);
   }
 
   :focus-visible {
@@ -208,6 +433,12 @@
   .border-hairline-strong { border-color: var(--hairline-strong); }
   .border-hairline-faint  { border-color: var(--hairline-faint); }
 
+  /* Tekst bezpośrednio na jasnym tle strony (stopka, marginesy) */
+  .editorial-surface   { color: var(--color-text-primary); }
+  .text-on-page        { color: var(--color-on-page); }
+  .text-on-page-muted  { color: var(--color-on-page-muted); }
+  .border-on-page      { border-color: rgba(15, 23, 42, 0.12); }
+
   /* ── Glass fills used across buttons/chips ──────────────────────────── */
   .bg-glass        { background-color: var(--glass-fill); }
   .hover\:bg-glass-hover:hover { background-color: var(--glass-fill-hover); }
@@ -234,79 +465,89 @@
   .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
 
-  /* ── Kosmiczne tło portalu — ciemny newsroom (SiteBackground) ─────────── */
+  /* Tło portalu — jednolity kolor (preset dev) */
   .site-cosmos {
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
-    background: #050709;
+    background: var(--color-page-fill, var(--color-page-bg));
   }
 
-  /* Bazowa powierzchnia — głęboka, neutralna, bez „Windows blue” */
   .site-cosmos-base {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(
-        180deg,
-        #070a10 0%,
-        #050709 45%,
-        #040608 100%
-      );
+    background: var(--color-page-fill, var(--color-page-bg));
   }
 
-  /* Jedna subtelna mgławica — akcent redakcyjny, nie kolorowa tapeta */
-  .site-cosmos-glow {
-    position: absolute;
-    inset: -15%;
-    background:
-      radial-gradient(ellipse 48% 40% at 82% 8%, rgba(47, 109, 255, 0.11) 0%, transparent 58%),
-      radial-gradient(ellipse 42% 38% at 12% 72%, rgba(168, 85, 247, 0.07) 0%, transparent 55%),
-      radial-gradient(ellipse 36% 32% at 50% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
-    animation: cosmos-glow 100s ease-in-out infinite alternate;
-    will-change: transform, opacity;
+  .site-cosmos-base::after {
+    display: none;
   }
 
-  .site-cosmos-stars {
-    position: absolute;
-    inset: 0;
-    opacity: 0.38;
-    background-image:
-      radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.45), transparent),
-      radial-gradient(1px 1px at 28% 42%, rgba(255, 255, 255, 0.28), transparent),
-      radial-gradient(1.5px 1.5px at 44% 12%, rgba(200, 220, 255, 0.4), transparent),
-      radial-gradient(1px 1px at 58% 58%, rgba(255, 255, 255, 0.25), transparent),
-      radial-gradient(1px 1px at 74% 28%, rgba(255, 255, 255, 0.32), transparent),
-      radial-gradient(1px 1px at 88% 68%, rgba(255, 255, 255, 0.28), transparent),
-      radial-gradient(1px 1px at 8% 62%, rgba(255, 255, 255, 0.22), transparent),
-      radial-gradient(1px 1px at 36% 78%, rgba(255, 255, 255, 0.26), transparent),
-      radial-gradient(1px 1px at 52% 34%, rgba(255, 255, 255, 0.3), transparent),
-      radial-gradient(1px 1px at 66% 82%, rgba(255, 255, 255, 0.24), transparent);
-    background-size: 520px 520px;
-    mask-image: radial-gradient(ellipse 100% 90% at 50% 40%, black 25%, transparent 88%);
-    animation: cosmos-twinkle 14s ease-in-out infinite alternate;
-  }
-
-  /* Delikatna tekstura — premium newsroom, nie płaski flat */
-  .site-cosmos-grain {
-    position: absolute;
-    inset: 0;
-    opacity: 0.028;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    mix-blend-mode: overlay;
-  }
-
-  /* Winieta skupia uwagę na treści — typowe dla portali newsowych */
+  .site-cosmos-glow,
+  .site-cosmos-stars,
+  .site-cosmos-grain,
   .site-cosmos-vignette {
+    display: none;
+  }
+
+  /* NAV — ten sam płaski kolor co strona */
+  .wss-nav-bar {
+    position: relative;
+    isolation: isolate;
+    color: var(--color-nav-fg);
+    border-bottom: 1px solid var(--portal-nav-border);
+    background: var(--color-page-fill, var(--color-nav-surface));
+    box-shadow: none;
+    transition:
+      background 0.35s var(--ease-out-soft),
+      border-color 0.35s var(--ease-out-soft);
+  }
+
+  .wss-nav-bar::before {
+    content: "";
     position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      ellipse 88% 78% at 50% 42%,
-      transparent 42%,
-      rgba(2, 4, 8, 0.48) 100%
-    );
+    inset: 0 0 auto 0;
+    z-index: 1;
+    height: 3px;
+    pointer-events: none;
+    background: var(--portal-nav-line);
+  }
+
+  .wss-nav-bar[data-scrolled="true"] {
+    border-bottom-color: var(--portal-nav-border);
+    background: var(--color-page-fill, var(--color-nav-surface));
+    box-shadow: 0 4px 12px -8px rgba(0, 0, 0, 0.18);
+  }
+
+  .wss-nav-bar .text-text-primary {
+    color: var(--color-nav-fg);
+  }
+
+  .wss-nav-bar .text-text-secondary {
+    color: var(--color-nav-fg-muted);
+  }
+
+  .wss-nav-bar .text-text-tertiary,
+  .wss-nav-bar .text-text-muted {
+    color: var(--color-nav-fg-soft);
+  }
+
+  .wss-nav-bar .hover\:text-text-primary:hover {
+    color: var(--color-nav-fg);
+  }
+
+  .wss-nav-bar .hover\:bg-glass-hover:hover {
+    background-color: rgba(47, 109, 255, 0.1);
+  }
+
+  .wss-nav-bar .border-hairline {
+    border-color: rgba(15, 23, 42, 0.1);
+  }
+
+  .wss-nav-bar mark.text-accent-cyan {
+    color: var(--color-accent-blue);
   }
 }
 

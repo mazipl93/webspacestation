@@ -1,9 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Oswald } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import SiteBackground from "@/components/layout/SiteBackground";
 import "./globals.css";
+
+/** Logo WSS — wariant C · Oswald 700 (SpaceX / Bloomberg lockup) */
+const WssBrandOswald = Oswald({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "600", "700"],
+  variable: "--font-wss-control-loaded",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -53,7 +62,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050709",
+  themeColor: "#060810",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -72,7 +81,9 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${WssBrandOswald.variable}`}
+      data-portal-theme="slate-soft"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body className="antialiased">

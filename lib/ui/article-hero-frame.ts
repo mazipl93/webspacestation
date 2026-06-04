@@ -10,7 +10,15 @@ export const ARTICLE_NAV_HEIGHT_CLASS = "h-[4.25rem] sm:h-16";
 
 
 
-/** Sekcja hero — offset nav przez BELOW_FIXED_NAV_OFFSET_CLASS na <main> (strona artykułu). */
+/**
+ * Odstęp <main> artykułu pod fixed nav — na sm+ bez luki pod h-16 (homepage: pt-24).
+ */
+
+export const ARTICLE_PAGE_MAIN_OFFSET_CLASS = "pt-[4.5rem] sm:pt-16";
+
+
+
+/** Sekcja hero — offset nav przez ARTICLE_PAGE_MAIN_OFFSET_CLASS na <main>. */
 
 export const ARTICLE_HERO_SECTION_CLASS =
 

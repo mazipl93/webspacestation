@@ -34,7 +34,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -69,7 +69,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border p-4 sm:p-5 lg:p-6",
+          "editorial-surface relative overflow-hidden rounded-2xl border p-4 sm:p-5 lg:p-6",
           className,
         )}
         style={{
@@ -92,7 +92,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-3xl border p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-3xl border p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -115,7 +115,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-xl border p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-xl border p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -134,7 +134,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-[1.25rem] border p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-[1.25rem] border p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -159,7 +159,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -185,7 +185,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -210,7 +210,7 @@ export default function DepartmentSectionFrame({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-lg border-y border-r p-5 sm:p-6 lg:p-7",
+          "editorial-surface relative overflow-hidden rounded-lg border-y border-r p-5 sm:p-6 lg:p-7",
           className,
         )}
         style={{
@@ -229,7 +229,7 @@ export default function DepartmentSectionFrame({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
+        "editorial-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
         className,
       )}
       style={{

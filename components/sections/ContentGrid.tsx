@@ -469,7 +469,7 @@ function LaunchCard({
 
 function NadchodzaceStarty() {
   return (
-    <section className="card-surface p-5">
+    <section className="homepage-ops-panel card-surface p-5">
       <SectionHeader
         label="Nadchodzące starty"
         accent="#38bdf8"
@@ -501,7 +501,7 @@ const MISSION_PINS: MissionPin[] = [
 
 function AktyweneMisje() {
   return (
-    <section className="card-surface p-5">
+    <section className="homepage-ops-panel card-surface p-5">
       <SectionHeader label="Aktywne misje" href="/mapa" cta="Mapa kosmosu" />
       <div
         className="relative overflow-hidden rounded-xl border border-hairline-faint"
@@ -698,22 +698,6 @@ export default async function ContentGrid() {
       ),
     };
   });
-
-  if (process.env.NODE_ENV === "development") {
-    const weekTopicCandidates = allPublished.filter((a) => a.weekTopic);
-    console.log("HOMEPAGE INPUT ARTICLES:", allPublished.length);
-    console.log(
-      "WEEK TOPIC:",
-      weekTopicPick.articles.length,
-      "render",
-      "| flagged:",
-      weekTopicCandidates.length,
-      "| hero slides:",
-      heroSlides.length,
-      "| first slide:",
-      heroSlides[0]?.slug ?? "(fallback)"
-    );
-  }
 
   const excludeForPopular = [...usedSlugs];
 

@@ -162,7 +162,7 @@ export default function Comments({ slug }: { slug: string }) {
   );
 
   return (
-    <section className="card-surface p-5 sm:p-7" aria-label="Komentarze">
+    <section className="article-panel card-surface p-5 sm:p-7" aria-label="Komentarze">
       <div className="mb-5 flex items-center gap-2.5">
         <MessageCircle size={16} className="text-accent-cyan" />
         <h2 className="text-[15px] font-bold text-text-primary">Komentarze</h2>

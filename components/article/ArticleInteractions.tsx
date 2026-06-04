@@ -14,9 +14,9 @@ export default function ArticleInteractions({ slug, title }: Props) {
       <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex min-w-0 flex-col gap-6">
           <div className="mb-4 flex items-center gap-3">
-            <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
-            <span className="overline text-text-muted">Dyskusja</span>
-            <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
+            <span className="h-px flex-1 bg-white/12" />
+            <span className="overline text-on-page-muted">Dyskusja</span>
+            <span className="h-px flex-1 bg-white/12" />
           </div>
           <ShareBar title={title} slug={slug} />
           <Comments slug={slug} />

@@ -34,9 +34,7 @@ export default async function ArticleFeedSection({ category }: Props) {
   const accent = meta?.color ?? "#2f6dff";
   const title  = meta?.label ?? "Najnowsze";
 
-  const subtitle = category
-    ? meta?.description ?? `Wszystkie artykuły z kategorii ${meta?.label}`
-    : "Opublikowane artykuły — od najnowszej daty publikacji w CMS.";
+  const subtitle = category ? (meta?.description ?? null) : null;
 
   const featured = category && articles.length > 0 ? articles[0] : null;
   const rest = category && articles.length > 0 ? articles.slice(1) : articles;
@@ -94,9 +92,11 @@ export default async function ArticleFeedSection({ category }: Props) {
               >
                 {title}
               </h1>
-              <p className="mt-2 text-[16px] leading-relaxed text-text-tertiary md:text-[14px]">
-                {subtitle}
-              </p>
+              {subtitle ? (
+                <p className="mt-2 text-[16px] leading-relaxed text-text-tertiary md:text-[14px]">
+                  {subtitle}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">

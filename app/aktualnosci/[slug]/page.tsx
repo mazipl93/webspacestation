@@ -17,7 +17,7 @@ import ArticleInteractions from "@/components/article/ArticleInteractions";
 import CoverImage from "@/components/article/CoverImage";
 import ArticlePageHero from "@/components/article/ArticlePageHero";
 import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
-import { BELOW_FIXED_NAV_OFFSET_CLASS } from "@/lib/site-layout";
+import { ARTICLE_PAGE_MAIN_OFFSET_CLASS } from "@/lib/ui/article-hero-frame";
 
 // DB-backed but cacheable: dynamic route with no generateStaticParams means no
 // DB access during `next build`; the page is rendered on first request, cached,
@@ -215,7 +215,7 @@ function ArticleBody({
         {/* ── Sidebar ── */}
         <aside className="flex flex-col gap-4">
           {/* Article metadata */}
-          <div className="card-surface p-5">
+          <div className="article-panel card-surface p-5">
             <h2 className="overline mb-4 text-text-tertiary">Informacje</h2>
             <dl className="flex flex-col gap-3.5">
               <div>
@@ -261,7 +261,7 @@ function ArticleBody({
 
           {/* Sidebar related — same-category-first priority */}
           {sidebarRelated.length > 0 && (
-            <div className="card-surface p-5">
+            <div className="article-panel card-surface p-5">
               <div className="mb-4 flex items-center gap-2.5">
                 <span
                   className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"
@@ -291,7 +291,7 @@ function ReturnBand({ category }: { category: string }) {
   return (
     <div className="container-site mb-5">
       <div
-        className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-hairline px-6 py-5 sm:flex-row sm:items-center"
+        className="article-panel flex flex-col items-start justify-between gap-4 rounded-2xl border border-hairline px-6 py-5 sm:flex-row sm:items-center"
         style={{
           background:
             "linear-gradient(135deg, rgba(255,255,255,0.022) 0%, rgba(255,255,255,0) 100%)",
@@ -334,7 +334,7 @@ function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null;
   return (
     <div className="container-site pb-14 reveal">
-      <div className="card-surface p-5">
+      <div className="article-panel card-surface p-5">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span
@@ -400,7 +400,7 @@ export default async function ArticlePage({ params }: Props) {
       <Navbar />
       {/* Reading context bar — appears after hero scroll, tracks article progress */}
       <StickyArticleBar title={article.title} category={article.category} slug={article.slug} />
-      <main className={`relative z-[1] ${BELOW_FIXED_NAV_OFFSET_CLASS}`}>
+      <main className={`relative z-[1] ${ARTICLE_PAGE_MAIN_OFFSET_CLASS}`}>
         <ArticlePageHero article={article} embedded />
         <ArticleBody
           article={article}

@@ -1,20 +1,25 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 31)  
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 38 — krok 0 commit lokalny)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit remote:** `f399d9b` — pakiet czat 26–30 wdrożony na prod
+**Ostatni commit lokalny:** `77681b0` — feat(ui): logo C, flat theme, article-panel  
+**Ostatni commit remote:** `a5ab17c` — in-body internal links (do 4) + weave fix
 
-**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main` · deploy `f399d9b` ✅ Ready
+**Prod:** https://webspacestation.pl · Vercel auto-deploy z `main` (po push `77681b0`)
 
-**Następny czat — PRIORYTET:** ~175 REVIEW w CMS · P1-6 upload okładek · P2-WEEK-TOPIC prod smoke
+**Krok 0 (czat 38) — commit lokalny, push czeka OK usera:**
+- **LOGO** — wariant C (Oswald) · `WssWordmarkControl`
+- **Tło** — flat `#060810` · `data-portal-theme="slate-soft"`
+- **Artykuł dół** — `article-panel`
+- **Dev UI** — brak switcherów na froncie
+- **Aktualności** — bez podtytułu CMS (`ArticleFeedSection`)
+- **Homepage ops** — mock w `ContentGrid.tsx` → krok 6
 
-**Migracja `20260604210000` (`heroPosition`):** lokalnie + prod — `db:deploy` bez pending migrations (4.06.2026)
+**Następny krok po OK usera:** **1** — wyrzucić kod Ważne teraz (4 pliki sekcji)
 
-**Wdrożone (czat 23):** `3e7139b` — week topic fix, `publishedAt` immutable, CMS manual save, UI bez podtytułów dev
+**Dokumenty:** `WSS_SITE_MAP_AUDIT.md` · `WSS_STEP_BY_STEP_BACKLOG.md`
 
-**Wdrożone wcześniej (czat 21–22):** `8b447af`, P1-6 `31a5525`, Temat tygodnia `5a5eb77` + migracja `76cf517`
-
-**Supabase:** user uruchomił `supabase/user_article_likes.sql` (lajki per-user)
+**Pipeline REVIEW:** działa w kodzie — ~175 szt. to **kolejka redakcyjna**. Filtr CMS: **„Do sprawdzenia”** (= `REVIEW`).
 
 **Czytaj też:** `docs/WSS_NEWS_ENGINE_HANDOFF.md` (architektura pipeline)  
 **Backlog v3 (checkboxy):** `docs/WSS_ROADMAP_BACKLOG_V3.md`
@@ -35,40 +40,79 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 
 ---
 
-## MAPA STANU — zrobione vs do zrobienia (aktualizacja czat 31)
+## MAPA STANU — zrobione vs do zrobienia (aktualizacja czat 33)
 
-### Zrobione i na `main` (prod po zielonym Vercel)
+### WIP lokalnie (czat 33–37 — nie na `main`)
+
+| Obszar | Stan | Uwagi |
+|--------|------|--------|
+| **Tło + NAV** | **User OK** | Płaskie ciemne · sam kolor · `wss-portal-page-theme-v5` |
+| **Boksy homepage** | WIP | Flat · wyjątek: `homepage-ops-panel` (starty, misje) |
+| **Artykuł dół** | **User OK** | `article-panel` — share, komentarze, Wróć, Czytaj dalej |
+| **LOGO** | **C (Oswald)** — commit w kroku 0 | Martwe A/B w `wordmarks/` — posprzątać opcjonalnie |
+| **Tło** | **User OK** · hardcoded `slate-soft` / `#060810` | Dev switchery **usunięte** |
+| **Commit** | **`77681b0` lokalnie** | Push po OK usera |
+
+**Theme (nie ruszać bez potrzeby):**
+- `lib/ui/portal-page-themes.ts` · `portal-page-theme-vars.ts` · `app/globals.css`
+- `components/brand/WssLogoWordmark.tsx` → tylko **Control**
+- `app/layout.tsx` — Oswald (logo C)
+
+**Pliki logo (iteracje odrzucone przez usera):**
+- PNG wordmark · Syne + gradient · Cormorant serif · Unbounded · Bricolage · **Barlow Condensed** (za słabe)
+
+**Research logo (czat 36 — użyć w czacie 37):**
+| Brand | Font / styl | Lekcja |
+|-------|-------------|--------|
+| NASA Worm | Custom, grube litery, A bez poprzeczki | Wordmark > ilustracja |
+| SpaceX | D-DIN Bold, CAPS, tracking 0.09–0.1em | Industrial, monochrome |
+| Space.com | Bold sans, A bez poprzeczki | Kosmos = detal litery |
+| Bloomberg | Avenir Heavy | Ciężki profesjonalny sans |
+| The Verge | Manuka 900 | Condensed display 900 |
+| Axios | Bold geometric + 1 zmodyfikowana litera | Jeden akcent wystarczy |
+
+**Kierunek usera (logo):**
+- **WSS** i/lub **WEB SPACE STATION** (oba OK)
+- Separatory: `W|S|S`, kropki `·`, lub `—` między literami — user lubił **kierunek W·S·S**
+- **Mocno**, wyraźnie — NIE klasyczny serif, NIE sci-fi gradient, NIE „słabe” fonty
+- Prosto, elegancko, ale **z charakterem** — „jak mistrz developerski”
+
+**Pliki WIP (pełniejsza lista):** theme powyżej + `ContentGrid.tsx`, `ArticlePageBodyMain.tsx`, `ShareBar.tsx`, `Comments.tsx`, `ArticleInteractions.tsx`, `ReadNextSection.tsx`, `aktualnosci/[slug]/page.tsx`, `Navbar.tsx`, `Footer.tsx`, `WssLogoWordmark.tsx`, `app/icon.svg`
+
+---
+
+## MAPA STANU — prod (`main` a5ab17c)
+
+### Zrobione i na `main` (prod)
 
 | Obszar | Commit(y) | Co |
 |--------|-----------|-----|
-| **Pakiet czat 26–30** | `ea7e3b0`, `f399d9b` | Hero slider + `heroPosition`; mobile działy homepage; artykuł hero/breadcrumb/Czytaj dalej; stopka nav grid; CMS listy + live preview; linki wewnętrzne; nav menu; dyskusja mobile share |
-| **Homepage UI** | `4ca8d46`, `4868232` | Motywy per sekcja (`DepartmentSectionFrame/Header`, `homepage-section-themes`); Temat tygodnia; Najnowsze/Popularne/działy; hero mobile; `//` ESLint fix |
-| **Artykuł public** | `4ca8d46` | Breadcrumb chipy (`HeroBreadcrumbChip`); opcjonalny **Autor** na hero |
-| **CMS `authorByline`** | `4ca8d46` | Pole w edytorze, API, walidacja, migracja `20260604200000` |
-| **Prisma P0** | czat 25 dev | `prisma generate` + `db:deploy` (kolumna na Supabase) |
-| **Subskrypcje UI** | `06e2d4d` | Usunięte: stopka „Subskrypcje”, przycisk „Subskrybuj” na `/aktualnosci` (`/rss` nadal istnieje) |
-| **Profil UX** | `f956ff0` | Hero, statystyki, sekcje, empty state CTA, `ProfileSectionHeading` |
-| **Mobile nav** | `f956ff0` | Lupa + powiadomienia: panele `fixed inset-x-4` (`nav-overlay-panel.ts`) — nie wychodzą w lewo |
-| **CMS daty** | `3e7139b` | Brak autosave; **Zaktualizuj** nie zmienia `publishedAt` |
-| **Temat tygodnia** | `3e7139b` + UI `4ca8d46` | Toggle CMS, sekcja pod hero |
-| **Deploy Vercel** | `4868232` | Build prod naprawiony (JSX `//`) |
-| **Logo wordmark v2** | `c68b896` | Oficjalny PNG WSS+łuk+WEB SPACE STATION (`wss-wordmark.png`), nav/stopka; skrypty `process-wss-wordmark.mjs` |
+| **Linki w treści artykułu** | `a5ab17c` | Reguły (1–4 linki / długość), ranking tagi+dział+archiwum; fix: read-next nie wycina kandydatów |
+| **Pakiet czat 26–30** | `ea7e3b0`, `f399d9b` | Hero slider, `heroPosition`, mobile depts, artykuł, stopka, CMS listy, nav, dyskusja mobile |
+| **News Engine pipeline** | `3e7139b`+ | RSS→DRAFT→AI→REVIEW; ręczny PUBLISHED; cron 1×/dobę; public tylko PUBLISHED |
+| **Logo, profil, mobile nav, daty CMS** | wcześniejsze | patrz tabela w starszych wpisach |
 
-**Reguła okładki artykułu (OBOWIĄZKOWO):** `object-cover object-center` — **nigdy** `object-contain`. Ramka: `lib/ui/article-hero-frame.ts`.
+**Reguły niepodważalne:** okładka `object-cover` · najnowszy `publishedAt` = #1 · `heroPosition` nie wyklucza z Najnowszych · **NIE auto-publish RSS**.
 
-### Do zrobienia (backlog — kolejność sugerowana)
+### Do zrobienia — krok po kroku (czat 38+)
 
-| Priorytet | ID | Zadanie |
-|-----------|-----|---------|
-| 0 | **OPS** | ~175 REVIEW w CMS |
-| 1 | **P1-6-QA** | Upload okładek na prod |
-| 2 | **P2-WEEK-TOPIC prod** | weekTopic ON + revalidate |
+**Plik:** `docs/WSS_STEP_BY_STEP_BACKLOG.md`
 
-**Zamknięte czat 31 (prod):** UI-ARTICLE-DISCUSSION · COMMIT-WIP-30 · PROD-QA · heroPosition migracja
+| Krok | Zadanie |
+|------|---------|
+| **0** | Commit WIP (logo C, tło, article-panel, bez dev UI) |
+| **1** | Usunąć kod „Ważne teraz” (ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster) |
+| **2** | Licznik REVIEW w CMS |
+| **3** | Komentarze Supabase |
+| **4** | Sitemap + JSON-LD |
+| **5** | Zbudować sekcję „Odkrywaj” (galeria, wideo, kalendarz, mapa, starty) |
+| **6** | Prawdziwe API → ops panel homepage (zamiast LAUNCHES[] na sztywno) |
 
-**Zamknięte wcześniej (czat 28–30, user OK):** Najnowsze mobile · działy homepage mobile · Czytaj dalej lista · stopka nav · okładka artykułu PC · hero breadcrumb bonus
+**Reguła:** po każdym kroku → raport → test usera → **CZEKAJ OK** → następny.
 
-**Nie robimy:** pełny RSS body na stronie (hybryda B+); scheduler co minutę na Hobby bez CMS.
+**Znane luki:** newsletter w stopce bez API; `getRelatedArticles()` full scan; bulk publish REVIEW — później.
+
+**Zamknięte czat 31–32:** dyskusja mobile · COMMIT-WIP · PROD-QA · weave links `a5ab17c`
 
 ---
 
@@ -77,79 +121,158 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 ```
 Kontynuujemy WSS (Next.js 15, Supabase, Prisma, Vercel, Tailwind v4).
 
-Przeczytaj ZAWSZE:
-- docs/WSS_NEXT_CHAT_HANDOFF.md — sekcja MAPA STANU
-- docs/WSS_ROADMAP_BACKLOG_V3.md
-- docs/WSS_NEWS_ENGINE_HANDOFF.md
+Przeczytaj ZAWSZE (w tej kolejności):
+1. docs/WSS_SITE_MAP_AUDIT.md — PEŁNY audyt: co jest na każdej stronie / plikach
+2. docs/WSS_STEP_BY_STEP_BACKLOG.md — kolejność kroków 0–6
+3. docs/WSS_NEXT_CHAT_HANDOFF.md — WIP lokalny
+4. docs/WSS_ROADMAP_BACKLOG_V3.md
 
-REGUŁA: punkt po punkt · raport → test usera → CZEKAJ na OK.
+REGUŁA OBOWIĄZKOWA:
+- JEDEN krok z STEP_BY_STEP na raz
+- Raport → ja testuję → CZEKAJ na moje OK → dopiero następny krok
+- Commit/push tylko po moim OK (krok 0 = commit WIP jeśli potwierdzę)
 
-Stan: main `c68b896` + duży WIP lokalny czat 26–30 (bez commita na remote).
+Stan remote: main `a5ab17c` · prod https://webspacestation.pl
+Stan lokalny: `77681b0` (krok 0) — push po Twoim OK
 
-Komendy: npm run dev · npm run db:deploy · npm run type-check · npm run cache:revalidate
+Komendy: npm run dev · npm run type-check
 
----
-
-## WIP lokalny (czat 26–30) — NIE psuj bez potrzeby · commit po moich OK
-
-**Już zrobione lokalnie (user OK — nie cofać):**
-- Homepage: hero slider, Najnowsze lista, `heroPosition`, działy <lg (lead + lista, `HomeSectionArticleFeed.tsx`)
-- Artykuł: `ArticlePageHero`, okładka PC (`lg:` w `article-hero-frame.ts`), `BELOW_FIXED_NAV_OFFSET_CLASS` na `<main>`
-- Breadcrumb hero: `ArticleHeroBreadcrumb` (WSS → Aktualności → dział) — bonus, zostaje
-- Czytaj dalej: `ReadNextSection` — lista do 5 + przycisk „Zobacz wszystkie artykuły z działu …”
-- Stopka: `Footer.tsx` — grid nawigacji (2+1 mobile, 3 kolumny sm+)
-- CMS listy, live preview, linki wewnętrzne, nav menu
-- Migracja `20260604210000` heroPosition — OK lokalnie
-
-**Reguły niepodważalne:**
-- Okładka: `object-cover` — NIE `object-contain`
-- Najnowszy `publishedAt` = #1 w Najnowszych / Aktualnościach / dziale na homepage
-- `heroPosition` nie wyklucza z Najnowszych
-
-**Przed prod:** commit WIP → `npm run db:deploy` (heroPosition) → deploy → `cache:revalidate`
+Reguły niepodważalne:
+- Okładka object-cover · publishedAt = #1 · heroPosition nie wyklucza z Najnowszych
+- Public tylko PUBLISHED · NIE auto-publish RSS
+- ZERO dev copy na froncie (żadnych „CMS”, switcherów, podglądów dev)
 
 ---
 
-## PRIORYTET #1 — Dyskusja pod artykułem (mobile)
+ZACZNIJ OD KROKU 0 (docs/WSS_STEP_BY_STEP_BACKLOG.md):
+Commit pakietu WIP: logo C (Oswald), flat tło #060810, article-panel, bez dev switcherów.
 
-Sekcja **Dyskusja** (`ArticleInteractions.tsx` + `ShareBar`, `Comments`): przyciski się rozjeżdżają na wąskim ekranie.
+Potem krok 1 — user: WYRZUCIĆ „Ważne teraz” z kodu (nie będzie sekcji; hero wystarcza):
+- Usuń: ImportantNowSlider.tsx, HomeSidebar.tsx, TopStoriesList.tsx, HeroEditorialCluster.tsx
+- Zostaw rankImportantNow() tylko jako fallback puli pod hero w ContentGrid
 
-Cel: flex wrap / stack / grid — czytelnie, min. tap target ~44px, bez overflow w poziomie.
+Krok 2: Licznik REVIEW w CMS (~175)
+Krok 3: Komentarze Supabase (zamiast localStorage)
+Krok 4: Sitemap + JSON-LD
+Krok 5: Zbudować „Odkrywaj” (/galeria, /wideo, /kalendarz, /mapa, /starty — nie ComingSoon)
+Krok 6: Prawdziwe API pod ops panel (zamiast LAUNCHES[] na sztywno w ContentGrid.tsx)
 
-Pliki: `components/article/ArticleInteractions.tsx`, `ShareBar.tsx`, ewent. komponenty komentarzy.
+Audyt — fakty na dziś:
+- Homepage: hero + Najnowsze + Popularne + 5 działów + Centrum operacyjne (MOCK starty/misje/timeline)
+- /aktualnosci: lista bez podtytułu CMS
+- Artykuł: B+, komentarze = localStorage
+- Menu Więcej → 5× „Wkrótce”
+- Ważne teraz: komponent w repo, NIE na / — do usunięcia (krok 1)
 
-QA: telefon — share + komentarze pod treścią artykułu.
+NIE przeskakuj kroków. Po każdym: czekaj OK.
 
----
-
-## PRIORYTET #2 — COMMIT WIP (po OK dyskusji)
-
-Jeden commit (lub sensowny podział) całego pakietu czat 26–30. Nie commituj `.next`. Przed pushem: user OK.
-
-Message hint: homepage mobile depts, article read-next list, footer nav grid, hero fixes, CMS lists, heroPosition migration.
-
----
-
-## PRIORYTET #3 — PROD-QA
-
-1. `npm run db:deploy` na prod (`heroPosition`)
-2. Push `main` → Vercel zielony
-3. Smoke: homepage działy mobile, artykuł okładka + Czytaj dalej, stopka
-4. `npm run cache:revalidate` jeśli trzeba
-
----
-
-## Kolejność
-1. Dyskusja mobile
-2. COMMIT WIP
-3. PROD-QA
-
-Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md + WSS_ROADMAP_BACKLOG_V3.md.
+Na końcu sesji: aktualizuj docs/WSS_NEXT_CHAT_HANDOFF.md.
 ```
 
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 4.06.2026 (czat 38) — krok 0: commit pakietu WIP UI
+
+| Obszar | Stan |
+|--------|------|
+| **Commit** | `77681b0` — logo C, `#060810`, article-panel, docs audyt/backlog |
+| **type-check** | OK |
+| **Push** | **Brak** — czeka OK usera |
+| **Następny** | Krok 1 po OK (usuń Ważne teraz komponenty) |
+
+**Poza commitem (opcjonalnie później):** `WssWordmarkApex`, `WssWordmarkStation`, `WssLetterWCustom`, `wss-logo-variants.ts`, `build-log.txt`
+
+### Sesja 4.06.2026 (czat 37, koniec) — audyt pełny + backlog krok po kroku na czat 38
+
+| Obszar | Stan |
+|--------|------|
+| **Logo** | Ustawione **C** (Oswald) · dev switchery usunięte |
+| **Audyt** | `WSS_SITE_MAP_AUDIT.md` (pełny) + `WSS_STEP_BY_STEP_BACKLOG.md` |
+| **Decyzje usera na czat 38** | Komentarze Supabase · Sitemap/JSON-LD · licznik REVIEW · wyrzucić Ważne teraz · API ops · zbudować Odkrywaj |
+| **Commit** | **Brak** — krok 0 następnego czatu |
+
+### Sesja 4.06.2026 (czat 37) — logo: 3 warianty → C + dev UI out
+
+| Obszar | Stan |
+|--------|------|
+| **Research** | NASA Worm, SpaceX D-DIN, Bloomberg Avenir, Verge Manuka, Space.com, Axios — w raporcie czatu |
+| **Warianty** | A Station (Saira 900 W·S·S) · B Apex (custom W + S\|S) · C Control (Oswald WSS lockup) |
+| **Dev** | `LogoVariantSwitcher` + `LogoVariantBootScript` · localStorage `wss-logo-variant-v1` |
+| **Fonty** | Barlow usunięty · Saira + Oswald w `layout.tsx` |
+| **Favicon** | `icon.svg` — grubsze WSS, większy tracking |
+| **Commit** | **Brak** — czeka OK usera na wariant |
+
+### Sesja 4.06.2026 (czat 36, koniec) — UI flat OK · logo WIP · handoff na czat 37
+
+| Obszar | Stan |
+|--------|------|
+| **Tło** | Płaskie ciemne — user **OK** (po odrzuceniu WhatsApp + gwiazd) |
+| **Artykuł dół** | `article-panel` — share, komentarze, nawigacja — user **OK** |
+| **Homepage ops** | `homepage-ops-panel` — Nadchodzące starty, Aktywne misje |
+| **Logo** | Wiele iteracji (Syne, Cormorant, Unbounded, Bricolage, Barlow W\|S\|S) — **user: ciągle za słabe** |
+| **Research** | NASA Worm, SpaceX D-DIN, Bloomberg, Verge Manuka, Space.com, Axios — zapisane w handoff |
+| **Commit** | **Brak** — następny czat: logo jak mistrz → potem preset tła + commit pakietu |
+
+### Sesja 4.06.2026 (czat 36) — UI-PAGE-THEME: WhatsApp-style naklejki (cofnięte)
+
+| Obszar | Stan |
+|--------|------|
+| **Kierunek** | User: tło jak WhatsApp (szare + naklejki) → **wdrożone testowo** |
+| **Tło** | 10 jasnych presetów z **oczywiście różnymi** kolorami + SVG doodle (rakiety, planety, gwiazdy…) |
+| **Boksy** | **Przywrócone ciemne #0c1018** (koniec flat/transparent z czatu 35) |
+| **Nowy plik** | `lib/ui/portal-wallpaper-patterns.ts` |
+| **Storage** | `wss-portal-page-theme-v4` |
+| **Commit** | **Brak** — czeka test usera 1–10 |
+
+### Sesja 4.06.2026 (czat 35, koniec) — UI-PAGE-THEME: kosmos flat + 10 presetów
+
+| Obszar | Stan |
+|--------|------|
+| **Iteracje** | Szare presety → ciemniejsze → **kosmos** (granat/czerń, nie szarość) |
+| **Layout** | Usunięte obramowania boksów; treść transparent na tle |
+| **Efekt tła** | `.site-cosmos` gwiazdy, glow, vignette, grain (tylko `data-portal-theme`) |
+| **10 presetów** | Nazwy PL (Stacja orbitalna … Próżnia); domyślny `slate-soft` |
+| **User** | „Zaczyna wyglądać ładnie” — **brak wyboru finalnego presetu** |
+| **Commit** | **Brak** — handoff zapisany, następny czat: wybór + commit |
+
+### Sesja 4.06.2026 (czat 34) — UI-PAGE-THEME: płaskie zestawy tło+boksy
+
+| Obszar | Stan |
+|--------|------|
+| **Tło/NAV** | Jednolity `--color-page-fill`, bez gradientów i `--portal-page-glow` |
+| **Zestawy** | 5 paczek w `portal-page-theme-vars.ts` (+ boot z JSON) — tło + space/hairline |
+| **Boksy** | `card-surface` / `editorial-surface` płaskie, obramowanie `--portal-card-border` |
+| **User** | Odrzucił gradienty — iteracja: płasko + kontrast bloków |
+| **Commit** | **Brak** — czeka test usera |
+
+### Sesja 4.06.2026 (czat 33) — LIGHT TEST tło+NAV · 5 presetów · za słaby kontrast
+
+| Obszar | Stan |
+|--------|------|
+| **Tło** | Jasne tło strony + NAV; ciemne boksy bez zmian |
+| **Dev** | 5 presetów + przełącznik „Tło” na localhost — **działa** |
+| **User** | Presety **prawie identyczne** → naprawione czat 34 |
+| **Inne WIP** | Artykuł offset pod NAV; stopka ciemny panel; logo `<img>` |
+| **Commit** | **Brak** |
+
+### Sesja 4.06.2026 (czat 32) — audyt OPS + weave links + prompt na nowy czat
+
+| Obszar | Stan |
+|--------|------|
+| **Audyt roadmap** | OPS = redakcja REVIEW (pipeline OK); roadmap niezsynchronizowany z `a5ab17c` |
+| **Weave links** | Fix read-next drain → do 4 linków; push `a5ab17c` |
+| **Handoff** | Kolejność sensowna #0–#4 + STARTING PROMPT |
+| **Następny czat** | OPS redakcja · opcjonalnie CMS-OPS-UX · P1-6 · weekTopic |
+
+### Sesja 4.06.2026 (czat 31) — dyskusja mobile + commit WIP + prod
+
+| Obszar | Stan |
+|--------|------|
+| **Dyskusja mobile** | ShareBar stack — user OK |
+| **Commit/push** | `ea7e3b0`, `f399d9b`, `ab3989b` |
+| **Weave (lokalnie→push czat 32)** | `a5ab17c` |
 
 ### Sesja 4.06.2026 (czat 30, koniec) — homepage działy + dół artykułu + stopka + handoff
 
@@ -1024,6 +1147,14 @@ PR1–PR2B contentOrigin · PR3 RSS alignment · PR5 UX · PR6/6.1/7 terminology
 ---
 
 ## 10. Commity (ostatnie sesje — chronologicznie)
+
+**Sesja 32 (czat 32):**
+```
+a5ab17c fix(article): smarter in-body internal links (up to 4, no read-next drain)
+ab3989b docs: handoff po wdrozeniu pakietu czat 26-30 na prod (f399d9b)
+f399d9b fix(ui): add title prop to HeroBreadcrumbChip for prod build
+ea7e3b0 feat(ui): homepage hero slider, article UX, CMS lists, heroPosition
+```
 
 **Sesja 31 (czat 31):**
 ```

@@ -1,32 +1,44 @@
 # WSS — Roadmap Backlog v3 (tracker)
 
 **Cel:** pełny portal informacyjny + CMS + AI + RSS + redakcja  
-**Ostatnia aktualizacja:** 4 czerwca 2026 (koniec czat 31)  
-**Deploy remote:** `f399d9b` · prod smoke OK (4.06.2026)
+**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 37 — backlog krok po kroku czat 38)  
+**Deploy remote:** `a5ab17c`  
+**Plan:** `docs/WSS_STEP_BY_STEP_BACKLOG.md`
 
-| # | ID | Zadanie | Status |
-|---|-----|---------|--------|
-| 0 | **OPS** | ~175 REVIEW + revalidate | **Następne** |
-| 1 | **P1-6-QA** | Upload okładek na prod | |
-| 2 | **P2-WEEK-TOPIC prod** | weekTopic ON + revalidate | |
+## Priorytety teraz (krok po kroku — czat 38)
 
-**Zamknięte czat 31:** UI-ARTICLE-DISCUSSION `[x]` · COMMIT-WIP-30 `[x]` `ea7e3b0` · PROD-QA `[x]` · build fix `[x]` `f399d9b`
+| Krok | ID | Zadanie | Status |
+|------|-----|---------|--------|
+| **0** | **COMMIT-WIP** | Logo C + tło flat + article-panel (bez dev UI) | **Następne** `[ ]` |
+| **1** | **CLEAN-WAZNE-TERAZ** | Usunąć ImportantNowSlider, HomeSidebar, TopStoriesList, HeroEditorialCluster | `[ ]` |
+| **2** | **CMS-REVIEW-COUNT** | Licznik REVIEW w CMS | `[ ]` |
+| **3** | **COMMENTS-SUPABASE** | Komentarze w DB zamiast localStorage | `[ ]` |
+| **4** | **SEO-SITEMAP-JSONLD** | Sitemap + structured data artykułów | `[ ]` |
+| **5** | **ODKRYWAJ-SECTIONS** | /starty, /mapa, /kalendarz, /galeria, /wideo — real content | `[ ]` |
+| **6** | **OPS-API** | Homepage ops z API (nie LAUNCHES[] mock) | `[ ]` |
+| — | **OPS-REVIEW** | User publikuje ~175 w CMS | `[ ]` redakcja |
+| **2** | **CMS-OPS-UX** | Dev | Licznik REVIEW + bulk publish | `[ ]` opcjonalnie |
+| **2** | **P1-6-QA** | User+Dev | Upload okładek prod (`SUPABASE_SERVICE_ROLE_KEY`, bucket) | `[ ]` |
+| **3** | **P2-WEEK-TOPIC** | User | `weekTopic` ON na 1–3 artykułach + revalidate + smoke | `[ ]` |
+| **4** | **DOCS-SYNC** | Dev | Checkboxy roadmap vs prod (`a5ab17c`) | `[~]` |
 
-**Zamknięte czat 26–30 (prod):** hero slider · mobile depts · read-next · footer nav · CMS listy · hero breadcrumb · heroPosition migracja
+**Jak OPS (user):** `/admin/articles` → **„Do sprawdzenia”** → edytuj → **Opublikuj** → po partii `npm run cache:revalidate`.
 
-**Zamknięte w czacie 24–25:** UI-HOME-24 `[x]` · P0-AUTHOR-BYLINE `[x]` · UI-PROFIL-25 `[x]` · UI-MOBILE-NAV-25 `[x]` · UI-NO-SUBSCRIBE-LINKS `[x]` · **P1-10 LOGO** wordmark v2 `[x]` (PNG, nav/stopka)
+**Zamknięte czat 32:** weave links `[x]` `a5ab17c` · audyt OPS (pipeline OK)
 
-**P2-WEEK-TOPIC:** kod + push `[x]` `3e7139b` · **prod smoke** (weekTopic ON + revalidate) `[ ]`
+**Zamknięte czat 31:** UI-ARTICLE-DISCUSSION `[x]` · COMMIT-WIP-30 `[x]` · PROD-QA `[x]`
 
-**P0-HOME-DATES:** `publishedAt` stabilne, CMS bez autosave `[x]` `3e7139b`
+**Zamknięte czat 26–30 (prod):** hero slider · mobile depts · read-next · footer · CMS listy · hero breadcrumb · heroPosition · internal links (reguły)
 
-**INFRA-LIKES:** `[~]` SQL w repo; user uruchomił na Supabase.
+**Zamknięte wcześniej:** UI-HOME-24 · P0-AUTHOR-BYLINE · UI-PROFIL-25 · UI-MOBILE-NAV-25 · P1-10 LOGO wordmark v2
 
-**P2-13:** `[~]` lajki per-user w kodzie; Popularne z `article_like_counts`.
+**P2-WEEK-TOPIC:** kod `[x]` · prod smoke (toggle + revalidate) `[ ]`
 
-**Nie priorytet:** scheduler zaplanowanych artykułów (kod zostaje, user: luźno).
+**P3-16 internal linking:** reguły w treści (tagi, dział, archiwum) `[x]` `a5ab17c` · embeddings AI `[ ]`
 
-**Nie priorytet na teraz:** P5-22/23 (architektura menu), P4-20 (ulubione kategorie), P6-27 (scaling), pełny pgvector (P3-16).
+**INFRA-LIKES:** `[~]` user uruchomił `user_article_likes.sql`
+
+**Nie priorytet:** auto-publish RSS · pełny RSS body · scheduler co minutę · pgvector
 
 ---
 
@@ -34,23 +46,9 @@
 
 _(brak)_
 
-## P0 — BLOCKER (zamknięte / domknięcie)
+## P0 — BLOCKER (zamknięte — skrót)
 
-| ID | Zadanie | Status | Uwagi |
-|----|---------|--------|-------|
-| **P0-AUTHOR-BYLINE** | Prisma Client vs `authorByline` | `[x]` | `4ca8d46` + migracja; generate na dev/prod build |
-| **UI-HOME-24** | Homepage motywy, hero, breadcrumb, week topic | `[x]` | `4ca8d46`, `4868232` |
-| **UI-PROFIL-25** | Redesign `/profil` | `[x]` | hero, stats, sekcje |
-| **UI-MOBILE-NAV-25** | Szukaj + powiadomienia mobile | `[x]` | `nav-overlay-panel.ts` |
-| **UI-NO-SUBSCRIBE** | Bez linków Subskrypcje w UI | `[x]` | `06e2d4d` |
-
-| ID | Zadanie | Status | Uwagi |
-|----|---------|--------|-------|
-| **P0-SCHED** | Zaplanowana publikacja (`publishAt` → PUBLISHED) | `[x]` | `b7a0ca6` + wcześniejsze `5fde7d4`, `98b3b99`: legacy RSS excerpt OK; panel Publikacja; ScheduledPublishPoller co 30 s; cache fix; `publishedAt = publishAt`. **User OK** lokalnie/prod (P0-SCHED-QA). Vercel Hobby ≠ cron co minutę — bez otwartego CMS może opóźnić. |
-| **P0-SCHED-QA** | Smoke zaplanowanej publikacji na prod | `[x]` | User potwierdził OK (zaplanowanie + Najnowsze po Ctrl+F5). |
-| **P0-DEPLOY** | Vercel deploy z `main` (Hobby + vercel.json) | `[x]` | Cron `* * * * *` blokował build → usunięty `794d53d` |
-| **P0-HOME-LATEST** | Nowy artykuł = #1 w **Najnowsze** (homepage) i **Aktualności** | `[x]` | `6f2882a` + cache fix sesja 18. User potwierdził. |
-| **P0-ARCH** | Archiwum CMS + trwałe usuwanie z DB | `[x]` | `5fde7d4`. |
+P0-SCHED · P0-SCHED-QA · P0-DEPLOY · P0-HOME-LATEST · P0-ARCH · P0-AUTHOR-BYLINE · UI-HOME-24 · UI-PROFIL-25 · UI-MOBILE-NAV-25 · UI-NO-SUBSCRIBE
 
 ---
 
@@ -58,195 +56,63 @@ _(brak)_
 
 | # | Zasada | Status |
 |---|--------|--------|
-| A1 | Jeden model Article (NO DUPLICATION) | `[x]` |
-| A2 | RSS = input do CMS (NIE osobny system) | `[x]` |
-| A3 | AI = asystent (NIE blocker) | `[x]` |
-| A4 | Manual = identyczny workflow jak RSS | `[x]` |
-| A5 | Jeden editor dla wszystkiego | `[x]` |
-| A6 | Public UI ≠ Admin UI separation | `[x]` |
+| A1 | Jeden model Article | `[x]` |
+| A2 | RSS = input do CMS | `[x]` |
+| A3 | AI = asystent | `[x]` |
+| A4 | Manual = ten sam workflow | `[x]` |
+| A5 | Jeden editor | `[x]` |
+| A6 | Public ≠ Admin UI | `[x]` |
 
 ---
 
-## P0 — Blokery (rdzeń)
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P0-1 | Unifikacja CMS | `[x]` | `ArticleEditor` |
-| P0-2 | Źródło na froncie | `[x]` | `SourceAttribution` |
-| P0-3 | RSS page cleanup | `[x]` | `/rss` → Subskrypcje |
-| P0-4 | AI nie blokuje edycji | `[x]` | Autosave, enrichment |
-| P0-5 | Mobile CMS fix | `[~]` | PR12 sidebar `[x]`; edytor mobile — smoke `[ ]` |
-
----
-
-## P1 — Core CMS (profesjonalny newsroom)
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P1-6 | Upload zdjęć (pro) | `[~]` | `31a5525` — API + UI; prod: `SUPABASE_SERVICE_ROLE_KEY` + `article-covers.sql` |
-| P2-16 | Temat tygodnia (homepage) | `[~]` | Push `3e7139b`; prod: weekTopic w CMS + `cache:revalidate` |
-| P1-7 | Live preview editor | `[~]` | Split + hero URL; QA okładki `[ ]` |
-| **P1-11** | **Listy w treści CMS** | `[~]` | WIP czat 29 lokalnie — przycisk + parser + `<ul>` |
-| **UI-HOME-DEPTS** | Działy homepage mobile/tablet | `[x]` | `HomeSectionArticleFeed` — user OK czat 30 |
-| **UI-FOOTER** | Stopka nawigacja | `[x]` | `Footer.tsx` grid — user OK czat 30 |
-| **UI-ARTICLE-READ-NEXT** | Czytaj dalej lista + CTA dział | `[x]` | `ReadNextSection`, `pickReadNextArticles` |
-| **UI-ARTICLE-DISCUSSION** | Dyskusja mobile | `[ ]` | `ArticleInteractions.tsx` — następny czat |
-| P1-8 | CMS redesign (The Verge) | `[~]` | Uproszczenie PR7; pełny redesign `[ ]` |
-| P1-9 | Hero article UX — kontrast daty/meta | `[x]` | `HeroMetaChip` — user OK (sesja 17) |
-| P1-10 | Zmiana logo / favicon | `[~]` | Wordmark v2 PNG w nav/stopce `[x]`; favicon / apple-touch `[ ]` |
-| P1-11 | Podpis zdjęcia okładki (coverImageCredit) | `[x]` | `39c8a9e`; migracja `20260603200000`; **prod: sprawdzić db:deploy** |
-
----
-
-## P2 — Content system (logika portalu)
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P2-11 | Statusy workflow (+ SCHEDULED) | `[x]` | Zapis + auto-publish via poller — user OK (sesja 18) |
-| P2-12 | Redakcyjny feed | `[~]` | Lista CMS + filtry + archiwum |
-| P2-13 | Popularne / Ważne teraz | `[~]` | PR8 ranking + slidery sesja 18; views/engagement słabe |
-| P2-14 | Homepage layout | `[~]` | Sesja 18 slidery prod; **sesja 19 WIP:** hero + rail desktop / slidery mobile — lokalnie, bez commita |
-| P2-15 | Komentarze fix (mobile) | `[?]` | Pod treścią — mobile nie sprawdzony |
-
----
-
-## P3 — AI system
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P3-16 | Internal linking (AI) | `[~]` | Tag-based related `[x]`; embeddings scaffold |
-| P3-17 | AI article enrichment | `[x]` | B+ hybryda |
-| P3-18 | Content scoring | `[~]` | `aiScore` + ranking częściowy |
-
----
-
-## P4 — Portal features (user side)
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P4-19 | Powiadomienia | `[~]` | UI istnieje; backend niepewny |
-| P4-20 | Ulubione kategorie | `[ ]` | — |
-| P4-21 | Newsletter (decision) | `[~]` | Placeholder — decyzja otwarta |
-
----
-
-## P5 — Portal structure
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P5-22 | Działy portalu | `[ ]` | Decyzja otwarta |
-| P5-23 | Centrum operacyjne | `[ ]` | Na homepage placeholder — do decyzji |
-
----
-
-## P6 — SEO / legal / infra
-
-| ID | Zadanie | Status | Uwagi / dowód |
-|----|---------|--------|----------------|
-| P6-24 | SEO | `[~]` | Fragmenty OG; brak pełnego systemu |
-| P6-25 | RODO / legal | `[ ]` | — |
-| P6-26 | Bezpieczeństwo / infra | `[~]` | MVP OK; rate limits backlog |
-| P6-27 | Scaling | `[ ]` | Przyszłość |
-
----
-
-## Dev vs User UI cleanup
+## P1 — Core CMS
 
 | ID | Zadanie | Status | Uwagi |
 |----|---------|--------|-------|
-| UX-1 | Public bez RSS/XML/debug w copy | `[x]` | |
-| UX-2 | CMS bez terminologii pipeline | `[x]` | |
-| UX-3 | Premium newsroom feel | `[~]` | Kolory WIP; **UX-BG** tło jaśniejsze — następny czat |
+| P1-6 | Upload okładek | `[~]` | Kod OK; prod: service role + bucket |
+| P1-11 | Listy w treści CMS | `[x]` | Parser + `<ul>` na prod |
+| P1-7 | Live preview | `[x]` | Split mobile/desktop |
+| UI-ARTICLE-DISCUSSION | Dyskusja mobile | `[x]` | czat 31 |
+| UI-ARTICLE-READ-NEXT | Czytaj dalej lista | `[x]` | |
+| UI-FOOTER | Stopka nav | `[x]` | |
+| UI-HOME-DEPTS | Działy homepage mobile | `[x]` | |
+| P1-10 | Logo wordmark | `[x]` | favicon `[ ]` |
+| P1-8 | CMS redesign pełny | `[ ]` | |
 
 ---
 
-## Sesja 19 — czat (WIP / deploy)
+## P2 — Content system
 
-| ID | Zadanie | Status | Uwagi |
-|----|---------|--------|-------|
-| S19-1 | Fix deploy Vercel (vercel.json cron) | `[x]` | `794d53d` |
-| S19-2 | db:deploy prod | `[x]` | Wszystkie migracje OK |
-| S19-3 | Homepage hero + panel boczny | `[~]` | Lokalnie, bez commita |
-| S19-4 | SiteBackground (ciemne tło) | `[~]` | WIP — user: przerobić na **jaśniejsze** (UX-BG) |
-| S19-5 | cache:revalidate fix | `[~]` | Lokalnie |
-
-## Sesja 18 — zamknięte w czacie (QA)
-
-| ID | Zadanie | Status | Uwagi |
-|----|---------|--------|-------|
-| S18-1 | P0-SCHED-QA — zaplanowana publikacja | `[x]` | User OK lokalnie/prod |
-| S18-2 | Homepage layout (slidery Najnowsze + Ważne teraz) | `[x]` | `cff809b`…`241ba6e`; bez duplikatów sidebar |
-| S18-3 | HorizontalScrollSlider (strzałki, scroll, klik w artykuł) | `[x]` | `504c779`, `241ba6e` |
-| S18-4 | coverImageCredit — podpis zdjęcia okładki CMS | `[x]` | `39c8a9e`; db:deploy prod — sprawdzić |
-| S18-5 | Scheduler QA (legacy RSS excerpt, cache fix) | `[x]` | `b7a0ca6` |
-
-## Sesja 16–17 — zamknięte w czacie (QA)
-
-| ID | Zadanie | Status | Uwagi |
-|----|---------|--------|-------|
-| S16-1 | Scheduler + archiwum CMS | `[x]` | `5fde7d4`, `98b3b99` |
-| S16-2 | Archiwum w zakładce Artykuły (nie osobna strona) | `[x]` | User request |
-| S17-1 | Najnowsze homepage = Aktualności (#1 każdy nowy) | `[x]` | `6f2882a`, user potwierdził |
-| S17-2 | Hero: czytelna data + czas czytania (`HeroMetaChip`) | `[x]` | User OK |
-| S17-3 | Najnowsze: 9 okienek (3×3) | `[x]` | `LATEST_LIMIT = 9` |
-| S15-1 | Preview okładka = URL | `[x]` | User potwierdził wcześniej |
-| S15-2 | Zaplanuj UI 24h | `[x]` | Zapis + auto via poller |
-| S14-2 | Najnowsze chronologicznie | `[x]` | Domknięte S17-1 |
+| ID | Zadanie | Status |
+|----|---------|--------|
+| P2-11 | Workflow SCHEDULED | `[x]` |
+| P2-14 | Homepage layout (slider, działy) | `[x]` |
+| P2-16 | Temat tygodnia | `[~]` kod `[x]` prod smoke `[ ]` |
+| P2-13 | Popularne / lajki | `[~]` |
+| P2-15 | Komentarze | `[~]` localStorage only |
 
 ---
 
-## Sesja 13–15 — starsze fixy (QA prod)
+## P3 — AI
 
-| ID | Zadanie | Na main | Prod smoke |
-|----|---------|---------|------------|
-| S13-1 | `publishedAt` tylko przy Opublikuj | `[?]` | `[ ]` |
-| S13-2 | Zapisz szkic REVIEW → DRAFT | `[?]` | `[ ]` |
-| S13-3 | Lista CMS `updatedAt desc` | `[?]` | `[ ]` |
-| S13-4 | Backfill `db:fix-published-at` | `[?]` | `[ ]` na prod |
-| S14-1 | Okładka live preview CMS | `[?]` | `[ ]` |
+| ID | Zadanie | Status |
+|----|---------|--------|
+| P3-16 | Internal linking | `[~]` reguły `[x]` · AI embeddings `[ ]` |
+| P3-17 | AI enrichment B+ | `[x]` |
+| P3-18 | Content scoring | `[~]` |
 
 ---
 
 ## Infrastruktura / operacje
 
-| Temat | Status | Uwagi |
-|-------|--------|-------|
-| Next.js 15 + Vercel deploy z `main` | `[x]` | |
-| Prisma + Supabase | `[x]` | |
-| Migracje: SCHEDULED, publishAt, contentOrigin, coverImageCredit | `[x]` kod / `[~]` prod deploy coverImageCredit |
-| Cron RSS 1×/dzień (Hobby) | `[x]` | |
-| Commit + push sesji 16–19 | `[~]` | `794d53d` remote; layout/kolory/tło **lokalnie** |
-| Zaplanowana publikacja (poller CMS) | `[~]` | Nie priorytet user; kod zostaje |
-| ~175 artykułów REVIEW | `[ ]` | Do ręcznej publikacji |
-| `article_likes` 404 | `[ ]` | Supabase SQL |
-| Pełna treść RSS na stronie | `[x]` NIE (świadomie) | Hybryda B+ + link |
-
----
-
-## Postęp (szacunek)
-
-| Priorytet | `[x]` | `[~]` | `[ ]` |
-|-----------|-------|-------|-------|
-| P0 rdzeń + blockery | 9 | 1 | 0 |
-| P1 | 1 | 2 | 3 |
-| P2 | 2 | 2 | 0 |
-| P3 | 1 | 2 | 0 |
-| P4–P6 | 0 | 4 | 5 |
-| Architektura A1–A6 | 6 | 0 | 0 |
-
-**Szacunek:** rdzeń newsrooma (publish + feed + CMS) ≈ **88%**; pełny backlog v3 ≈ **42–47%**.
-
----
-
-## Historia zmian tego pliku
-
-| Data | Zmiana |
-|------|--------|
-| 3.06.2026 | Utworzenie trackera |
-| 3.06.2026 | Sesja 15: P0-SCHED blocker |
-| 3.06.2026 | Sesja 16–17: P0-HOME-LATEST, P0-ARCH, scheduler poller; P1-9; **Priorytety teraz** |
-| 3.06.2026 | Sesja 18: P0-SCHED-QA, homepage slidery, coverImageCredit |
-| 3.06.2026 | Sesja 19: P0-DEPLOY `794d53d`; layout rail WIP; **UX-BG** następny czat |
+| Temat | Status |
+|-------|--------|
+| Vercel deploy z `main` | `[x]` |
+| News Engine pipeline | `[x]` |
+| ~175 REVIEW kolejka | `[ ]` **redakcja user** |
+| Cron RSS 1×/dobę | `[x]` |
+| Komentarze Supabase | `[ ]` |
+| getRelatedArticles full scan | tech debt |
 
 ---
 
@@ -254,8 +120,8 @@ _(brak)_
 
 **Reguła:** 1 priorytet → meldunek → test usera → „kolejny punkt?”
 
-1. **UX-BG** — tło jaśniejsze / ciekawsze  
-2. **P1-6** upload okładek (po QA layoutu WIP)  
-3. Dalej wg tabeli „Priorytety teraz”
+1. **OPS-REVIEW** — user publikuje partiami w CMS  
+2. **CMS-OPS-UX** — jeśli user chce ułatwienie (bulk + licznik)  
+3. **P1-6** → **P2-WEEK-TOPIC**
 
 *Koniec trackera — jeden plik prawdy obok `docs/WSS_NEXT_CHAT_HANDOFF.md`.*

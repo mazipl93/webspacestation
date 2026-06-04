@@ -121,7 +121,7 @@ export default function ShareBar({ title, slug }: Props) {
     "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97] sm:w-auto";
 
   return (
-    <div className="card-surface flex max-w-full flex-col gap-4 overflow-hidden p-4 sm:gap-3 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="article-panel card-surface flex max-w-full flex-col gap-4 overflow-hidden p-4 sm:gap-3 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
       {/* Primary engagement — like + bookmark stay together on all breakpoints */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <LikeButton slug={slug} />

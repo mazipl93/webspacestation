@@ -49,7 +49,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="mt-12 border-t border-hairline">
+    <footer className="mt-12 border-t border-on-page">
       {/* Newsletter strip */}
       <div
         className="py-14"
@@ -128,7 +128,7 @@ export default function Footer() {
 
       {/* Mapa serwisu — grid kolumn (mobile: 2+1, desktop: logo + 3 kolumny) */}
       <div className={cn(SITE_CONTAINER, "pb-12 pt-6")}>
-        <div className="rounded-2xl border border-hairline-faint bg-space-card/40 px-5 py-8 sm:px-8 sm:py-10">
+        <div className="card-surface editorial-surface rounded-2xl px-5 py-8 sm:px-8 sm:py-10">
           <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-14 xl:gap-20">
             <div className="flex flex-col items-center border-b border-hairline-faint pb-8 text-center lg:max-w-[260px] lg:shrink-0 lg:items-start lg:border-0 lg:pb-0 lg:text-left">
               <WssLogoWordmark height={48} />
@@ -185,9 +185,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-hairline-faint pt-7 sm:flex-row sm:items-center">
-          <p className="text-[12px] text-text-muted">© 2026 Web Space Station</p>
-          <p className="text-[12px] text-text-muted">Wszelkie prawa zastrzeżone</p>
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-on-page pt-7 sm:flex-row sm:items-center">
+          <p className="text-[12px] text-on-page-muted">© 2026 Web Space Station</p>
+          <p className="text-[12px] text-on-page-muted">Wszelkie prawa zastrzeżone</p>
         </div>
       </div>
     </footer>

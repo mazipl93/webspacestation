@@ -266,18 +266,8 @@ export default function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div
-        className="border-b transition-colors duration-500"
-        style={{
-          background: scrolled
-            ? "linear-gradient(180deg, rgba(8,12,22,0.88) 0%, rgba(5,7,13,0.78) 100%)"
-            : "linear-gradient(180deg, rgba(8,14,28,0.62) 0%, rgba(5,7,9,0.35) 100%)",
-          borderColor: scrolled ? "rgba(56,189,248,0.12)" : "transparent",
-          boxShadow: scrolled
-            ? "0 1px 0 0 rgba(56,189,248,0.08), 0 8px 32px -12px rgba(0,0,0,0.5)"
-            : undefined,
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        }}
+        className="wss-nav-bar"
+        data-scrolled={scrolled ? "true" : "false"}
       >
         <div className={cn(SITE_CONTAINER, "flex h-[4.25rem] items-center gap-3 sm:h-16 sm:gap-4 xl:gap-5")}>
           {/* ── Logo + brand ───────────────────────────────────── */}

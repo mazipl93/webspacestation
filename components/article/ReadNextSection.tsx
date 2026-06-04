@@ -18,7 +18,7 @@ export default function ReadNextSection({ articles, category }: Props) {
 
   return (
     <section className="container-site pb-8 reveal" aria-label="Czytaj dalej">
-      <div className="card-surface overflow-hidden p-0">
+      <div className="article-panel card-surface overflow-hidden p-0">
         <div className="flex items-center gap-2.5 border-b border-hairline px-5 py-4">
           <span
             className="h-3.5 w-[3px] shrink-0 rounded-full bg-accent-blue"

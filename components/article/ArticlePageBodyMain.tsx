@@ -44,7 +44,7 @@ export default function ArticlePageBodyMain({
   const wovenSegments = buildWovenBodySegments(restBlocks, weaveCandidates);
 
   const articleCard = (
-      <article className="card-surface p-7 sm:p-10">
+      <article className="p-7 sm:p-10">
         <div className="max-w-[72ch]">
           {!isRss && lead ? (
             <p
@@ -93,14 +93,14 @@ export default function ArticlePageBodyMain({
         </div>
 
         {!preview ? (
-          <>
-            <div className="mt-10 flex items-center gap-4">
-              <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
+          <div className="article-panel card-surface mt-10 p-5 sm:p-6">
+            <div className="flex items-center gap-4">
+              <span className="h-px flex-1 bg-white/10" />
               <span className="overline text-text-muted">Web Space Station</span>
-              <span className="h-px flex-1" style={{ background: "var(--hairline)" }} />
+              <span className="h-px flex-1 bg-white/10" />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
                 href="/aktualnosci"
                 className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-glass px-4 py-2.5 text-[12.5px] font-medium text-text-secondary transition-all duration-300 hover:border-hairline-strong hover:bg-glass-hover hover:text-text-primary active:scale-[0.97]"
@@ -116,7 +116,7 @@ export default function ArticlePageBodyMain({
               </Link>
               {articleId ? <ArticleEditButton articleId={articleId} /> : null}
             </div>
-          </>
+          </div>
         ) : null}
       </article>
   );
