@@ -22,8 +22,6 @@ export default async function WideoPage() {
       title="Wideo"
       description="Archiwum wideo NASA (Image and Video Library) — materiały o startach, stacji orbitalnej i misjach."
       accent="#f472b6"
-      opsLive={ops.live}
-      opsFetchedAt={ops.fetchedAt}
     >
       <VideoGrid items={ops.videos} />
     </DiscoverPageShell>

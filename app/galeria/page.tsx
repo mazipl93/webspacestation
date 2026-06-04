@@ -22,8 +22,6 @@ export default async function GaleriaPage() {
       title="Galeria zdjęć"
       description="Astronomiczne zdjęcie dnia NASA, archiwum NASA oraz kadry z publikacji działu Astronomia."
       accent="#c084fc"
-      opsLive={ops.live}
-      opsFetchedAt={ops.fetchedAt}
     >
       <GalleryGrid items={ops.gallery} />
     </DiscoverPageShell>

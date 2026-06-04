@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import OpsDataSourceNote from "@/components/discover/OpsDataSourceNote";
 import { BELOW_FIXED_NAV_OFFSET_CLASS, SITE_CONTAINER } from "@/lib/site-layout";
 import { cn } from "@/lib/cn";
 
@@ -11,8 +10,6 @@ type Props = {
   title: string;
   description: string;
   accent?: string;
-  opsLive?: boolean;
-  opsFetchedAt?: string;
   children: React.ReactNode;
 };
 
@@ -21,8 +18,6 @@ export default function DiscoverPageShell({
   title,
   description,
   accent = "#38bdf8",
-  opsLive = true,
-  opsFetchedAt,
   children,
 }: Props) {
   return (
@@ -49,8 +44,7 @@ export default function DiscoverPageShell({
               <span className="text-text-secondary">{title}</span>
             </nav>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="max-w-[720px]">
+            <div className="max-w-[720px]">
                 <span
                   className="overline mb-2 block"
                   style={{ color: accent }}
@@ -69,8 +63,6 @@ export default function DiscoverPageShell({
                 <p className="mt-3 max-w-[58ch] text-[15px] leading-relaxed text-text-secondary">
                   {description}
                 </p>
-              </div>
-              <OpsDataSourceNote live={opsLive} fetchedAt={opsFetchedAt} />
             </div>
           </div>
         </div>

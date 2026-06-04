@@ -39,8 +39,6 @@ export default async function StartyPage() {
       title="Starty rakiet"
       description="Nadchodzące starty z Launch Library 2 — operator, okno NET (UTC) i odliczenie aktualizowane co sekundę w przeglądarce."
       accent="#38bdf8"
-      opsLive={ops.live}
-      opsFetchedAt={ops.fetchedAt}
     >
       <section aria-labelledby="launches-heading">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

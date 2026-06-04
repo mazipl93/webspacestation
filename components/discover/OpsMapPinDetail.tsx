@@ -85,7 +85,6 @@ export default function OpsMapPinDetail({
               </ul>
             </div>
           ) : null}
-          <p className="ops-map-pin-detail__credit">{spotlight.imageCredit}</p>
         </div>
       </div>
     </section>

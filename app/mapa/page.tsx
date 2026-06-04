@@ -24,8 +24,6 @@ export default async function MapaPage() {
       title="Mapa startów i ISS"
       description="Satelitarna mapa Ziemi: orbita ISS (czerwona linia), pozycja stacji na żywo i platformy startowe nadchodzących rakiet — współrzędne z Launch Library i trackera ISS."
       accent="#a78bfa"
-      opsLive={ops.live}
-      opsFetchedAt={ops.fetchedAt}
     >
       <div className="ops-mapa-page min-w-0 w-full max-w-full overflow-hidden">
         <OpsMissionMap

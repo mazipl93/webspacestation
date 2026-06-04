@@ -46,7 +46,7 @@ import OpsCenterExplainer from "@/components/discover/OpsCenterExplainer";
 import OpsScheduleList from "@/components/discover/OpsScheduleList";
 import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
 import { getOpsData } from "@/lib/ops/get-ops-data";
-import { formatIssForReader, formatOpsFetchedAt } from "@/lib/ops/format-ops-display";
+import { formatIssForReader } from "@/lib/ops/format-ops-display";
 import type { OpsSnapshot } from "@/lib/ops/types";
 
 const IMPORTANT_POOL = 14;
@@ -378,24 +378,14 @@ function CategorySection({
 
 function LiveMissionCenter({ ops }: { ops: OpsSnapshot }) {
   const iss = formatIssForReader(ops.iss);
-  const refreshed = formatOpsFetchedAt(ops.fetchedAt);
-
   return (
     <section className="card-surface flex flex-col gap-3 p-5">
       <SectionHeader label="Stacja ISS" accent="#38bdf8" href="/mapa" cta="Mapa" />
-      <div className="flex flex-wrap items-center gap-2">
-        {ops.live ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-accent-cyan">
-            <span className="live-dot shrink-0" style={{ background: "#38bdf8" }} />
-            Na żywo
-          </span>
-        ) : (
+      {!ops.live ? (
+        <div>
           <OpsPreviewBadge />
-        )}
-        {refreshed && (
-          <span className="text-[10px] text-text-muted">Odświeżono {refreshed}</span>
-        )}
-      </div>
+        </div>
+      ) : null}
       <div className="well flex-1 p-4">
         <p className="text-[11px] leading-relaxed text-text-tertiary">
           Międzynarodowa Stacja Kosmiczna krąży ~400 km nad Ziemią. Poniżej punkt na globie,

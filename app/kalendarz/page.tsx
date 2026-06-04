@@ -24,8 +24,6 @@ export default async function KalendarzPage() {
       title="Harmonogram startów"
       description="Terminy nadchodzących startów rakiet z Launch Library (NET, UTC). Każdy wpis to konkretna rakieta i platforma startowa — bez wymyślonych misji redakcyjnych."
       accent="#2f6dff"
-      opsLive={ops.live}
-      opsFetchedAt={ops.fetchedAt}
     >
       <OpsTimeline events={ops.calendar} variant="page" />
 

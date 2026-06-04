@@ -943,12 +943,7 @@ html[data-portal-theme] .ops-map-pin-detail__facts-list li {
   max-width: 100%;
 }
 .ops-live-map .leaflet-control-attribution {
-  font-size: 9px;
-  background: rgba(6, 10, 18, 0.82) !important;
-  color: #6e7894 !important;
-}
-.ops-live-map .leaflet-control-attribution a {
-  color: #94a3b8 !important;
+  display: none !important;
 }
 .ops-leaflet-pin {
   background: transparent !important;

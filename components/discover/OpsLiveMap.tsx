@@ -215,12 +215,9 @@ export default function OpsLiveMap({
         touchZoom
         doubleClickZoom={interactive}
         className="!h-full !w-full"
-        attributionControl
+        attributionControl={false}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.esri.com/">Esri</a> · imagery'
-          url={SATELLITE_TILE}
-        />
+        <TileLayer attribution="" url={SATELLITE_TILE} />
         <TileLayer attribution="" url={LABELS_TILE} opacity={0.55} />
         <MapResizeFix />
         <MapViewController iss={iss} pins={pins} focusPinId={focusPinId} />
@@ -281,9 +278,6 @@ export default function OpsLiveMap({
         </div>
       )}
 
-      <p className="pointer-events-none absolute bottom-2 left-2 z-[1000] max-w-[min(100%,280px)] rounded bg-black/50 px-2 py-1 text-[9px] leading-snug text-white/70">
-        Wybierz punkt poniżej mapy
-      </p>
     </div>
   );
 }
