@@ -7,15 +7,12 @@ import {
   MapContainer,
   Marker,
   Polyline,
-  Popup,
   TileLayer,
   useMap,
 } from "react-leaflet";
 import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
 import { cn } from "@/lib/cn";
-import OpsMapPinPopup from "@/components/discover/OpsMapPinPopup";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
-import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import "leaflet/dist/leaflet.css";
 
@@ -60,100 +57,44 @@ function MapViewController({
   return null;
 }
 
-/** Przesuwa mapę tak, aby otwarty popup był wyśrodkowany i nie był obcinany. */
-function panMapToCenterPopup(map: L.Map, padding = 24) {
-  const pane = map.getPane("popupPane");
-  const el = pane?.querySelector(".leaflet-popup") as HTMLElement | null;
-  if (!el) return;
-
-  const container = map.getContainer();
-  const cRect = container.getBoundingClientRect();
-  const pRect = el.getBoundingClientRect();
-
-  let dx = cRect.left + cRect.width / 2 - (pRect.left + pRect.width / 2);
-  let dy = cRect.top + cRect.height / 2 - (pRect.top + pRect.height / 2);
-
-  const leftAfter = pRect.left + dx;
-  const rightAfter = pRect.right + dx;
-  const topAfter = pRect.top + dy;
-  const bottomAfter = pRect.bottom + dy;
-
-  if (leftAfter < cRect.left + padding) {
-    dx += cRect.left + padding - leftAfter;
-  }
-  if (rightAfter > cRect.right - padding) {
-    dx -= rightAfter - (cRect.right - padding);
-  }
-  if (topAfter < cRect.top + padding) {
-    dy += cRect.top + padding - topAfter;
-  }
-  if (bottomAfter > cRect.bottom - padding) {
-    dy -= bottomAfter - (cRect.bottom - padding);
-  }
-
-  if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-    map.panBy(L.point(dx, dy), { animate: false });
-  }
-}
-
-let popupCenterTimer: ReturnType<typeof setTimeout> | null = null;
-
-function schedulePopupCentering(map: L.Map) {
-  if (popupCenterTimer) clearTimeout(popupCenterTimer);
-  popupCenterTimer = setTimeout(() => {
-    popupCenterTimer = null;
-    panMapToCenterPopup(map);
-  }, 80);
-}
-
-function PopupCenterOnOpen() {
-  const map = useMap();
-
-  useEffect(() => {
-    const onOpen = () => schedulePopupCentering(map);
-    map.on("popupopen", onOpen);
-    return () => {
-      map.off("popupopen", onOpen);
-    };
-  }, [map]);
-
-  return null;
-}
-
-/** Leaflet często liczy złą szerokość po mount / zmianie układu (mobile). */
 function MapResizeFix() {
   const map = useMap();
+  const ran = useRef(false);
 
   useEffect(() => {
-    const fix = () => {
-      map.invalidateSize();
+    const fix = () => map.invalidateSize({ animate: false });
+    if (!ran.current) {
+      ran.current = true;
+      fix();
+      const t = window.setTimeout(fix, 250);
+      return () => window.clearTimeout(t);
+    }
+    return undefined;
+  }, [map]);
+
+  useEffect(() => {
+    const onOrientation = () => {
+      window.setTimeout(() => map.invalidateSize({ animate: false }), 100);
     };
-    const t0 = window.setTimeout(fix, 0);
-    const t1 = window.setTimeout(fix, 200);
-    const ro = new ResizeObserver(fix);
-    ro.observe(map.getContainer());
-    window.addEventListener("resize", fix);
-    window.addEventListener("orientationchange", fix);
-    return () => {
-      window.clearTimeout(t0);
-      window.clearTimeout(t1);
-      ro.disconnect();
-      window.removeEventListener("resize", fix);
-      window.removeEventListener("orientationchange", fix);
-    };
+    window.addEventListener("orientationchange", onOrientation);
+    return () => window.removeEventListener("orientationchange", onOrientation);
   }, [map]);
 
   return null;
+}
+
+function focusZoomForPin(pin: OpsMapPin): number {
+  const narrow = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+  if (pin.kind === "iss") return narrow ? 3 : 4;
+  return narrow ? 4 : 5;
 }
 
 function PinFocusController({
   focusPinId,
   pins,
-  markerRefs,
 }: {
   focusPinId: string | null | undefined;
   pins: OpsMapPin[];
-  markerRefs: MutableRefObject<Record<string, L.Marker | null>>;
 }) {
   const map = useMap();
   const lastFocusRef = useRef<string | null>(null);
@@ -169,13 +110,9 @@ function PinFocusController({
     const pin = pins.find((p) => p.id === focusPinId);
     if (!pin) return;
 
-    const zoom = pin.kind === "iss" ? 4 : 5;
-    map.setView([pin.lat, pin.lon], zoom, { animate: false });
-
-    const marker = markerRefs.current[focusPinId];
-    marker?.openPopup();
-    schedulePopupCentering(map);
-  }, [focusPinId, pins, map, markerRefs]);
+    map.closePopup();
+    map.setView([pin.lat, pin.lon], focusZoomForPin(pin), { animate: false });
+  }, [focusPinId, pins, map]);
 
   return null;
 }
@@ -208,15 +145,6 @@ const SATELLITE_TILE =
 const LABELS_TILE =
   "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}";
 
-const POPUP_OPTIONS = {
-  maxWidth: 380,
-  minWidth: 260,
-  className: "ops-map-leaflet-popup",
-  closeButton: true,
-  autoPan: false,
-  keepInView: false,
-};
-
 export default function OpsLiveMap({
   pins,
   iss,
@@ -227,7 +155,6 @@ export default function OpsLiveMap({
   focusPinId = null,
   onPinSelect,
 }: Props) {
-  const markerRefs = useRef<Record<string, L.Marker | null>>({});
   const issPin = pins.find((p) => p.kind === "iss");
   const padPins = pins.filter((p) => p.kind === "pad");
 
@@ -251,10 +178,6 @@ export default function OpsLiveMap({
 
   const visibilityRadiusM =
     iss?.altitudeKm != null ? issVisibilityRadiusM(iss.altitudeKm) : undefined;
-
-  const bindMarker = (pinId: string) => (ref: L.Marker | null) => {
-    markerRefs.current[pinId] = ref;
-  };
 
   const heightFromCss =
     Boolean(className?.includes("ops-map-page-map")) ||
@@ -298,12 +221,7 @@ export default function OpsLiveMap({
         <TileLayer attribution="" url={LABELS_TILE} opacity={0.55} />
         <MapResizeFix />
         <MapViewController iss={iss} pins={pins} focusPinId={focusPinId} />
-        <PinFocusController
-          focusPinId={focusPinId}
-          pins={pins}
-          markerRefs={markerRefs}
-        />
-        <PopupCenterOnOpen />
+        <PinFocusController focusPinId={focusPinId} pins={pins} />
 
         {issOrbit.map((segment, i) => (
           <Polyline
@@ -336,24 +254,10 @@ export default function OpsLiveMap({
           <Marker
             position={[issPin.lat, issPin.lon]}
             icon={issIcon}
-            ref={bindMarker(issPin.id)}
             eventHandlers={{
               click: () => onPinSelect?.(issPin.id),
             }}
-          >
-            <Popup {...POPUP_OPTIONS}>
-              <OpsMapPinPopup
-                spotlight={resolveMapPinSpotlight(issPin)}
-                caption={
-                  iss?.altitudeKm != null
-                    ? `Na żywo · ${iss.altitudeKm} km nad Ziemią${
-                        iss.velocityKmh != null ? ` · ${iss.velocityKmh} km/h` : ""
-                      }`
-                    : "Pozycja na żywo z trackera ISS"
-                }
-              />
-            </Popup>
-          </Marker>
+          />
         )}
 
         {padPins.map((pin) => (
@@ -361,18 +265,10 @@ export default function OpsLiveMap({
             key={pin.id}
             position={[pin.lat, pin.lon]}
             icon={padIcons[pin.id]}
-            ref={bindMarker(pin.id)}
             eventHandlers={{
               click: () => onPinSelect?.(pin.id),
             }}
-          >
-            <Popup {...POPUP_OPTIONS}>
-              <OpsMapPinPopup
-                spotlight={resolveMapPinSpotlight(pin)}
-                caption={pin.sublabel}
-              />
-            </Popup>
-          </Marker>
+          />
         ))}
       </MapContainer>
 
@@ -383,7 +279,7 @@ export default function OpsLiveMap({
       )}
 
       <p className="pointer-events-none absolute bottom-2 left-2 z-[1000] max-w-[min(100%,280px)] rounded bg-black/50 px-2 py-1 text-[9px] leading-snug text-white/70">
-        Pinezki i legenda poniżej · orbita ISS (czerwona)
+        Kliknij pinezkę lub etykietę poniżej
       </p>
     </div>
   );

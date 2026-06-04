@@ -738,8 +738,17 @@ html[data-portal-theme] .site-cosmos-grain {
   overflow: hidden;
   border-radius: inherit;
 }
-.ops-live-map .leaflet-popup-pane {
-  z-index: 700;
+/* Panel szczegółów zamiast popupów Leaflet (mobile + desktop) */
+.ops-map-pin-detail {
+  max-height: min(56dvh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .ops-map-pin-detail {
+    max-height: min(50dvh, 520px);
+  }
 }
 /* /mapa — zawsze w szerokości kontenera (bez poziomego scrolla na mobile) */
 .ops-mapa-page {

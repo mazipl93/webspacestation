@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import OpsMapPinDetail from "@/components/discover/OpsMapPinDetail";
 import OpsPinList from "@/components/discover/OpsPinList";
+import { captionForMapPin } from "@/lib/ops/map-pin-caption";
+import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 
 const OpsLiveMap = dynamic(() => import("@/components/discover/OpsLiveMap"), {
@@ -40,18 +43,31 @@ export default function OpsMissionMap({
 }: Props) {
   const [focusPinId, setFocusPinId] = useState<string | null>(null);
   const isSplit = layout === "split";
-  const mapHeight = height;
 
   const handleSelectPin = useCallback((pinId: string) => {
-    setFocusPinId((prev) => (prev === pinId ? prev : pinId));
+    setFocusPinId((prev) => (prev === pinId ? null : pinId));
   }, []);
+
+  const focusedPin = useMemo(
+    () => (focusPinId ? pins.find((p) => p.id === focusPinId) : undefined),
+    [focusPinId, pins]
+  );
+
+  const detailPanel =
+    focusedPin != null ? (
+      <OpsMapPinDetail
+        spotlight={resolveMapPinSpotlight(focusedPin)}
+        caption={captionForMapPin(focusedPin, iss)}
+        onClose={() => setFocusPinId(null)}
+      />
+    ) : null;
 
   const mapBlock = (
     <OpsLiveMap
       pins={pins}
       iss={iss}
       issOrbit={issOrbit}
-      height={mapHeight}
+      height={height}
       interactive={interactive}
       className={mapClassName}
       focusPinId={focusPinId}
@@ -74,10 +90,11 @@ export default function OpsMissionMap({
       <div className="grid min-w-0 w-full max-w-full gap-3 overflow-hidden sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(200px,240px)]">
         <div className="min-h-0 min-w-0 overflow-hidden">{mapBlock}</div>
         {pinList ? (
-          <div className="min-w-0 overflow-hidden rounded-xl border border-hairline-faint p-3 sm:p-4">
+          <div className="min-h-0 min-w-0 overflow-hidden rounded-xl border border-hairline-faint p-3 sm:p-4 lg:max-h-[460px] lg:overflow-y-auto">
             {pinList}
           </div>
         ) : null}
+        {detailPanel ? <div className="min-w-0 lg:col-span-2">{detailPanel}</div> : null}
       </div>
     );
   }
@@ -85,6 +102,7 @@ export default function OpsMissionMap({
   return (
     <div className="flex min-w-0 w-full max-w-full flex-col gap-2 overflow-hidden sm:gap-3">
       {mapBlock}
+      {detailPanel}
       {pinList}
     </div>
   );
