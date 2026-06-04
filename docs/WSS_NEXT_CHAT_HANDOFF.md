@@ -3,7 +3,7 @@
 **Ostatnia aktualizacja:** 4 czerwca 2026 (czat 49 — **powiadomienia żywe** + **ulubione działy** + panel redakcyjny w profilu)  
 **→ Okładki:** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 2 tematyczne NASA — otwarte)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `a57fc36` rozrywka+sitemap · **następny commit:** powiadomienia+ulubione działy (lokalnie, push po teście)  
+**Ostatni commit:** `c28753b` powiadomienia+ulubione działy · `a57fc36` rozrywka+sitemap · **push:** po teście usera  
 **Historia:** patrz sesja czat 49 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
