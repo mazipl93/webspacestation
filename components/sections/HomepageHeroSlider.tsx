@@ -15,10 +15,6 @@ type Props = {
   articles: NewsArticle[];
 };
 
-/**
- * Homepage featured hero — magazine slider on all viewports (max 4 slides).
- * Mobile ~48svh; desktop 16:9 w kolumnie hero (wyższy cap w zwężonym shellu).
- */
 export default function HomepageHeroSlider({ articles }: Props) {
   const count = articles.length;
   const [index, setIndex] = useState(0);
@@ -55,10 +51,6 @@ export default function HomepageHeroSlider({ articles }: Props) {
     return () => window.clearInterval(id);
   }, [count]);
 
-  useEffect(() => {
-    if (index >= count && count > 0) setIndex(0);
-  }, [count, index]);
-
   if (count === 0) return null;
 
   const active = articles[index]!;
@@ -68,7 +60,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
       className={cn(
         "relative overflow-hidden rounded-xl border border-hairline",
         "max-lg:-mx-3 max-lg:rounded-none max-lg:border-x-0",
-        "sm:max-lg:mx-0 sm:max-lg:rounded-2xl sm:max-lg:border",
+        "sm:max-lg:mx-0 sm:max-lg:rounded-2xl sm:max-lg:border"
       )}
       aria-roledescription="karuzela"
       aria-label="Wyróżnione artykuły"
@@ -89,8 +81,12 @@ export default function HomepageHeroSlider({ articles }: Props) {
       <div
         className={cn(
           "relative w-full overflow-hidden",
-          "max-lg:h-[clamp(42svh,46svh,50svh)] max-lg:max-h-[50svh] max-lg:min-h-[40svh]",
-          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(52vh,520px)] lg:min-h-[280px]",
+
+          // 🔥 MOBILE — większy hero
+          "max-lg:h-[clamp(55svh,62svh,72svh)] max-lg:max-h-[72svh] max-lg:min-h-[50svh]",
+
+          // 🔥 DESKTOP — wyższy hero
+          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(68vh,720px)] lg:min-h-[360px]"
         )}
       >
         <div
@@ -107,7 +103,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
           ))}
         </div>
 
-        {count > 1 ? (
+        {count > 1 && (
           <>
             <button
               type="button"
@@ -117,6 +113,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
             >
               <ChevronLeft size={20} />
             </button>
+
             <button
               type="button"
               aria-label="Następny slajd"
@@ -143,7 +140,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
                     "pointer-events-auto rounded-full transition-all duration-300",
                     i === index
                       ? "h-1 w-7 bg-white shadow-[0_0_12px_rgba(255,255,255,0.35)]"
-                      : "h-1.5 w-1.5 bg-white/35 hover:bg-white/55",
+                      : "h-1.5 w-1.5 bg-white/35 hover:bg-white/55"
                   )}
                   onClick={(e) => {
                     e.preventDefault();
@@ -154,7 +151,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
               ))}
             </div>
           </>
-        ) : null}
+        )}
       </div>
 
       <span className="sr-only" aria-live="polite">
@@ -170,7 +167,6 @@ function HeroSlide({
   priority = false,
 }: {
   article: NewsArticle;
-  /** Only the active slide loads an image (LCP + bandwidth). */
   showImage?: boolean;
   priority?: boolean;
 }) {
@@ -179,26 +175,24 @@ function HeroSlide({
   return (
     <Link
       href={`/aktualnosci/${article.slug}`}
-      aria-label={`Przeczytaj: ${article.title}`}
       className="group relative block h-full min-w-full shrink-0 overflow-hidden"
     >
       <div
         className="absolute inset-0"
         style={{ background: categoryFallbackBg(article.category) }}
       />
-      {showImage ? (
+
+      {showImage && (
         <CoverImage
           src={article.image}
           alt=""
           fill
           priority={priority}
-          fetchPriority={priority ? "high" : undefined}
-          sizes="(max-width: 1024px) 100vw, min(100vw, 900px)"
           className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
-      ) : null}
+      )}
+
       <div
-        aria-hidden
         className="absolute inset-0"
         style={{
           background:
@@ -206,39 +200,13 @@ function HeroSlide({
         }}
       />
 
-      <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-8 sm:px-6 sm:pb-7 lg:px-8 lg:pb-8">
-        <span
-          className="mb-2.5 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] shadow-[0_2px_12px_rgba(0,0,0,0.45)] backdrop-blur-md lg:text-[11px]"
-          style={{
-            color: meta.color,
-            borderColor: `${meta.color}55`,
-            background: "rgba(0,0,0,0.55)",
-          }}
-        >
-          <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: meta.color }}
-          />
-          {meta.label}
-        </span>
-
-        <h2
-          className={cn(
-            "line-clamp-3 max-w-[36ch] text-balance font-extrabold text-text-primary transition-colors duration-300 group-hover:text-accent-cyan",
-            "lg:line-clamp-2 lg:max-w-[52ch]",
-          )}
-          style={{
-            fontSize: "clamp(1.2rem, 5.2vw, 2.125rem)",
-            lineHeight: 1.12,
-            letterSpacing: "-0.025em",
-            textShadow: "0 2px 28px rgba(0,0,0,0.65)",
-          }}
-        >
+      <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-8 sm:px-6 lg:px-8">
+        <h2 className="font-extrabold text-text-primary">
           {article.title}
         </h2>
 
-        <p className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-text-secondary/90 lg:text-[13px]">
-          <Clock size={13} className="shrink-0 text-text-muted" aria-hidden />
+        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-text-secondary">
+          <Clock size={13} />
           {article.readTime ?? 3} min czytania
         </p>
       </div>
