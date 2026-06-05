@@ -4,7 +4,7 @@ export const SEO_SITEMAP_PATHS = [
   "/aktualnosci",
   "/misje",
   "/astronomia",
-  "/popularnonaukowe",
+  "/nauka",
   "/technologie",
   "/iss",
   "/ziemia-z-kosmosu",

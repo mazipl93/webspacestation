@@ -4,19 +4,18 @@ import Footer from "@/components/layout/Footer";
 import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
 
 export const metadata: Metadata = {
-  title: "Popularnonaukowe | Web Space Station",
-  description:
-    "Artykuły popularnonaukowe o kosmosie — wyjaśnienia, przewodniki i treści evergreen pod SEO.",
+  title: "Nauka | Web Space Station",
+  description: "Jak działa kosmos — fizyka, astronomia i technologie orbitalne.",
 };
 
 export const revalidate = 300;
 
-export default function PopularnonaukowePage() {
+export default function NaukaPage() {
   return (
     <>
       <Navbar />
       <main className="min-h-screen">
-        <ArticleFeedSection category="popularnonaukowe" />
+        <ArticleFeedSection category="nauka" />
       </main>
       <Footer />
     </>

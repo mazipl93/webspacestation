@@ -15,29 +15,28 @@ export const CATEGORY_INFO: Record<CategorySlug, CategoryInfo> = {
     label: "Misje",
     color: "#2f6dff",
     href: "/misje",
-    description: "Załogowe i bezzałogowe misje — NASA, ESA, SpaceX, starty i sondy.",
+    description: "Starty rakiet i misje kosmiczne.",
   },
   astronomia: {
     label: "Astronomia",
     color: "#a855f7",
     href: "/astronomia",
-    description: "Odkrycia, teleskopy, egzoplanety i kosmologia.",
+    description: "Teleskopy, galaktyki i odkrycia we Wszechświecie.",
   },
-  popularnonaukowe: {
-    label: "Popularnonaukowe",
+  nauka: {
+    label: "Nauka",
     color: "#14b8a6",
-    href: "/popularnonaukowe",
-    description:
-      "Wyjaśnienia i przewodniki evergreen — jak działa kosmos, bez newsów z 24h.",
+    href: "/nauka",
+    description: "Jak działa kosmos — fizyka, astronomia i technologie orbitalne.",
   },
   technologie: {
-    label: "Technologie kosmiczne",
+    label: "Technologie",
     color: "#38bdf8",
     href: "/technologie",
-    description: "Rakiety, satelity, napędy i inżynieria — w tym AI w kontekście kosmosu.",
+    description: "Rakiety, satelity, teleskopy i innowacje kosmiczne.",
   },
   iss: {
-    label: "ISS i załogi",
+    label: "ISS",
     color: "#ffb830",
     href: "/iss",
     description: "Międzynarodowa Stacja Kosmiczna — załogi, eksperymenty i EVA.",
@@ -46,13 +45,13 @@ export const CATEGORY_INFO: Record<CategorySlug, CategoryInfo> = {
     label: "Ziemia z kosmosu",
     color: "#22c55e",
     href: "/ziemia-z-kosmosu",
-    description: "Obserwacje Ziemi, pogoda kosmiczna i klimat z orbity.",
+    description: "Ziemia z orbity — pogoda, klimat i zjawiska naturalne.",
   },
   rozrywka: {
     label: "Rozrywka",
     color: "#f472b6",
     href: "/rozrywka",
-    description: "Gry, filmy i sci-fi — dodatek, nie rdzeń serwisu.",
+    description: "Sci-fi, gry, filmy i seriale o kosmosie.",
   },
 };
 
@@ -75,7 +74,7 @@ export const CATEGORY_FALLBACK_BG: Record<string, string> = {
   astronomia: `
     radial-gradient(ellipse at 56% 46%, rgba(168,20,240,0.46) 0%, rgba(90,10,205,0.22) 28%, transparent 56%),
     linear-gradient(135deg, #05070f 0%, #0b0514 100%)`,
-  popularnonaukowe: `
+  nauka: `
     radial-gradient(ellipse at 48% 42%, rgba(20,184,166,0.44) 0%, transparent 52%),
     linear-gradient(145deg, #041210 0%, #061018 100%)`,
   technologie: `
@@ -96,13 +95,42 @@ export function categoryFallbackBg(slug: string): string {
   return CATEGORY_FALLBACK_BG[slug] ?? CATEGORY_FALLBACK_BG.technologie;
 }
 
+/** CMS / admin — editorial order (known slugs first, then DB orderIndex). */
+export function sortCategoriesForEditor<
+  T extends { slug: string; orderIndex: number },
+>(categories: T[]): T[] {
+  const order = new Map(CATEGORY_SLUG_ORDER.map((slug, index) => [slug, index]));
+  return [...categories].sort((a, b) => {
+    const ai = order.get(a.slug as CategorySlug) ?? a.orderIndex + 100;
+    const bi = order.get(b.slug as CategorySlug) ?? b.orderIndex + 100;
+    return ai - bi;
+  });
+}
+
+export const CATEGORY_EDITOR_HINTS: Partial<Record<CategorySlug, string>> = {
+  nauka:
+    "Tylko evergreeny i przewodniki (fizyka, chemia, kosmos od podstaw). Bez newsów z 24h.",
+  misje: "Newsy i analizy misji — nie wrzucaj tu „Jak działa rakieta?” (to Nauka).",
+  rozrywka: "Sci-fi, gry i filmy z kosmosem — nie ogólny gaming off-topic.",
+};
+
 /** Menu / feed order — docs/WSS_CONTENT_ARCHITECTURE.md */
 export const CATEGORY_SLUG_ORDER: readonly CategorySlug[] = [
   "misje",
   "astronomia",
-  "popularnonaukowe",
+  "nauka",
   "technologie",
   "iss",
   "ziemia-z-kosmosu",
+  "rozrywka",
+] as const;
+
+/** Homepage department rows (bez Nauki — ma osobną sekcję „Polecane z Nauki”). */
+export const HOMEPAGE_DEPARTMENT_SLUGS: readonly CategorySlug[] = [
+  "misje",
+  "astronomia",
+  "iss",
+  "ziemia-z-kosmosu",
+  "technologie",
   "rozrywka",
 ] as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, ListPlus, Loader2 } from "lucide-react";
 import { insertListItemAtCaret } from "@/lib/articles/content-list";
@@ -28,6 +28,11 @@ import {
 import StatusBadge from "@/components/admin/StatusBadge";
 import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
+import {
+  CATEGORY_EDITOR_HINTS,
+  sortCategoriesForEditor,
+  type CategorySlug,
+} from "@/lib/categories";
 import {
   hasPublishableBody,
   validatePublishReady,
@@ -420,6 +425,20 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   const scheduleDueLabel = loadedArticle?.publishAt
     ? formatScheduleLabel(new Date(loadedArticle.publishAt))
     : null;
+
+  const sortedCategories = useMemo(
+    () => sortCategoriesForEditor(categories),
+    [categories]
+  );
+
+  const selectedCategory = useMemo(
+    () => categories.find((c) => c.id === form.categoryId) ?? null,
+    [categories, form.categoryId]
+  );
+
+  const categoryEditorHint = selectedCategory
+    ? CATEGORY_EDITOR_HINTS[selectedCategory.slug as CategorySlug]
+    : undefined;
 
   useEffect(() => {
     let active = true;
@@ -1168,14 +1187,21 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             tone="meta"
           >
             <EditorFieldPanel>
-              <Field label="Kategoria" htmlFor="category" hint="Wymagana przed publikacją.">
+              <Field
+                label="Kategoria"
+                htmlFor="category"
+                hint={
+                  categoryEditorHint ??
+                  "Wymagana przed publikacją. Wybierz dział tematyczny (np. Nauka = tylko evergreeny)."
+                }
+              >
                 <Select
                   id="category"
                   value={form.categoryId}
                   onChange={(e) => update("categoryId", e.target.value)}
                 >
                   <option value="">Wybierz kategorię…</option>
-                  {categories.map((c) => (
+                  {sortedCategories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>

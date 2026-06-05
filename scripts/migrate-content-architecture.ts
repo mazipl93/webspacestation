@@ -32,22 +32,23 @@ const TARGET_CATEGORIES = [
     description: "Odkrycia, obserwacje i badania wszechświata.",
   },
   {
-    slug: "popularnonaukowe",
-    name: "Popularnonaukowe",
+    slug: "nauka",
+    name: "Nauka",
     colorTheme: "#14b8a6",
     orderIndex: 2,
-    description: "Wyjaśnienia i przewodniki evergreen o kosmosie.",
+    description:
+      "Popularna nauka i evergreeny — fizyka, chemia, kosmos od podstaw. Bez newsów z 24h.",
   },
   {
     slug: "technologie",
-    name: "Technologie kosmiczne",
+    name: "Technologie",
     colorTheme: "#38bdf8",
     orderIndex: 3,
     description: "Rakiety, satelity, napędy i inżynieria kosmiczna.",
   },
   {
     slug: "iss",
-    name: "ISS i załogi",
+    name: "ISS",
     colorTheme: "#ffb830",
     orderIndex: 4,
     description: "Międzynarodowa Stacja Kosmiczna.",

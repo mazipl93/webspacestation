@@ -34,11 +34,14 @@ export const HOMEPAGE_FOUR_CARD_GRID =
 /** Najnowsze — rząd pod hero (desktop). */
 export const LATEST_DESKTOP_STRIP_LIMIT = 5;
 
-/** Działy na homepage v2 (krótszy scroll; reszta w nav). */
+/** Działy na homepage v2 — patrz HOMEPAGE_DEPARTMENT_SLUGS w lib/categories.ts */
 export const HOMEPAGE_V2_CATEGORY_SLUGS = [
   "misje",
   "astronomia",
-  "popularnonaukowe",
+  "iss",
+  "ziemia-z-kosmosu",
+  "technologie",
+  "rozrywka",
 ] as const;
 
 /** Popularne v2 — 4 kolumny na pełną szerokość shellu. */
@@ -51,4 +54,4 @@ export const HOMEPAGE_POPULAR_LIMIT = 4;
 export function homepageFourCardGrid(): string {
   return HOMEPAGE_LAYOUT_V2 ? HOMEPAGE_FOUR_CARD_GRID_V2 : HOMEPAGE_FOUR_CARD_GRID;
 }
-
+

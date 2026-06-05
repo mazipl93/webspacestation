@@ -7,7 +7,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const metadata: Metadata = {
   title: "Galeria zdjęć",
   description:
-    "Zdjęcia z kosmosu — NASA APOD, NASA Image Library i okładki artykułów redakcji WSS.",
+    "Zdjęcia z kosmosu — NASA APOD, NASA Image Library i okładki artykułów.",
   alternates: { canonical: `${getSiteUrl()}/galeria` },
 };
 

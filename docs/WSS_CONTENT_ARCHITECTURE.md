@@ -1,66 +1,124 @@
-# WSS — architektura treści i działów (SEO + redakcja)
+# WSS — architektura treści (fundament portalu)
 
-> **Źródło prawdy** dla kategorii, homepage, mixu news/evergreen i „Tematu tygodnia”.  
-> Każdy agent / czat przy pracy nad CMS, kategoriami, nav lub homepage **stosuje ten dokument** i przypomina userowi o proporcjach treści, jeśli odbiegają od planu.
+> **Źródło prawdy** dla każdego czatu, agenta i decyzji redakcyjnej.  
+> **Czytaj przed** zmianami kategorii, nav, homepage, CMS lub strategii publikacji.  
+> **Koryguj usera**, gdy miesza news z evergreenem albo wraca do starych nazw (`popularnonaukowe`, `wyjasniamy`, `wiedza` jako slug).
 
-Ostatnia aktualizacja: 2026-06-05 (wdrożenie v1 w repo).
-
----
-
-## Model serwisu
-
-**Portal kosmiczny z codziennymi newsami + warstwa evergreen pod SEO.**
-
-| Warstwa | Udział | Rola |
-|---------|--------|------|
-| Newsy | ~80–90% | Codzienny ruch, świeżość, Discover |
-| Evergreen / analizy | ~10–20% | Ruch z Google przez lata, autorytet |
-
-Przy ~20 artykułach/tydz.: **15–17 newsów + 2–3 evergreeny/analizy**.
-
-Kategoria = **temat**. Typ treści (docelowo pole CMS) = **format**: `news` | `analysis` | `evergreen` | `guide`.  
-**Nie** tworzymy działu „Newsy”.
+Ostatnia aktualizacja: 2026-06-05 (spec usera — model od zera).
 
 ---
 
-## Działy — kolejność menu (`orderIndex`)
+## Czym jest Web Space Station
 
-| # | Nazwa | Slug | SEO | Co publikować | Czego NIE |
-|---|-------|------|-----|---------------|-----------|
-| 0 | Misje | `misje` | ⭐⭐⭐⭐⭐ | NASA, ESA, SpaceX, starty, sondy, Artemis | wyjaśnienia „jak działa”, gry |
-| 1 | Astronomia | `astronomia` | ⭐⭐⭐⭐⭐ | JWST, egzoplanety, czarne dziury, kosmologia | newsy IT |
-| 2 | Popularnonaukowe | `popularnonaukowe` | ⭐⭐⭐⭐⭐ | greencosy: „Jak działa ISS”, orbita, rakiety | bieżące newsy 24h |
-| 3 | Technologie kosmiczne | `technologie` | ⭐⭐⭐⭐ | Starship, Falcon, satelity, teleskopy; **AI w kosmosie** | Copilot, Apple, ogólne IT |
-| 4 | ISS i załogi | `iss` | ⭐⭐⭐⭐ | załogi, EVA, eksperymenty, życie na stacji | — |
-| 5 | Ziemia z kosmosu | `ziemia-z-kosmosu` | ⭐⭐⭐⭐ | satelity, huragany, zorze, klimat z orbity | — |
-| 6 | Rozrywka | `rozrywka` | ⭐⭐ | sci-fi, filmy, gry | rdzeń serwisu, hero |
+| Filar | Opis |
+|-------|------|
+| 🚀 **Kosmos** | Główny temat — misje, astronomia, ISS, Ziemia z orbity |
+| 🧠 **Nauka** | Popularna nauka jako **rozszerzenie** kosmosu (fizyka, chemia, biologia…) |
+| 📰 **Newsy** | Dużo świeżych treści codziennie — Discover, świeżość |
+| 📈 **SEO** | Evergreeny w **Nauce** — artykuły żyjące lata |
 
-### Usunięte / scalone
+**Najważniejsza zasada redakcyjna:**
 
-- **`ai`** — nie osobny dział. Artykuły → `technologie`. Tag `AI` w CMS. URL `/ai` → redirect `/technologie`.
+Nie pytaj: *„który dział jest newsowy?”*  
+Pytaj: *„czy ten temat to **aktualność**, czy **wiedza**?”*
+
+| Temat | Dział | Typ |
+|-------|-------|-----|
+| JWST odkrył nową galaktykę | Astronomia | News |
+| Jak działa JWST | **Nauka** | Evergreen |
+| Nowy eksperyment na ISS | ISS | News |
+| Jak wygląda dzień astronauty na ISS | ISS | Evergreen |
+| Nowy silnik rakietowy | Technologie | News |
+| Jak działa napęd jonowy | **Nauka** | Evergreen |
 
 ---
 
-## Homepage (kolejność sekcji)
+## Proporcje całego serwisu
 
-1. **Hero (4 sloty CMS)** — newsy + evergreeny/analizy (nie rozrywka)
-2. **Najnowsze** — chronologia (codzienny ruch)
-3. **W centrum uwagi** (`weekTopic`) — klaster **bieżących** newsów wokół gorącego wątku; auto-ukrywa się gdy pusto
-4. **Popularne** — engagement
-5. **Działy na homepage v2** (krótki scroll): `misje`, `astronomia`, `popularnonaukowe`
-6. **Centrum operacyjne** — mapa, starty, ISS
+Przy ~100 artykułach / miesiąc:
 
-Reszta działów tylko w nav (`technologie`, `iss`, `ziemia-z-kosmosu`, `rozrywka`).
+| Typ | Udział |
+|-----|--------|
+| Newsy | 65–75 |
+| Analizy | 15–20 |
+| Evergreeny | 10–15 |
+
+Daje: świeżość (Discover) + codzienny ruch + bazę SEO na lata.
+
+**Nie tworzymy działu „Newsy”.** Typ treści docelowo w CMS: `news` | `analysis` | `evergreen` | `guide`.
+
+---
+
+## Działy — menu (`orderIndex`)
+
+| # | Nazwa | Slug | Mix treści | Publikujesz | Nie publikujesz |
+|---|-------|------|------------|-------------|-------------------|
+| 0 | **Misje** | `misje` | 90% news · 10% analizy | Starty, NASA, ESA, SpaceX, Blue Origin, Chiny, Indie, Artemis, Księżyc, Mars | Evergreeny typu „Jak działa rakieta?” → **Nauka** |
+| 1 | **Astronomia** | `astronomia` | 70% news · 20% analizy · 10% evergreen | JWST, egzoplanety, czarne dziury, galaktyki, kosmologia | Ogólne IT |
+| 2 | **Nauka** | `nauka` | **100% evergreen** | Fizyka, chemia, biologia, geologia, astronomia/astronautyka od podstaw | **Newsy** — zero |
+| 3 | **Technologie** | `technologie` | 60% news · 20% analizy · 20% evergreen | Rakiety, teleskopy, satelity, Starlink, **AI w nauce**, robotyka, napędy | Copilot, Apple, ogólne IT bez kosmosu |
+| 4 | **ISS** | `iss` | 70% news · 30% evergreen | Załogi, EVA, eksperymenty, życie na stacji | — |
+| 5 | **Ziemia z kosmosu** | `ziemia-z-kosmosu` | 80% news · 20% evergreen | Satelity, huragany, pożary, zorze, klimat z orbity | — |
+| 6 | **Rozrywka** | `rozrywka` | news · recenzje · rankingi | Sci-fi, gry, filmy, seriale, książki **związane z nauką/sci-fi** | Gaming niezwiązany z kosmosem/sci-fi |
+
+### Scalone / usunięte slugi
+
+| Stary slug | Status |
+|------------|--------|
+| `ai` | → `technologie` + tag AI. `/ai` redirect |
+| `popularnonaukowe` | → **`nauka`**. Redirect |
+| `wyjasniamy` | **Błąd — nie używać.** → `nauka`. Redirect |
+| `wiedza` | Nazwa koncepcyjna usera; **slug w repo: `nauka`** |
+
+---
+
+## Nauka — silnik SEO
+
+**Slug:** `/nauka` · **Etykieta:** Nauka
+
+Przykłady (żyją 5+ lat):
+
+- Jak działa grawitacja?
+- Czym jest czasoprzestrzeń?
+- Jak działa ISS?
+- Dlaczego gwiazdy świecą?
+- Jak powstają pierwiastki?
+- Co to jest fuzja jądrowa?
+
+❌ Żadnych newsów w tym dziale.  
+✅ Tylko evergreeny i przewodniki.
+
+---
+
+## Homepage
+
+### Hero (4 sloty CMS)
+
+1. Największy news dnia  
+2. Największy news dnia  
+3. Mocny artykuł z **Nauki** (evergreen)  
+4. Mocny artykuł z **Astronomii** lub **Nauki**
+
+Nie: rozrywka, czyste gaming newsy.
+
+### Sekcje (kolejność)
+
+1. **Najnowsze** — wszystko chronologicznie  
+2. **W centrum uwagi** (`weekTopic`) — klaster **bieżących newsów** przy gorącym wątku; nie evergreeny  
+3. **Popularne** — engagement  
+4. **Polecane z Nauki** — evergreeny z `nauka` (widoczne także bez artykułów — placeholder)  
+5. **Misje** → **Astronomia** → **ISS** → **Ziemia z kosmosu** → **Technologie** → **Rozrywka**  
+6. **Centrum operacyjne** — starty, ISS, mapa
+
+**Zasada techniczna:** sekcja działu pokazuje **tylko artykuły z tego slugu**. Pusty dział = brak sekcji. **Nigdy** fallback z całego serwisu (bug z Gothiciem pod złym nagłówkiem).
 
 ---
 
 ## Temat tygodnia (`weekTopic`)
 
-- **Zostaje** — nie usuwać z CMS.
-- **Rola:** kuratorski klaster newsów (np. tydzień Starship), **nie** evergreeny.
-- Evergreeny → kategoria **Popularnonaukowe**.
-- Etykieta domyślna: **„W centrum uwagi”** (`NEXT_PUBLIC_WEEK_TOPIC_LABEL`).
-- Przy małej redakcji: nie używać flagi, dopóki nie ma sensownego wątku.
+- Etykieta: **„W centrum uwagi”**
+- Rola: kuratorski klaster **newsów**, nie Nauka
+- Evergreeny → zawsze **`nauka`**
 
 ---
 
@@ -69,24 +127,26 @@ Reszta działów tylko w nav (`technologie`, `iss`, `ziemia-z-kosmosu`, `rozrywk
 | Dzień | Publikacje |
 |-------|------------|
 | Pon–Pt | 2–3 newsy/dzień (Misje, Astronomia, ISS, Ziemia…) |
-| Wt + Pt | +1 evergreen lub analiza |
-| Weekend | podsumowanie + większy artykuł popularnonaukowy |
-| Ad hoc | 4–6 artykułów z `weekTopic` przy gorącym wątku |
+| Wt + Pt | +1 analiza |
+| Weekend | podsumowanie + 1–2 evergreeny w **Nauce** |
+| Ad hoc | 4–6 artykułów `weekTopic` przy gorącym wątku |
 
 ---
 
 ## RSS / News Engine
 
-- Bucket `AI` w RSS → slug **`technologie`** (nie `ai`).
-- Evergreen z RSS raczej ręcznie / redakcyjnie w `popularnonaukowe`.
+- Bucket `AI` → `technologie`
+- Evergreen z RSS → ręcznie do **`nauka`**, nie auto-ingest newsów do Nauki
 
 ---
 
-## Przypomnienie dla agenta
+## Obowiązek agenta
 
-Gdy user pyta o kategorie, homepage lub strategię treści:
-
-1. Odwołaj się do tego pliku.
-2. Przypomnij proporcję **80–90% news / 10–20% evergreen**.
-3. Nie proponuj przywrócenia działu `ai` ani działu „Newsy”.
-4. `popularnonaukowe` to magazyn greencosów, `weekTopic` to klaster newsów.
+1. Przed zmianami struktury — ten plik + `.cursor/rules/wss-content-architecture.mdc`
+2. **Koryguj usera**, gdy:
+   - chce news w Nauce lub evergreen w Misjach (zamiast w Nauce)
+   - proponuje `wyjasniamy`, `popularnonaukowe`, slug `wiedza`
+   - chce gaming bez sci-fi/kosmosu w Rozrywce
+   - myli dział tematyczny z typem treści
+3. Przypominaj proporcje **65–75 news / 15–20 analiz / 10–15 evergreen** miesięcznie
+4. Nie przywracaj działu `ai` ani „Newsy”

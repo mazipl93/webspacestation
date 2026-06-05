@@ -32,7 +32,7 @@ export default function OpsDataSourceNote({ live, fetchedAt }: Props) {
         Dane na żywo
       </p>
       <p className="mt-2 text-[11px] leading-relaxed text-text-tertiary">
-        Launch Library 2 · pozycja ISS · NASA Media · redakcja WSS
+        Launch Library · ISS · NASA
         {time ? ` · odświeżono ${time}` : ""}
       </p>
     </div>

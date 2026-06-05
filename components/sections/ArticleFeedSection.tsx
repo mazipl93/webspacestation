@@ -33,8 +33,6 @@ export default async function ArticleFeedSection({ category }: Props) {
   const accent = meta?.color ?? "#2f6dff";
   const title  = meta?.label ?? "Najnowsze";
 
-  const subtitle = category ? (meta?.description ?? null) : null;
-
   const featured = category && articles.length > 0 ? articles[0] : null;
   const rest = category && articles.length > 0 ? articles.slice(1) : articles;
 
@@ -73,14 +71,6 @@ export default async function ArticleFeedSection({ category }: Props) {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-[720px]">
-              {category && (
-                <span
-                  className="overline mb-2 block"
-                  style={{ color: accent }}
-                >
-                  Kategoria
-                </span>
-              )}
               <h1
                 className="font-extrabold text-text-primary"
                 style={{
@@ -91,11 +81,6 @@ export default async function ArticleFeedSection({ category }: Props) {
               >
                 {title}
               </h1>
-              {subtitle ? (
-                <p className="mt-2 text-[16px] leading-relaxed text-text-tertiary md:text-[14px]">
-                  {subtitle}
-                </p>
-              ) : null}
               {category ? (
                 <div className="mt-4">
                   <DepartmentSubscribeButton categorySlug={category} />

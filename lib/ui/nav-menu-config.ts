@@ -48,10 +48,10 @@ export const NAV_PRIMARY_LINKS: NavMenuLink[] = [
     icon: Telescope,
   },
   {
-    label: CATEGORY_INFO.popularnonaukowe.label,
-    href: "/popularnonaukowe",
-    accentKey: "popularnonaukowe",
-    description: CATEGORY_INFO.popularnonaukowe.description,
+    label: CATEGORY_INFO.nauka.label,
+    href: "/nauka",
+    accentKey: "nauka",
+    description: CATEGORY_INFO.nauka.description,
     icon: BookOpen,
   },
   {

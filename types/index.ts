@@ -3,7 +3,7 @@
 export type NewsCategory =
   | "misje"
   | "astronomia"
-  | "popularnonaukowe"
+  | "nauka"
   | "technologie"
   | "iss"
   | "ziemia-z-kosmosu"

@@ -6,7 +6,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const metadata: Metadata = {
   title: "Kontakt",
   description:
-    "Skontaktuj się z redakcją Web Space Station — sprawy redakcyjne, techniczne i RODO.",
+    "Skontaktuj się z Web Space Station — sprawy redakcyjne, techniczne i RODO.",
   alternates: { canonical: `${getSiteUrl()}/kontakt` },
 };
 
@@ -14,19 +14,19 @@ export default function ContactPage() {
   return (
     <LegalPageShell title="Kontakt">
       <p>
-        Masz pytanie do redakcji, zgłoszenie techniczne lub wniosek dotyczący danych
-        osobowych? Napisz do nas — odpowiadamy w miarę możliwości w dni robocze.
+        Masz pytanie, zgłoszenie techniczne lub wniosek dotyczący danych osobowych?
+        Napisz do nas — odpowiadamy w miarę możliwości w dni robocze.
       </p>
 
       <div className="rounded-xl border border-hairline bg-glass px-5 py-4">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-muted">
-          E-mail redakcji
+          E-mail
         </p>
         <a
-          href="mailto:redakcja@webspacestation.pl"
+          href="mailto:kontakt@webspacestation.pl"
           className="mt-2 block text-[16px] font-semibold text-accent-cyan hover:underline"
         >
-          redakcja@webspacestation.pl
+          kontakt@webspacestation.pl
         </a>
       </div>
 
@@ -34,12 +34,6 @@ export default function ContactPage() {
         Inne kanały
       </h2>
       <ul className="space-y-2">
-        <li>
-          <Link href="/rss" className="text-accent-cyan hover:underline">
-            Subskrypcje RSS
-          </Link>{" "}
-          — aktualności bez konta.
-        </li>
         <li>
           Społeczność — linki w stopce serwisu (Discord, YouTube, X i inne).
         </li>

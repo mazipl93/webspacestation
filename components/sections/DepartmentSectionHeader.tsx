@@ -47,6 +47,8 @@ export default function DepartmentSectionHeader({
 }) {
   const { theme, accent, accentAlt, kicker, label, subtitle, href, live } = config;
   const alt = accentAlt ?? accent;
+  const hasKicker = Boolean(kicker?.trim());
+  const hasSubtitle = Boolean(subtitle?.trim());
 
   const more = href ? <MoreLink href={href} accent={accent} /> : null;
 
@@ -77,7 +79,7 @@ export default function DepartmentSectionHeader({
             </h2>
           }
         />
-        {subtitle ? (
+        {hasSubtitle ? (
           <p className="mt-3 max-w-[560px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
           </p>
@@ -170,9 +172,11 @@ export default function DepartmentSectionHeader({
         )}
         style={{ borderColor: accent }}
       >
-        <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-text-tertiary">
-          {kicker}
-        </p>
+        {hasKicker ? (
+          <p className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-text-tertiary">
+            {kicker}
+          </p>
+        ) : null}
         <SectionTitleRow
           more={more}
           title={
@@ -184,7 +188,7 @@ export default function DepartmentSectionHeader({
             </h2>
           }
         />
-        {subtitle ? (
+        {hasSubtitle ? (
           <p className="mt-3 max-w-[640px] font-mono text-[13px] leading-relaxed text-text-tertiary">
             {subtitle}
           </p>
@@ -217,9 +221,11 @@ export default function DepartmentSectionHeader({
             />
           ))}
         </div>
-        <p className="mb-2 text-[12px] font-semibold tracking-[0.12em]" style={{ color: alt }}>
-          {kicker}
-        </p>
+        {hasKicker ? (
+          <p className="mb-2 text-[12px] font-semibold tracking-[0.12em]" style={{ color: alt }}>
+            {kicker}
+          </p>
+        ) : null}
         <SectionTitleRow
           more={more}
           title={
@@ -236,7 +242,7 @@ export default function DepartmentSectionHeader({
             </h2>
           }
         />
-        {subtitle ? (
+        {hasSubtitle ? (
           <p className="mt-3 max-w-[640px] text-[15px] italic leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
           </p>
@@ -255,19 +261,21 @@ export default function DepartmentSectionHeader({
   if (theme === "misje") {
     return (
       <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
-        <div className="mb-3 flex items-center gap-3">
-          <span
-            className="inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]"
-            style={{
-              borderColor: `${accent}55`,
-              color: accent,
-              background: `${accent}12`,
-            }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
-            {kicker}
-          </span>
-        </div>
+        {hasKicker ? (
+          <div className="mb-3 flex items-center gap-3">
+            <span
+              className="inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em]"
+              style={{
+                borderColor: `${accent}55`,
+                color: accent,
+                background: `${accent}12`,
+              }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
+              {kicker}
+            </span>
+          </div>
+        ) : null}
         <SectionTitleRow
           more={more}
           title={
@@ -282,7 +290,7 @@ export default function DepartmentSectionHeader({
             </h2>
           }
         />
-        {subtitle ? (
+        {hasSubtitle ? (
           <p className="mt-2.5 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
           </p>
@@ -302,9 +310,11 @@ export default function DepartmentSectionHeader({
   if (theme === "ziemia-z-kosmosu") {
     return (
       <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
-        <p className="mb-2 text-[12px] font-semibold tracking-wide" style={{ color: accent }}>
-          {kicker}
-        </p>
+        {hasKicker ? (
+          <p className="mb-2 text-[12px] font-semibold tracking-wide" style={{ color: accent }}>
+            {kicker}
+          </p>
+        ) : null}
         <SectionTitleRow
           more={more}
           title={
@@ -316,7 +326,7 @@ export default function DepartmentSectionHeader({
             </h2>
           }
         />
-        {subtitle ? (
+        {hasSubtitle ? (
           <p className="mt-2.5 max-w-[640px] text-[15px] leading-relaxed text-text-tertiary md:text-[14px]">
             {subtitle}
           </p>
@@ -346,12 +356,14 @@ export default function DepartmentSectionHeader({
             />
           ))}
         </div>
-        <p
-          className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.18em]"
-          style={{ color: accent }}
-        >
-          {kicker}
-        </p>
+        {hasKicker ? (
+          <p
+            className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.18em]"
+            style={{ color: accent }}
+          >
+            {kicker}
+          </p>
+        ) : null}
         <SectionTitleRow
           more={more}
           title={
@@ -360,7 +372,7 @@ export default function DepartmentSectionHeader({
             </h2>
           }
         />
-        {subtitle ? (
+        {hasSubtitle ? (
           <p className="mt-2 text-[14px] leading-relaxed text-text-tertiary">{subtitle}</p>
         ) : null}
       </div>
@@ -369,13 +381,15 @@ export default function DepartmentSectionHeader({
 
   return (
     <div className={cn("relative isolate z-[2] mb-5 sm:mb-7", className)}>
-      <p
-        className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em]"
-        style={{ color: accent }}
-      >
-        {live ? <span className="live-dot shrink-0" style={{ background: accent }} /> : null}
-        {kicker}
-      </p>
+      {hasKicker ? (
+        <p
+          className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.16em]"
+          style={{ color: accent }}
+        >
+          {live ? <span className="live-dot shrink-0" style={{ background: accent }} /> : null}
+          {kicker}
+        </p>
+      ) : null}
       <SectionTitleRow
         more={more}
         title={
@@ -387,7 +401,7 @@ export default function DepartmentSectionHeader({
           </h2>
         }
       />
-      {subtitle ? (
+      {hasSubtitle ? (
         <p className="mt-2.5 text-[14px] leading-relaxed text-text-tertiary">{subtitle}</p>
       ) : null}
       <div aria-hidden className="mt-4 flex items-center gap-2">

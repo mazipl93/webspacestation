@@ -1,10 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 54 — okładki CMS, architektura działów, W centrum uwagi, upload Supabase)  
+**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 55 — Nauka, cleanup frontu, kontakt)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
-**→ Okładki:** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 2 tematyczne NASA — otwarte)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** czat 54 — `git log -1` (main ahead of origin) · **push:** po explicit OK usera  
+**Ostatni commit:** `529ae5e` (czat 55) · **push:** po explicit OK usera  
 **Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -178,34 +177,26 @@ Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_
 
 REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-=== STAN (czat 54, commit lokalny na main — NIE PUSH bez OK) ===
+=== STAN (czat 55, commit `529ae5e` lokalnie — NIE PUSH bez OK) ===
 
-**Okładki CMS (P0 — DONE lokalnie):**
-- coverImage = source of truth · NASA map tylko bez okładki w DB
-- Upload → Supabase bucket `article-covers` · `SUPABASE_SERVICE_ROLE_KEY` w `.env` + Vercel Production/Development
-- Grafiki w treści: `ArticleFigure` · `ContentImageInserter` · markdown `![](url)\npodpis`
-- Hero: `ArticleHeroMedia` + adaptacyjna ramka · podpis tylko `coverImageCredit`
+**Działy:** Misje → Astronomia → **Nauka** (`/nauka`) → Technologie → ISS → Ziemia → Rozrywka  
+**Fundament:** `docs/WSS_CONTENT_ARCHITECTURE.md` (aktualność vs wiedza, proporcje treści)
 
-**Architektura działów (DONE lokalnie + DB migrate):**
-- 7 działów: Misje → Astronomia → **Popularnonaukowe** → Technologie kosmiczne → ISS → Ziemia → Rozrywka
-- **AI** scalone → technologie · `/ai` → redirect · 60 artykułów przeniesione w DB
-- Homepage v2 sekcje: misje, astronomia, popularnonaukowe
-- `npm run content-arch:migrate` — już uruchomione na lokalnej DB
+**Front (czat 55):**
+- Sekcja **Nauka** na homepage (pusta OK) · bez kickers/SEO/evergreen na froncie
+- `weekTopic` bez podtytułu env · ops bez opisów dev pod mapą/listą
+- Kontakt: **kontakt@webspacestation.pl** · bez RSS na stronie kontakt
 
-**W centrum uwagi (`weekTopic`):**
-- Etykieta: „W centrum uwagi” · subtitle env: New Glenn / rynek startów
-- Klaster: 6 artykułów New Glenn (Misje) — `npm run week-topic:reset-new-glenn`
-- Zarchiwizowane: Altman/OpenAI + Trump/AI (spoza kosmosu)
-- **UI:** wszystkie karty jednakowe (bez featured pierwszej)
+**Okładki CMS (czat 54):** upload Supabase · `ArticleFigure` · hero CMS
 
-**Skrypty:** `content-arch:migrate` · `week-topic:reset-new-glenn`
+**W centrum uwagi:** klaster New Glenn (6× Misje) · karty jednakowe · bez subtitle
 
-**Otwarte na następny czat:**
-- QA upload okładek + grafik w treści (user test plan)
-- Pierwsze greencosy w **Popularnonaukowe** (2–3/tydz.)
-- Pole CMS `contentType` (news/analysis/evergreen) — opcjonalnie
-- Vercel Preview: `SUPABASE_SERVICE_ROLE_KEY` może brakować na Preview env
-- Merge WIP z czat 53 (ops/map) jeśli jeszcze nie na main — sprawdź `git log`
+**Otwarte:**
+- QA: pierwszy artykuł w **Nauce** (user dodaje w CMS)
+- Push prod po explicit OK
+- `SUPABASE_SERVICE_ROLE_KEY` na Vercel Preview (opcjonalnie)
+
+**Skrypty:** `content-arch:migrate` · `category:migrate-nauka` · `week-topic:reset-new-glenn`
 
 Prod: https://webspacestation.pl
 ```

@@ -226,6 +226,24 @@ export default function DepartmentSectionFrame({
     );
   }
 
+  if (theme === "nauka") {
+    return (
+      <div
+        className={cn(
+          "editorial-surface relative overflow-hidden rounded-2xl border p-5 sm:p-6 lg:p-7",
+          className,
+        )}
+        style={{
+          borderColor: `${accent}38`,
+          background: `radial-gradient(ellipse 70% 55% at 0% 0%, ${accent}1a 0%, transparent 52%), radial-gradient(ellipse 50% 45% at 100% 100%, ${alt}14 0%, transparent 48%), var(--color-space-card)`,
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 64px -32px ${accent}55`,
+        }}
+      >
+        <div className="relative z-[1]">{children}</div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(

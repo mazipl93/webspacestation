@@ -12,7 +12,7 @@ const FOOTER_NAV = {
     { label: "Aktualności", href: "/aktualnosci" },
     { label: "Misje", href: "/misje" },
     { label: "Astronomia", href: "/astronomia" },
-    { label: "Popularnonaukowe", href: "/popularnonaukowe" },
+    { label: "Nauka", href: "/nauka" },
     { label: "Technologie kosmiczne", href: "/technologie" },
     { label: "ISS i załogi", href: "/iss" },
     { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },

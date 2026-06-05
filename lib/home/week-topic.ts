@@ -9,11 +9,9 @@ export type WeekTopicConfig = {
 };
 
 export function getWeekTopicConfig(): WeekTopicConfig {
-  const subtitle = process.env.NEXT_PUBLIC_WEEK_TOPIC_SUBTITLE?.trim();
   return {
     label:
       process.env.NEXT_PUBLIC_WEEK_TOPIC_LABEL?.trim() || "W centrum uwagi",
-    subtitle: subtitle || undefined,
     limit: Math.min(
       8,
       Math.max(2, Number(process.env.WEEK_TOPIC_LIMIT) || 6)

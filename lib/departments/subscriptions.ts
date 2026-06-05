@@ -4,7 +4,7 @@ import type { NewsCategory } from "@/types";
 export const SUBSCRIBABLE_DEPARTMENT_SLUGS = [
   "misje",
   "astronomia",
-  "popularnonaukowe",
+  "nauka",
   "technologie",
   "iss",
   "ziemia-z-kosmosu",

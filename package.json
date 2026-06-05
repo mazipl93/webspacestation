@@ -37,6 +37,7 @@
     "editorial:fix-covers": "tsx scripts/fix-editorial-covers.ts",
     "rozrywka:migrate": "tsx scripts/migrate-gaming-to-rozrywka.ts",
     "content-arch:migrate": "tsx scripts/migrate-content-architecture.ts",
+    "category:migrate-nauka": "tsx scripts/migrate-nauka-category.ts",
     "editorial:strip-bold": "tsx scripts/strip-editorial-sources.ts",
     "rss:cleanup-db": "tsx scripts/rss-cleanup-db.ts",
     "scores:recalculate": "tsx scripts/recalculate-scores.ts",

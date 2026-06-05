@@ -17,6 +17,36 @@ const nextConfig: NextConfig = {
         destination: "/technologie",
         permanent: true,
       },
+      {
+        source: "/popularnonaukowe",
+        destination: "/nauka",
+        permanent: true,
+      },
+      {
+        source: "/popularnonaukowe/:path*",
+        destination: "/nauka",
+        permanent: true,
+      },
+      {
+        source: "/wyjasniamy",
+        destination: "/nauka",
+        permanent: true,
+      },
+      {
+        source: "/wyjasniamy/:path*",
+        destination: "/nauka",
+        permanent: true,
+      },
+      {
+        source: "/wiedza",
+        destination: "/nauka",
+        permanent: true,
+      },
+      {
+        source: "/wiedza/:path*",
+        destination: "/nauka",
+        permanent: true,
+      },
     ];
   },
   images: {
