@@ -1,9 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 55 — Nauka, cleanup frontu, kontakt)  
+**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 56 — CMS grafiki, Nauka w edytorze, pierwszy artykuł Nauki)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `679a7be` (czat 55) · **push:** po explicit OK usera  
+**Ostatni commit:** `7042449` (czat 56) · **push:** po explicit OK usera  
 **Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -177,26 +177,25 @@ Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_
 
 REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-=== STAN (czat 55, commit `679a7be` lokalnie — NIE PUSH bez OK) ===
+=== STAN (czat 56, commit `7042449` lokalnie — NIE PUSH bez OK) ===
 
 **Działy:** Misje → Astronomia → **Nauka** (`/nauka`) → Technologie → ISS → Ziemia → Rozrywka  
-**Fundament:** `docs/WSS_CONTENT_ARCHITECTURE.md` (aktualność vs wiedza, proporcje treści)
+**Fundament:** `docs/WSS_CONTENT_ARCHITECTURE.md`
 
-**Front (czat 55):**
-- Sekcja **Nauka** na homepage (pusta OK) · bez kickers/SEO/evergreen na froncie
-- `weekTopic` bez podtytułu env · ops bez opisów dev pod mapą/listą
-- Kontakt: **kontakt@webspacestation.pl** · bez RSS na stronie kontakt
+**Czat 56 — zrobione:**
+- CMS **Link do grafiki** — formularz inline (bez window.prompt / crash Cursor)
+- **Grafiki w treści** — parser `figure` + fix boilerplate `https://` (`display-content.ts`)
+- CMS kategoria **Nauka** w edytorze (`prepareCategoriesForEditor`) · migracje DB lokalnie
+- User: pierwszy artykuł evergreen w **Nauce** — `dlaczego-w-kosmosie-jest-proznia` (3 grafiki w treści OK)
 
-**Okładki CMS (czat 54):** upload Supabase · `ArticleFigure` · hero CMS
-
-**W centrum uwagi:** klaster New Glenn (6× Misje) · karty jednakowe · bez subtitle
+**PRIORYTET czat 57 — linki w treści (weave) per dział:**
+Problem: w artykule **Nauka** automatyczne „polecamy lekturę” proponuje **Rozrywkę** (Stellaris, Gothic, NMS…) — źle.
+User: w Nauce OK **Misje**, **Astronomia** (może też); **NIE Rozrywka**; ustal reguły z `WSS_CONTENT_ARCHITECTURE.md`.
+Kod: `lib/article/weave-internal-links.ts` (`pickWeaveInternalLinkCandidates`, `scoreWeaveInternalLinkCandidate`) · `lib/articles.ts` (`getWeaveInternalLinkCandidates`) · test na slugu `dlaczego-w-kosmosie-jest-proznia`.
 
 **Otwarte:**
-- QA: pierwszy artykuł w **Nauce** (user dodaje w CMS)
-- Push prod po explicit OK
-- `SUPABASE_SERVICE_ROLE_KEY` na Vercel Preview (opcjonalnie)
-
-**Skrypty:** `content-arch:migrate` · `category:migrate-nauka` · `week-topic:reset-new-glenn`
+- Push prod po explicit OK (`7042449` + wcześniejsze lokalne commity)
+- Prod DB: `content-arch:migrate` + `category:migrate-nauka` jeśli jeszcze nie
 
 Prod: https://webspacestation.pl
 ```
@@ -204,6 +203,19 @@ Prod: https://webspacestation.pl
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 5.06.2026 (czat 56) — CMS grafiki · Nauka w edytorze · pierwszy artykuł Nauki
+
+| Obszar | Stan |
+|--------|------|
+| **Grafiki w treści** | Fix: boilerplate nie wycina `![](url)`; parser wycina figure z akapitu; `ArticleFigure` renderuje |
+| **CMS inserter** | `ContentImageInserter` — formularz zamiast `prompt`/`alert` (crash Cursor) |
+| **Kategorie CMS** | `prepareCategoriesForEditor` — 7 działów jak nav; **Nauka** widoczna |
+| **Artykuł Nauka** | `dlaczego-w-kosmosie-jest-proznia` — user dodał w CMS, 3 grafiki w treści |
+| **Otwarte** | Weave links: Nauka nie może proponować Rozrywki (`weave-internal-links.ts`) |
+| **Commit** | `7042449` · **push czeka OK** |
+
+**Pliki kluczowe:** `ContentImageInserter.tsx` · `parse-content-blocks.ts` · `display-content.ts` · `content-image.ts` · `lib/categories.ts`
 
 ### Sesja 5.06.2026 (czat 54) — okładki CMS · działy SEO · W centrum uwagi · Supabase upload
 
