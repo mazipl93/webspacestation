@@ -5,9 +5,12 @@ import {
   rozrywkaCoverForSlug,
 } from "./rozrywka";
 
-/** Hosty / ścieżki, które w 2026 zwracają 404 lub psują Next image optimizer. */
+/**
+ * Hosty / ścieżki, które faktycznie psują Next image optimizer
+ * (ale NIE blokujemy nasa.gov/wp-content, bo to nasze realne zdjęcia).
+ */
 const BROKEN_COVER_PATTERN =
-  /nasa\.gov\/wp-content|assets\.science\.nasa\.gov|esa\.int\/var\/esa\/storage|apod\.nasa\.gov\/apod\/image|images\.unsplash\.com/i;
+  /assets\.science\.nasa\.gov|esa\.int\/var\/esa\/storage|apod\.nasa\.gov\/apod\/image|images\.unsplash\.com/i;
 
 export function isBrokenCoverUrl(url: string | null | undefined): boolean {
   const u = url?.trim();
@@ -19,24 +22,36 @@ export function isEditorialCoverSlug(slug: string | undefined): slug is string {
   return Boolean(slug && slug in EDITORIAL_COVER_NASA_ID);
 }
 
-/** NASA okładka tylko dla 21 slugów redakcyjnych; reszta = coverImage z DB. */
+/**
+ * NASA okładka tylko dla 21 slugów redakcyjnych; reszta = coverImage z DB.
+ */
 export function resolveEditorialCoverImage(
   slug: string | undefined,
   dbCover: string | null | undefined
 ): string | null {
+  // Rozrywka section override
   if (isRozrywkaArticleSlug(slug)) {
     const mapped = rozrywkaCoverForSlug(slug);
     if (mapped) return mapped;
+
     const fromDb = dbCover?.trim() || null;
     if (fromDb && !isBrokenCoverUrl(fromDb)) return fromDb;
+
     return null;
   }
 
+  // Editorial NASA-mapped slugs
   if (isEditorialCoverSlug(slug)) {
     return editorialCoverForSlug(slug);
   }
 
+  // DEFAULT: DB image wins
   const fromDb = dbCover?.trim() || null;
-  if (!fromDb || isBrokenCoverUrl(fromDb)) return null;
+
+  if (!fromDb) return null;
+
+  // tylko realnie broken CDN-y blokujemy
+  if (isBrokenCoverUrl(fromDb)) return null;
+
   return fromDb;
 }
