@@ -9,7 +9,6 @@ import {
   buildPrivacyConsentMetadata,
   PRIVACY_POLICY_PATH,
 } from "@/lib/auth/privacy-consent";
-import { isEmailVerified } from "@/lib/auth/email-verified";
 import {
   provisionSessionUser,
   redirectAfterAuth,
@@ -106,13 +105,6 @@ export default function RegisterForm() {
     const needsEmailConfirmation = !data.session;
 
     if (needsEmailConfirmation) {
-      setConfirmSent(true);
-      setLoading(false);
-      return;
-    }
-
-    if (data.user && !isEmailVerified(data.user)) {
-      await supabase.auth.signOut();
       setConfirmSent(true);
       setLoading(false);
       return;

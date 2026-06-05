@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { Loader2, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { mapAuthCallbackLoginError } from "@/lib/auth/auth-callback";
-import { isEmailVerified } from "@/lib/auth/email-verified";
 import {
   provisionSessionUser,
   redirectAfterAuth,
@@ -53,13 +52,6 @@ export default function LoginForm() {
 
     if (signInError) {
       setError(mapSupabaseAuthError(signInError.message));
-      setLoading(false);
-      return;
-    }
-
-    if (data.user && !isEmailVerified(data.user)) {
-      await supabase.auth.signOut();
-      setError("Potwierdź adres e-mail, zanim się zalogujesz. Sprawdź swoją skrzynkę.");
       setLoading(false);
       return;
     }
