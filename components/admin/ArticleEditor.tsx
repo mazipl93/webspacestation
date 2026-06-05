@@ -30,7 +30,7 @@ import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canPublishArticle } from "@/lib/auth/permissions";
 import {
   CATEGORY_EDITOR_HINTS,
-  sortCategoriesForEditor,
+  prepareCategoriesForEditor,
   type CategorySlug,
 } from "@/lib/categories";
 import {
@@ -427,7 +427,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
     : null;
 
   const sortedCategories = useMemo(
-    () => sortCategoriesForEditor(categories),
+    () => prepareCategoriesForEditor(categories),
     [categories]
   );
 

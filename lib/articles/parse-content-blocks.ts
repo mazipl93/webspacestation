@@ -40,13 +40,14 @@ export function parseParagraphToContentBlocks(paragraph: string): ArticleContent
 
   if (lines.length === 0) return [];
 
-  const leadingFigure = figureFromImageLines(lines);
-  if (leadingFigure) {
-    return [leadingFigure];
-  }
-
-  if (lines.length === 1 && !isListItemLine(lines[0])) {
-    return [{ kind: "paragraph", text: lines[0] }];
+  if (lines.length === 1) {
+    const only = lines[0];
+    if (isListItemLine(only)) {
+      return [{ kind: "list", items: [stripListItemMarker(only)] }];
+    }
+    const loneFigure = figureFromImageLines(lines);
+    if (loneFigure) return [loneFigure];
+    return [{ kind: "paragraph", text: only }];
   }
 
   const blocks: ArticleContentBlock[] = [];
@@ -62,12 +63,34 @@ export function parseParagraphToContentBlocks(paragraph: string): ArticleContent
       if (items.length > 0) {
         blocks.push({ kind: "list", items });
       }
-    } else {
-      const textLines: string[] = [];
-      while (i < lines.length && !isListItemLine(lines[i])) {
-        textLines.push(lines[i]);
+      continue;
+    }
+
+    if (parseContentImageLine(lines[i])) {
+      const imageLines = [lines[i]];
+      i += 1;
+      while (i < lines.length) {
+        if (isListItemLine(lines[i]) || parseContentImageLine(lines[i])) break;
+        const caption = parseContentImageCaptionLine(lines[i]);
+        if (!caption) break;
+        imageLines.push(lines[i]);
         i += 1;
       }
+      const figure = figureFromImageLines(imageLines);
+      if (figure) blocks.push(figure);
+      continue;
+    }
+
+    const textLines: string[] = [];
+    while (
+      i < lines.length &&
+      !isListItemLine(lines[i]) &&
+      !parseContentImageLine(lines[i])
+    ) {
+      textLines.push(lines[i]);
+      i += 1;
+    }
+    if (textLines.length > 0) {
       blocks.push({ kind: "paragraph", text: textLines.join("\n") });
     }
   }

@@ -82,11 +82,10 @@ export function insertContentImageAtCaret(
   const before = content.slice(0, start);
   const after = content.slice(end);
 
-  const needsLeadBreak = before.length > 0 && !before.endsWith("\n\n");
-  const needsTrailBreak = after.length > 0 && !after.startsWith("\n");
-
-  const prefix = before.length === 0 ? "" : needsLeadBreak ? (before.endsWith("\n") ? "\n" : "\n\n") : "";
-  const suffix = after.length === 0 ? "" : needsTrailBreak ? "\n\n" : "";
+  // Always surround figure with blank lines so `toNewsArticle` splits it as its own paragraph.
+  const prefix =
+    before.length === 0 ? "" : before.endsWith("\n\n") ? "" : "\n\n";
+  const suffix = after.length === 0 ? "" : after.startsWith("\n\n") ? "" : "\n\n";
 
   const insertion = `${prefix}${line}${suffix}`;
   const value = before + insertion + after;

@@ -67,6 +67,22 @@ describe("parseParagraphToContentBlocks (figures)", () => {
       assert.equal(blocks[0].caption, "NASA / Webb — spektrum metanu");
     }
   });
+
+  it("splits embedded image lines out of a mixed paragraph", () => {
+    const blocks = parseParagraphToContentBlocks(
+      "Akapit przed grafiką.\n![](https://cdn.example/hubble.jpg)\nNASA / ESA"
+    );
+    assert.equal(blocks.length, 2);
+    assert.equal(blocks[0].kind, "paragraph");
+    assert.equal(blocks[1].kind, "figure");
+    if (blocks[0].kind === "paragraph") {
+      assert.equal(blocks[0].text, "Akapit przed grafiką.");
+    }
+    if (blocks[1].kind === "figure") {
+      assert.equal(blocks[1].src, "https://cdn.example/hubble.jpg");
+      assert.equal(blocks[1].caption, "NASA / ESA");
+    }
+  });
 });
 
 describe("parseArticleBodyBlocks figure caption merge", () => {

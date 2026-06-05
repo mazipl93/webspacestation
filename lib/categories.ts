@@ -95,7 +95,54 @@ export function categoryFallbackBg(slug: string): string {
   return CATEGORY_FALLBACK_BG[slug] ?? CATEGORY_FALLBACK_BG.technologie;
 }
 
-/** CMS / admin — editorial order (known slugs first, then DB orderIndex). */
+/** Legacy slugs merged into Nauka — hidden in editor when `nauka` row exists. */
+export const NAUKA_LEGACY_SLUGS = [
+  "popularnonaukowe",
+  "wyjasniamy",
+  "wiedza",
+] as const;
+
+/** Slugs excluded from article editor (redirects / merged on site). */
+export const EDITOR_EXCLUDED_SLUGS = ["ai", ...NAUKA_LEGACY_SLUGS] as const;
+
+/**
+ * CMS article editor — same departments as nav / docs/WSS_CONTENT_ARCHITECTURE.md.
+ * Labels from CATEGORY_INFO; only CATEGORY_SLUG_ORDER; legacy Nauka slug as fallback.
+ */
+export function prepareCategoriesForEditor<
+  T extends { id: string; slug: string; name: string },
+>(categories: T[]): T[] {
+  const bySlug = new Map(categories.map((c) => [c.slug, c]));
+
+  const resolveNauka = (): T | undefined => {
+    const direct = bySlug.get("nauka");
+    if (direct) return direct;
+    for (const legacy of NAUKA_LEGACY_SLUGS) {
+      const row = bySlug.get(legacy);
+      if (row) return row;
+    }
+    return undefined;
+  };
+
+  const nauka = resolveNauka();
+  const out: T[] = [];
+
+  for (const slug of CATEGORY_SLUG_ORDER) {
+    if (slug === "nauka") {
+      if (nauka) {
+        out.push({ ...nauka, name: CATEGORY_INFO.nauka.label });
+      }
+      continue;
+    }
+    const row = bySlug.get(slug);
+    if (!row) continue;
+    out.push({ ...row, name: CATEGORY_INFO[slug].label });
+  }
+
+  return out;
+}
+
+/** @deprecated Use prepareCategoriesForEditor — keeps unknown slugs at the end. */
 export function sortCategoriesForEditor<
   T extends { slug: string; orderIndex: number },
 >(categories: T[]): T[] {

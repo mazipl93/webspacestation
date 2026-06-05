@@ -1,4 +1,5 @@
 import type { NewsArticle } from "@/types";
+import { parseContentImageLine } from "@/lib/articles/content-image";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import {
   countInternalLinksForParagraphs,
@@ -20,8 +21,16 @@ const BOILERPLATE_SNIPPETS = [
 ];
 
 function isBoilerplateParagraph(text: string): boolean {
-  const lower = text.trim().toLowerCase();
-  if (!lower) return true;
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+
+  // CMS figure blocks (markdown / ::image) contain https:// — must not be stripped.
+  const lines = trimmed.split("\n").map((l) => l.trim()).filter(Boolean);
+  if (lines.some((line) => parseContentImageLine(line))) {
+    return false;
+  }
+
+  const lower = trimmed.toLowerCase();
   return BOILERPLATE_SNIPPETS.some((s) => lower.includes(s));
 }
 
