@@ -63,7 +63,9 @@ export async function middleware(request: NextRequest) {
   }
 
   const needsVerifiedEmail =
-    pathname.startsWith("/profil") || pathname.startsWith("/api/profile");
+    pathname.startsWith("/profil") ||
+    pathname.startsWith("/api/profile") ||
+    pathname.startsWith("/api/account");
   if (needsVerifiedEmail && user?.email && !isEmailVerified(user)) {
     const url = request.nextUrl.clone();
     url.pathname = "/logowanie";

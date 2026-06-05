@@ -77,3 +77,15 @@ export function useBookmarks() {
 
   return { slugs, toggle, isBookmarked, isAuthed };
 }
+
+/** Remove saved articles for an account (e.g. after permanent account deletion). */
+export function clearBookmarksForEmail(email: string) {
+  const storageKey = keyFor(email);
+  if (!storageKey || typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(storageKey);
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+  } catch {
+    /* no-op */
+  }
+}

@@ -1,5 +1,5 @@
 /** Wersja polityki — bump przy istotnych zmianach (zapis w user_metadata). */
-export const PRIVACY_POLICY_VERSION = "2026-06-05";
+export const PRIVACY_POLICY_VERSION = "2026-06-06";
 
 export const PRIVACY_POLICY_PATH = "/polityka-prywatnosci";
 

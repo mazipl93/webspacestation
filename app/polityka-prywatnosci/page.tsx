@@ -76,6 +76,34 @@ export default function PrivacyPolicyPage() {
       </p>
 
       <h2 className="pt-2 text-[17px] font-bold text-text-primary">
+        Usuwanie konta
+      </h2>
+      <p>
+        Zalogowany użytkownik może samodzielnie usunąć konto w sekcji{" "}
+        <a href="/profil" className="text-accent-cyan hover:underline">
+          Profil
+        </a>{" "}
+        → <strong>Usuń konto</strong>. Operacja jest nieodwracalna i wymaga
+        potwierdzenia hasłem.
+      </p>
+      <p>Po usunięciu konta trwale usuwamy m.in.:</p>
+      <ul className="list-disc space-y-2 pl-5">
+        <li>konto logowania (adres e-mail i hasło),</li>
+        <li>komentarze pod artykułami,</li>
+        <li>polubienia artykułów i subskrypcje działów,</li>
+        <li>zdjęcie profilowe wgrane do serwisu,</li>
+        <li>profil użytkownika w bazie Serwisu.</li>
+      </ul>
+      <p>
+        Konta redakcyjne powiązane z artykułami w CMS nie mogą zostać usunięte
+        samodzielnie — w takim przypadku skontaktuj się przez{" "}
+        <a href="/kontakt" className="text-accent-cyan hover:underline">
+          Kontakt
+        </a>
+        .
+      </p>
+
+      <h2 className="pt-2 text-[17px] font-bold text-text-primary">
         Twoje prawa
       </h2>
       <p>
@@ -89,7 +117,7 @@ export default function PrivacyPolicyPage() {
       </p>
 
       <p className="pt-4 text-[13px] text-text-muted">
-        Ostatnia aktualizacja: 4 czerwca 2026.
+        Ostatnia aktualizacja: 5 czerwca 2026.
       </p>
     </LegalPageShell>
   );

@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AtSign, KeyRound, Loader2, UserRound } from "lucide-react";
+import { AtSign, KeyRound, Loader2, Trash2, UserRound } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import { clearBookmarksForEmail } from "@/hooks/useBookmarks";
 import { Banner, Button, Field, TextInput } from "@/components/admin/primitives";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -275,6 +276,132 @@ function PasswordForm() {
   );
 }
 
+function DeleteAccountForm() {
+  const { user, signOut } = useAuth();
+  const supabase = useSupabase();
+  const [password, setPassword] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const [eligibility, setEligibility] = useState<{
+    allowed: boolean;
+    reason?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/account/delete", { credentials: "same-origin" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!active || !json) return;
+        setEligibility(json as { allowed: boolean; reason?: string });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !user?.email || eligibility?.allowed === false) return;
+    if (!confirmed) {
+      setFeedback({
+        tone: "error",
+        message: "Zaznacz potwierdzenie, że rozumiesz skutki usunięcia konta.",
+      });
+      return;
+    }
+
+    setBusy(true);
+    setFeedback(null);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+    });
+    if (signInError) {
+      setBusy(false);
+      setFeedback({ tone: "error", message: "Hasło jest nieprawidłowe." });
+      return;
+    }
+
+    const res = await fetch("/api/account/delete", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    setBusy(false);
+
+    if (!res.ok) {
+      const json = (await res.json().catch(() => null)) as {
+        error?: { message?: string };
+      } | null;
+      setFeedback({
+        tone: "error",
+        message:
+          json?.error?.message ??
+          "Nie udało się usunąć konta. Spróbuj ponownie później.",
+      });
+      return;
+    }
+
+    clearBookmarksForEmail(user.email);
+    signOut("/");
+  }
+
+  const blocked = eligibility?.allowed === false;
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
+      {eligibility === null ? (
+        <p className="text-[12px] text-text-muted">Sprawdzanie uprawnień…</p>
+      ) : blocked ? (
+        <Banner tone="info">{eligibility.reason}</Banner>
+      ) : (
+        <>
+          {feedback && <Banner tone={feedback.tone}>{feedback.message}</Banner>}
+          <p className="text-[12px] leading-relaxed text-text-muted">
+            Usunięcie konta jest trwałe. Znikną komentarze, polubienia,
+            subskrypcje działów, zdjęcie profilowe i dane logowania.
+          </p>
+          <Field label="Hasło" htmlFor="settings-delete-password">
+            <TextInput
+              id="settings-delete-password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+          </Field>
+          <label className="flex cursor-pointer items-start gap-2.5 text-[12px] leading-relaxed text-text-secondary">
+            <input
+              type="checkbox"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-hairline accent-accent-live"
+            />
+            <span>
+              Rozumiem, że tej operacji nie można cofnąć i chcę trwale usunąć
+              konto wraz ze wszystkimi danymi.
+            </span>
+          </label>
+          <div>
+            <Button
+              type="submit"
+              variant="danger"
+              disabled={busy || !password || !confirmed}
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              Usuń konto
+            </Button>
+          </div>
+        </>
+      )}
+    </form>
+  );
+}
+
 export default function AccountSettings() {
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -301,6 +428,16 @@ export default function AccountSettings() {
           description="Dla bezpieczeństwa potwierdź zmianę obecnym hasłem."
         >
           <PasswordForm />
+        </SettingsCard>
+      </div>
+
+      <div className="lg:col-span-2">
+        <SettingsCard
+          icon={<Trash2 size={16} />}
+          title="Usuń konto"
+          description="Trwałe usunięcie konta i wszystkich powiązanych danych (RODO)."
+        >
+          <DeleteAccountForm />
         </SettingsCard>
       </div>
     </div>

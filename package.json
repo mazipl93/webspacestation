@@ -16,6 +16,7 @@
     "test:ai": "node --import tsx --test lib/ai/*.test.ts",
     "test:ui": "node --import tsx --test lib/ui/*.test.ts lib/home/*.test.ts",
     "test:comments": "node --import tsx --test lib/comments/*.test.ts",
+    "test:auth": "node --import tsx --test lib/auth/*.test.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
