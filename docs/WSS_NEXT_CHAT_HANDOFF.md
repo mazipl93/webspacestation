@@ -1,9 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 57 — weave links per dział, filtr Nauka≠Rozrywka)  
+**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 57 — weave tiers, RODO rejestracja, weryfikacja e-mail)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** lokalnie WIP (czat 57) · **push:** po explicit OK usera  
+**Ostatni commit:** `bb8bcf5` (czat 57) · **push:** po explicit OK usera (6 commitów ahead of origin)  
 **Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -173,25 +173,23 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 ## STARTING PROMPT — SKOPIUJ DO NOWEGO CZATU
 
 ```
-Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_ARCHITECTURE.md (+ SITE_MAP_AUDIT, STEP_BY_STEP_BACKLOG).
+Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_ARCHITECTURE.md
 
 REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-=== STAN (czat 57, WIP lokalnie — NIE PUSH bez OK) ===
+=== STAN (czat 58, commit `1fb2505` lokalnie — NIE PUSH bez OK) ===
 
-**Działy:** Misje → Astronomia → **Nauka** (`/nauka`) → Technologie → ISS → Ziemia → Rozrywka  
-**Fundament:** `docs/WSS_CONTENT_ARCHITECTURE.md`
+**Czat 57 DONE (`bb8bcf5`):**
+- Weave links — tier fallback (Nauka→Astronomia→Misje…), deny Rozrywka, poprawne teasery, Powiązane sidebar
+- Rejestracja — wymagany checkbox RODO + `/polityka-prywatnosci`; metadata w Supabase
+- Weryfikacja e-mail w kodzie; **Supabase Dashboard:** Authentication → Email → Confirm email ON + redirect `/auth/callback`
 
-**Czat 57 — zrobione (WIP, bez commita):**
-- **Weave links per dział** — `lib/article/weave-category-rules.ts` (denylist Rozrywka dla działów kosmos/nauki; bonus rankingu dla Nauki)
-- `pickWeaveInternalLinkCandidates` filtruje + `scoreWeaveInternalLinkCandidate` bonus kategorii
-- Test: `nauka` → zero `rozrywka` w wyniku (nawet przy tag overlap)
-- Smoke lokalny: `/aktualnosci/dlaczego-w-kosmosie-jest-proznia` — w **treści** brak Stellaris/NMS/Gothic; weave = technologie + misje
+**PRIORYTET czat 58 — usuwanie konta (RODO, pełne):**
+W `/profil` → **Usuń konto**. Po potwierdzeniu (hasło + checkbox): **zero śladu** — komentarze usunięte (nie „konto usunięte”), lajki, subskrypcje działów, avatar w storage, wiersz Prisma `users`, konto Supabase `auth.users`. Konta redakcyjne (AUTHOR/EDITOR/ADMIN z artykułami CMS) — **blokada** self-delete (`articles.authorId` Restrict).
 
-**Otwarte:**
-- Commit + push prod po explicit OK (WIP czat 56 + 57)
-- Sidebar **Powiązane artykuły** nadal może pokazywać Rozrywkę (osobny ranking — nie w scope weave)
-- Prod DB: `content-arch:migrate` + `category:migrate-nauka` jeśli jeszcze nie
+**Pliki:** `AccountSettings.tsx` · `POST /api/account/delete` · `lib/auth/delete-account.ts` · `lib/supabase/admin.ts` · SQL cascade już OK w `supabase/*.sql` · test · sekcja w polityce prywatności
+
+**Otwarte:** push prod (7 commitów ahead) po OK
 
 Prod: https://webspacestation.pl
 ```
@@ -200,14 +198,20 @@ Prod: https://webspacestation.pl
 
 ## Historia sesji (skrót)
 
+### Sesja 5.06.2026 (czat 57, koniec) — commit weave + RODO + e-mail
+
+| Obszar | Stan |
+|--------|------|
+| **Commit** | `bb8bcf5` weave tiers · RODO checkbox · email verify w kodzie |
+| **Handoff** | `1fb2505` — prompt czat 58 usuwanie konta |
+
 ### Sesja 5.06.2026 (czat 57) — weave links per dział · Nauka ≠ Rozrywka
 
 | Obszar | Stan |
 |--------|------|
-| **Weave (treść)** | Denylist `rozrywka` dla nauka/misje/astronomia/technologie/iss/ziemia; bonus rankingu Nauka → nauka/astronomia/misje |
-| **Test** | `weave-internal-links.test.ts` — nauka + tag overlap ze Stellaris → 0× rozrywka |
-| **Smoke** | `dlaczego-w-kosmosie-jest-proznia` — body teasery bez gier; 4 linki (Observable Space, Siły Kosmiczne, Roman, Muon) |
-| **Commit** | **Brak** — czeka OK usera |
+| **Weave (treść)** | Tier fallback + deny Rozrywka (patrz commit `bb8bcf5`) |
+| **Test** | `weave-internal-links.test.ts` — nauka bez rozrywki; fallback astronomia przed technologie |
+| **Commit** | Superseded by `bb8bcf5` |
 
 **Pliki:** `weave-category-rules.ts` · `weave-internal-links.ts` · `weave-internal-links.test.ts`
 
