@@ -90,10 +90,11 @@ function ArticleEditorPreviewPaneInner({
     () => ({
       ...debouncedForm,
       coverImage: form.coverImage,
+      coverImageCredit: form.coverImageCredit,
       sourceName: form.sourceName,
       sourceUrl: form.sourceUrl,
     }),
-    [debouncedForm, form.coverImage, form.sourceName, form.sourceUrl]
+    [debouncedForm, form.coverImage, form.coverImageCredit, form.sourceName, form.sourceUrl]
   );
 
   const previewArticle = useMemo(

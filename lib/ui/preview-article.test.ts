@@ -108,6 +108,7 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
       form: { ...BASE_FORM, coverImageCredit: "NASA / Joel Kowsky" },
       categories: CATEGORIES,
     });
+    assert.equal(article.coverImageCredit, "NASA / Joel Kowsky");
     assert.equal(article.imageCredit, "NASA / Joel Kowsky");
   });
 
@@ -128,28 +129,76 @@ describe("resolveHeroDisplayUrl (CMS preview hero)", () => {
     );
   });
 
+  it("adds https when protocol missing", () => {
+    assert.equal(
+      resolveHeroDisplayUrl({ image: "cdn.example/cover.png" }),
+      "https://cdn.example/cover.png"
+    );
+  });
+
+  it("shows unsplash in preview (no broken-url filter)", () => {
+    assert.equal(
+      resolveHeroDisplayUrl({
+        image: "https://images.unsplash.com/photo-123/file.png",
+      }),
+      "https://images.unsplash.com/photo-123/file.png"
+    );
+  });
+
   it("returns null for empty cover (gradient-only hero)", () => {
     assert.equal(resolveHeroDisplayUrl({ image: "" }), null);
   });
+
+  it("ignores editorial NASA override for mapped slug", () => {
+    assert.equal(
+      resolveHeroDisplayUrl({
+        image: "https://cdn.example/custom-cover.jpg",
+        slug: "roman-space-telescope-start-30-sierpnia-2026",
+      }),
+      "https://cdn.example/custom-cover.jpg"
+    );
+  });
 });
 
-describe("resolveImage (preview/public parity)", () => {
-  it("uses coverImage / image from DB first", () => {
+describe("resolveImage (editorial cover from DB)", () => {
+  it("prefers DB coverImage over editorial NASA map", () => {
     assert.equal(
       resolveImage({
-        image: "https://db/cover.jpg",
-        coverImage: "https://ignored-if-image-set.com/x.jpg",
+        coverImage: "https://cdn.example/cms-cover.jpg",
+        slug: "roman-space-telescope-start-30-sierpnia-2026",
       }),
-      "https://db/cover.jpg"
-    );
-    assert.equal(
-      resolveImage({ coverImage: "https://db/cover.jpg" }),
-      "https://db/cover.jpg"
+      "https://cdn.example/cms-cover.jpg"
     );
   });
 
-  it("returns null without fallback when cover missing", () => {
-    assert.equal(resolveImage({ image: null }, { withFallback: false }), null);
+  it("uses NASA map only when DB cover is missing", () => {
+    const url = resolveImage({
+      coverImage: "",
+      slug: "roman-space-telescope-start-30-sierpnia-2026",
+    });
+    assert.ok(url?.includes("images-assets.nasa.gov"));
+  });
+
+  it("uses DB cover for rozrywka slug when set in CMS", () => {
+    assert.equal(
+      resolveImage({
+        coverImage: "https://cdn.example/state-of-play.jpg",
+        slug: "playstation-state-of-play-czerwiec-2026-wolverine-god-of-war-laufey",
+      }),
+      "https://cdn.example/state-of-play.jpg"
+    );
+  });
+
+  it("uses CMS cover on editorial slug even when host is legacy broken CDN", () => {
+    const cmsUrl =
+      "https://assets.science.nasa.gov/content/dam/science/webb/spectrum.png";
+    assert.equal(
+      resolveImage({
+        coverImage: cmsUrl,
+        slug: "webb-metan-kometa-miedzygwiezdna-3i-atlas-czerwiec-2026",
+      }),
+      cmsUrl
+    );
   });
 });
 

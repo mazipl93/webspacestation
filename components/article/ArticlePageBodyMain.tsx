@@ -4,6 +4,7 @@ import type { NewsArticle } from "@/types";
 import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import ArticleContentBlocks from "@/components/article/ArticleContentBlocks";
+import ArticleFigure from "@/components/article/ArticleFigure";
 import InternalLinkTeaser from "@/components/article/InternalLinkTeaser";
 import ArticleEditButton from "@/components/article/ArticleEditButton";
 import {
@@ -74,6 +75,13 @@ export default function ArticlePageBodyMain({
               <ArticleContentBlocks
                 key={`list-${i}`}
                 blocks={[{ kind: "list", items: segment.items }]}
+              />
+            ) : segment.kind === "figure" ? (
+              <ArticleFigure
+                key={`fig-${i}`}
+                src={segment.src}
+                caption={segment.caption}
+                className="max-w-[min(52rem,100%)]"
               />
             ) : (
               <InternalLinkTeaser

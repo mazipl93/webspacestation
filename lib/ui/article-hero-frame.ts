@@ -23,11 +23,11 @@ export const ARTICLE_HERO_SECTION_EMBEDDED_CLASS =
 export const ARTICLE_HERO_FRAME_CLASS = [
   "relative w-full shrink-0 overflow-hidden",
   "max-lg:h-[clamp(40svh,46svh,50svh)] max-lg:max-h-[min(52svh,480px)] max-lg:min-h-[200px]",
-  "lg:aspect-[16/9] lg:h-auto lg:w-full lg:max-w-none lg:max-h-[min(52vh,520px)] lg:min-h-[280px]",
+  "lg:aspect-[16/9] lg:h-auto lg:w-full lg:max-w-none lg:max-h-[min(56vh,580px)] lg:min-h-[300px]",
 ].join(" ");
 
 export const ARTICLE_HERO_FRAME_DESKTOP_CLASS =
-  "relative w-full shrink-0 overflow-hidden aspect-[16/9] h-auto max-h-[min(52vh,520px)] min-h-[280px]";
+  "relative w-full shrink-0 overflow-hidden aspect-[16/9] h-auto max-h-[min(56vh,580px)] min-h-[300px]";
 
 export const ARTICLE_HERO_FRAME_MOBILE_CLASS =
   "relative w-full shrink-0 overflow-hidden h-[clamp(40svh,46svh,50svh)] max-h-[min(52svh,480px)] min-h-[200px]";

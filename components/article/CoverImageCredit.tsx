@@ -4,8 +4,8 @@ type Props = {
   credit: string;
   source?: string;
   originalUrl?: string;
-  /** compact = cards / list; overlay = caption on photo hero */
-  variant?: "default" | "compact" | "overlay";
+  /** compact = cards; hero = flush under article cover */
+  variant?: "default" | "compact" | "overlay" | "hero";
 };
 
 export default function CoverImageCredit({
@@ -16,19 +16,22 @@ export default function CoverImageCredit({
 }: Props) {
   const compact = variant === "compact";
   const overlay = variant === "overlay";
+  const hero = variant === "hero";
 
   return (
     <figcaption
       className={
-        overlay
-          ? "text-[10px] leading-snug text-white/50"
-          : compact
-            ? "mt-1.5 text-[10px] leading-snug text-text-muted"
-            : "text-[11px] leading-relaxed text-text-tertiary"
+        hero
+          ? "mt-2 text-left text-[11px] leading-relaxed text-text-muted"
+          : overlay
+            ? "text-[10px] leading-snug text-white/50"
+            : compact
+              ? "mt-1.5 text-[10px] leading-snug text-text-muted"
+              : "text-[11px] leading-relaxed text-text-tertiary"
       }
     >
       <span className={compact ? "line-clamp-2" : undefined}>{credit}</span>
-      {originalUrl && source ? (
+      {!hero && originalUrl && source ? (
         <a
           href={originalUrl}
           target="_blank"
@@ -36,7 +39,9 @@ export default function CoverImageCredit({
           className={
             compact
               ? "mt-0.5 inline-flex items-center gap-0.5 text-accent-cyan hover:underline"
-              : "mt-1.5 inline-flex min-h-[36px] items-center gap-1 text-accent-cyan hover:underline"
+              : hero
+                ? "mt-1 inline-flex items-center gap-1 text-[11px] text-text-tertiary transition-colors hover:text-accent-cyan hover:underline"
+                : "mt-1.5 inline-flex min-h-[36px] items-center gap-1 text-accent-cyan hover:underline"
           }
         >
           Artykuł u {source}

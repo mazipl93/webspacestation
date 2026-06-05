@@ -75,7 +75,7 @@ describe("pickRelatedArticles (PR9)", () => {
     const pool = [
       source,
       article("cat-only", { category: "misje", tags: [] }),
-      article("tag-match", { category: "ai", tags: ["spacex", "launch"] }),
+      article("tag-match", { category: "technologie", tags: ["spacex", "launch"] }),
     ];
     const related = pickRelatedArticles(source, pool, { max: 2 });
     assert.equal(related[0]?.id, "tag-match");
@@ -96,7 +96,7 @@ describe("pickSameCategoryRelated", () => {
     const pool = [
       source,
       article("same", { category: "misje" }),
-      article("other", { category: "ai" }),
+      article("other", { category: "technologie" }),
     ];
     const related = pickSameCategoryRelated(source, pool, 3);
     assert.ok(related.every((a) => a.category === "misje"));

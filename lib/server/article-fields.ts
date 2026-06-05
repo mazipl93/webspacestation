@@ -3,6 +3,8 @@
  * Single mapping for cover: coverImage || imageUrl || image → DB coverImage.
  */
 
+import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
+
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
@@ -19,7 +21,7 @@ export function hasCoverImageKeys(body: Record<string, unknown>): boolean {
   );
 }
 
-/** coverImage || imageUrl || image (trimmed); empty → null. */
+/** coverImage || imageUrl || image (trimmed, normalized); empty → null. */
 export function resolveCoverImageFromBody(
   body: Record<string, unknown>
 ): string | null {
@@ -28,7 +30,7 @@ export function resolveCoverImageFromBody(
     asTrimmedString(body.imageUrl) ||
     asTrimmedString(body.image) ||
     "";
-  return raw || null;
+  return normalizeCoverImageUrl(raw);
 }
 
 /** Create: always resolve cover (null when absent). */

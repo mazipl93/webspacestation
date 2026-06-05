@@ -3,11 +3,11 @@
 export type NewsCategory =
   | "misje"
   | "astronomia"
+  | "popularnonaukowe"
   | "technologie"
-  | "rozrywka"
-  | "ai"
+  | "iss"
   | "ziemia-z-kosmosu"
-  | "iss";
+  | "rozrywka";
 
 export interface NewsArticle {
   id: string;
@@ -43,7 +43,9 @@ export interface NewsArticle {
   /** External publisher when ingested by News Engine */
   source?: string;
   originalUrl?: string;
-  /** RSS cover caption (publisher + site) */
+  /** Manual hero caption from CMS (Podpis zdjęcia) — not RSS auto-text. */
+  coverImageCredit?: string;
+  /** Resolved caption (RSS auto or manual) — cards / metadata. */
   imageCredit?: string;
   /** Editorial byline — optional free text (legacy / manual). */
   authorByline?: string;

@@ -1,5 +1,6 @@
 import { EDITORIAL_COVER_NASA_ID } from "./editorial-cover-ids";
 import { editorialCoverForSlug } from "./nasa-cover";
+import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
 import {
   isRozrywkaArticleSlug,
   rozrywkaCoverForSlug,
@@ -23,35 +24,23 @@ export function isEditorialCoverSlug(slug: string | undefined): slug is string {
 }
 
 /**
- * NASA okładka tylko dla 21 slugów redakcyjnych; reszta = coverImage z DB.
+ * NASA okładka tylko gdy brak coverImage w DB.
+ * Jawna okładka z CMS/DB zawsze wygrywa (nawet hosts „broken” dla optimizera).
  */
 export function resolveEditorialCoverImage(
   slug: string | undefined,
   dbCover: string | null | undefined
 ): string | null {
-  // Rozrywka section override
+  const fromDb = normalizeCoverImageUrl(dbCover);
+  if (fromDb) return fromDb;
+
   if (isRozrywkaArticleSlug(slug)) {
-    const mapped = rozrywkaCoverForSlug(slug);
-    if (mapped) return mapped;
-
-    const fromDb = dbCover?.trim() || null;
-    if (fromDb && !isBrokenCoverUrl(fromDb)) return fromDb;
-
-    return null;
+    return rozrywkaCoverForSlug(slug) ?? null;
   }
 
-  // Editorial NASA-mapped slugs
   if (isEditorialCoverSlug(slug)) {
     return editorialCoverForSlug(slug);
   }
 
-  // DEFAULT: DB image wins
-  const fromDb = dbCover?.trim() || null;
-
-  if (!fromDb) return null;
-
-  // tylko realnie broken CDN-y blokujemy
-  if (isBrokenCoverUrl(fromDb)) return null;
-
-  return fromDb;
+  return null;
 }

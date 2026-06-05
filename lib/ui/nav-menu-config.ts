@@ -1,16 +1,17 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  BookOpen,
   Calendar,
-  ImageIcon,
-  Map,
-  Newspaper,
-  Play,
-  Rocket,
-  Telescope,
   Cpu,
   Gamepad2,
   Globe2,
+  ImageIcon,
+  Map,
+  Newspaper,
   Orbit,
+  Play,
+  Rocket,
+  Telescope,
 } from "lucide-react";
 import { CATEGORY_INFO, getCategoryInfo } from "@/lib/categories";
 
@@ -23,6 +24,7 @@ export type NavMenuLink = {
   icon?: LucideIcon;
 };
 
+/** Primary nav — SEO order: Misje → Astronomia → Popularnonaukowe → Technologie */
 export const NAV_PRIMARY_LINKS: NavMenuLink[] = [
   {
     label: "Aktualności",
@@ -32,36 +34,44 @@ export const NAV_PRIMARY_LINKS: NavMenuLink[] = [
     icon: Newspaper,
   },
   {
-    label: "Misje",
+    label: CATEGORY_INFO.misje.label,
     href: "/misje",
     accentKey: "misje",
     description: CATEGORY_INFO.misje.description,
     icon: Rocket,
   },
   {
-    label: "Astronomia",
+    label: CATEGORY_INFO.astronomia.label,
     href: "/astronomia",
     accentKey: "astronomia",
     description: CATEGORY_INFO.astronomia.description,
     icon: Telescope,
   },
   {
-    label: "Technologie",
+    label: CATEGORY_INFO.popularnonaukowe.label,
+    href: "/popularnonaukowe",
+    accentKey: "popularnonaukowe",
+    description: CATEGORY_INFO.popularnonaukowe.description,
+    icon: BookOpen,
+  },
+  {
+    label: CATEGORY_INFO.technologie.label,
     href: "/technologie",
     accentKey: "technologie",
     description: CATEGORY_INFO.technologie.description,
     icon: Cpu,
   },
-  {
-    label: "Rozrywka",
-    href: "/rozrywka",
-    accentKey: "rozrywka",
-    description: CATEGORY_INFO.rozrywka.description,
-    icon: Gamepad2,
-  },
 ];
 
+/** Secondary categories — ISS, Ziemia, Rozrywka */
 export const NAV_CATEGORY_LINKS: NavMenuLink[] = [
+  {
+    label: CATEGORY_INFO.iss.label,
+    href: "/iss",
+    accentKey: "iss",
+    description: CATEGORY_INFO.iss.description,
+    icon: Orbit,
+  },
   {
     label: CATEGORY_INFO["ziemia-z-kosmosu"].label,
     href: "/ziemia-z-kosmosu",
@@ -70,11 +80,11 @@ export const NAV_CATEGORY_LINKS: NavMenuLink[] = [
     icon: Globe2,
   },
   {
-    label: CATEGORY_INFO.iss.label,
-    href: "/iss",
-    accentKey: "iss",
-    description: CATEGORY_INFO.iss.description,
-    icon: Orbit,
+    label: CATEGORY_INFO.rozrywka.label,
+    href: "/rozrywka",
+    accentKey: "rozrywka",
+    description: CATEGORY_INFO.rozrywka.description,
+    icon: Gamepad2,
   },
 ];
 
@@ -128,6 +138,6 @@ export const NAV_ALL_PUBLIC_LINKS: NavMenuLink[] = [
 
 export const NAV_MOBILE_SECTIONS = [
   { id: "primary", label: "Artykuły", links: NAV_PRIMARY_LINKS, defaultOpen: true },
-  { id: "categories", label: "Kategorie", links: NAV_CATEGORY_LINKS, defaultOpen: false },
+  { id: "categories", label: "Więcej działów", links: NAV_CATEGORY_LINKS, defaultOpen: false },
   { id: "more", label: "Odkrywaj", links: NAV_MORE_LINKS, defaultOpen: false },
 ] as const;

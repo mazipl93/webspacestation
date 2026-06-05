@@ -101,7 +101,7 @@ export function editorialCategoryToSlug(
     MISJE: "misje",
     ASTRONOMIA: "astronomia",
     TECHNOLOGIE: "technologie",
-    AI: "ai",
+    AI: "technologie",
     ZIEMIA: "ziemia-z-kosmosu",
   };
   return map[category];

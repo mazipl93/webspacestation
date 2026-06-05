@@ -1,0 +1,21 @@
+---
+description: Architektura działów WSS, SEO, mix news/evergreen, Temat tygodnia — zawsze stosuj przy CMS, kategoriami, nav, homepage
+alwaysApply: true
+---
+
+# WSS — architektura treści
+
+Pełna specyfikacja: `docs/WSS_CONTENT_ARCHITECTURE.md` — **czytaj przed zmianami kategorii, nav, homepage lub strategii publikacji**.
+
+## Skrót (must-follow)
+
+- Model: **portal kosmiczny + codzienne newsy** (~80–90%) + **evergreen** (~10–20%, 2–3/tydz.).
+- Działy (kolejność): Misje → Astronomia → **Popularnonaukowe** → Technologie kosmiczne → ISS → Ziemia z kosmosu → Rozrywka.
+- **Brak działu `ai`** — treści AI → `technologie` + tag. `/ai` → redirect.
+- **Brak działu „Newsy”** — newsy w działach tematycznych; typ treści docelowo: `news|analysis|evergreen|guide`.
+- **Popularnonaukowe** = greencosy SEO. **Temat tygodnia** (`weekTopic`) = klaster bieżących newsów („W centrum uwagi”), nie evergreen.
+- Homepage v2 sekcje działów: `misje`, `astronomia`, `popularnonaukowe`.
+
+## Przypomnienie userowi
+
+Gdy user planuje treści lub strukturę — przypomnij o proporcjach news/evergreen i o tym, że greencosy idą do `popularnonaukowe`, a `weekTopic` tylko przy gorącym wątku.

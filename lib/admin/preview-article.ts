@@ -1,3 +1,4 @@
+import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
 import type { ArticleFormValues, AdminCategory, BylineAuthorOption } from "@/lib/admin/types";
 import { resolvePublicArticleByline } from "@/lib/article/resolve-public-byline";
 import { resolveImageCreditFromForm } from "@/lib/articles/image-credit";
@@ -41,7 +42,7 @@ export function resolvePreviewImageFromForm(
   const f = form as FormWithImageAliases;
   const raw =
     f.imageUrl?.trim() || form.coverImage.trim() || f.image?.trim() || "";
-  return raw || null;
+  return normalizeCoverImageUrl(raw);
 }
 
 /** Client-side draft → NewsArticle for live CMS preview (no API). */
@@ -76,6 +77,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     contentOrigin: contentOrigin ?? "EDITORIAL",
     source,
     originalUrl,
+    coverImageCredit: form.coverImageCredit.trim() || undefined,
     imageCredit,
     authorByline: form.authorByline.trim() || undefined,
     publicByline: resolvePreviewByline(form, bylineAuthors),

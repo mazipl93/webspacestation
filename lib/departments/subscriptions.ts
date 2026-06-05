@@ -4,11 +4,11 @@ import type { NewsCategory } from "@/types";
 export const SUBSCRIBABLE_DEPARTMENT_SLUGS = [
   "misje",
   "astronomia",
+  "popularnonaukowe",
   "technologie",
-  "rozrywka",
-  "ai",
-  "ziemia-z-kosmosu",
   "iss",
+  "ziemia-z-kosmosu",
+  "rozrywka",
 ] as const satisfies readonly NewsCategory[];
 
 export type SubscribableDepartmentSlug =

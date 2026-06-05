@@ -38,7 +38,12 @@ export default function ArticlePublicPreview({
       >
         {isDesktop ? <ArticlePreviewNavStub compact /> : null}
         <div className={cn(isDesktop && ARTICLE_HERO_SHELL_WRAP)}>
-          <ArticlePageHero article={article} embedded previewLayout={viewport} />
+          <ArticlePageHero
+            article={article}
+            embedded
+            preview
+            previewLayout={viewport}
+          />
         </div>
         <div className="border-b border-hairline bg-[#05070d] px-4 py-3 sm:px-5">
           <ArticleHeroMobileMeta
@@ -65,7 +70,12 @@ export default function ArticlePublicPreview({
     >
       {isDesktop ? <ArticlePreviewNavStub /> : null}
       <div className={cn(isDesktop && "px-6 pt-2", isDesktop && ARTICLE_HERO_SHELL_WRAP)}>
-        <ArticlePageHero article={article} embedded previewLayout={viewport} />
+        <ArticlePageHero
+          article={article}
+          embedded
+          preview
+          previewLayout={viewport}
+        />
       </div>
       <div className="border-b border-hairline bg-[#05070d]">
         <div className={cn(ARTICLE_SHELL, "py-4 sm:py-5")}>

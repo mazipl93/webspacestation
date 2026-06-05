@@ -1,5 +1,8 @@
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
-import { resolveEditorialCoverImage } from "@/lib/editorial/resolve-editorial-cover";
+import {
+  resolveEditorialCoverImage,
+} from "@/lib/editorial/resolve-editorial-cover";
+import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
 import { SEARCH_FALLBACK_IMAGE } from "@/lib/search";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import type { NewsArticle, NewsCategory } from "@/types";
@@ -49,13 +52,11 @@ export function resolveImageOrFallback(article: ResolveImageInput): string {
 
 /**
  * Hero URL in CMS preview panes — only explicit cover (form / DB field).
- * Public portal uses resolveImage() with category/stock fallbacks instead.
+ * No editorial slug override, no category fallback, no broken-url filter
+ * (editor must see exactly what they pasted).
  */
 export function resolveHeroDisplayUrl(article: ResolveImageInput): string | null {
-  const direct =
-    resolveEditorialCoverImage(article.slug, article.coverImage) ||
-    article.image?.trim() ||
-    null;
-  if (direct && /^https?:\/\//i.test(direct)) return direct;
-  return null;
+  return normalizeCoverImageUrl(
+    article.coverImage?.trim() || article.image?.trim() || ""
+  );
 }

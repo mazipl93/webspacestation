@@ -36,9 +36,9 @@ export const LATEST_DESKTOP_STRIP_LIMIT = 5;
 
 /** Działy na homepage v2 (krótszy scroll; reszta w nav). */
 export const HOMEPAGE_V2_CATEGORY_SLUGS = [
-  "technologie",
+  "misje",
   "astronomia",
-  "rozrywka",
+  "popularnonaukowe",
 ] as const;
 
 /** Popularne v2 — 4 kolumny na pełną szerokość shellu. */

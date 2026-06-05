@@ -4,20 +4,19 @@ import Footer from "@/components/layout/Footer";
 import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
 
 export const metadata: Metadata = {
-  title: "Technologie kosmiczne | Web Space Station",
+  title: "Popularnonaukowe | Web Space Station",
   description:
-    "Rakiety, satelity, napędy i inżynieria kosmiczna — w tym AI w kontekście badań i eksploracji.",
+    "Artykuły popularnonaukowe o kosmosie — wyjaśnienia, przewodniki i treści evergreen pod SEO.",
 };
 
-// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
 export const revalidate = 300;
 
-export default function TechnologiePage() {
+export default function PopularnonaukowePage() {
   return (
     <>
       <Navbar />
       <main className="min-h-screen">
-        <ArticleFeedSection category="technologie" />
+        <ArticleFeedSection category="popularnonaukowe" />
       </main>
       <Footer />
     </>

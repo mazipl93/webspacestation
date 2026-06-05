@@ -4,22 +4,19 @@ import { getArticlesByCategory, getLatestArticles } from "@/lib/articles";
 import { rankLatest } from "@/lib/home/rank-articles";
 
 const LATEST_FEED_LIMIT = 40;
-import { getCategoryInfo } from "@/lib/categories";
+import { CATEGORY_SLUG_ORDER, getCategoryInfo } from "@/lib/categories";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import ArticleCard from "@/components/article/ArticleCard";
 import DepartmentSubscribeButton from "@/components/departments/DepartmentSubscribeButton";
 import { cn } from "@/lib/cn";
 
-// Category filter strip — each entry routes to a real page
 const FEED_FILTERS = [
-  { label: "Wszystkie",        href: "/aktualnosci",      key: null               },
-  { label: "Misje",            href: "/misje",            key: "misje"            },
-  { label: "Astronomia",       href: "/astronomia",       key: "astronomia"       },
-  { label: "Technologie",      href: "/technologie",      key: "technologie"      },
-  { label: "Rozrywka",         href: "/rozrywka",         key: "rozrywka"         },
-  { label: "AI",               href: "/ai",               key: "ai"               },
-  { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu", key: "ziemia-z-kosmosu" },
-  { label: "ISS",              href: "/iss",              key: "iss"              },
+  { label: "Wszystkie", href: "/aktualnosci", key: null },
+  ...CATEGORY_SLUG_ORDER.map((slug) => ({
+    label: getCategoryInfo(slug).label,
+    href: getCategoryInfo(slug).href,
+    key: slug,
+  })),
 ] as const;
 
 type Props = {

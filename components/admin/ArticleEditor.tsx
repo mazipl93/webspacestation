@@ -4,6 +4,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, ListPlus, Loader2 } from "lucide-react";
 import { insertListItemAtCaret } from "@/lib/articles/content-list";
+import { insertContentImageAtCaret } from "@/lib/articles/content-image";
+import ContentImageInserter from "@/components/admin/ContentImageInserter";
 import { adminApi, ApiError, type ArticleWritePayload } from "@/lib/admin/api";
 import type {
   AdminArticle,
@@ -30,7 +32,6 @@ import {
   hasPublishableBody,
   validatePublishReady,
 } from "@/lib/articles/workflow";
-import { resolveImageCreditFromForm } from "@/lib/articles/image-credit";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
@@ -699,7 +700,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
   }
 
   const sourceLabel = form.sourceName.trim() || null;
-  const previewCredit = resolveImageCreditFromForm(form);
+  const previewCredit = form.coverImageCredit.trim() || null;
 
   return (
     <div>
@@ -1062,40 +1063,66 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <EditorSection
               step={2}
               title="Treść artykułu"
-              description="Akapity oddziel pustą linią. Listę dodasz przyciskiem poniżej."
+              description="Akapity oddziel pustą linią. Listę i grafiki dodasz przyciskami poniżej."
               tone="content"
             >
               <EditorFieldPanel>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full justify-center px-2.5 py-2 text-meta sm:w-fit"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    const el = contentRef.current;
-                    const caretStart =
-                      el?.selectionStart ?? contentSelectionRef.current.start;
-                    const caretEnd =
-                      el?.selectionEnd ?? contentSelectionRef.current.end;
-                    const { value, selectionStart, selectionEnd } =
-                      insertListItemAtCaret(form.content, caretStart, caretEnd);
-                    pendingContentCaretRef.current = {
-                      start: selectionStart,
-                      end: selectionEnd,
-                    };
-                    update("content", value);
-                  }}
-                >
-                  <ListPlus size={14} aria-hidden />
-                  Dodaj punkt listy
-                </Button>
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full justify-center px-2.5 py-2 text-meta sm:w-fit"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      const el = contentRef.current;
+                      const caretStart =
+                        el?.selectionStart ?? contentSelectionRef.current.start;
+                      const caretEnd =
+                        el?.selectionEnd ?? contentSelectionRef.current.end;
+                      const { value, selectionStart, selectionEnd } =
+                        insertListItemAtCaret(form.content, caretStart, caretEnd);
+                      pendingContentCaretRef.current = {
+                        start: selectionStart,
+                        end: selectionEnd,
+                      };
+                      update("content", value);
+                    }}
+                  >
+                    <ListPlus size={14} aria-hidden />
+                    Dodaj punkt listy
+                  </Button>
+                  <ContentImageInserter
+                    articleId={currentId}
+                    disabled={loading}
+                    onInsertImage={(src, caption) => {
+                      const el = contentRef.current;
+                      const caretStart =
+                        el?.selectionStart ?? contentSelectionRef.current.start;
+                      const caretEnd =
+                        el?.selectionEnd ?? contentSelectionRef.current.end;
+                      const { value, selectionStart, selectionEnd } =
+                        insertContentImageAtCaret(
+                          form.content,
+                          caretStart,
+                          caretEnd,
+                          src,
+                          caption
+                        );
+                      pendingContentCaretRef.current = {
+                        start: selectionStart,
+                        end: selectionEnd,
+                      };
+                      update("content", value);
+                    }}
+                  />
+                </div>
               </EditorFieldPanel>
 
               <EditorFieldPanel>
                 <Field
                   label="Treść"
                   htmlFor="content"
-                  hint="Akapity oddzielaj pustą linią. Listę buduj przyciskiem — każdy punkt w nowej linii (•)."
+                  hint="Akapity: pusta linia między blokami. Grafika + podpis w jednym bloku (podpis w linii pod URL)."
                 >
                   <TextArea
                     ref={contentRef}
@@ -1334,12 +1361,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             </EditorFieldPanel>
             {previewCredit ? (
               <EditorFieldPanel>
-                <CoverImageCredit
-                  variant="compact"
-                  credit={previewCredit}
-                  source={sourceLabel ?? undefined}
-                  originalUrl={form.sourceUrl.trim() || undefined}
-                />
+                <p className="text-[10px] text-text-muted">Podgląd podpisu pod okładką:</p>
+                <CoverImageCredit variant="hero" credit={previewCredit} />
               </EditorFieldPanel>
             ) : null}
           </EditorSection>

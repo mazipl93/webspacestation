@@ -1,10 +1,11 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 4 czerwca 2026 (czat 53 — Centrum operacyjne: mapa satelitarna + ISS orbita + PL copy; **bez commit/push**)  
+**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 54 — okładki CMS, architektura działów, W centrum uwagi, upload Supabase)  
+**→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **→ Okładki:** `docs/WSS_COVER_IMAGES_FIX_PROMPT.md` (krok 2 tematyczne NASA — otwarte)  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `c28753b` · lokalnie **ahead 2** (`e4654f4` docs) · **cały pakiet WIP niecommitowany** · **push:** po explicit OK  
-**Historia:** patrz sesja czat 53 poniżej
+**Ostatni commit:** czat 54 — `git log -1` (main ahead of origin) · **push:** po explicit OK usera  
+**Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
 
@@ -173,37 +174,38 @@ Nie twórz osobnych handoffów — **ten plik jest jedynym źródłem prawdy** m
 ## STARTING PROMPT — SKOPIUJ DO NOWEGO CZATU
 
 ```
-Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md (+ SITE_MAP_AUDIT, STEP_BY_STEP_BACKLOG).
+Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_ARCHITECTURE.md (+ SITE_MAP_AUDIT, STEP_BY_STEP_BACKLOG).
 
 REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-=== STAN (czat 53, lokalnie WIP — NIE NA PROD) ===
-Commit na main (remote): `c28753b` · lokalnie ahead 2 (`e4654f4` docs only).
-**WIP niecommitowane** — dwa pakiety czekają OK usera:
+=== STAN (czat 54, commit lokalny na main — NIE PUSH bez OK) ===
 
-**A) Powiadomienia + CMS (czat 50–51, user OK wizualnie):**
-- Powiadomienia: **Wyczyść** · feed live (starty + ulubione działy)
-- UX **Dodaj** / ulubione · profil · Panel redakcyjny
-- CMS: podgląd lg+, pola wyraźniejsze (`ArticleEditor`, `EditorFieldPanel`, `primitives`)
+**Okładki CMS (P0 — DONE lokalnie):**
+- coverImage = source of truth · NASA map tylko bez okładki w DB
+- Upload → Supabase bucket `article-covers` · `SUPABASE_SERVICE_ROLE_KEY` w `.env` + Vercel Production/Development
+- Grafiki w treści: `ArticleFigure` · `ContentImageInserter` · markdown `![](url)\npodpis`
+- Hero: `ArticleHeroMedia` + adaptacyjna ramka · podpis tylko `coverImageCredit`
 
-**B) Centrum operacyjne / Odkrywaj (czat 52–53):**
-- **Dane:** starty LL2 ✅ · ISS wheretheiss.at ✅ · platformy = `pad.lat/lon` z LL2 ✅ · usunięte mocki timeline (Artemis/Gateway)
-- **Mapa:** Leaflet + **Esri World Imagery** · orbita ISS (TLE Celestrak + `satellite.js`) · telemetria ISS · pinezki platform startowych
-- **Copy PL:** `lib/ops/localize-ops.ts` · bez słowa „wyrzutnia” → **platforma startowa** / miejsce startu
-- **UX:** `OpsCenterExplainer`, `OpsScheduleList`, `OpsPinList`, `MapaStartow` w `ContentGrid` · usunięty podpis pod mapą
-- **Deps:** `leaflet`, `react-leaflet`, `satellite.js` → **`npm install`** po clone
-- **Fix build:** `OpsMissionMap.tsx` = `"use client"` (dynamic Leaflet)
+**Architektura działów (DONE lokalnie + DB migrate):**
+- 7 działów: Misje → Astronomia → **Popularnonaukowe** → Technologie kosmiczne → ISS → Ziemia → Rozrywka
+- **AI** scalone → technologie · `/ai` → redirect · 60 artykułów przeniesione w DB
+- Homepage v2 sekcje: misje, astronomia, popularnonaukowe
+- `npm run content-arch:migrate` — już uruchomione na lokalnej DB
 
-**Otwarte (ops, opcjonalnie):**
-- Stałe pinezki głównych kosmodromów (jak isstracker.pl) obok harmonogramu
-- QA: orbita gdy Celestrak niedostępny · kafelki Esri na prod
+**W centrum uwagi (`weekTopic`):**
+- Etykieta: „W centrum uwagi” · subtitle env: New Glenn / rynek startów
+- Klaster: 6 artykułów New Glenn (Misje) — `npm run week-topic:reset-new-glenn`
+- Zarchiwizowane: Altman/OpenAI + Trump/AI (spoza kosmosu)
+- **UI:** wszystkie karty jednakowe (bez featured pierwszej)
 
-=== PRZED PUSHEM (USER) ===
-1. Supabase **prod** SQL: `supabase/user_department_subscriptions.sql`
-2. `npm install` (leaflet) · `npm run type-check`
-3. `npm run cache:revalidate`
-4. Smoke: dzwonek · Wyczyść · CMS podgląd · homepage **Centrum operacyjne** · `/mapa` (orbita + ISS)
-5. **OK** → jeden commit WIP (powiadomienia + CMS + ops) + git push
+**Skrypty:** `content-arch:migrate` · `week-topic:reset-new-glenn`
+
+**Otwarte na następny czat:**
+- QA upload okładek + grafik w treści (user test plan)
+- Pierwsze greencosy w **Popularnonaukowe** (2–3/tydz.)
+- Pole CMS `contentType` (news/analysis/evergreen) — opcjonalnie
+- Vercel Preview: `SUPABASE_SERVICE_ROLE_KEY` może brakować na Preview env
+- Merge WIP z czat 53 (ops/map) jeśli jeszcze nie na main — sprawdź `git log`
 
 Prod: https://webspacestation.pl
 ```
@@ -211,6 +213,19 @@ Prod: https://webspacestation.pl
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 5.06.2026 (czat 54) — okładki CMS · działy SEO · W centrum uwagi · Supabase upload
+
+| Obszar | Stan |
+|--------|------|
+| **Okładki** | coverImage DB · upload WebP Supabase · grafiki w treści · hero adaptacyjny · live preview bez NASA override |
+| **Supabase** | bucket `article-covers` · `SERVICE_ROLE_KEY` lokalnie + Vercel Prod/Dev |
+| **Działy** | +Popularnonaukowe · AI→technologie · nav/footer/homepage · `content-arch:migrate` |
+| **W centrum uwagi** | klaster New Glenn (6× Misje) · zarchiwizowano Altman/Trump AI · karty jednakowe |
+| **Docs** | `WSS_CONTENT_ARCHITECTURE.md` · cursor rule alwaysApply |
+| **Push** | **Nie** — commit lokalny, czeka OK usera |
+
+**Pliki kluczowe:** `lib/media/cover-url.ts` · `ArticleHeroMedia.tsx` · `content-image.ts` · `WeekTopicSection.tsx` · `lib/categories.ts` · `scripts/reset-week-topic-new-glenn.ts`
 
 ### Sesja 4.06.2026 (czat 53) — mapa satelitarna ISS + nazewnictwo PL · handoff
 

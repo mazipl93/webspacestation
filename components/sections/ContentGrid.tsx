@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { CATEGORY_INFO } from "@/lib/categories";
+import { CATEGORY_INFO, CATEGORY_SLUG_ORDER } from "@/lib/categories";
 import {
   HOMEPAGE_LAYOUT_V2,
   HOMEPAGE_V2_CATEGORY_SLUGS,
@@ -63,12 +63,13 @@ const CATEGORY_LAYOUT: Record<
     prominent?: boolean;
   }
 > = {
-  technologie: { variant: "hero-strip", prominent: true },
-  rozrywka: { variant: "accent-bar" },
-  misje: { variant: "hero-strip" },
-  astronomia: { variant: "accent-bar" },
-  "ziemia-z-kosmosu": { variant: "banner" },
+  misje: { variant: "hero-strip", prominent: true },
+  astronomia: { variant: "accent-bar", prominent: true },
+  popularnonaukowe: { variant: "hero-strip", prominent: true },
+  technologie: { variant: "hero-strip" },
   iss: { variant: "accent-bar" },
+  "ziemia-z-kosmosu": { variant: "banner" },
+  rozrywka: { variant: "minimal" },
 };
 
 const CATEGORY_META = Object.fromEntries(
@@ -91,14 +92,7 @@ const CATEGORY_META = Object.fromEntries(
   }
 >;
 
-const CATEGORY_ORDER = [
-  "technologie",
-  "rozrywka",
-  "astronomia",
-  "misje",
-  "ziemia-z-kosmosu",
-  "iss",
-] as const;
+const CATEGORY_ORDER = CATEGORY_SLUG_ORDER;
 
 function SectionHeader({
   label,

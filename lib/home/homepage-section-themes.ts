@@ -2,6 +2,7 @@ export type HomepageSectionTheme =
   | "week-topic"
   | "latest"
   | "popular"
+  | "popularnonaukowe"
   | "technologie"
   | "rozrywka"
   | "astronomia"
@@ -43,12 +44,13 @@ export const OPS_THEME: SectionThemeConfig = {
 };
 
 const CATEGORY_KICKERS: Record<string, string> = {
-  technologie: "Innowacje · hardware · orbita",
-  rozrywka: "Gry · filmy · sci-fi",
-  astronomia: "Teleskopy · galaktyki · odkrycia",
   misje: "Lądowania · sondy · głęboka przestrzeń",
-  "ziemia-z-kosmosu": "Obserwacje · klimat · planeta",
+  astronomia: "Teleskopy · galaktyki · odkrycia",
+  popularnonaukowe: "Wyjaśnienia · przewodniki · evergreen",
+  technologie: "Innowacje · hardware · orbita",
   iss: "Badania · załoga · stacja",
+  "ziemia-z-kosmosu": "Obserwacje · klimat · planeta",
+  rozrywka: "Gry · filmy · sci-fi",
 };
 
 export function categorySectionTheme(
@@ -56,21 +58,23 @@ export function categorySectionTheme(
   meta: { label: string; color: string; href: string; description: string },
 ): SectionThemeConfig {
   const themeMap: Record<string, HomepageSectionTheme> = {
-    technologie: "technologie",
-    rozrywka: "rozrywka",
-    astronomia: "astronomia",
     misje: "misje",
-    "ziemia-z-kosmosu": "ziemia-z-kosmosu",
+    astronomia: "astronomia",
+    popularnonaukowe: "popularnonaukowe",
+    technologie: "technologie",
     iss: "iss",
+    "ziemia-z-kosmosu": "ziemia-z-kosmosu",
+    rozrywka: "rozrywka",
   };
 
   const accentAlt: Partial<Record<string, string>> = {
-    astronomia: "#6366f1",
-    technologie: "#2f6dff",
-    rozrywka: "#fb7185",
     misje: "#60a5fa",
-    "ziemia-z-kosmosu": "#4ade80",
+    astronomia: "#6366f1",
+    popularnonaukowe: "#2dd4bf",
+    technologie: "#2f6dff",
     iss: "#ff9500",
+    "ziemia-z-kosmosu": "#4ade80",
+    rozrywka: "#fb7185",
   };
 
   return {

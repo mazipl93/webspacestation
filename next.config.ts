@@ -5,6 +5,20 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/ai",
+        destination: "/technologie",
+        permanent: true,
+      },
+      {
+        source: "/ai/:path*",
+        destination: "/technologie",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

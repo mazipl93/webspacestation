@@ -4,7 +4,6 @@ import ArticleHeroBreadcrumb from "@/components/article/ArticleHeroBreadcrumb";
 import HeroMetaChip from "@/components/article/HeroMetaChip";
 import ArticlePublicByline from "@/components/article/ArticlePublicByline";
 import type { PublicArticleByline } from "@/lib/article/resolve-public-byline";
-import CoverImageCredit from "@/components/article/CoverImageCredit";
 import { ARTICLE_HEADLINE_MAX, ARTICLE_PROSE_MAX } from "@/lib/ui/article-editorial-layout";
 import { ARTICLE_HERO_MOBILE_META_CLASS } from "@/lib/ui/article-hero-frame";
 import { cn } from "@/lib/cn";
@@ -111,17 +110,6 @@ export default function ArticleHeroMobileMeta({
           >
             {article.excerpt}
           </p>
-        ) : null}
-
-        {article.imageCredit ? (
-          <div className="pt-1">
-            <CoverImageCredit
-              credit={article.imageCredit}
-              source={article.source}
-              originalUrl={article.originalUrl}
-              variant="compact"
-            />
-          </div>
         ) : null}
     </div>
   );

@@ -1,4 +1,5 @@
 import type { ArticleContentBlock } from "@/lib/articles/parse-content-blocks";
+import ArticleFigure from "@/components/article/ArticleFigure";
 import { renderInlineMarkdown } from "@/lib/articles/render-inline-markdown";
 
 const BODY_TEXT_STYLE = {
@@ -22,7 +23,13 @@ export default function ArticleContentBlocks({
   return (
     <>
       {blocks.map((block, i) =>
-        block.kind === "list" ? (
+        block.kind === "figure" ? (
+          <ArticleFigure
+            key={`fig-${i}`}
+            src={block.src}
+            caption={block.caption}
+          />
+        ) : block.kind === "list" ? (
           <ul
             key={`list-${i}`}
             className={listClassName}

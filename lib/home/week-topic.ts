@@ -12,7 +12,7 @@ export function getWeekTopicConfig(): WeekTopicConfig {
   const subtitle = process.env.NEXT_PUBLIC_WEEK_TOPIC_SUBTITLE?.trim();
   return {
     label:
-      process.env.NEXT_PUBLIC_WEEK_TOPIC_LABEL?.trim() || "Temat tygodnia",
+      process.env.NEXT_PUBLIC_WEEK_TOPIC_LABEL?.trim() || "W centrum uwagi",
     subtitle: subtitle || undefined,
     limit: Math.min(
       8,

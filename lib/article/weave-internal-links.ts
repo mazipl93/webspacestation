@@ -13,6 +13,7 @@ export type InternalLinkCandidate = Pick<
 export type WovenBodySegment =
   | { kind: "paragraph"; text: string }
   | { kind: "list"; items: string[] }
+  | { kind: "figure"; src: string; caption?: string }
   | {
       kind: "internal-link";
       article: InternalLinkCandidate;
@@ -115,6 +116,15 @@ export function buildWovenBodySegments(
   for (const block of blocks) {
     if (block.kind === "list") {
       segments.push({ kind: "list", items: block.items });
+      continue;
+    }
+
+    if (block.kind === "figure") {
+      segments.push({
+        kind: "figure",
+        src: block.src,
+        caption: block.caption,
+      });
       continue;
     }
 

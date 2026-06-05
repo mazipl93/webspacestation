@@ -90,6 +90,7 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
     contentOrigin: a.contentOrigin,
     source: a.source ?? undefined,
     originalUrl: a.originalUrl ?? undefined,
+    coverImageCredit: a.coverImageCredit?.trim() || undefined,
     imageCredit: resolveArticleImageCredit({
       coverImageCredit: a.coverImageCredit,
       source: a.source,
