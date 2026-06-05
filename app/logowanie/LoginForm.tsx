@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Loader2, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { mapAuthCallbackLoginError } from "@/lib/auth/auth-callback";
 import { isEmailVerified } from "@/lib/auth/email-verified";
 import {
   provisionSessionUser,
@@ -13,16 +14,7 @@ import {
 } from "@/lib/auth/login-redirect";
 import { Banner, Button, Field, TextInput } from "@/components/admin/primitives";
 
-// Maps Supabase auth errors to Polish, user-facing copy.
-function mapError(message: string): string {
-  if (message === "Invalid login credentials") {
-    return "Nieprawidłowy e-mail lub hasło.";
-  }
-  if (message === "Email not confirmed") {
-    return "Potwierdź adres e-mail, zanim się zalogujesz. Sprawdź swoją skrzynkę.";
-  }
-  return message;
-}
+import { mapSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
 
 export default function LoginForm() {
   const searchParams = useSearchParams();
@@ -31,16 +23,9 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(() => {
-    const code = searchParams.get("error");
-    if (code === "auth") {
-      return "Link logowania wygasł lub jest nieprawidłowy. Spróbuj ponownie.";
-    }
-    if (code === "email_not_confirmed") {
-      return "Potwierdź adres e-mail, zanim się zalogujesz. Sprawdź swoją skrzynkę.";
-    }
-    return null;
-  });
+  const [error, setError] = useState<string | null>(() =>
+    mapAuthCallbackLoginError(searchParams.get("error"))
+  );
 
   const registerHref =
     redirectTo && redirectTo !== "/"
@@ -67,7 +52,7 @@ export default function LoginForm() {
     });
 
     if (signInError) {
-      setError(mapError(signInError.message));
+      setError(mapSupabaseAuthError(signInError.message));
       setLoading(false);
       return;
     }
@@ -110,6 +95,15 @@ export default function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
         />
       </Field>
+
+      <p className="-mt-1 text-right">
+        <Link
+          href="/zapomnialem-hasla"
+          className="text-[12.5px] font-medium text-accent-cyan transition-colors hover:text-text-primary"
+        >
+          Zapomniałeś hasła?
+        </Link>
+      </p>
 
       <Button type="submit" disabled={loading} className="mt-1 w-full">
         {loading ? (

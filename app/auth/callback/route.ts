@@ -1,42 +1,45 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { isEmailVerified } from "@/lib/auth/email-verified";
+import {
+  completeAuthCallbackSession,
+  parseAuthCallbackParams,
+} from "@/lib/auth/auth-callback";
 import { provisionPublicUser } from "@/lib/auth/provision";
 
-// Exchanges the `code` from a Supabase email link (confirmation / magic link /
-// password recovery) for a persisted session cookie, then forwards the user on.
+// Exchanges the email-link token (token_hash or PKCE code) for a session cookie.
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const nextParam = searchParams.get("next");
-  // Only allow same-site relative paths to avoid open redirects.
-  const next =
-    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
-      ? nextParam
-      : "/";
+  const params = parseAuthCallbackParams(searchParams);
 
-  if (code) {
-    try {
-      const supabase = await createClient();
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error && data.user?.email) {
-        if (!isEmailVerified(data.user)) {
-          return NextResponse.redirect(`${origin}/logowanie?error=email_not_confirmed`);
-        }
-        const metaName =
-          typeof data.user.user_metadata?.name === "string"
-            ? data.user.user_metadata.name
-            : "";
-        await provisionPublicUser(
-          data.user.email,
-          metaName || data.user.email.split("@")[0]
-        );
-        return NextResponse.redirect(`${origin}${next}`);
-      }
-    } catch {
-      /* fall through to the error redirect */
+  try {
+    const supabase = await createClient();
+    const sessionResult = await completeAuthCallbackSession(supabase, params);
+
+    if (!sessionResult.ok) {
+      console.error("[auth/callback]", sessionResult.reason);
+      return NextResponse.redirect(`${origin}/logowanie?error=auth`);
     }
-  }
 
-  return NextResponse.redirect(`${origin}/logowanie?error=auth`);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+      return NextResponse.redirect(`${origin}/logowanie?error=auth`);
+    }
+
+    const metaName =
+      typeof user.user_metadata?.name === "string"
+        ? user.user_metadata.name
+        : "";
+    await provisionPublicUser(
+      user.email,
+      metaName || user.email.split("@")[0]
+    );
+
+    return NextResponse.redirect(`${origin}${params.next}`);
+  } catch (err) {
+    console.error("[auth/callback]", err);
+    return NextResponse.redirect(`${origin}/logowanie?error=auth`);
+  }
 }
