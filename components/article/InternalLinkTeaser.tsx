@@ -1,26 +1,31 @@
 import Link from "next/link";
+import { getCategoryInfo } from "@/lib/categories";
 import {
   INTERNAL_LINK_TEASER_OPENERS,
   internalLinkHint,
   type InternalLinkCandidate,
 } from "@/lib/article/weave-internal-links";
+import type { NewsCategory } from "@/types";
 
 type Props = {
   article: InternalLinkCandidate;
-  categoryLabel: string;
+  sourceCategory: NewsCategory;
   templateIndex: number;
 };
 
 /** Jedna wpleciona wzmianka + link — bez ramki „Czytaj również”. */
 export default function InternalLinkTeaser({
   article,
-  categoryLabel,
+  sourceCategory,
   templateIndex,
 }: Props) {
+  const candidateMeta = getCategoryInfo(article.category);
+  const sameDepartment = article.category === sourceCategory;
   const opener =
     INTERNAL_LINK_TEASER_OPENERS[templateIndex % INTERNAL_LINK_TEASER_OPENERS.length]({
-      categoryLabel,
+      categoryLabel: candidateMeta.label,
       title: article.title,
+      sameDepartment,
     });
   const hint = internalLinkHint(article.excerpt);
 

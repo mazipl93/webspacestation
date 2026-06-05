@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isEmailVerified } from "@/lib/auth/email-verified";
 import { provisionPublicUser } from "@/lib/auth/provision";
 
 // Exchanges the `code` from a Supabase email link (confirmation / magic link /
@@ -19,6 +20,9 @@ export async function GET(request: Request) {
       const supabase = await createClient();
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error && data.user?.email) {
+        if (!isEmailVerified(data.user)) {
+          return NextResponse.redirect(`${origin}/logowanie?error=email_not_confirmed`);
+        }
         const metaName =
           typeof data.user.user_metadata?.name === "string"
             ? data.user.user_metadata.name

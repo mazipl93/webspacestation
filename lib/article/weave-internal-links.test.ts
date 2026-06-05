@@ -175,4 +175,127 @@ describe("pickWeaveInternalLinkCandidates", () => {
     const archive = archiveResurfaceBias("2025-10-01T00:00:00.000Z", now);
     assert.ok(archive > recent);
   });
+
+  it("nauka article never weaves rozrywka even with tag overlap", () => {
+    const source = {
+      id: "proznia",
+      slug: "dlaczego-w-kosmosie-jest-proznia",
+      title: "Dlaczego w kosmosie jest próżnia",
+      excerpt: "Fizyka próżni kosmicznej",
+      category: "nauka" as const,
+      tags: ["kosmos", "fizyka", "proznia", "stellaris"],
+      publishedAt: "2026-06-05T10:00:00.000Z",
+      createdAt: "2026-06-05T10:00:00.000Z",
+      score: 7,
+    };
+    const pool = [
+      source,
+      {
+        id: "stellaris",
+        slug: "stellaris-update-2026",
+        title: "Stellaris — wielka aktualizacja",
+        excerpt: "Gra 4X",
+        category: "rozrywka" as const,
+        tags: ["stellaris", "kosmos", "gra"],
+        publishedAt: "2026-06-04T10:00:00.000Z",
+        createdAt: "2026-06-04T10:00:00.000Z",
+        score: 9,
+      },
+      {
+        id: "grawitacja",
+        slug: "jak-dziala-grawitacja",
+        title: "Jak działa grawitacja w kosmosie",
+        excerpt: "Evergreen",
+        category: "nauka" as const,
+        tags: ["fizyka", "kosmos"],
+        publishedAt: "2025-12-01T10:00:00.000Z",
+        createdAt: "2025-12-01T10:00:00.000Z",
+        score: 6,
+      },
+      {
+        id: "jwst",
+        slug: "jwst-jak-dziala-teleskop",
+        title: "Jak działa teleskop JWST",
+        excerpt: "Astronomia od podstaw",
+        category: "astronomia" as const,
+        tags: ["kosmos", "teleskop"],
+        publishedAt: "2025-11-01T10:00:00.000Z",
+        createdAt: "2025-11-01T10:00:00.000Z",
+        score: 6,
+      },
+      {
+        id: "artemis",
+        slug: "artemis-program-przewodnik",
+        title: "Program Artemis — przewodnik",
+        excerpt: "Misje Księżyc",
+        category: "misje" as const,
+        tags: ["ksiezyc", "nasa"],
+        publishedAt: "2025-10-01T10:00:00.000Z",
+        createdAt: "2025-10-01T10:00:00.000Z",
+        score: 5,
+      },
+    ];
+    const picked = pickWeaveInternalLinkCandidates(source, pool, 4);
+    assert.ok(picked.length > 0);
+    assert.ok(
+      picked.every((a) => a.category !== "rozrywka"),
+      `expected no rozrywka, got: ${picked.map((a) => a.slug).join(", ")}`
+    );
+    assert.equal(picked[0]?.category, "nauka");
+  });
+
+  it("nauka without peer articles prefers astronomia/misje over technologie news", () => {
+    const source = {
+      id: "proznia",
+      slug: "dlaczego-w-kosmosie-jest-proznia",
+      title: "Dlaczego w kosmosie jest próżnia",
+      excerpt: "Fizyka próżni kosmicznej",
+      category: "nauka" as const,
+      tags: ["kosmos", "fizyka", "proznia"],
+      publishedAt: "2026-06-05T10:00:00.000Z",
+      createdAt: "2026-06-05T10:00:00.000Z",
+      score: 7,
+    };
+    const pool = [
+      source,
+      {
+        id: "observable",
+        slug: "observable-space-funding",
+        title: "Observable Space pozyskuje 90 milionów dolarów",
+        excerpt: "Finansowanie",
+        category: "technologie" as const,
+        tags: ["kosmos", "fizyka", "proznia", "spacex"],
+        publishedAt: "2026-06-04T10:00:00.000Z",
+        createdAt: "2026-06-04T10:00:00.000Z",
+        score: 10,
+      },
+      {
+        id: "jwst",
+        slug: "jwst-jak-dziala-teleskop",
+        title: "Jak działa teleskop JWST",
+        excerpt: "Astronomia od podstaw",
+        category: "astronomia" as const,
+        tags: ["teleskop"],
+        publishedAt: "2025-11-01T10:00:00.000Z",
+        createdAt: "2025-11-01T10:00:00.000Z",
+        score: 4,
+      },
+      {
+        id: "roman",
+        slug: "roman-space-telescope-start",
+        title: "Roman Space Telescope coraz bliżej startu",
+        excerpt: "Misja NASA",
+        category: "misje" as const,
+        tags: ["nasa"],
+        publishedAt: "2025-10-01T10:00:00.000Z",
+        createdAt: "2025-10-01T10:00:00.000Z",
+        score: 4,
+      },
+    ];
+    const picked = pickWeaveInternalLinkCandidates(source, pool, 4);
+    assert.deepEqual(
+      picked.map((a) => a.category),
+      ["astronomia", "misje", "technologie"]
+    );
+  });
 });

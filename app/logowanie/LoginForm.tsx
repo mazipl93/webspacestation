@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Loader2, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { isEmailVerified } from "@/lib/auth/email-verified";
 import {
   provisionSessionUser,
   redirectAfterAuth,
@@ -30,11 +31,16 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(
-    searchParams.get("error") === "auth"
-      ? "Link logowania wygasł lub jest nieprawidłowy. Spróbuj ponownie."
-      : null
-  );
+  const [error, setError] = useState<string | null>(() => {
+    const code = searchParams.get("error");
+    if (code === "auth") {
+      return "Link logowania wygasł lub jest nieprawidłowy. Spróbuj ponownie.";
+    }
+    if (code === "email_not_confirmed") {
+      return "Potwierdź adres e-mail, zanim się zalogujesz. Sprawdź swoją skrzynkę.";
+    }
+    return null;
+  });
 
   const registerHref =
     redirectTo && redirectTo !== "/"
@@ -55,13 +61,20 @@ export default function LoginForm() {
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
 
     if (signInError) {
       setError(mapError(signInError.message));
+      setLoading(false);
+      return;
+    }
+
+    if (data.user && !isEmailVerified(data.user)) {
+      await supabase.auth.signOut();
+      setError("Potwierdź adres e-mail, zanim się zalogujesz. Sprawdź swoją skrzynkę.");
       setLoading(false);
       return;
     }

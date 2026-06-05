@@ -2,6 +2,11 @@ import {
   calculateRelatedScore,
   type RelatableArticle,
 } from "@/lib/article/related-articles";
+import {
+  getWeaveCategoryTiers,
+  isWeaveTargetAllowed,
+  weaveCategoryAffinityBonus,
+} from "@/lib/article/weave-category-rules";
 import type { ArticleContentBlock } from "@/lib/articles/parse-content-blocks";
 import type { NewsArticle } from "@/types";
 
@@ -74,15 +79,17 @@ export function pickInternalLinkInsertIndices(
 export const INTERNAL_LINK_TEASER_OPENERS: readonly ((ctx: {
   categoryLabel: string;
   title: string;
+  sameDepartment: boolean;
 }) => string)[] = [
   ({ categoryLabel }) =>
-    `W temacie ${categoryLabel} warto też zajrzeć do materiału`,
-  ({ categoryLabel }) =>
-    `Z tego samego działu (${categoryLabel}) polecamy lekturę`,
+    `W dziale ${categoryLabel} warto też zajrzeć do materiału`,
+  ({ categoryLabel, sameDepartment }) =>
+    sameDepartment
+      ? `Z tego samego działu (${categoryLabel}) polecamy lekturę`
+      : `Z działu ${categoryLabel} polecamy lekturę`,
   () => "Jeśli ten wątek Cię wciąga, sprawdź też",
   () => "W archiwum WSS znajdziesz powiązany tekst",
-  ({ categoryLabel }) =>
-    `Kontynuacja tematu ${categoryLabel} — artykuł`,
+  ({ categoryLabel }) => `Kontynuacja tematu ${categoryLabel} — artykuł`,
 ];
 
 /** Short hint after the link (excerpt trim). */
@@ -234,16 +241,63 @@ export function scoreWeaveInternalLinkCandidate(
     candidate.publishedAt ?? candidate.createdAt,
     nowMs
   );
-  return base + titleBonus + archive;
+  const categoryBonus = weaveCategoryAffinityBonus(
+    source.category,
+    candidate.category
+  );
+  return base + titleBonus + archive + categoryBonus;
 }
 
 export type PickWeaveCandidatesOptions = {
   excludeIds?: Iterable<string>;
 };
 
+function rankWeavePool<T extends InternalLinkCandidate & RelatableArticle>(
+  source: T,
+  pool: T[],
+  nowMs: number
+): { article: T; score: number }[] {
+  return pool
+    .map((article) => ({
+      article,
+      score: scoreWeaveInternalLinkCandidate(source, article, nowMs),
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return articleTimestamp(b.article) - articleTimestamp(a.article);
+    });
+}
+
+function maybeSwapArchivePick<T extends InternalLinkCandidate & RelatableArticle>(
+  source: T,
+  result: T[],
+  ranked: { article: T; score: number }[],
+  max: number,
+  nowMs: number
+): T[] {
+  if (max < 2 || result.length < 2) return result;
+
+  const hasArchive = result.some((a) => isArchiveWindow(a, nowMs));
+  if (hasArchive) return result;
+
+  const used = new Set(result.map((a) => a.id));
+  const topScore = ranked[0]?.score ?? 0;
+  const archiveRow = ranked.find(
+    (row) =>
+      !used.has(row.article.id) &&
+      isArchiveWindow(row.article, nowMs) &&
+      row.score >= topScore * 0.4
+  );
+  if (!archiveRow) return result;
+
+  const replaced = [...result];
+  replaced[replaced.length - 1] = archiveRow.article;
+  return replaced;
+}
+
 /**
- * Best articles to weave into body copy — same category & tags first,
- * with at least one archive pick when the pool allows (Google + retention).
+ * Best articles to weave into body copy — same department first, then fallback
+ * tiers (Astronomia/Misje for Nauka). Never Rozrywka in science departments.
  */
 export function pickWeaveInternalLinkCandidates<
   T extends InternalLinkCandidate & RelatableArticle,
@@ -259,37 +313,32 @@ export function pickWeaveInternalLinkCandidates<
   const exclude = new Set(options.excludeIds ?? []);
   exclude.add(source.id);
 
-  const eligible = pool.filter((a) => !exclude.has(a.id));
+  const eligible = pool.filter(
+    (a) =>
+      !exclude.has(a.id) &&
+      isWeaveTargetAllowed(source.category, a.category)
+  );
   if (eligible.length === 0) return [];
 
   const nowMs = Date.now();
-  const ranked = eligible
-    .map((article) => ({
-      article,
-      score: scoreWeaveInternalLinkCandidate(source, article, nowMs),
-    }))
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return articleTimestamp(b.article) - articleTimestamp(a.article);
-    });
+  const tiers = getWeaveCategoryTiers(source.category);
+  const result: T[] = [];
+  const used = new Set<string>();
 
-  const result = ranked.slice(0, max).map((row) => row.article);
+  for (const tierCategories of tiers) {
+    if (result.length >= max) break;
+    const tierPool = eligible.filter((a) => tierCategories.includes(a.category));
+    const ranked = rankWeavePool(source, tierPool, nowMs);
+    for (const row of ranked) {
+      if (result.length >= max) break;
+      if (used.has(row.article.id)) continue;
+      result.push(row.article);
+      used.add(row.article.id);
+    }
+  }
 
-  if (max < 2 || result.length < 2) return result;
-
-  const hasArchive = result.some((a) => isArchiveWindow(a, nowMs));
-  if (hasArchive) return result;
-
-  const archiveRow = ranked.find(
-    (row) =>
-      isArchiveWindow(row.article, nowMs) &&
-      row.score >= ranked[0].score * 0.4
-  );
-  if (!archiveRow) return result;
-
-  const replaced = [...result];
-  replaced[replaced.length - 1] = archiveRow.article;
-  return replaced;
+  const allRanked = rankWeavePool(source, eligible, nowMs);
+  return maybeSwapArchivePick(source, result, allRanked, max, nowMs);
 }
 
 /** Dedupe by id, preserve order. */

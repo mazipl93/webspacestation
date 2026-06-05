@@ -6,6 +6,11 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Loader2, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  buildPrivacyConsentMetadata,
+  PRIVACY_POLICY_PATH,
+} from "@/lib/auth/privacy-consent";
+import { isEmailVerified } from "@/lib/auth/email-verified";
+import {
   provisionSessionUser,
   redirectAfterAuth,
   safeRedirectPath,
@@ -33,6 +38,7 @@ export default function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmSent, setConfirmSent] = useState(false);
@@ -47,6 +53,9 @@ export default function RegisterForm() {
     if (password.length < MIN_PASSWORD)
       return `Hasło musi mieć co najmniej ${MIN_PASSWORD} znaków.`;
     if (password !== confirm) return "Hasła nie są identyczne.";
+    if (!privacyAccepted) {
+      return "Musisz zaakceptować Politykę prywatności, aby założyć konto.";
+    }
     return null;
   }
 
@@ -80,7 +89,10 @@ export default function RegisterForm() {
       email: email.trim(),
       password,
       options: {
-        data: { name: name.trim() || email.trim().split("@")[0] },
+        data: {
+          name: name.trim() || email.trim().split("@")[0],
+          ...buildPrivacyConsentMetadata(),
+        },
         emailRedirectTo,
       },
     });
@@ -91,9 +103,16 @@ export default function RegisterForm() {
       return;
     }
 
-    // If Supabase requires email confirmation, no session is returned — show a
-    // "check your inbox" state. Otherwise the user is signed in immediately.
-    if (!data.session) {
+    const needsEmailConfirmation = !data.session;
+
+    if (needsEmailConfirmation) {
+      setConfirmSent(true);
+      setLoading(false);
+      return;
+    }
+
+    if (data.user && !isEmailVerified(data.user)) {
+      await supabase.auth.signOut();
       setConfirmSent(true);
       setLoading(false);
       return;
@@ -180,7 +199,36 @@ export default function RegisterForm() {
         />
       </Field>
 
-      <Button type="submit" disabled={loading} className="mt-1 w-full">
+      <label className="flex cursor-pointer items-start gap-3 rounded-[0.65rem] border border-white/[0.1] bg-[#090d13]/80 px-3.5 py-3">
+        <input
+          id="privacy-consent"
+          type="checkbox"
+          checked={privacyAccepted}
+          onChange={(e) => setPrivacyAccepted(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 bg-[#060810] text-accent-blue focus:ring-accent-blue/40"
+          required
+        />
+        <span className="text-[12.5px] leading-relaxed text-text-secondary">
+          Akceptuję{" "}
+          <Link
+            href={PRIVACY_POLICY_PATH}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-accent-cyan underline decoration-accent-cyan/35 underline-offset-2 hover:text-accent-blue"
+          >
+            Politykę prywatności
+          </Link>{" "}
+          i wyrażam zgodę na przetwarzanie moich danych osobowych (adres e-mail,
+          nazwa konta) w celu utworzenia i obsługi konta w serwisie Web Space
+          Station (RODO).
+        </span>
+      </label>
+
+      <Button
+        type="submit"
+        disabled={loading || !privacyAccepted}
+        className="mt-1 w-full"
+      >
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />

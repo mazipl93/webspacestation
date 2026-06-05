@@ -1,9 +1,9 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 56 — CMS grafiki, Nauka w edytorze, pierwszy artykuł Nauki)  
+**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 57 — weave links per dział, filtr Nauka≠Rozrywka)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `7042449` (czat 56) · **push:** po explicit OK usera  
+**Ostatni commit:** lokalnie WIP (czat 57) · **push:** po explicit OK usera  
 **Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -177,24 +177,20 @@ Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_
 
 REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-=== STAN (czat 56, commit `7042449` lokalnie — NIE PUSH bez OK) ===
+=== STAN (czat 57, WIP lokalnie — NIE PUSH bez OK) ===
 
 **Działy:** Misje → Astronomia → **Nauka** (`/nauka`) → Technologie → ISS → Ziemia → Rozrywka  
 **Fundament:** `docs/WSS_CONTENT_ARCHITECTURE.md`
 
-**Czat 56 — zrobione:**
-- CMS **Link do grafiki** — formularz inline (bez window.prompt / crash Cursor)
-- **Grafiki w treści** — parser `figure` + fix boilerplate `https://` (`display-content.ts`)
-- CMS kategoria **Nauka** w edytorze (`prepareCategoriesForEditor`) · migracje DB lokalnie
-- User: pierwszy artykuł evergreen w **Nauce** — `dlaczego-w-kosmosie-jest-proznia` (3 grafiki w treści OK)
-
-**PRIORYTET czat 57 — linki w treści (weave) per dział:**
-Problem: w artykule **Nauka** automatyczne „polecamy lekturę” proponuje **Rozrywkę** (Stellaris, Gothic, NMS…) — źle.
-User: w Nauce OK **Misje**, **Astronomia** (może też); **NIE Rozrywka**; ustal reguły z `WSS_CONTENT_ARCHITECTURE.md`.
-Kod: `lib/article/weave-internal-links.ts` (`pickWeaveInternalLinkCandidates`, `scoreWeaveInternalLinkCandidate`) · `lib/articles.ts` (`getWeaveInternalLinkCandidates`) · test na slugu `dlaczego-w-kosmosie-jest-proznia`.
+**Czat 57 — zrobione (WIP, bez commita):**
+- **Weave links per dział** — `lib/article/weave-category-rules.ts` (denylist Rozrywka dla działów kosmos/nauki; bonus rankingu dla Nauki)
+- `pickWeaveInternalLinkCandidates` filtruje + `scoreWeaveInternalLinkCandidate` bonus kategorii
+- Test: `nauka` → zero `rozrywka` w wyniku (nawet przy tag overlap)
+- Smoke lokalny: `/aktualnosci/dlaczego-w-kosmosie-jest-proznia` — w **treści** brak Stellaris/NMS/Gothic; weave = technologie + misje
 
 **Otwarte:**
-- Push prod po explicit OK (`7042449` + wcześniejsze lokalne commity)
+- Commit + push prod po explicit OK (WIP czat 56 + 57)
+- Sidebar **Powiązane artykuły** nadal może pokazywać Rozrywkę (osobny ranking — nie w scope weave)
 - Prod DB: `content-arch:migrate` + `category:migrate-nauka` jeśli jeszcze nie
 
 Prod: https://webspacestation.pl
@@ -203,6 +199,17 @@ Prod: https://webspacestation.pl
 ---
 
 ## Historia sesji (skrót)
+
+### Sesja 5.06.2026 (czat 57) — weave links per dział · Nauka ≠ Rozrywka
+
+| Obszar | Stan |
+|--------|------|
+| **Weave (treść)** | Denylist `rozrywka` dla nauka/misje/astronomia/technologie/iss/ziemia; bonus rankingu Nauka → nauka/astronomia/misje |
+| **Test** | `weave-internal-links.test.ts` — nauka + tag overlap ze Stellaris → 0× rozrywka |
+| **Smoke** | `dlaczego-w-kosmosie-jest-proznia` — body teasery bez gier; 4 linki (Observable Space, Siły Kosmiczne, Roman, Muon) |
+| **Commit** | **Brak** — czeka OK usera |
+
+**Pliki:** `weave-category-rules.ts` · `weave-internal-links.ts` · `weave-internal-links.test.ts`
 
 ### Sesja 5.06.2026 (czat 56) — CMS grafiki · Nauka w edytorze · pierwszy artykuł Nauki
 

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { isEmailVerified } from "@/lib/auth/email-verified";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -57,6 +58,16 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute && !user?.email) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.searchParams.set("redirectTo", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  const needsVerifiedEmail =
+    pathname.startsWith("/profil") || pathname.startsWith("/api/profile");
+  if (needsVerifiedEmail && user?.email && !isEmailVerified(user)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/logowanie";
+    url.searchParams.set("error", "email_not_confirmed");
     url.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(url);
   }

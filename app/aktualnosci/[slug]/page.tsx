@@ -4,11 +4,12 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
+  getAllArticles,
   getArticleBySlug,
   getReadNextArticles,
-  getRelatedArticles,
   getWeaveInternalLinkCandidates,
 } from "@/lib/articles";
+import { pickWeaveInternalLinkCandidates } from "@/lib/article/weave-internal-links";
 import ReadNextSection from "@/components/article/ReadNextSection";
 import ArticleMainColumnShell from "@/components/article/ArticleMainColumnShell";
 import JsonLd from "@/components/seo/JsonLd";
@@ -390,22 +391,22 @@ export default async function ArticlePage({ params }: Props) {
   // In-body links use their own ranking — do NOT exclude „Czytaj dalej” (same pool
   // was leaving long articles with 0–1 weave candidate on prod).
   const readNextList = await getReadNextArticles(article);
+  const all = await getAllArticles();
 
-  const [allRelated, weaveCandidates] = await Promise.all([
-    getRelatedArticles(article, 6),
-    getWeaveInternalLinkCandidates(article),
-  ]);
+  const weaveCandidates = await getWeaveInternalLinkCandidates(article);
 
   const reservedIds = new Set<string>([article.id]);
   for (const a of weaveCandidates) reservedIds.add(a.id);
   for (const a of readNextList) reservedIds.add(a.id);
 
-  const sidebarRelated = allRelated
-    .filter((a) => !reservedIds.has(a.id))
-    .slice(0, 3);
+  const sidebarRelated = pickWeaveInternalLinkCandidates(article, all, 3, {
+    excludeIds: reservedIds,
+  });
   for (const a of sidebarRelated) reservedIds.add(a.id);
 
-  const stripRelated = allRelated.filter((a) => !reservedIds.has(a.id));
+  const stripRelated = pickWeaveInternalLinkCandidates(article, all, 6, {
+    excludeIds: reservedIds,
+  });
 
   return (
     <>

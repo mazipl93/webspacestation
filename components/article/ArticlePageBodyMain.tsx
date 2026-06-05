@@ -87,7 +87,7 @@ export default function ArticlePageBodyMain({
               <InternalLinkTeaser
                 key={`link-${segment.article.id}-${i}`}
                 article={segment.article}
-                categoryLabel={meta.label}
+                sourceCategory={article.category}
                 templateIndex={segment.templateIndex}
               />
             )
