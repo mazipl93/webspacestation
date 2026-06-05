@@ -277,7 +277,7 @@ export default function ProfileClient() {
 
             <div className="mt-6 flex flex-wrap justify-center gap-3 sm:justify-start">
               <StatChip label="Zapisane" value={savedArticles.length} accent="#38bdf8" />
-              <StatChip label="Polubione" value={likedArticles.length} accent="#f87171" />
+              <StatChip label="Polubione" value={likedSlugs.length} accent="#f87171" />
             </div>
           </div>
         </section>
@@ -317,7 +317,7 @@ export default function ProfileClient() {
           <ProfileSectionHeading
             icon={Heart}
             title="Polubione artykuły"
-            count={likedArticles.length}
+            count={likedSlugs.length}
             accentClassName="text-accent-live"
           />
           <ArticleGrid

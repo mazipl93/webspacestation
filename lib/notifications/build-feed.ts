@@ -1,6 +1,6 @@
 import "server-only";
 
-import { CATEGORY_INFO } from "@/lib/categories";
+import { canonicalDepartmentSlug, CATEGORY_INFO } from "@/lib/categories";
 import { formatRelativePublishLabel } from "@/lib/articles/public-publish-time";
 import { fetchUpcomingLaunches } from "@/lib/ops/launch-library";
 import type { OpsLaunch } from "@/lib/ops/types";
@@ -117,7 +117,7 @@ export async function buildNotificationFeed(
       : null;
     if (!publishedAt) continue;
 
-    const categorySlug = article.category?.slug ?? "";
+    const categorySlug = canonicalDepartmentSlug(article.category?.slug ?? "");
     const subscribedAtMs = subscribedAtBySlug.get(categorySlug);
     if (subscribedAtMs == null) continue;
 

@@ -1,6 +1,7 @@
 import { Clock } from "lucide-react";
 import type { NewsArticle } from "@/types";
 import { cn } from "@/lib/cn";
+import DepartmentSubscribeButton from "@/components/departments/DepartmentSubscribeButton";
 
 type Props = {
   article: NewsArticle;
@@ -41,6 +42,12 @@ export default function ArticleInfoPanel({
             />
             {categoryLabel}
           </dd>
+          <div className="mt-3">
+            <DepartmentSubscribeButton
+              categorySlug={article.category}
+              className="w-full max-w-none"
+            />
+          </div>
         </div>
 
         <span className="h-px" style={{ background: "var(--hairline)" }} />

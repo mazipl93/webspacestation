@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { fetchArticleLikeCounts } from "@/lib/likes/article-like-counts";
+import { LIKES_CHANGE_EVENT } from "@/lib/likes/events";
 import { rankPopular } from "@/lib/home/rank-articles";
 import { POPULAR_THEME } from "@/lib/home/homepage-section-themes";
 import type { NewsArticle } from "@/types";
@@ -38,14 +39,19 @@ export default function PopularArticles({ articles, excludeSlugs = [] }: Props) 
       return;
     }
 
-    (async () => {
+    const load = async () => {
       const map = await fetchArticleLikeCounts(supabase!);
       if (!active) return;
       setLikeCounts(map);
-    })();
+    };
+
+    void load();
+    const onLikesChange = () => void load();
+    window.addEventListener(LIKES_CHANGE_EVENT, onLikesChange);
 
     return () => {
       active = false;
+      window.removeEventListener(LIKES_CHANGE_EVENT, onLikesChange);
     };
   }, []);
 

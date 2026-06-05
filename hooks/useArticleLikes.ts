@@ -4,11 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
-import {
-  ARTICLE_LIKE_COUNTS_VIEW,
-  LEGACY_ARTICLE_LIKES_TABLE,
-} from "@/lib/likes/article-like-counts";
+import { fetchSingleArticleLikeCount } from "@/lib/likes/article-like-counts";
 import { LIKES_CHANGE_EVENT } from "@/lib/likes/events";
+import { articleLikeErrorMessage } from "@/lib/likes/like-errors";
 import { toggleArticleLike } from "@/lib/likes/supabase-likes";
 
 interface LikesState {
@@ -16,32 +14,9 @@ interface LikesState {
   liked: boolean;
   loading: boolean;
   toggling: boolean;
+  error: string | null;
   isAuthed: boolean;
   toggle: () => void;
-}
-
-async function fetchLikeCount(
-  supabase: SupabaseClient,
-  slug: string
-): Promise<number> {
-  const modern = await supabase
-    .from(ARTICLE_LIKE_COUNTS_VIEW)
-    .select("count")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (!modern.error) {
-    return (modern.data?.count as number | undefined) ?? 0;
-  }
-
-  const legacy = await supabase
-    .from(LEGACY_ARTICLE_LIKES_TABLE)
-    .select("count")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (legacy.error) return 0;
-  return (legacy.data?.count as number | undefined) ?? 0;
 }
 
 async function fetchUserLiked(
@@ -67,6 +42,7 @@ export function useArticleLikes(slug: string): LikesState {
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const clientRef = useRef<SupabaseClient | null>(null);
   if (clientRef.current === null) {
@@ -77,35 +53,35 @@ export function useArticleLikes(slug: string): LikesState {
     }
   }
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     const supabase = clientRef.current;
     if (!supabase) {
       setLoading(false);
       return;
     }
 
-    let active = true;
     setLoading(true);
+    const total = await fetchSingleArticleLikeCount(supabase, slug);
+    setCount(total);
 
-    (async () => {
-      const total = await fetchLikeCount(supabase, slug);
-      if (!active) return;
-      setCount(total);
-
-      if (user) {
-        const mine = await fetchUserLiked(supabase, slug);
-        if (active) setLiked(mine);
-      } else {
-        setLiked(false);
-      }
-
-      if (active) setLoading(false);
-    })();
-
-    return () => {
-      active = false;
-    };
+    if (user) {
+      const mine = await fetchUserLiked(supabase, slug);
+      setLiked(mine);
+    } else {
+      setLiked(false);
+    }
+    setLoading(false);
   }, [slug, user]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const onChange = () => void refresh();
+    window.addEventListener(LIKES_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(LIKES_CHANGE_EVENT, onChange);
+  }, [refresh]);
 
   const toggle = useCallback(() => {
     if (!isAuthed || toggling) return;
@@ -115,6 +91,7 @@ export function useArticleLikes(slug: string): LikesState {
 
     const wasLiked = liked;
     setToggling(true);
+    setError(null);
     setLiked(!wasLiked);
     setCount((c) => {
       const base = c ?? 0;
@@ -131,6 +108,7 @@ export function useArticleLikes(slug: string): LikesState {
           const base = c ?? 0;
           return wasLiked ? base + 1 : Math.max(0, base - 1);
         });
+        setError(articleLikeErrorMessage(error?.message ?? "Invalid toggle response"));
         return;
       }
 
@@ -145,6 +123,7 @@ export function useArticleLikes(slug: string): LikesState {
     liked,
     loading: loading || authLoading,
     toggling,
+    error,
     isAuthed,
     toggle,
   };

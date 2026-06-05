@@ -47,9 +47,11 @@ create policy "user_article_likes_delete_own"
 
 grant select, insert, delete on public.user_article_likes to authenticated;
 
--- 3. Public aggregate for ranking / display (anon + logged-in)
-create or replace view public.article_like_counts
-with (security_barrier = false)
+-- 3. Public aggregate — security_invoker=false so RLS on base table does not hide other users' likes
+drop view if exists public.article_like_counts;
+
+create view public.article_like_counts
+with (security_invoker = false)
 as
 select
   slug,
@@ -59,11 +61,26 @@ group by slug;
 
 grant select on public.article_like_counts to anon, authenticated;
 
+-- 3b. Single-slug count (client fallback; security definer = true global count)
+create or replace function public.get_article_like_count(p_slug text)
+returns integer
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select count(*)::integer
+  from public.user_article_likes
+  where slug = nullif(trim(p_slug), '');
+$$;
+
+grant execute on function public.get_article_like_count(text) to anon, authenticated;
+
 -- 4. Toggle like (authenticated only) — Krok 2 UX calls this RPC
 create or replace function public.toggle_article_like(p_slug text)
 returns json
 language plpgsql
-security invoker
+security definer
 set search_path = public
 as $$
 declare

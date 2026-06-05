@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isSubscribableDepartment } from "@/lib/departments/subscriptions";
+import { normalizeSubscribableDepartment } from "@/lib/departments/subscriptions";
 import {
   getSupabaseAuthUserId,
   getUserDepartmentSubscriptions,
@@ -37,8 +37,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const slug = body.categorySlug?.trim().toLowerCase();
-  if (!isSubscribableDepartment(slug)) {
+  const slug = normalizeSubscribableDepartment(body.categorySlug);
+  if (!slug) {
     return NextResponse.json({ error: "Invalid department" }, { status: 400 });
   }
 

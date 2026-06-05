@@ -17,6 +17,7 @@ import {
   articleTag,
   categoryTag,
 } from "@/lib/cache/tags";
+import { categorySlugsForDepartmentFeed } from "@/lib/categories";
 import { PUBLISHED_ARTICLE_WHERE } from "@/lib/server/published-only";
 
 export class ArticleWorkflowError extends Error {
@@ -207,28 +208,47 @@ export async function getPublishedArticleBySlug(
   )();
 }
 
+async function queryArticlesByCategoryFromDb(
+  categorySlug: string
+): Promise<ArticleWithRelations[]> {
+  const slugs = categorySlugsForDepartmentFeed(categorySlug);
+  try {
+    const rows = await prisma.article.findMany({
+      where: {
+        ...PUBLISHED_ARTICLE_WHERE,
+        category:
+          slugs.length === 1
+            ? { slug: slugs[0] }
+            : { slug: { in: slugs } },
+      },
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      select: articleSelect,
+    });
+    traceArticleFetchPublic({
+      scope: `category-${categorySlug}`,
+      count: rows.length,
+    });
+    return rows;
+  } catch (error) {
+    console.error("[getArticlesByCategory]", error);
+    return [];
+  }
+}
+
 /** Published articles within a category (by category slug), newest first. */
 export async function getArticlesByCategory(
   categorySlug: string
 ): Promise<ArticleWithRelations[]> {
-  await maybeTickScheduledPublish();
+  const tick = await maybeTickScheduledPublish();
+  const useLiveQuery =
+    process.env.NODE_ENV === "development" ||
+    (tick != null && tick.published > 0);
+  if (useLiveQuery) {
+    return queryArticlesByCategoryFromDb(categorySlug);
+  }
   return unstable_cache(
-    async (): Promise<ArticleWithRelations[]> => {
-      try {
-        return await prisma.article.findMany({
-          where: {
-            ...PUBLISHED_ARTICLE_WHERE,
-            category: { slug: categorySlug },
-          },
-          orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
-          select: articleSelect,
-        });
-      } catch (error) {
-        console.error("[getArticlesByCategory]", error);
-        return [];
-      }
-    },
-    ["category-articles", categorySlug],
+    () => queryArticlesByCategoryFromDb(categorySlug),
+    ["category-articles", categorySlug, "v2-legacy-nauka"],
     { tags: [ARTICLES_TAG, categoryTag(categorySlug)] }
   )();
 }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   DEPARTMENT_SUBSCRIPTIONS_CHANGE_EVENT,
-  isSubscribableDepartment,
+  normalizeSubscribableDepartment,
   type SubscribableDepartmentSlug,
 } from "@/lib/departments/subscriptions";
 
@@ -58,15 +58,16 @@ export function useDepartmentSubscriptions() {
 
   const toggle = useCallback(
     async (slug: string) => {
-      if (!email || !isSubscribableDepartment(slug)) return false;
-      setToggling(slug);
+      const normalized = normalizeSubscribableDepartment(slug);
+      if (!email || !normalized) return false;
+      setToggling(normalized);
       setError(null);
       try {
         const res = await fetch("/api/department-subscriptions", {
           method: "POST",
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ categorySlug: slug }),
+          body: JSON.stringify({ categorySlug: normalized }),
         });
         const json = (await res.json()) as {
           slugs?: string[];

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { canonicalDepartmentSlug } from "@/lib/categories";
 import { isSubscribableDepartment } from "@/lib/departments/subscriptions";
 
 export type DepartmentSubscription = {
@@ -31,10 +32,18 @@ export async function getUserDepartmentSubscriptions(
     return [];
   }
 
-  return (data ?? [])
-    .filter((row) => isSubscribableDepartment(row.category_slug))
-    .map((row) => ({
-      slug: row.category_slug,
+  const seen = new Set<string>();
+  const out: DepartmentSubscription[] = [];
+
+  for (const row of data ?? []) {
+    const slug = canonicalDepartmentSlug(row.category_slug);
+    if (!isSubscribableDepartment(slug) || seen.has(slug)) continue;
+    seen.add(slug);
+    out.push({
+      slug,
       subscribedAt: new Date(row.created_at),
-    }));
+    });
+  }
+
+  return out;
 }

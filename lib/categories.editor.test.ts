@@ -1,7 +1,32 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { prepareCategoriesForEditor } from "@/lib/categories";
+import {
+  canonicalDepartmentSlug,
+  categorySlugsForDepartmentFeed,
+  prepareCategoriesForEditor,
+} from "@/lib/categories";
+
+describe("canonicalDepartmentSlug", () => {
+  it("maps legacy Nauka slugs and ai", () => {
+    assert.equal(canonicalDepartmentSlug("popularnonaukowe"), "nauka");
+    assert.equal(canonicalDepartmentSlug("wyjasniamy"), "nauka");
+    assert.equal(canonicalDepartmentSlug("ai"), "technologie");
+    assert.equal(canonicalDepartmentSlug("misje"), "misje");
+  });
+});
+
+describe("categorySlugsForDepartmentFeed", () => {
+  it("includes legacy Nauka slugs for nauka feed", () => {
+    assert.deepEqual(categorySlugsForDepartmentFeed("nauka"), [
+      "nauka",
+      "popularnonaukowe",
+      "wyjasniamy",
+      "wiedza",
+    ]);
+    assert.deepEqual(categorySlugsForDepartmentFeed("misje"), ["misje"]);
+  });
+});
 
 describe("prepareCategoriesForEditor", () => {
   it("returns editorial order with Nauka label", () => {

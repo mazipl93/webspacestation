@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Bell, BellRing, Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { getCategoryInfo } from "@/lib/categories";
-import { isSubscribableDepartment } from "@/lib/departments/subscriptions";
+import { normalizeSubscribableDepartment } from "@/lib/departments/subscriptions";
 import { useDepartmentSubscriptions } from "@/hooks/useDepartmentSubscriptions";
 import { useAuth } from "@/components/auth/AuthProvider";
 
@@ -18,11 +18,13 @@ export default function DepartmentSubscribeButton({
   className,
 }: Props) {
   const { user, loading: authLoading } = useAuth();
-  const { isSubscribed, toggle, toggling, loading } = useDepartmentSubscriptions();
+  const { isSubscribed, toggle, toggling, loading, error } =
+    useDepartmentSubscriptions();
 
-  if (!isSubscribableDepartment(categorySlug)) return null;
+  const departmentSlug = normalizeSubscribableDepartment(categorySlug);
+  if (!departmentSlug) return null;
 
-  const meta = getCategoryInfo(categorySlug);
+  const meta = getCategoryInfo(departmentSlug);
   const accent = meta.color;
   const loginHref = `/logowanie?redirectTo=${encodeURIComponent(meta.href)}`;
 
@@ -52,20 +54,20 @@ export default function DepartmentSubscribeButton({
     );
   }
 
-  const subscribed = isSubscribed(categorySlug);
-  const busy = loading || toggling === categorySlug;
+  const subscribed = isSubscribed(departmentSlug);
+  const busy = loading || toggling === departmentSlug;
 
   return (
+    <div className={cn("flex flex-col gap-1.5", className)}>
     <button
       type="button"
       disabled={busy}
-      onClick={() => void toggle(categorySlug)}
+      onClick={() => void toggle(departmentSlug)}
       className={cn(
         "inline-flex w-full max-w-[400px] items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-left text-[13px] font-semibold transition-all duration-200 sm:w-auto",
         subscribed
           ? "border-hairline-strong text-text-primary"
           : "border-hairline text-text-secondary hover:border-hairline-strong hover:text-text-primary",
-        className
       )}
       style={
         subscribed
@@ -102,5 +104,11 @@ export default function DepartmentSubscribeButton({
         )}
       </span>
     </button>
+    {error ? (
+      <span className="text-[11px] text-accent-live" role="alert">
+        {error}
+      </span>
+    ) : null}
+    </div>
   );
 }

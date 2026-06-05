@@ -102,6 +102,28 @@ export const NAUKA_LEGACY_SLUGS = [
   "wiedza",
 ] as const;
 
+const NAUKA_LEGACY_SET = new Set<string>(NAUKA_LEGACY_SLUGS);
+
+/**
+ * Map article/DB category slug → canonical department slug for subscriptions & notifications.
+ * Legacy Nauka slugs and /ai → technologie.
+ */
+export function canonicalDepartmentSlug(slug: string | null | undefined): string {
+  const lower = slug?.trim().toLowerCase() ?? "";
+  if (!lower) return "";
+  if (lower === "ai") return "technologie";
+  if (NAUKA_LEGACY_SET.has(lower)) return "nauka";
+  return lower;
+}
+
+/** DB category slugs to include when loading a department feed (legacy Nauka rows). */
+export function categorySlugsForDepartmentFeed(departmentSlug: string): string[] {
+  if (departmentSlug === "nauka") {
+    return ["nauka", ...NAUKA_LEGACY_SLUGS];
+  }
+  return [departmentSlug];
+}
+
 /** Slugs excluded from article editor (redirects / merged on site). */
 export const EDITOR_EXCLUDED_SLUGS = ["ai", ...NAUKA_LEGACY_SLUGS] as const;
 
