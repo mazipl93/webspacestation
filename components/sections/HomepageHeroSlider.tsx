@@ -15,10 +15,6 @@ type Props = {
   articles: NewsArticle[];
 };
 
-/**
- * Homepage featured hero — magazine slider on all viewports (max 4 slides).
- * Mobile ~48svh; desktop 16:9 w kolumnie hero.
- */
 export default function HomepageHeroSlider({ articles }: Props) {
   const count = articles.length;
   const [index, setIndex] = useState(0);
@@ -48,18 +44,12 @@ export default function HomepageHeroSlider({ articles }: Props) {
 
   useEffect(() => {
     if (count <= 1) return;
-
     const id = window.setInterval(() => {
       if (Date.now() < pausedUntil.current) return;
       setIndex((i) => (i + 1) % count);
     }, HERO_AUTO_MS);
-
     return () => window.clearInterval(id);
   }, [count]);
-
-  useEffect(() => {
-    if (index >= count && count > 0) setIndex(0);
-  }, [count, index]);
 
   if (count === 0) return null;
 
@@ -82,20 +72,21 @@ export default function HomepageHeroSlider({ articles }: Props) {
         const start = touchStart.current;
         touchStart.current = null;
         if (start == null || count <= 1) return;
-
         const end = e.changedTouches[0]?.clientX ?? start;
         const delta = end - start;
-
         if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
-
         goTo(index + (delta < 0 ? 1 : -1));
       }}
     >
       <div
         className={cn(
           "relative w-full overflow-hidden",
-          "max-lg:h-[clamp(42svh,46svh,50svh)] max-lg:max-h-[50svh] max-lg:min-h-[40svh]",
-          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(52vh,520px)] lg:min-h-[280px]"
+
+          // 🔥 MOBILE — większy hero
+          "max-lg:h-[clamp(55svh,62svh,72svh)] max-lg:max-h-[72svh] max-lg:min-h-[50svh]",
+
+          // 🔥 DESKTOP — wyższy hero
+          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(78vh,820px)] lg:min-h-[420px]"
         )}
       >
         <div
@@ -117,7 +108,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
             <button
               type="button"
               aria-label="Poprzedni slajd"
-              className="absolute left-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-space-card/90 text-text-primary shadow-lg backdrop-blur-md sm:flex"
+              className="absolute left-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-space-card/90 text-text-primary shadow-lg backdrop-blur-md transition-colors hover:border-accent-cyan/40 hover:text-accent-cyan sm:flex"
               onClick={() => step(-1)}
             >
               <ChevronLeft size={20} />
@@ -126,13 +117,19 @@ export default function HomepageHeroSlider({ articles }: Props) {
             <button
               type="button"
               aria-label="Następny slajd"
-              className="absolute right-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-space-card/90 text-text-primary shadow-lg backdrop-blur-md sm:flex"
+              className="absolute right-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-space-card/90 text-text-primary shadow-lg backdrop-blur-md transition-colors hover:border-accent-cyan/40 hover:text-accent-cyan sm:flex"
               onClick={() => step(1)}
             >
               <ChevronRight size={20} />
             </button>
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center gap-2 pb-4 pt-16 lg:pb-5">
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center gap-2 pb-4 pt-16 lg:pb-5"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(5,7,9,0.92) 0%, rgba(5,7,9,0.45) 45%, transparent 100%)",
+              }}
+            >
               {articles.map((article, i) => (
                 <button
                   key={article.id}
@@ -140,12 +137,13 @@ export default function HomepageHeroSlider({ articles }: Props) {
                   aria-label={`Slajd ${i + 1}: ${article.title}`}
                   aria-current={i === index ? "true" : undefined}
                   className={cn(
-                    "pointer-events-auto rounded-full transition-all",
+                    "pointer-events-auto rounded-full transition-all duration-300",
                     i === index
-                      ? "h-1 w-7 bg-white"
-                      : "h-1.5 w-1.5 bg-white/35"
+                      ? "h-1 w-7 bg-white shadow-[0_0_12px_rgba(255,255,255,0.35)]"
+                      : "h-1.5 w-1.5 bg-white/35 hover:bg-white/55"
                   )}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     pauseAuto();
                     goTo(i);
                   }}
@@ -177,7 +175,7 @@ function HeroSlide({
   return (
     <Link
       href={`/aktualnosci/${article.slug}`}
-      className="group relative block h-full min-w-full overflow-hidden"
+      className="group relative block h-full min-w-full shrink-0 overflow-hidden"
     >
       <div
         className="absolute inset-0"
@@ -190,24 +188,26 @@ function HeroSlide({
           alt=""
           fill
           priority={priority}
-          className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(5,7,9,0.98) 0%, rgba(5,7,9,0.75) 32%, rgba(5,7,9,0.2) 58%, rgba(5,7,9,0.08) 100%)",
+        }}
+      />
 
-      <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-6">
-        <span className="text-xs font-bold uppercase text-white/80">
-          {meta.label}
-        </span>
-
-        <h2 className="mt-2 text-xl font-bold text-white">
+      <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-8 sm:px-6 lg:px-8">
+        <h2 className="font-extrabold text-text-primary">
           {article.title}
         </h2>
 
-        <p className="mt-2 flex items-center gap-1 text-xs text-white/70">
-          <Clock size={12} />
-          {article.readTime ?? 3} min
+        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-text-secondary">
+          <Clock size={13} />
+          {article.readTime ?? 3} min czytania
         </p>
       </div>
     </Link>
