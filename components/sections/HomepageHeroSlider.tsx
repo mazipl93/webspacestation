@@ -83,10 +83,8 @@ export default function HomepageHeroSlider({ articles }: Props) {
           "relative w-full overflow-hidden",
 
           // 🔥 MOBILE — większy hero
-          "max-lg:h-[clamp(55svh,62svh,72svh)] max-lg:max-h-[72svh] max-lg:min-h-[50svh]",
-
-          // 🔥 DESKTOP — wyższy hero
-          "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(68vh,720px)] lg:min-h-[360px]"
+"max-lg:h-[clamp(42svh,46svh,50svh)] max-lg:max-h-[50svh] max-lg:min-h-[40svh]",
+"lg:aspect-[16/9] lg:h-auto lg:max-h-[min(78vh,820px)] lg:min-h-[420px]"
         )}
       >
         <div
