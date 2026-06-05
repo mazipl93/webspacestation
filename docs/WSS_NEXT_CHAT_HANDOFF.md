@@ -3,7 +3,7 @@
 **Ostatnia aktualizacja:** 5 czerwca 2026 (czat 55 — Nauka, cleanup frontu, kontakt)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `529ae5e` (czat 55) · **push:** po explicit OK usera  
+**Ostatni commit:** `679a7be` (czat 55) · **push:** po explicit OK usera  
 **Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`
@@ -177,7 +177,7 @@ Kontynuujemy WSS. Przeczytaj: docs/WSS_NEXT_CHAT_HANDOFF.md · docs/WSS_CONTENT_
 
 REGUŁA: raport · test · CZEKAJ OK · push prod tylko po explicit OK.
 
-=== STAN (czat 55, commit `529ae5e` lokalnie — NIE PUSH bez OK) ===
+=== STAN (czat 55, commit `679a7be` lokalnie — NIE PUSH bez OK) ===
 
 **Działy:** Misje → Astronomia → **Nauka** (`/nauka`) → Technologie → ISS → Ziemia → Rozrywka  
 **Fundament:** `docs/WSS_CONTENT_ARCHITECTURE.md` (aktualność vs wiedza, proporcje treści)
