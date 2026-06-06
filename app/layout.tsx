@@ -12,7 +12,7 @@ import { HERO_IMAGE_PRECONNECT_ORIGINS } from "@/lib/home/hero-lcp";
 
 const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
-/** Logo WSS — wariant C · Oswald 700 (SpaceX / Bloomberg lockup) */
+/** Oswald — pozostałe elementy brandu (hero, typografia). */
 const WssBrandOswald = Oswald({
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],

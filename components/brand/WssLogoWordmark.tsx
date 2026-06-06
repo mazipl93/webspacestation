@@ -1,26 +1,28 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
-import { wssWordmarkMetrics } from "@/lib/brand/wss-wordmark-metrics";
-import WssWordmarkControl from "@/components/brand/wordmarks/WssWordmarkControl";
 
 type Props = {
   height?: number;
   className?: string;
 };
 
-/** Logo WSS — wariant C · Control (Oswald lockup). */
+const LOGO_SRC = "/brand/wss-logo.png";
+/** Intrinsic asset ratio (1120×405, transparent PNG). */
+const LOGO_ASPECT = 1120 / 405;
+
 export default function WssLogoWordmark({ height = 52, className }: Props) {
-  const metrics = wssWordmarkMetrics(height);
+  const width = Math.round(height * LOGO_ASPECT);
 
   return (
-    <div
-      className={cn(
-        "inline-flex min-w-0 max-w-[min(280px,56vw)] flex-col justify-center",
-        className,
-      )}
-      style={{ height: `${height}px` }}
+    <Image
+      src={LOGO_SRC}
+      alt=""
+      width={width}
+      height={height}
+      className={cn("block max-w-full bg-transparent object-contain object-left", className)}
+      style={{ height: `${height}px`, width: `${width}px` }}
+      priority
       aria-hidden
-    >
-      <WssWordmarkControl metrics={metrics} />
-    </div>
+    />
   );
 }
