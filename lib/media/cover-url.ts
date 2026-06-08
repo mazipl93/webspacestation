@@ -34,6 +34,9 @@ const OPTIMIZER_TRUSTED = [
   /supabase\.co\/storage\/v1\/object\/public\/article-covers\//i,
   /images-assets\.nasa\.gov/i,
   /images-api\.nasa\.gov/i,
+  /assets\.science\.nasa\.gov/i,
+  /(?:www\.)?esa\.int/i,
+  /images\.unsplash\.com/i,
 ];
 
 /**

@@ -49,4 +49,19 @@ describe("shouldBypassImageOptimizer", () => {
       true
     );
   });
+
+  it("trusts ESA and NASA science CDN covers", () => {
+    assert.equal(
+      shouldBypassImageOptimizer(
+        "https://www.esa.int/var/esa/storage/images/_banner.jpg"
+      ),
+      false
+    );
+    assert.equal(
+      shouldBypassImageOptimizer(
+        "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/foo.png"
+      ),
+      false
+    );
+  });
 });

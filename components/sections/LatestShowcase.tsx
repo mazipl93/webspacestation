@@ -50,6 +50,7 @@ function LatestSliderCard({
           fallbackCategory={article.category}
           fill
           loading="lazy"
+          quality={62}
           sizes={featured ? "(max-width: 640px) 92vw, 460px" : "(max-width: 640px) 88vw, 420px"}
           className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
         />

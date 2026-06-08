@@ -3,7 +3,10 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ContentGrid from "@/components/sections/ContentGrid";
 import { loadHomepageContent } from "@/lib/home/homepage-content";
-import { buildHeroLcpPreloadHref } from "@/lib/home/hero-lcp";
+import {
+  buildHeroLcpPreloadHref,
+  getHeroPreconnectOrigin,
+} from "@/lib/home/hero-lcp";
 import { getSiteUrl } from "@/lib/site-url";
 import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
 
@@ -24,12 +27,19 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const homepage = await loadHomepageContent();
-  const lcpPreloadHref = buildHeroLcpPreloadHref(
-    homepage.derived.heroSlides[0]?.image
-  );
+  const heroImage = homepage.derived.heroSlides[0]?.image;
+  const lcpPreloadHref = buildHeroLcpPreloadHref(heroImage);
+  const lcpPreconnect = getHeroPreconnectOrigin(heroImage);
 
   return (
     <>
+      {lcpPreconnect ? (
+        <link
+          rel="preconnect"
+          href={lcpPreconnect}
+          crossOrigin="anonymous"
+        />
+      ) : null}
       {lcpPreloadHref ? (
         <link
           rel="preload"
