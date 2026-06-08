@@ -37,7 +37,8 @@ export function HomeSectionLeadCard({
           src={article.image}
           alt={article.title}
           fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          quality={65}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 480px"
           className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]"
         />
         <div
@@ -93,6 +94,7 @@ export function HomeSectionListRow({ article }: { article: NewsArticle }) {
           src={article.image}
           alt=""
           fill
+          quality={60}
           sizes="108px"
           className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
         />

@@ -1,10 +1,7 @@
 import { getImageProps } from "next/image";
 
-/** Hosts for the first hero cover — keep ≤4 preconnect hints. */
-export const HERO_IMAGE_PRECONNECT_ORIGINS = [
-  "https://images-assets.nasa.gov",
-  "https://images.unsplash.com",
-] as const;
+/** LCP hero is served via same-origin `/_next/image` — no external preconnect needed. */
+export const HERO_IMAGE_PRECONNECT_ORIGINS = [] as const;
 
 /** Matches HomepageHeroSlider CoverImage `sizes` (mobile LCP). */
 export const HERO_LCP_IMAGE_SIZES = "(max-width: 640px) 100vw, 1320px";

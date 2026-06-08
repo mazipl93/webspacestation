@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Globe, Map, Rocket } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO, CATEGORY_SLUG_ORDER } from "@/lib/categories";
 import { HOMEPAGE_LAYOUT_V2, SITE_CONTAINER } from "@/lib/site-layout";
@@ -19,7 +19,6 @@ import {
   type SectionThemeConfig,
 } from "@/lib/home/homepage-section-themes";
 import LaunchCard from "@/components/discover/LaunchCard";
-import OpsMissionMap from "@/components/discover/OpsMissionMap";
 import OpsCenterExplainer from "@/components/discover/OpsCenterExplainer";
 import OpsScheduleList from "@/components/discover/OpsScheduleList";
 import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
@@ -426,17 +425,91 @@ function NadchodzaceStarty({ ops }: { ops: OpsSnapshot }) {
 }
 
 function MapaStartow({ ops }: { ops: OpsSnapshot }) {
+  const iss = formatIssForReader(ops.iss);
+  const upcomingCount = ops.launches.length;
+  const padCount = ops.mapPins.filter((p) => p.kind === "pad").length;
+
   return (
-    <section className="homepage-ops-panel card-surface p-5">
-      <SectionHeader label="Gdzie to się dzieje?" href="/mapa" cta="Pełna mapa" />
-      <div className="min-w-0 overflow-hidden">
-        <OpsMissionMap
-          pins={ops.mapPins}
-          iss={ops.iss}
-          issOrbit={ops.issOrbit}
-          layout="split"
-          mapClassName="ops-map-embed"
-        />
+    <section className="homepage-ops-panel card-surface overflow-hidden p-5">
+      <SectionHeader
+        label="Gdzie to się dzieje?"
+        accent="#a78bfa"
+        href="/mapa"
+        cta="Pełna mapa"
+      />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <div className="well relative flex min-h-[200px] flex-col justify-end overflow-hidden rounded-xl p-5 sm:min-h-[220px]">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 85% 70% at 72% 28%, rgba(56,189,248,0.22) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 18% 78%, rgba(167,139,250,0.18) 0%, transparent 50%), linear-gradient(145deg, rgba(8,12,20,0.4) 0%, rgba(5,7,9,0.85) 100%)",
+            }}
+          />
+          <Globe
+            aria-hidden
+            size={120}
+            strokeWidth={0.75}
+            className="pointer-events-none absolute -right-6 -top-4 text-accent-cyan/[0.12] sm:right-2 sm:top-0"
+          />
+          <p className="relative text-[13px] leading-relaxed text-text-secondary">
+            Satelitarna mapa Ziemi: orbita ISS, pozycja stacji na żywo i platformy startowe
+            nadchodzących rakiet — wszystko w jednym widoku.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="well grid gap-3 p-4 sm:grid-cols-2">
+            <div>
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-cyan">
+                <Map size={12} />
+                ISS teraz
+              </p>
+              <p className="mt-2 text-[18px] font-bold tracking-tight text-text-primary">
+                {iss.coords}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-text-tertiary">
+                Punkt na globie bezpośrednio pod stacją.
+              </p>
+            </div>
+            <div>
+              <p
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
+                style={{ color: "#a78bfa" }}
+              >
+                <Rocket size={12} />
+                Na mapie
+              </p>
+              <p className="mt-2 text-[18px] font-bold tracking-tight text-text-primary">
+                {upcomingCount > 0
+                  ? `${upcomingCount} ${upcomingCount === 1 ? "start" : upcomingCount < 5 ? "starty" : "startów"}`
+                  : "Brak zaplanowanych"}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-text-tertiary">
+                {padCount > 0
+                  ? `${padCount} ${padCount === 1 ? "platforma" : padCount < 5 ? "platformy" : "platform"} startowych.`
+                  : "Platformy startowe pojawią się po odświeżeniu danych."}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/mapa"
+            className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border px-5 py-3 text-[13px] font-semibold text-text-primary transition-all duration-300 active:scale-[0.98]"
+            style={{
+              borderColor: "rgba(167,139,250,0.35)",
+              background: "rgba(167,139,250,0.1)",
+            }}
+          >
+            Zobacz mapę na żywo
+            <ChevronRight
+              size={16}
+              className="transition-transform duration-300 group-hover:translate-x-0.5"
+              style={{ color: "#a78bfa" }}
+            />
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -483,7 +556,7 @@ function OpsDashboardSkeleton() {
       aria-hidden
     >
       <div className="h-5 w-48 rounded bg-white/10" />
-      <div className="h-[280px] rounded-xl bg-white/5" />
+      <div className="h-[180px] rounded-xl bg-white/5" />
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="h-24 rounded-xl bg-white/5" />
         <div className="h-24 rounded-xl bg-white/5" />
