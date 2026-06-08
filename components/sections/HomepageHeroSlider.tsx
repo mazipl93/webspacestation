@@ -7,6 +7,7 @@ import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import { HERO_AUTO_MS } from "@/lib/home/hero-slides";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
+import { HERO_LCP_IMAGE_SIZES } from "@/lib/home/hero-lcp";
 import { cn } from "@/lib/cn";
 
 const SWIPE_THRESHOLD_PX = 48;
@@ -188,6 +189,8 @@ function HeroSlide({
           alt=""
           fill
           priority={priority}
+          fetchPriority={priority ? "high" : undefined}
+          sizes={HERO_LCP_IMAGE_SIZES}
           className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
       )}

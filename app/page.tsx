@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ContentGrid from "@/components/sections/ContentGrid";
+import { loadHomepageContent } from "@/lib/home/homepage-content";
+import { buildHeroLcpPreloadHref } from "@/lib/home/hero-lcp";
 import { getSiteUrl } from "@/lib/site-url";
 import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
 
@@ -20,12 +22,25 @@ export const metadata: Metadata = {
 // On-demand revalidatePath("/") on publish; ISR aligned with department pages (300 s).
 export const revalidate = 300;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const homepage = await loadHomepageContent();
+  const lcpPreloadHref = buildHeroLcpPreloadHref(
+    homepage.derived.heroSlides[0]?.image
+  );
+
   return (
     <>
+      {lcpPreloadHref ? (
+        <link
+          rel="preload"
+          as="image"
+          href={lcpPreloadHref}
+          fetchPriority="high"
+        />
+      ) : null}
       <Navbar />
       <main className="relative z-[1]">
-        <ContentGrid />
+        <ContentGrid homepage={homepage} />
       </main>
       <Footer />
     </>

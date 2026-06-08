@@ -41,11 +41,14 @@ export default function CoverImage({
 
   const useUnoptimized = shouldBypassImageOptimizer(current);
 
+  const resolvedFetchPriority =
+    fetchPriority ?? (props.priority ? "high" : undefined);
+
   return (
     <Image
       {...props}
       alt={alt}
-      fetchPriority={fetchPriority}
+      fetchPriority={resolvedFetchPriority}
       unoptimized={useUnoptimized}
       src={current || (suppressFallback ? current : resolveErrorFallback())}
       onError={() => {

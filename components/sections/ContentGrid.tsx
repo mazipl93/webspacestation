@@ -1,33 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
-import {
-  CATEGORY_INFO,
-  CATEGORY_SLUG_ORDER,
-  HOMEPAGE_DEPARTMENT_SLUGS,
-} from "@/lib/categories";
-import {
-  HOMEPAGE_LAYOUT_V2,
-  SITE_CONTAINER,
-  BELOW_FIXED_NAV_OFFSET_CLASS,
-} from "@/lib/site-layout";
+import { CATEGORY_INFO, CATEGORY_SLUG_ORDER } from "@/lib/categories";
+import { HOMEPAGE_LAYOUT_V2, SITE_CONTAINER } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
-import {
-  getHomepageArticles,
-  getHeroSlideArticles,
-} from "@/lib/articles";
-import {
-  buildHomepageHeroSlides,
-  pickHeroLead,
-} from "@/lib/home/hero-slides";
-import {
-  markSlugsUsed,
-  pickHomepageLatest,
-  rankImportantNow,
-  rankLatest,
-} from "@/lib/home/rank-articles";
+import type { HomepageContent } from "@/lib/home/homepage-content";
 import ArticleCard from "@/components/article/ArticleCard";
 import CoverImage from "@/components/article/CoverImage";
 import HomepageTopZone from "@/components/sections/HomepageTopZone";
@@ -40,10 +18,6 @@ import {
   OPS_THEME,
   type SectionThemeConfig,
 } from "@/lib/home/homepage-section-themes";
-import {
-  getWeekTopicConfig,
-  pickWeekTopicArticles,
-} from "@/lib/home/week-topic";
 import LaunchCard from "@/components/discover/LaunchCard";
 import OpsMissionMap from "@/components/discover/OpsMissionMap";
 import OpsCenterExplainer from "@/components/discover/OpsCenterExplainer";
@@ -53,11 +27,6 @@ import { getHomepageOpsData } from "@/lib/ops/get-ops-data";
 import { formatIssForReader } from "@/lib/ops/format-ops-display";
 import type { OpsSnapshot } from "@/lib/ops/types";
 
-const IMPORTANT_POOL = 14;
-/** Homepage editorial pool — recent rows only (not full archive). */
-const HOMEPAGE_POOL_LIMIT = 80;
-/** Homepage Najnowsze — pełna lista wg publishedAt (hero nie wyklucza). */
-const LATEST_FEED_LIMIT = 12;
 /** Mobile — pionowa lista pod hero (kilka pozycji od razu widocznych). */
 const LATEST_MOBILE_LIST_LIMIT = 6;
 // ─── Category presentation ────────────────────────────────────────────────────
@@ -528,107 +497,18 @@ async function HomepageOpsDashboardLoader() {
   return <DashboardWidgets ops={ops} />;
 }
 
-type HomepageDerived = {
-  heroSlides: NewsArticle[];
-  latest: NewsArticle[];
-  weekTopicPick: ReturnType<typeof pickWeekTopicArticles>;
-  weekTopicConfig: ReturnType<typeof getWeekTopicConfig>;
-  usedSlugs: Set<string>;
-  naukaFeatured: NewsArticle[];
-  categoryArticles: { slug: string; articles: NewsArticle[] }[];
-  excludeForPopular: string[];
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
+type ContentGridProps = {
+  homepage: HomepageContent;
 };
 
-function buildHomepageDerived(
-  allPublished: NewsArticle[],
-  cmsHeroSlides: NewsArticle[]
-): HomepageDerived {
-  const importantRanked = rankImportantNow(allPublished, IMPORTANT_POOL);
-  let heroSlides = buildHomepageHeroSlides(cmsHeroSlides, importantRanked);
-  if (heroSlides.length === 0) {
-    const fallback =
-      pickHeroLead(importantRanked) ?? rankLatest(allPublished, 1)[0];
-    if (fallback) heroSlides = [fallback];
-  }
-  const usedSlugs = new Set<string>();
-  markSlugsUsed(heroSlides, usedSlugs);
-
-  const weekTopicConfig = getWeekTopicConfig();
-  const weekTopicPick = pickWeekTopicArticles(
-    allPublished,
-    usedSlugs,
-    weekTopicConfig
-  );
-  markSlugsUsed(weekTopicPick.articles, usedSlugs);
-
-  const latest = pickHomepageLatest(allPublished, LATEST_FEED_LIMIT);
-  markSlugsUsed(latest, usedSlugs);
-
-  const homepageCategorySlugs = HOMEPAGE_LAYOUT_V2
-    ? HOMEPAGE_DEPARTMENT_SLUGS
-    : CATEGORY_ORDER;
-
-  const naukaFeatured = rankLatest(
-    allPublished.filter((a) => a.category === "nauka"),
-    4
-  );
-
-  const categoryArticles = homepageCategorySlugs.map((slug) => {
-    const fromPublished = allPublished.filter((a) => a.category === slug);
-    const ranked = rankLatest(fromPublished, 4);
-    return { slug, articles: ranked };
-  });
-
-  return {
-    heroSlides,
-    latest,
-    weekTopicPick,
-    weekTopicConfig,
-    usedSlugs,
-    naukaFeatured,
-    categoryArticles,
-    excludeForPopular: [...usedSlugs],
-  };
-}
-
-function HomepageHeroSkeleton() {
-  return (
-    <div
-      className={cn(BELOW_FIXED_NAV_OFFSET_CLASS, "animate-pulse space-y-5")}
-      aria-hidden
-    >
-      <div className="aspect-[16/9] max-h-[min(52vh,520px)] rounded-2xl bg-white/5" />
-      <div className="hidden gap-3 lg:grid lg:grid-cols-5">
-        {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="h-28 rounded-xl bg-white/5" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function HomepageFeedSkeleton() {
-  return (
-    <div className="animate-pulse space-y-10" aria-hidden>
-      <div className="h-8 w-40 rounded bg-white/10" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="h-[320px] rounded-xl bg-white/5" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-async function HomepageHeroSection() {
-  const [allPublished, cmsHeroSlides] = await Promise.all([
-    getHomepageArticles(HOMEPAGE_POOL_LIMIT),
-    getHeroSlideArticles(),
-  ]);
+export default function ContentGrid({ homepage }: ContentGridProps) {
+  const { allPublished, derived } = homepage;
 
   if (allPublished.length === 0) {
     return (
-      <div className={cn(SITE_CONTAINER, "py-20")}>
+      <div className={cn(SITE_CONTAINER, "relative z-[1] py-20")}>
         <div className="card-surface px-8 py-16 text-center">
           <p className="text-[15px] text-text-secondary">
             Brak opublikowanych artykułów.
@@ -644,70 +524,39 @@ async function HomepageHeroSection() {
     );
   }
 
-  const derived = buildHomepageDerived(allPublished, cmsHeroSlides);
-
-  return (
-    <HomepageTopZone
-      heroSlides={derived.heroSlides}
-      latest={derived.latest}
-      weekTopicPick={derived.weekTopicPick}
-      weekTopicConfig={derived.weekTopicConfig}
-    />
-  );
-}
-
-async function HomepageFeedSection() {
-  const [allPublished, cmsHeroSlides] = await Promise.all([
-    getHomepageArticles(HOMEPAGE_POOL_LIMIT),
-    getHeroSlideArticles(),
-  ]);
-
-  if (allPublished.length === 0) return null;
-
-  const derived = buildHomepageDerived(allPublished, cmsHeroSlides);
-
-  return (
-    <>
-      <PopularArticles
-        articles={allPublished}
-        excludeSlugs={derived.excludeForPopular}
-      />
-
-      <div className="space-y-12 md:space-y-14">
-        {HOMEPAGE_LAYOUT_V2 && (
-          <CategorySection
-            slug="nauka"
-            articles={derived.naukaFeatured}
-            desktopLayout="split-lead"
-            showWhenEmpty
-          />
-        )}
-        {derived.categoryArticles.map(({ slug, articles: catArticles }) => (
-          <CategorySection
-            key={slug}
-            slug={slug}
-            articles={catArticles}
-            desktopLayout={HOMEPAGE_LAYOUT_V2 ? "split-lead" : "legacy"}
-          />
-        ))}
-      </div>
-    </>
-  );
-}
-
-// ─── Root ─────────────────────────────────────────────────────────────────────
-
-export default function ContentGrid() {
   return (
     <div className={cn(SITE_CONTAINER, "relative z-[1]")}>
-      <Suspense fallback={<HomepageHeroSkeleton />}>
-        <HomepageHeroSection />
-      </Suspense>
+      <HomepageTopZone
+        heroSlides={derived.heroSlides}
+        latest={derived.latest}
+        weekTopicPick={derived.weekTopicPick}
+        weekTopicConfig={derived.weekTopicConfig}
+      />
 
       <div className="mt-10 space-y-14 pb-14 md:mt-12 md:space-y-14">
-        <Suspense fallback={<HomepageFeedSkeleton />}>
-          <HomepageFeedSection />
-        </Suspense>
+        <PopularArticles
+          articles={allPublished}
+          excludeSlugs={derived.excludeForPopular}
+        />
+
+        <div className="space-y-12 md:space-y-14">
+          {HOMEPAGE_LAYOUT_V2 && (
+            <CategorySection
+              slug="nauka"
+              articles={derived.naukaFeatured}
+              desktopLayout="split-lead"
+              showWhenEmpty
+            />
+          )}
+          {derived.categoryArticles.map(({ slug, articles: catArticles }) => (
+            <CategorySection
+              key={slug}
+              slug={slug}
+              articles={catArticles}
+              desktopLayout={HOMEPAGE_LAYOUT_V2 ? "split-lead" : "legacy"}
+            />
+          ))}
+        </div>
 
         <Suspense fallback={<OpsDashboardSkeleton />}>
           <HomepageOpsDashboardLoader />
