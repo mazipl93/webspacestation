@@ -1,12 +1,12 @@
 import type { ExternalFeedConfig } from "@/lib/rss/types";
 
 /**
- * Per-feed cap per cron run. Default 8 = tryb przyrostowy (kilka nowych, nie setki).
- * Jednorazowy backfill: RSS_ITEMS_PER_FEED=30 w .env, potem usuń / wróć do 8.
+ * Per-feed cap per cron run. Default 5 = kilka nowych na feed, nie setki.
+ * Jednorazowy backfill: RSS_ITEMS_PER_FEED=30 w .env, potem usuń / wróć do 5.
  */
 export const RSS_ITEMS_PER_FEED = Math.min(
   50,
-  Math.max(1, Number(process.env.RSS_ITEMS_PER_FEED) || 8)
+  Math.max(1, Number(process.env.RSS_ITEMS_PER_FEED) || 5)
 );
 
 export const EXTERNAL_RSS_FEEDS: ExternalFeedConfig[] = [
@@ -27,12 +27,6 @@ export const EXTERNAL_RSS_FEEDS: ExternalFeedConfig[] = [
     id: "arstechnica",
     url: "https://feeds.arstechnica.com/arstechnica/index",
     source: "Ars Technica",
-    bucket: "tech",
-  },
-  {
-    id: "wired",
-    url: "https://www.wired.com/feed/rss",
-    source: "Wired",
     bucket: "tech",
   },
   // SCIENCE / SPACE

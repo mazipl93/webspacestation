@@ -174,6 +174,24 @@ async function queryPublishedArticlesFromDb(): Promise<ArticleListItem[]> {
   }
 }
 
+async function queryRecentPublishedFromDb(
+  limit: number
+): Promise<ArticleListItem[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: PUBLISHED_ARTICLE_WHERE,
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      take: limit,
+      select: articleListSelect,
+    });
+    traceArticleFetchPublic({ scope: `recent-${limit}`, count: rows.length });
+    return rows;
+  } catch (error) {
+    console.error("[getRecentPublishedArticles]", error);
+    return [];
+  }
+}
+
 async function queryPublishedHeroSlidesFromDb(): Promise<ArticleListItem[]> {
   try {
     return await prisma.article.findMany({
@@ -217,6 +235,24 @@ export async function getPublishedArticles(): Promise<ArticleListItem[]> {
   return unstable_cache(
     queryPublishedArticlesFromDb,
     ["published-articles", "v3-list-no-content"],
+    { tags: [ARTICLES_TAG] }
+  )();
+}
+
+/** Recent published articles (homepage / related pools) — bounded DB read. */
+export async function getRecentPublishedArticles(
+  limit = 80
+): Promise<ArticleListItem[]> {
+  const tick = await maybeTickScheduledPublish();
+  const useLiveQuery =
+    process.env.NODE_ENV === "development" ||
+    (tick != null && tick.published > 0);
+  if (useLiveQuery) {
+    return queryRecentPublishedFromDb(limit);
+  }
+  return unstable_cache(
+    () => queryRecentPublishedFromDb(limit),
+    ["recent-articles", String(limit), "v1-list-no-content"],
     { tags: [ARTICLES_TAG] }
   )();
 }

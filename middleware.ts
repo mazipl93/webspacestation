@@ -15,6 +15,12 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
 
+  // Public pages do not need Edge session refresh — AuthProvider hydrates on the client.
+  // Skipping Supabase here removes ~50–150 ms per document request on the homepage.
+  if (!isAdminRoute) {
+    return response;
+  }
+
   // Let the logout route clear cookies — never refresh the session here.
   if (pathname === "/logout") {
     return NextResponse.next({ request });

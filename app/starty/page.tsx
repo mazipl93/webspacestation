@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Calendar, Map, ChevronRight } from "lucide-react";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import LaunchCard from "@/components/discover/LaunchCard";
-import { getOpsData } from "@/lib/ops/get-ops-data";
+import { getCoreOpsData } from "@/lib/ops/get-ops-data";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ const DISCOVER_LINKS = [
 ] as const;
 
 export default async function StartyPage() {
-  const ops = await getOpsData();
+  const ops = await getCoreOpsData();
 
   return (
     <DiscoverPageShell

@@ -24,7 +24,7 @@ import {
 
 const PROCESS_BATCH_SIZE = Math.min(
   20,
-  Math.max(1, Number(process.env.RSS_PROCESS_BATCH_SIZE) || 10)
+  Math.max(1, Number(process.env.RSS_PROCESS_BATCH_SIZE) || 6)
 );
 
 export type ProcessDraftsResult = {

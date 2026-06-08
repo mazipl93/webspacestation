@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   getPublishedArticles,
+  getRecentPublishedArticles,
   getPublishedArticleBySlug,
   getPublishedHeroSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
@@ -111,6 +112,22 @@ export async function getAllArticles(): Promise<NewsArticle[]> {
   return articles.map(toNewsArticle);
 }
 
+/** Homepage editorial pool — recent N rows, not the full archive. */
+export async function getHomepageArticles(
+  limit = 80
+): Promise<NewsArticle[]> {
+  const articles = await getRecentPublishedArticles(limit);
+  return articles.map(toNewsArticle);
+}
+
+/** Related / read-next pool on article pages — bounded list query. */
+export async function getRelatedArticlePool(
+  limit = 50
+): Promise<NewsArticle[]> {
+  const articles = await getRecentPublishedArticles(limit);
+  return articles.map(toNewsArticle);
+}
+
 /** CMS hero slots (heroPosition 1–4), ordered ASC. */
 export async function getHeroSlideArticles(): Promise<NewsArticle[]> {
   const rows = await getPublishedHeroSlides();
@@ -125,8 +142,8 @@ export async function getRankedArticles(limit = 20): Promise<NewsArticle[]> {
 
 /** Public feed — newest by CMS publish time (Najnowsze). */
 export async function getLatestArticles(limit = 40): Promise<NewsArticle[]> {
-  const articles = await getPublishedArticles();
-  return articles.slice(0, limit).map(toNewsArticle);
+  const articles = await getRecentPublishedArticles(limit);
+  return articles.map(toNewsArticle);
 }
 
 export async function getAllSlugs(): Promise<string[]> {
@@ -152,7 +169,7 @@ export async function getArticlesByCategory(
 type ArticlePoolOptions = { pool?: NewsArticle[] };
 
 async function resolveArticlePool(pool?: NewsArticle[]): Promise<NewsArticle[]> {
-  return pool ?? getAllArticles();
+  return pool ?? getRelatedArticlePool();
 }
 
 export async function getRelatedArticles(

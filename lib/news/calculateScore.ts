@@ -9,7 +9,6 @@ const SPACE_PREMIUM_SOURCES = ["NASA", "ESA", "SpaceNews"] as const;
 const TECH_PREMIUM_SOURCES = [
   "TechCrunch",
   "The Verge",
-  "Wired",
   "Ars Technica",
 ] as const;
 const SCIENCE_SOURCES = ["Phys.org", "ScienceDaily"] as const;

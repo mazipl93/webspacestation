@@ -1,9 +1,10 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 5 czerwca 2026 (czat 57 — weave tiers, RODO rejestracja, weryfikacja e-mail)  
+**Ostatnia aktualizacja:** 8 czerwca 2026 (czat 58 — perf cache, logo, lajki SQL, CMS mobile nav)  
+**→ Następny temat:** wolne ładowanie strony → **`docs/WSS_PERF_CHAT_HANDOFF.md`** (gotowy prompt)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **Repo:** `mazipl93/webspacestation` · branch `main`  
-**Ostatni commit:** `bb8bcf5` (czat 57) · **push:** po explicit OK usera (6 commitów ahead of origin)  
+**Ostatni commit:** `de288df` · prod zsynchronizowany z `main`  
 **Historia:** patrz sesja czat 54 poniżej
 
 **Prod:** https://webspacestation.pl · Vercel auto-deploy z `main`

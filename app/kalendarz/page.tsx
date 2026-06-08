@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Rocket, ChevronRight } from "lucide-react";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import OpsTimeline from "@/components/discover/OpsTimeline";
-import { getOpsData } from "@/lib/ops/get-ops-data";
+import { getCoreOpsData } from "@/lib/ops/get-ops-data";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function KalendarzPage() {
-  const ops = await getOpsData();
+  const ops = await getCoreOpsData();
 
   return (
     <DiscoverPageShell

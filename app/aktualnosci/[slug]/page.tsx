@@ -4,9 +4,9 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
-  getAllArticles,
   getArticleBySlug,
   getReadNextArticles,
+  getRelatedArticlePool,
   getWeaveInternalLinkCandidates,
 } from "@/lib/articles";
 import { pickWeaveInternalLinkCandidates } from "@/lib/article/weave-internal-links";
@@ -390,7 +390,7 @@ export default async function ArticlePage({ params }: Props) {
 
   // In-body links use their own ranking — do NOT exclude „Czytaj dalej” (same pool
   // was leaving long articles with 0–1 weave candidate on prod).
-  const all = await getAllArticles();
+  const all = await getRelatedArticlePool();
   const readNextList = await getReadNextArticles(article, undefined, { pool: all });
   const weaveCandidates = await getWeaveInternalLinkCandidates(article, { pool: all });
 

@@ -62,6 +62,13 @@ function mockLaunches(): OpsLaunch[] {
 }
 
 export function buildFallbackOpsSnapshot(): OpsSnapshot {
+  return coreToFullSnapshot(buildFallbackCoreSnapshot());
+}
+
+export function buildFallbackCoreSnapshot(): Omit<
+  OpsSnapshot,
+  "gallery" | "videos"
+> {
   const launches = mockLaunches();
   return {
     launches,
@@ -69,9 +76,17 @@ export function buildFallbackOpsSnapshot(): OpsSnapshot {
     iss: null,
     issOrbit: [],
     mapPins: buildMapPins(null, []),
-    gallery: [],
-    videos: [],
     live: false,
     fetchedAt: new Date().toISOString(),
+  };
+}
+
+function coreToFullSnapshot(
+  core: Omit<OpsSnapshot, "gallery" | "videos">
+): OpsSnapshot {
+  return {
+    ...core,
+    gallery: [],
+    videos: [],
   };
 }

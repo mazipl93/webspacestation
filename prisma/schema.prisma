@@ -142,3 +142,14 @@ model Media {
 
   @@map("media")
 }
+
+/// Cached ops snapshots refreshed by `/api/cron/ops-refresh` — user requests read DB only.
+model OpsCacheEntry {
+  key       String   @id
+  payload   Json
+  live      Boolean  @default(false)
+  fetchedAt DateTime
+  updatedAt DateTime @updatedAt
+
+  @@map("ops_cache_entries")
+}

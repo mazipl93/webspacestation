@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import GalleryGrid from "@/components/discover/GalleryGrid";
-import { getOpsData } from "@/lib/ops/get-ops-data";
+import { getGalleryOpsData } from "@/lib/ops/get-ops-data";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function GaleriaPage() {
-  const ops = await getOpsData();
+  const ops = await getGalleryOpsData();
 
   return (
     <DiscoverPageShell

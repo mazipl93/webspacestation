@@ -6,6 +6,10 @@
     {
       "path": "/api/cron/rss",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/ops-refresh",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
