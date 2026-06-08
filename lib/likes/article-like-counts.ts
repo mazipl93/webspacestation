@@ -16,17 +16,13 @@ function rowsToMap(rows: { slug: string; count: number | null }[]): Map<string, 
 
 /**
  * Public like count for one article.
- * Prefers get_article_like_count RPC (security definer); then view; then legacy table.
+ * Uses article_like_counts view (user_article_likes.sql); falls back to legacy table.
+ * (RPC get_article_like_count is optional — omit to avoid PostgREST 404 when SQL not applied.)
  */
 export async function fetchSingleArticleLikeCount(
   supabase: SupabaseClient,
   slug: string
 ): Promise<number> {
-  const rpc = await supabase.rpc("get_article_like_count", { p_slug: slug });
-  if (!rpc.error && typeof rpc.data === "number") {
-    return rpc.data;
-  }
-
   const modern = await supabase
     .from(ARTICLE_LIKE_COUNTS_VIEW)
     .select("count")

@@ -6,6 +6,7 @@ import {
   getPublishedHeroSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
   getRankedPublishedArticles,
+  type ArticleListItem,
   type ArticleWithRelations,
 } from "@/lib/server/articles";
 import {
@@ -41,7 +42,7 @@ import type { NewsArticle, NewsCategory } from "@/types";
 
 // Map a DB article (with relations) onto the NewsArticle shape the public UI
 // expects. `featured` drives the "Najważniejsze" badge / lead-story pick.
-export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
+export function toNewsArticle(a: ArticleWithRelations | ArticleListItem): NewsArticle {
   const when = resolvePublicPublishTime({
     status: a.status,
     publishedAt: a.publishedAt,
@@ -50,8 +51,9 @@ export function toNewsArticle(a: ArticleWithRelations): NewsArticle {
   });
   const isRss = isRssArticle(a.contentOrigin);
 
-  const paragraphs = a.content
-    ? a.content
+  const rawContent = "content" in a ? a.content : null;
+  const paragraphs = rawContent
+    ? rawContent
         .split(/\n\s*\n/)
         .map((p) => p.trim())
         .filter(Boolean)
@@ -147,11 +149,18 @@ export async function getArticlesByCategory(
 /**
  * Up to `count` related articles — tag overlap, category, score similarity (PR9).
  */
+type ArticlePoolOptions = { pool?: NewsArticle[] };
+
+async function resolveArticlePool(pool?: NewsArticle[]): Promise<NewsArticle[]> {
+  return pool ?? getAllArticles();
+}
+
 export async function getRelatedArticles(
   article: NewsArticle,
-  count = 6
+  count = 6,
+  options: ArticlePoolOptions = {}
 ): Promise<NewsArticle[]> {
-  const all = await getAllArticles();
+  const all = await resolveArticlePool(options.pool);
   return pickRelatedArticles(article, all, { min: 3, max: count });
 }
 
@@ -161,12 +170,12 @@ export async function getRelatedArticles(
  */
 export async function getWeaveInternalLinkCandidates(
   article: NewsArticle,
-  options: { excludeIds?: Iterable<string>; limit?: number } = {}
+  options: { excludeIds?: Iterable<string>; limit?: number; pool?: NewsArticle[] } = {}
 ): Promise<InternalLinkCandidate[]> {
   const limit = options.limit ?? targetInternalLinkCount(article);
   if (limit <= 0) return [];
 
-  const all = await getAllArticles();
+  const all = await resolveArticlePool(options.pool);
   const picked = pickWeaveInternalLinkCandidates(article, all, limit, {
     excludeIds: options.excludeIds,
   });
@@ -183,25 +192,28 @@ export async function getWeaveInternalLinkCandidates(
 /** Three related articles from the same category (in-body „Czytaj również”). */
 export async function getSameCategoryRelatedArticles(
   article: NewsArticle,
-  count = 3
+  count = 3,
+  options: ArticlePoolOptions = {}
 ): Promise<NewsArticle[]> {
-  const all = await getAllArticles();
+  const all = await resolveArticlePool(options.pool);
   return pickSameCategoryRelated(article, all, count);
 }
 
 /** Next article in feed (newest-first), popular fallback when oldest (PR9). */
 export async function getReadNextArticle(
-  article: NewsArticle
+  article: NewsArticle,
+  options: ArticlePoolOptions = {}
 ): Promise<NewsArticle | null> {
-  const all = await getAllArticles();
+  const all = await resolveArticlePool(options.pool);
   return pickReadNext(article, all);
 }
 
 /** Kilka propozycji „Czytaj dalej” — ten sam dział preferowany (PR9 + UI lista). */
 export async function getReadNextArticles(
   article: NewsArticle,
-  count = READ_NEXT_LIST_LIMIT
+  count = READ_NEXT_LIST_LIMIT,
+  options: ArticlePoolOptions = {}
 ): Promise<NewsArticle[]> {
-  const all = await getAllArticles();
+  const all = await resolveArticlePool(options.pool);
   return pickReadNextArticles(article, all, { limit: count });
 }

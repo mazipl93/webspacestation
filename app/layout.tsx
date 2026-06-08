@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { Oswald } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import SiteBackground from "@/components/layout/SiteBackground";
+import ServiceWorkerCleanup from "@/components/layout/ServiceWorkerCleanup";
 import JsonLd from "@/components/seo/JsonLd";
 import { buildSiteJsonLd } from "@/lib/seo/json-ld";
 import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
@@ -109,6 +110,7 @@ export default function RootLayout({
       <body className="antialiased">
         <JsonLd data={buildSiteJsonLd()} />
         <SiteBackground />
+        <ServiceWorkerCleanup />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

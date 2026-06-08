@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 
 import {
@@ -10,7 +9,7 @@ import {
   ArticleWorkflowError,
 } from "@/lib/server/articles";
 import { validatePublishReady } from "@/lib/articles/workflow";
-import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
+import { ARTICLES_TAG } from "@/lib/cache/tags";
 import { forbidden, isValidSlug, jsonError, mapPrismaError, readJson } from "@/lib/server/http";
 import { isArticleStatus, parseArticleCreate } from "@/lib/server/validation";
 import { requireCmsAccess, requirePermission } from "@/lib/auth/guard";
@@ -119,9 +118,10 @@ export async function POST(request: NextRequest) {
     const article = await createArticle(payload, guard.user.id);
 
     if (article.status === "PUBLISHED") {
-      revalidatePublicArticleCaches();
-      revalidateTag(articleTag(article.slug));
-      revalidateTag(categoryTag(article.category.slug));
+      revalidatePublicArticleCaches({
+        articleSlug: article.slug,
+        categorySlug: article.category.slug,
+      });
     }
 
     return NextResponse.json({ data: article }, { status: 201 });

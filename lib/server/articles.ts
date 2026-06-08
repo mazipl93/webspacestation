@@ -101,8 +101,43 @@ const articleSelect = {
   },
 } satisfies Prisma.ArticleSelect;
 
+/** List/feed reads — bez `content` (setki KB na artykuł; homepage ładuje całą pulę). */
+const articleListSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  subtitle: true,
+  excerpt: true,
+  contextNote: true,
+  coverImage: true,
+  coverImageCredit: true,
+  authorByline: true,
+  bylineUserId: true,
+  bylineUser: articleSelect.bylineUser,
+  status: true,
+  featured: true,
+  heroPosition: true,
+  weekTopic: true,
+  score: true,
+  readingTime: true,
+  tags: true,
+  createdAt: true,
+  updatedAt: true,
+  publishedAt: true,
+  publishAt: true,
+  source: true,
+  originalUrl: true,
+  contentOrigin: true,
+  category: articleSelect.category,
+  author: articleSelect.author,
+} satisfies Prisma.ArticleSelect;
+
 export type ArticleWithRelations = Prisma.ArticleGetPayload<{
   select: typeof articleSelect;
+}>;
+
+export type ArticleListItem = Prisma.ArticleGetPayload<{
+  select: typeof articleListSelect;
 }>;
 
 export type CategoryRecord = Prisma.CategoryGetPayload<{
@@ -124,12 +159,12 @@ export type CategoryRecord = Prisma.CategoryGetPayload<{
 // request after deploy repopulates the cache. Mutations invalidate via
 // `revalidateTag` (see app/api/articles & app/api/categories).
 
-async function queryPublishedArticlesFromDb(): Promise<ArticleWithRelations[]> {
+async function queryPublishedArticlesFromDb(): Promise<ArticleListItem[]> {
   try {
     const rows = await prisma.article.findMany({
       where: PUBLISHED_ARTICLE_WHERE,
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
-      select: articleSelect,
+      select: articleListSelect,
     });
     traceArticleFetchPublic({ scope: "published-all", count: rows.length });
     return rows;
@@ -139,7 +174,7 @@ async function queryPublishedArticlesFromDb(): Promise<ArticleWithRelations[]> {
   }
 }
 
-async function queryPublishedHeroSlidesFromDb(): Promise<ArticleWithRelations[]> {
+async function queryPublishedHeroSlidesFromDb(): Promise<ArticleListItem[]> {
   try {
     return await prisma.article.findMany({
       where: {
@@ -148,7 +183,7 @@ async function queryPublishedHeroSlidesFromDb(): Promise<ArticleWithRelations[]>
       },
       orderBy: [{ heroPosition: "asc" }, { publishedAt: "desc" }],
       take: 4,
-      select: articleSelect,
+      select: articleListSelect,
     });
   } catch (error) {
     console.error("[getPublishedHeroSlides]", error);
@@ -157,20 +192,20 @@ async function queryPublishedHeroSlidesFromDb(): Promise<ArticleWithRelations[]>
 }
 
 /** CMS hero slider slots (heroPosition 1–4), ordered ASC. */
-export async function getPublishedHeroSlides(): Promise<ArticleWithRelations[]> {
+export async function getPublishedHeroSlides(): Promise<ArticleListItem[]> {
   const useLiveQuery = process.env.NODE_ENV === "development";
   if (useLiveQuery) {
     return queryPublishedHeroSlidesFromDb();
   }
   return unstable_cache(
     queryPublishedHeroSlidesFromDb,
-    ["published-hero-slides", "v1-hero-position"],
+    ["published-hero-slides", "v2-list-no-content"],
     { tags: [ARTICLES_TAG] }
   )();
 }
 
 /** All published articles, newest first. Cached under the ARTICLES tag. */
-export async function getPublishedArticles(): Promise<ArticleWithRelations[]> {
+export async function getPublishedArticles(): Promise<ArticleListItem[]> {
   const tick = await maybeTickScheduledPublish();
   // Dev: zawsze świeże dane (unstable_cache utrudniał QA po toggle weekTopic w CMS).
   const useLiveQuery =
@@ -181,7 +216,7 @@ export async function getPublishedArticles(): Promise<ArticleWithRelations[]> {
   }
   return unstable_cache(
     queryPublishedArticlesFromDb,
-    ["published-articles", "v2-week-topic"],
+    ["published-articles", "v3-list-no-content"],
     { tags: [ARTICLES_TAG] }
   )();
 }
@@ -210,7 +245,7 @@ export async function getPublishedArticleBySlug(
 
 async function queryArticlesByCategoryFromDb(
   categorySlug: string
-): Promise<ArticleWithRelations[]> {
+): Promise<ArticleListItem[]> {
   const slugs = categorySlugsForDepartmentFeed(categorySlug);
   try {
     const rows = await prisma.article.findMany({
@@ -222,7 +257,7 @@ async function queryArticlesByCategoryFromDb(
             : { slug: { in: slugs } },
       },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
-      select: articleSelect,
+      select: articleListSelect,
     });
     traceArticleFetchPublic({
       scope: `category-${categorySlug}`,
@@ -238,7 +273,7 @@ async function queryArticlesByCategoryFromDb(
 /** Published articles within a category (by category slug), newest first. */
 export async function getArticlesByCategory(
   categorySlug: string
-): Promise<ArticleWithRelations[]> {
+): Promise<ArticleListItem[]> {
   const tick = await maybeTickScheduledPublish();
   const useLiveQuery =
     process.env.NODE_ENV === "development" ||
@@ -248,7 +283,7 @@ export async function getArticlesByCategory(
   }
   return unstable_cache(
     () => queryArticlesByCategoryFromDb(categorySlug),
-    ["category-articles", categorySlug, "v2-legacy-nauka"],
+    ["category-articles", categorySlug, "v3-list-no-content"],
     { tags: [ARTICLES_TAG, categoryTag(categorySlug)] }
   )();
 }
@@ -256,23 +291,23 @@ export async function getArticlesByCategory(
 /** Top published articles by News Engine score (homepage newsroom). */
 export async function getRankedPublishedArticles(
   limit = 20
-): Promise<ArticleWithRelations[]> {
+): Promise<ArticleListItem[]> {
   await maybeTickScheduledPublish();
   return unstable_cache(
-    async (): Promise<ArticleWithRelations[]> => {
+    async (): Promise<ArticleListItem[]> => {
       try {
         return await prisma.article.findMany({
           where: PUBLISHED_ARTICLE_WHERE,
           orderBy: [{ score: "desc" }, { publishedAt: "desc" }],
           take: limit,
-          select: articleSelect,
+          select: articleListSelect,
         });
       } catch (error) {
         console.error("[getRankedPublishedArticles]", error);
         return [];
       }
     },
-    ["ranked-articles", String(limit)],
+    ["ranked-articles", String(limit), "v2-list-no-content"],
     { tags: [ARTICLES_TAG] }
   )();
 }

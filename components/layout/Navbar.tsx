@@ -389,6 +389,10 @@ export default function Navbar() {
                           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
                         />
                         <input
+                          id="navbar-search"
+                          name="q"
+                          type="search"
+                          autoComplete="off"
                           autoFocus
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}

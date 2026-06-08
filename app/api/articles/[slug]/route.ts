@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 
 import {
@@ -12,7 +11,15 @@ import {
 } from "@/lib/server/articles";
 import { statusToAction } from "@/lib/articles/state-transition";
 import { ArticleStatus } from "@prisma/client";
-import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
+function revalidatePublishedArticle(article: {
+  slug: string;
+  category: { slug: string };
+}) {
+  revalidatePublicArticleCaches({
+    articleSlug: article.slug,
+    categorySlug: article.category.slug,
+  });
+}
 import {
   forbidden,
   isValidId,
@@ -105,7 +112,7 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
           content.featured !== undefined ||
           content.heroPosition !== undefined)
       ) {
-        revalidatePublicArticleCaches();
+        revalidatePublishedArticle(updated);
       }
     }
 
@@ -127,9 +134,7 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
     }
 
     if (article.status === ArticleStatus.PUBLISHED) {
-      revalidatePublicArticleCaches();
-      revalidateTag(articleTag(article.slug));
-      revalidateTag(categoryTag(article.category.slug));
+      revalidatePublishedArticle(article);
     }
 
     traceArticleApiResponse("PATCH", [article]);
@@ -157,9 +162,10 @@ export async function DELETE(_request: NextRequest, { params }: Ctx) {
     const article = await archiveArticle(id);
     if (!article) return jsonError(404, "NOT_FOUND", "Article not found.");
 
-    revalidateTag(ARTICLES_TAG);
-    revalidateTag(articleTag(article.slug));
-    revalidateTag(categoryTag(article.category.slug));
+    revalidatePublicArticleCaches({
+      articleSlug: article.slug,
+      categorySlug: article.category.slug,
+    });
 
     return NextResponse.json({ data: article });
   } catch (error) {

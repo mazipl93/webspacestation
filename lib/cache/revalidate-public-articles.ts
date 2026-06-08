@@ -1,6 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CATEGORY_SLUG_ORDER } from "@/lib/categories";
-import { ARTICLES_TAG } from "@/lib/cache/tags";
+import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 
 const PUBLIC_LIST_PATHS = [
   "/",
@@ -8,10 +8,42 @@ const PUBLIC_LIST_PATHS = [
   ...CATEGORY_SLUG_ORDER.map((slug) => `/${slug}`),
 ] as const;
 
-/** Invalidate cached article data and homepage / feed HTML after publish. */
-export function revalidatePublicArticleCaches(): void {
+type RevalidateOptions = {
+  /** When set, only that department page is path-invalidated (plus home + feed). */
+  categorySlug?: string;
+  articleSlug?: string;
+};
+
+/**
+ * Invalidate cached article data and public list pages after publish.
+ * Uses `page` scope (not `layout`) so root layout + AuthProvider are not rebuilt for every visitor.
+ * Data cache is cleared via `revalidateTag(ARTICLES_TAG)` — list queries no longer load full `content`.
+ */
+export function revalidatePublicArticleCaches(options: RevalidateOptions = {}): void {
   revalidateTag(ARTICLES_TAG);
-  for (const path of PUBLIC_LIST_PATHS) {
-    revalidatePath(path, "layout");
+
+  if (options.articleSlug) {
+    revalidateTag(articleTag(options.articleSlug));
+    revalidatePath(`/aktualnosci/${options.articleSlug}`, "page");
   }
+  if (options.categorySlug) {
+    revalidateTag(categoryTag(options.categorySlug));
+  }
+
+  revalidatePath("/", "page");
+  revalidatePath("/aktualnosci", "page");
+
+  if (options.categorySlug) {
+    revalidatePath(`/${options.categorySlug}`, "page");
+    return;
+  }
+
+  for (const slug of CATEGORY_SLUG_ORDER) {
+    revalidatePath(`/${slug}`, "page");
+  }
+}
+
+/** Paths touched by a full publish sweep (for scripts / logging). */
+export function publicArticleListPaths(): readonly string[] {
+  return PUBLIC_LIST_PATHS;
 }

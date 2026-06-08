@@ -390,10 +390,9 @@ export default async function ArticlePage({ params }: Props) {
 
   // In-body links use their own ranking — do NOT exclude „Czytaj dalej” (same pool
   // was leaving long articles with 0–1 weave candidate on prod).
-  const readNextList = await getReadNextArticles(article);
   const all = await getAllArticles();
-
-  const weaveCandidates = await getWeaveInternalLinkCandidates(article);
+  const readNextList = await getReadNextArticles(article, undefined, { pool: all });
+  const weaveCandidates = await getWeaveInternalLinkCandidates(article, { pool: all });
 
   const reservedIds = new Set<string>([article.id]);
   for (const a of weaveCandidates) reservedIds.add(a.id);
