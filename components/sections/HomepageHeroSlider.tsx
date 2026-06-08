@@ -99,7 +99,7 @@ export default function HomepageHeroSlider({ articles }: Props) {
               key={article.id}
               article={article}
               showImage={slideIndex === 0 || slideIndex === index}
-              priority={slideIndex === 0 && index === 0}
+              priority={slideIndex === 0}
             />
           ))}
         </div>
@@ -186,7 +186,7 @@ function HeroSlide({
       {showImage && (
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           priority={priority}
           fetchPriority={priority ? "high" : undefined}

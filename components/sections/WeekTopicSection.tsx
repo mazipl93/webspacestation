@@ -22,7 +22,7 @@ function WeekTopicCard({ article }: { article: NewsArticle }) {
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           sizes="300px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -70,7 +70,7 @@ function WeekTopicRailLead({ article }: { article: NewsArticle }) {
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           sizes="340px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -124,7 +124,7 @@ function WeekTopicRailRow({ article }: { article: NewsArticle }) {
       <div className="relative h-[76px] w-[104px] shrink-0 overflow-hidden rounded-lg border border-hairline-faint sm:h-[80px] sm:w-[108px]">
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           sizes="108px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"

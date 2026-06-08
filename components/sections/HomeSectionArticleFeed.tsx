@@ -92,7 +92,7 @@ export function HomeSectionListRow({ article }: { article: NewsArticle }) {
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           quality={60}
           sizes="108px"

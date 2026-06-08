@@ -5,9 +5,9 @@ import { normalizeCoverImageUrl, shouldBypassImageOptimizer } from "@/lib/media/
 export const HERO_IMAGE_PRECONNECT_ORIGINS = [] as const;
 
 /** Matches HomepageHeroSlider CoverImage `sizes` (mobile LCP). */
-export const HERO_LCP_IMAGE_SIZES = "(max-width: 640px) 100vw, 960px";
+export const HERO_LCP_IMAGE_SIZES = "(max-width: 640px) 100vw, 640px";
 
-export const HERO_LCP_QUALITY = 65;
+export const HERO_LCP_QUALITY = 60;
 
 /** Moto G class ~412 CSS px × 2 DPR — keep preload payload small. */
 const HERO_LCP_PRELOAD_WIDTH = 640;

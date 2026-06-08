@@ -25,7 +25,9 @@ export default function CoverImage({
   fallbackSeed,
   fallbackCategory = "astronomia",
   suppressFallback = false,
-  ...props
+  priority,
+  loading,
+  ...rest
 }: Props) {
   const [current, setCurrent] = useState(src);
 
@@ -40,14 +42,17 @@ export default function CoverImage({
     );
 
   const useUnoptimized = shouldBypassImageOptimizer(current);
+  const isPriority = Boolean(priority);
 
   const resolvedFetchPriority =
-    fetchPriority ?? (props.priority ? "high" : undefined);
+    fetchPriority ?? (isPriority ? "high" : undefined);
 
   return (
     <Image
-      {...props}
+      {...rest}
       alt={alt}
+      priority={isPriority}
+      loading={isPriority ? "eager" : loading}
       fetchPriority={resolvedFetchPriority}
       unoptimized={useUnoptimized}
       src={current || (suppressFallback ? current : resolveErrorFallback())}

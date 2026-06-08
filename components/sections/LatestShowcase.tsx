@@ -45,7 +45,7 @@ function LatestSliderCard({
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fallbackSeed={article.slug}
           fallbackCategory={article.category}
           fill
@@ -109,7 +109,7 @@ function LatestRailLead({ article }: { article: NewsArticle }) {
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fallbackSeed={article.slug}
           fallbackCategory={article.category}
           fill
@@ -170,7 +170,7 @@ function LatestStripCard({ article }: { article: NewsArticle }) {
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           loading="lazy"
           sizes="(max-width: 1320px) 20vw, 260px"
@@ -223,7 +223,7 @@ function LatestRailRow({ article }: { article: NewsArticle }) {
       <div className="relative h-[76px] w-[104px] shrink-0 overflow-hidden rounded-lg border border-hairline-faint sm:h-[80px] sm:w-[108px]">
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fill
           loading="lazy"
           sizes="108px"

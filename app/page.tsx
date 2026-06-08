@@ -8,14 +8,26 @@ import {
   getHeroPreconnectOrigin,
 } from "@/lib/home/hero-lcp";
 import { getSiteUrl } from "@/lib/site-url";
-import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
+import {
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+  getDefaultOgImageUrl,
+} from "@/lib/seo/site-og";
 
 export const metadata: Metadata = {
-  title: "Web Space Station – Aktualności kosmiczne",
+  title: { absolute: "Web Space Station – Aktualności kosmiczne" },
   alternates: { canonical: getSiteUrl() },
   openGraph: {
     url: getSiteUrl(),
-    images: [{ url: getDefaultOgImageUrl(), width: 512, height: 512 }],
+    images: [
+      {
+        url: getDefaultOgImageUrl(),
+        width: DEFAULT_OG_IMAGE_WIDTH,
+        height: DEFAULT_OG_IMAGE_HEIGHT,
+        alt: DEFAULT_OG_IMAGE_ALT,
+      },
+    ],
   },
 };
 

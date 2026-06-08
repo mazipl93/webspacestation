@@ -6,7 +6,7 @@ import SearchClient from "./SearchClient";
 import { SEO_NOINDEX_FOLLOW } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {
-  title: "Szukaj | Web Space Station",
+  title: "Szukaj",
   description: "Wyszukaj artykuły o kosmosie, misjach, astronomii i technologiach.",
   robots: SEO_NOINDEX_FOLLOW,
 };

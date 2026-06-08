@@ -23,7 +23,7 @@ function ReadAlsoCard({ article }: { article: NewsArticle }) {
       >
         <CoverImage
           src={article.image}
-          alt=""
+          alt={article.title}
           fallbackSeed={article.slug}
           fallbackCategory={article.category}
           fill

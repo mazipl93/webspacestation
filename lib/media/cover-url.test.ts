@@ -34,7 +34,7 @@ describe("normalizeCoverImageUrl", () => {
 });
 
 describe("shouldBypassImageOptimizer", () => {
-  it("trusts Supabase article-covers bucket", () => {
+  it("optimizes Supabase article-covers bucket", () => {
     assert.equal(
       shouldBypassImageOptimizer(
         "https://abc.supabase.co/storage/v1/object/public/article-covers/drafts/x.webp"
@@ -43,25 +43,29 @@ describe("shouldBypassImageOptimizer", () => {
     );
   });
 
-  it("bypasses arbitrary external PNG hosts", () => {
+  it("optimizes common RSS cover hosts (nasa.gov, wp.com, …)", () => {
     assert.equal(
-      shouldBypassImageOptimizer("https://cdn.example.com/press-kit.png"),
-      true
+      shouldBypassImageOptimizer(
+        "https://www.nasa.gov/wp-content/uploads/2026/04/roman-option-3.jpg"
+      ),
+      false
+    );
+    assert.equal(
+      shouldBypassImageOptimizer(
+        "https://platform.theverge.com/wp-content/uploads/sites/2/2026/06/foo.jpg"
+      ),
+      false
+    );
+    assert.equal(
+      shouldBypassImageOptimizer(
+        "https://i0.wp.com/spacenews.com/wp-content/uploads/2026/06/iris2.jpg"
+      ),
+      false
     );
   });
 
-  it("trusts ESA and NASA science CDN covers", () => {
-    assert.equal(
-      shouldBypassImageOptimizer(
-        "https://www.esa.int/var/esa/storage/images/_banner.jpg"
-      ),
-      false
-    );
-    assert.equal(
-      shouldBypassImageOptimizer(
-        "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/foo.png"
-      ),
-      false
-    );
+  it("bypasses invalid and data URLs", () => {
+    assert.equal(shouldBypassImageOptimizer(""), true);
+    assert.equal(shouldBypassImageOptimizer("data:image/png;base64,abc"), true);
   });
 });

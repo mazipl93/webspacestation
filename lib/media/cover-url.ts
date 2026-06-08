@@ -29,22 +29,18 @@ export function normalizeCoverImageUrl(
   }
 }
 
-/** Hosts where Next.js optimizer is reliable for article covers. */
-const OPTIMIZER_TRUSTED = [
-  /supabase\.co\/storage\/v1\/object\/public\/article-covers\//i,
-  /images-assets\.nasa\.gov/i,
-  /images-api\.nasa\.gov/i,
-  /assets\.science\.nasa\.gov/i,
-  /(?:www\.)?esa\.int/i,
-  /images\.unsplash\.com/i,
-];
+/** Only these patterns are known to break via `/_next/image` on Vercel. */
+const OPTIMIZER_BYPASS = [
+  /^data:/i,
+  /^blob:/i,
+] as const;
 
 /**
- * External / pasted URLs often fail via `/_next/image` (hotlink, PNG, auth).
- * Load directly in the browser unless the URL is from our bucket or NASA CDN.
+ * Route remote covers through Next.js image optimizer by default (WebP/AVIF, resize).
+ * RSS hotlinks (nasa.gov, theverge.com, wp.com, …) were loading multi‑MB originals in browser.
  */
 export function shouldBypassImageOptimizer(url: string): boolean {
   const normalized = normalizeCoverImageUrl(url);
   if (!normalized) return true;
-  return !OPTIMIZER_TRUSTED.some((pattern) => pattern.test(normalized));
+  return OPTIMIZER_BYPASS.some((pattern) => pattern.test(normalized));
 }

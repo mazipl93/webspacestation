@@ -7,7 +7,12 @@ import SiteBackground from "@/components/layout/SiteBackground";
 import ServiceWorkerCleanup from "@/components/layout/ServiceWorkerCleanup";
 import JsonLd from "@/components/seo/JsonLd";
 import { buildSiteJsonLd } from "@/lib/seo/json-ld";
-import { getDefaultOgImageUrl } from "@/lib/seo/site-og";
+import {
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_WIDTH,
+  getDefaultOgImageUrl,
+} from "@/lib/seo/site-og";
 import "./globals.css";
 import { HERO_IMAGE_PRECONNECT_ORIGINS } from "@/lib/home/hero-lcp";
 
@@ -49,7 +54,14 @@ export const metadata: Metadata = {
     title: "Web Space Station – Portal informacyjny o kosmosie",
     description:
       "Najważniejsze wydarzenia z kosmosu, astronomii i technologii kosmicznych.",
-    images: [{ url: getDefaultOgImageUrl(), width: 512, height: 512, alt: "Web Space Station" }],
+    images: [
+      {
+        url: getDefaultOgImageUrl(),
+        width: DEFAULT_OG_IMAGE_WIDTH,
+        height: DEFAULT_OG_IMAGE_HEIGHT,
+        alt: DEFAULT_OG_IMAGE_ALT,
+      },
+    ],
   },
   ...(googleVerification
     ? { verification: { google: googleVerification } }
@@ -58,6 +70,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Web Space Station",
     description: "Najważniejsze wydarzenia z kosmosu, astronomii i technologii kosmicznych.",
+    images: [getDefaultOgImageUrl()],
   },
   robots: {
     index: true,
