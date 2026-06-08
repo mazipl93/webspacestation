@@ -21,10 +21,20 @@ export type ArticlePageHeroProps = {
   previewLayout?: ArticleHeroPreviewLayout;
 };
 
-function heroMaxHeight(previewLayout?: ArticleHeroPreviewLayout): number {
-  if (previewLayout === "mobile") return HERO_FRAME_MAX_HEIGHT.mobile;
-  if (previewLayout === "desktop") return HERO_FRAME_MAX_HEIGHT.desktop;
-  return HERO_FRAME_MAX_HEIGHT.pageDesktop;
+function heroMaxHeight(previewLayout?: ArticleHeroPreviewLayout): {
+  max: number;
+  maxLg?: number;
+} {
+  if (previewLayout === "mobile") {
+    return { max: HERO_FRAME_MAX_HEIGHT.mobile };
+  }
+  if (previewLayout === "desktop") {
+    return { max: HERO_FRAME_MAX_HEIGHT.desktop };
+  }
+  return {
+    max: HERO_FRAME_MAX_HEIGHT.pageMobile,
+    maxLg: HERO_FRAME_MAX_HEIGHT.pageDesktop,
+  };
 }
 
 /** Okładka bez tekstu na zdjęciu — tytuł i meta zawsze pod obrazem (mobile + desktop). */
@@ -39,6 +49,7 @@ export default function ArticlePageHero({
     : article.image;
 
   const background = previewCatFallback(article.category);
+  const { max: maxHeight, maxLg: maxHeightLg } = heroMaxHeight(previewLayout);
 
   return (
     <section
@@ -58,16 +69,19 @@ export default function ArticlePageHero({
           slug={article.slug}
           category={article.category}
           suppressFallback={preview}
-          maxHeight={heroMaxHeight(previewLayout)}
+          maxHeight={maxHeight}
+          maxHeightLg={maxHeightLg}
           background={background}
           imageCredit={article.coverImageCredit}
+          imageFit="contain"
+          fullWidthFrame
         />
       ) : (
         <div
           className="relative w-full overflow-hidden"
           style={{
             aspectRatio: "16 / 9",
-            maxHeight: heroMaxHeight(previewLayout),
+            maxHeight: heroMaxHeight(previewLayout).max,
             background,
           }}
         />

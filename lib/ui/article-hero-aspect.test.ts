@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   computeHeroFrameSize,
+  computeHeroFrameSizeFullWidth,
   HERO_FRAME_DEFAULT_ASPECT,
 } from "@/lib/ui/article-hero-aspect";
 
@@ -34,5 +35,23 @@ describe("computeHeroFrameSize", () => {
     const { width, height } = computeHeroFrameSize(1280, 0, 580);
     assert.equal(width, 1280);
     assert.equal(height, 580);
+  });
+
+  it("full-width mode keeps container width for tall images", () => {
+    const { width, height } = computeHeroFrameSizeFullWidth(1200, 1, 720);
+    assert.equal(width, 1200);
+    assert.equal(height, 720);
+  });
+
+  it("full-width mode grows with wide 16:9 up to cap", () => {
+    const { width, height } = computeHeroFrameSizeFullWidth(1200, 16 / 9, 720);
+    assert.equal(width, 1200);
+    assert.equal(height, 675);
+  });
+
+  it("contain sizing narrows width for tall images (no side letterbox)", () => {
+    const { width, height } = computeHeroFrameSize(1200, 1, 720);
+    assert.equal(width, 720);
+    assert.equal(height, 720);
   });
 });

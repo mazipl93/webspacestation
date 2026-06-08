@@ -5,6 +5,7 @@ import CoverImage from "@/components/article/CoverImage";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
 import {
   computeHeroFrameSize,
+  computeHeroFrameSizeFullWidth,
   HERO_FRAME_DEFAULT_ASPECT,
   HERO_FRAME_MIN_HEIGHT,
   imageAspectFromDimensions,
@@ -22,9 +23,15 @@ type Props = {
   category?: NewsCategory | string;
   suppressFallback?: boolean;
   maxHeight: number;
+  /** When set, used from lg breakpoint up (article page desktop hero). */
+  maxHeightLg?: number;
   background: string;
   imageCredit?: string;
   className?: string;
+  /** Public article — show full image (top/bottom), no crop. */
+  imageFit?: "cover" | "contain";
+  /** Match editorial grid width — never shrink figure below container. */
+  fullWidthFrame?: boolean;
 };
 
 function placeholderFrame(
@@ -48,14 +55,30 @@ export default function ArticleHeroMedia({
   category,
   suppressFallback = false,
   maxHeight,
+  maxHeightLg,
   background,
   imageCredit,
   className,
+  imageFit = "cover",
+  fullWidthFrame = false,
 }: Props) {
   const outerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [imageAspect, setImageAspect] = useState<number | null>(null);
   const [frame, setFrame] = useState<HeroFrameDimensions | null>(null);
+  const [effectiveMaxHeight, setEffectiveMaxHeight] = useState(maxHeight);
+
+  useEffect(() => {
+    if (maxHeightLg == null) {
+      setEffectiveMaxHeight(maxHeight);
+      return;
+    }
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const apply = () => setEffectiveMaxHeight(mq.matches ? maxHeightLg : maxHeight);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, [maxHeight, maxHeightLg]);
 
   const measure = useCallback(() => {
     const w = outerRef.current?.clientWidth ?? 0;
@@ -75,36 +98,66 @@ export default function ArticleHeroMedia({
     setImageAspect(null);
   }, [src]);
 
+  const fitFrameToImage = imageFit === "contain";
+
   useEffect(() => {
     if (containerWidth <= 0) return;
     const aspect = imageAspect ?? HERO_FRAME_DEFAULT_ASPECT;
-    setFrame(computeHeroFrameSize(containerWidth, aspect, maxHeight));
-  }, [containerWidth, imageAspect, maxHeight]);
+    const compute =
+      fullWidthFrame && !fitFrameToImage
+        ? computeHeroFrameSizeFullWidth
+        : computeHeroFrameSize;
+    setFrame(compute(containerWidth, aspect, effectiveMaxHeight));
+  }, [
+    containerWidth,
+    imageAspect,
+    effectiveMaxHeight,
+    fullWidthFrame,
+    fitFrameToImage,
+  ]);
 
   const displayFrame =
     frame ??
     (containerWidth > 0
-      ? placeholderFrame(containerWidth, maxHeight)
+      ? placeholderFrame(containerWidth, effectiveMaxHeight)
       : { width: 0, height: HERO_FRAME_MIN_HEIGHT });
 
   return (
-    <div ref={outerRef} className={cn("flex w-full justify-center", className)}>
+    <div
+      ref={outerRef}
+      className={cn(
+        "flex w-full",
+        fullWidthFrame && !fitFrameToImage ? "justify-stretch" : "justify-center",
+        className
+      )}
+    >
       <figure
-        className="max-w-full"
-        style={{
-          width: displayFrame.width > 0 ? displayFrame.width : "100%",
-        }}
+        className={cn(
+          fullWidthFrame && !fitFrameToImage ? "w-full" : "max-w-full"
+        )}
+        style={
+          fullWidthFrame && !fitFrameToImage
+            ? undefined
+            : {
+                width: displayFrame.width > 0 ? displayFrame.width : "100%",
+              }
+        }
       >
         <div
-          className="relative w-full overflow-hidden rounded-lg border border-hairline bg-[#090d13]"
+          className={cn(
+            "relative w-full overflow-hidden rounded-lg border border-hairline",
+            fitFrameToImage ? "bg-transparent" : "bg-[#090d13]"
+          )}
           style={{
             height: Math.max(displayFrame.height, HERO_FRAME_MIN_HEIGHT),
           }}
         >
-          <div
-            className="absolute inset-0 z-0 bg-[#05070d]"
-            style={{ background }}
-          />
+          {!fitFrameToImage ? (
+            <div
+              className="absolute inset-0 z-0 bg-[#05070d]"
+              style={{ background }}
+            />
+          ) : null}
           <CoverImage
             src={src}
             alt={alt}
@@ -114,7 +167,10 @@ export default function ArticleHeroMedia({
             fill
             priority
             sizes={HERO_SIZES}
-            className="z-[1] object-cover object-center"
+            className={cn(
+              "z-[1] object-center",
+              imageFit === "contain" ? "object-contain" : "object-cover"
+            )}
             onLoad={(event) => {
               const img = event.currentTarget;
               const aspect = imageAspectFromDimensions(

@@ -2,9 +2,9 @@
 export const HERO_FRAME_MAX_HEIGHT = {
   desktop: 580,
   mobile: 480,
-  /** Responsive article page (matches article-hero-frame vh caps). */
+  /** Responsive article page — taller desktop hero, full image top/bottom visible. */
   pageMobile: 480,
-  pageDesktop: 580,
+  pageDesktop: 720,
 } as const;
 
 export const HERO_FRAME_MIN_HEIGHT = 200;
@@ -55,4 +55,34 @@ export function imageAspectFromDimensions(
 ): number | null {
   if (width <= 0 || height <= 0) return null;
   return width / height;
+}
+
+/**
+ * Article page — always full container width (aligned with text + sidebar grid).
+ * Height follows image aspect up to maxHeight; use with object-contain.
+ */
+export function computeHeroFrameSizeFullWidth(
+  containerWidth: number,
+  imageAspect: number,
+  maxHeight: number
+): HeroFrameDimensions {
+  if (containerWidth <= 0 || imageAspect <= 0 || !Number.isFinite(imageAspect)) {
+    const height = Math.min(
+      containerWidth / HERO_FRAME_DEFAULT_ASPECT,
+      maxHeight
+    );
+    return {
+      width: containerWidth,
+      height: Math.max(height, HERO_FRAME_MIN_HEIGHT),
+    };
+  }
+
+  const heightAtFullWidth = containerWidth / imageAspect;
+  return {
+    width: containerWidth,
+    height: Math.max(
+      Math.min(heightAtFullWidth, maxHeight),
+      HERO_FRAME_MIN_HEIGHT
+    ),
+  };
 }

@@ -259,6 +259,12 @@ function ArticleBody({
     <div className="border-b border-hairline bg-[#05070d]">
       <div className={cn(ARTICLE_SHELL, "py-5 sm:py-7 lg:py-8")}>
         <div className={ARTICLE_PAGE_GRID}>
+          <div className="min-w-0 xl:col-span-2">
+            <div className={cn(ARTICLE_HERO_SHELL_WRAP, "mb-5 sm:mb-6 xl:mb-7")}>
+              <ArticlePageHero article={article} embedded />
+            </div>
+          </div>
+
           <div className="min-w-0">
             <ArticleHeroMobileMeta
               article={article}
@@ -414,11 +420,6 @@ export default async function ArticlePage({ params }: Props) {
       {/* Reading context bar — appears after hero scroll, tracks article progress */}
       <StickyArticleBar title={article.title} category={article.category} slug={article.slug} />
       <main className={cn("relative z-[1]", ARTICLE_PAGE_MAIN_OFFSET_CLASS)}>
-        <div className={cn(ARTICLE_SHELL, "mt-1")}>
-          <div className={ARTICLE_HERO_SHELL_WRAP}>
-            <ArticlePageHero article={article} embedded />
-          </div>
-        </div>
         <ArticleBody
           article={article}
           sidebarRelated={sidebarRelated}
