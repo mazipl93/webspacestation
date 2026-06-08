@@ -126,7 +126,7 @@ export default function AdminSidebar({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-50 flex h-dvh shrink-0 flex-col border-r border-hairline bg-space-surface transition-[width,transform] duration-300 ease-out",
+        "cms-sidebar fixed inset-y-0 left-0 z-50 flex h-dvh shrink-0 flex-col border-r border-hairline bg-space-surface shadow-[8px_0_28px_rgba(0,0,0,0.45)] transition-[width,transform] duration-300 ease-out lg:shadow-none",
         showCollapsed ? "w-[4.5rem]" : "w-64",
         mobileOpen ? "translate-x-0" : "-translate-x-full",
         "lg:sticky lg:top-0 lg:translate-x-0"

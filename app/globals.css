@@ -136,6 +136,43 @@ html[data-portal-theme] .surface-interactive {
   border-radius: 0 !important;
 }
 
+/*
+ * CMS — nieprzezroczysty chrome (portal flat theme zeruje bg-space-*).
+ * Bez tego menu boczne i pasek na telefonie są niewidoczne na tle portalu.
+ */
+html[data-portal-theme] .cms-shell {
+  --cms-bg: #060810;
+  --cms-surface: #0c1018;
+  --cms-border: #1a2238;
+  background-color: var(--cms-bg) !important;
+}
+
+html[data-portal-theme] .cms-shell .bg-space-bg {
+  background-color: var(--cms-bg) !important;
+}
+
+html[data-portal-theme] .cms-shell .cms-sidebar,
+html[data-portal-theme] .cms-shell .cms-mobile-topbar,
+html[data-portal-theme] .cms-shell .bg-space-surface {
+  background-color: var(--cms-surface) !important;
+  border-color: var(--cms-border) !important;
+}
+
+html[data-portal-theme] .cms-shell .border-hairline,
+html[data-portal-theme] .cms-shell .border-hairline-strong,
+html[data-portal-theme] .cms-shell .border-hairline-faint,
+html[data-portal-theme] .cms-shell .border-b.border-hairline,
+html[data-portal-theme] .cms-shell .border-r.border-hairline,
+html[data-portal-theme] .cms-shell .border.border-hairline {
+  border-color: var(--cms-border) !important;
+}
+
+html[data-portal-theme] .cms-shell .card-surface {
+  background-color: var(--cms-surface) !important;
+  border: 1px solid var(--cms-border) !important;
+  border-radius: 0.65rem !important;
+}
+
 html[data-portal-theme] .editorial-surface > div[aria-hidden] {
   display: none !important;
 }

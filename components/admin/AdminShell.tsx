@@ -73,7 +73,7 @@ export default function AdminShell({
   }, []);
 
   return (
-    <div className="flex min-h-dvh bg-space-bg">
+    <div className="cms-shell flex min-h-dvh bg-space-bg">
       <ScheduledPublishPoller />
       {mobileOpen ? (
         <button
@@ -97,7 +97,7 @@ export default function AdminShell({
       />
 
       <main className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
-        <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-hairline bg-space-bg/95 px-4 py-3 backdrop-blur-sm lg:hidden">
+        <div className="cms-mobile-topbar sticky top-0 z-30 flex items-center gap-3 border-b border-hairline bg-space-surface px-4 py-3 lg:hidden">
           <button
             type="button"
             aria-label="Otwórz menu"
