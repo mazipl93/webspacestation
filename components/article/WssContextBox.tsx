@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 
-/** Editorial context block for RSS hybrid (B+) articles. */
+/** Editorial context block — CMS „Kontekst WSS” (RSS + manual articles). */
 export default function WssContextBox({ text }: { text: string }) {
   if (!text.trim()) return null;
 

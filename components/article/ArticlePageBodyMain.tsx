@@ -93,7 +93,7 @@ export default function ArticlePageBodyMain({
             )
           )}
 
-          {isRss && article.contextNote ? (
+          {article.contextNote ? (
             <WssContextBox text={article.contextNote} />
           ) : null}
 

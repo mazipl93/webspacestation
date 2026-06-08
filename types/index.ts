@@ -36,7 +36,7 @@ export interface NewsArticle {
   updatedAt?: string;
   content?: string[];  // article body paragraphs
   readTime?: number;   // estimated reading time in minutes
-  /** WSS editorial context (RSS hybrid articles) */
+  /** WSS editorial context — CMS „Kontekst WSS” */
   contextNote?: string;
   /** Provenance for UI kind (RSS vs editorial) — not used for attribution. */
   contentOrigin?: "EDITORIAL" | "RSS" | "AI_DRAFT";
