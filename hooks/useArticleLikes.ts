@@ -4,10 +4,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import {
+  getAnonLikeIdIfPresent,
+  getOrCreateAnonLikeId,
+} from "@/lib/likes/anon-id";
 import { fetchSingleArticleLikeCount } from "@/lib/likes/article-like-counts";
 import { LIKES_CHANGE_EVENT } from "@/lib/likes/events";
 import { articleLikeErrorMessage } from "@/lib/likes/like-errors";
-import { toggleArticleLike } from "@/lib/likes/supabase-likes";
+import {
+  fetchAnonArticleLiked,
+  mergeAnonLikes,
+  toggleAnonArticleLike,
+  toggleArticleLike,
+} from "@/lib/likes/supabase-likes";
 
 interface LikesState {
   count: number | null;
@@ -33,7 +42,7 @@ async function fetchUserLiked(
   return !!data;
 }
 
-/** Per-user likes (auth required to toggle). Count is public aggregate. */
+/** Article likes — logged-in (per account) or anonymous (per browser cookie). */
 export function useArticleLikes(slug: string): LikesState {
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
@@ -45,6 +54,8 @@ export function useArticleLikes(slug: string): LikesState {
   const [error, setError] = useState<string | null>(null);
 
   const clientRef = useRef<SupabaseClient | null>(null);
+  const mergedAnonRef = useRef(false);
+
   if (clientRef.current === null) {
     try {
       clientRef.current = createClient();
@@ -68,7 +79,13 @@ export function useArticleLikes(slug: string): LikesState {
       const mine = await fetchUserLiked(supabase, slug);
       setLiked(mine);
     } else {
-      setLiked(false);
+      const anonId = getAnonLikeIdIfPresent();
+      if (anonId) {
+        const mine = await fetchAnonArticleLiked(supabase, slug, anonId);
+        setLiked(mine);
+      } else {
+        setLiked(false);
+      }
     }
     setLoading(false);
   }, [slug, user]);
@@ -83,8 +100,24 @@ export function useArticleLikes(slug: string): LikesState {
     return () => window.removeEventListener(LIKES_CHANGE_EVENT, onChange);
   }, [refresh]);
 
+  useEffect(() => {
+    if (!user) {
+      mergedAnonRef.current = false;
+      return;
+    }
+
+    const supabase = clientRef.current;
+    if (!supabase || mergedAnonRef.current) return;
+
+    const anonId = getAnonLikeIdIfPresent();
+    if (!anonId) return;
+
+    mergedAnonRef.current = true;
+    void mergeAnonLikes(supabase, anonId).then(() => refresh());
+  }, [user, refresh]);
+
   const toggle = useCallback(() => {
-    if (!isAuthed || toggling) return;
+    if (toggling) return;
 
     const supabase = clientRef.current;
     if (!supabase) return;
@@ -99,21 +132,32 @@ export function useArticleLikes(slug: string): LikesState {
     });
 
     (async () => {
-      const { data, error } = await toggleArticleLike(supabase, slug);
+      const result = isAuthed
+        ? await toggleArticleLike(supabase, slug)
+        : await toggleAnonArticleLike(
+            supabase,
+            slug,
+            getOrCreateAnonLikeId()
+          );
+
       setToggling(false);
 
-      if (error || !data) {
+      if (result.error || !result.data) {
         setLiked(wasLiked);
         setCount((c) => {
           const base = c ?? 0;
           return wasLiked ? base + 1 : Math.max(0, base - 1);
         });
-        setError(articleLikeErrorMessage(error?.message ?? "Invalid toggle response"));
+        setError(
+          articleLikeErrorMessage(
+            result.error?.message ?? "Invalid toggle response"
+          )
+        );
         return;
       }
 
-      setLiked(data.liked);
-      setCount(data.count);
+      setLiked(result.data.liked);
+      setCount(result.data.count);
       window.dispatchEvent(new Event(LIKES_CHANGE_EVENT));
     })();
   }, [isAuthed, liked, slug, toggling]);

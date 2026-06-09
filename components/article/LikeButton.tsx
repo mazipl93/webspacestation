@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useArticleLikes } from "@/hooks/useArticleLikes";
@@ -10,36 +9,20 @@ type Props = {
 };
 
 export default function LikeButton({ slug }: Props) {
-  const { count, liked, loading, toggling, error, isAuthed, toggle } =
+  const { count, liked, loading, toggling, error, toggle } =
     useArticleLikes(slug);
-  const router = useRouter();
-  const pathname = usePathname();
 
-  const label = !isAuthed
-    ? "Zaloguj się, aby polubić artykuł"
-    : liked
-      ? "Usuń polubienie"
-      : "Polub ten artykuł";
+  const label = liked ? "Usuń polubienie" : "Polub ten artykuł";
 
   return (
     <div className="flex flex-col gap-1">
       <button
         type="button"
-        onClick={() => {
-          if (!isAuthed) {
-            const dest =
-              pathname && pathname !== "/"
-                ? `/logowanie?redirectTo=${encodeURIComponent(pathname)}`
-                : "/logowanie";
-            router.push(dest);
-            return;
-          }
-          toggle();
-        }}
+        onClick={() => toggle()}
         disabled={toggling}
         aria-pressed={liked}
         aria-label={label}
-        title={!isAuthed ? "Zaloguj się, aby polubić" : label}
+        title={label}
         className={cn(
           "group inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2.5 text-[12.5px] font-semibold transition-all duration-300 active:scale-[0.97] disabled:opacity-70",
           liked
