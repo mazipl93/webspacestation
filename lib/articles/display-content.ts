@@ -37,13 +37,12 @@ function isBoilerplateParagraph(text: string): boolean {
 /** Body paragraphs for article page (no duplicate aggregator legal text). */
 export function getArticleBodyParagraphs(article: NewsArticle): string[] {
   const raw = article.content ?? [];
-  const paragraphs = raw.filter((p) => !isBoilerplateParagraph(p));
 
-  if (isRssArticle(article.contentOrigin)) {
-    return paragraphs;
+  if (!isRssArticle(article.contentOrigin)) {
+    return raw.map((p) => p.trim()).filter(Boolean);
   }
 
-  return paragraphs;
+  return raw.filter((p) => !isBoilerplateParagraph(p));
 }
 
 /** Parsed body blocks (paragraphs + vertical lists) for public article UI. */

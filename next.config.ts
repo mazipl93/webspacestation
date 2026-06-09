@@ -50,6 +50,8 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Default imageSizes tops out at 384 — too small for retina card/thumb slots.
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 640, 828, 1080],
     remotePatterns: [
       {
         protocol: "https",

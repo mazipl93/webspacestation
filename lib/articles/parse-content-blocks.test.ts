@@ -38,4 +38,14 @@ describe("parseParagraphToContentBlocks", () => {
     assert.equal(blocks[0].kind, "paragraph");
     assert.equal(blocks[1].kind, "list");
   });
+
+  it("parses markdown heading line as heading block", () => {
+    const blocks = parseParagraphToContentBlocks("## Sekcja artykułu");
+    assert.equal(blocks.length, 1);
+    assert.equal(blocks[0].kind, "heading");
+    if (blocks[0].kind === "heading") {
+      assert.equal(blocks[0].level, 3);
+      assert.equal(blocks[0].text, "Sekcja artykułu");
+    }
+  });
 });

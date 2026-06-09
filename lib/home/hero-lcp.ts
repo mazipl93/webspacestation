@@ -11,8 +11,8 @@ export const HERO_IMAGE_PRECONNECT_ORIGINS = [] as const;
 export const HERO_IMAGE_SIZES =
   "(max-width: 640px) 100vw, (max-width: 1280px) 90vw, 1320px";
 
-/** Quality on the visible hero (desktop + mobile). */
-export const HERO_DISPLAY_QUALITY = 74;
+/** Quality on the visible hero (desktop + mobile). Preload stays at q62. */
+export const HERO_DISPLAY_QUALITY = 82;
 
 /** Preload hint only — tuned for Moto G LCP, not desktop sharpness. */
 const HERO_LCP_PRELOAD_SIZES = "(max-width: 640px) 100vw, 640px";
@@ -35,13 +35,15 @@ export function buildHeroLcpPreloadHref(imageUrl: string | undefined): string | 
   const src = imageUrl?.trim();
   if (!src) return null;
 
-  if (shouldBypassImageOptimizer(src)) {
-    return normalizeCoverImageUrl(src);
+  const normalized = normalizeCoverImageUrl(src) ?? src;
+
+  if (shouldBypassImageOptimizer(normalized)) {
+    return normalized;
   }
 
   try {
     const { props } = getImageProps({
-      src,
+      src: normalized,
       alt: "",
       width: HERO_LCP_PRELOAD_WIDTH,
       height: Math.round((HERO_LCP_PRELOAD_WIDTH * 9) / 16),

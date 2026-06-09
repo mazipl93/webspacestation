@@ -1,3 +1,38 @@
+/** Target width for NASA Science dynamicimage CDN (RSS often ships w=768). */
+const NASA_DYNAMIC_TARGET = 1920;
+/** Upscale small NASA dynamic crops; downscale absurd w=4537+ before optimizer. */
+const NASA_DYNAMIC_MIN = 1280;
+const NASA_DYNAMIC_MAX = 2560;
+
+function normalizeNasaScienceDynamicUrl(parsed: URL): void {
+  if (
+    parsed.hostname !== "assets.science.nasa.gov" ||
+    !parsed.pathname.includes("/dynamicimage/")
+  ) {
+    return;
+  }
+
+  const w = Number.parseInt(parsed.searchParams.get("w") ?? "", 10);
+  const h = Number.parseInt(parsed.searchParams.get("h") ?? "", 10);
+  if (
+    !Number.isFinite(w) ||
+    !Number.isFinite(h) ||
+    w <= 0 ||
+    h <= 0
+  ) {
+    parsed.searchParams.set("w", String(NASA_DYNAMIC_TARGET));
+    parsed.searchParams.set("h", String(Math.round((NASA_DYNAMIC_TARGET * 9) / 16)));
+    return;
+  }
+
+  const maxDim = Math.max(w, h);
+  if (maxDim < NASA_DYNAMIC_MIN || maxDim > NASA_DYNAMIC_MAX) {
+    const scale = NASA_DYNAMIC_TARGET / maxDim;
+    parsed.searchParams.set("w", String(Math.round(w * scale)));
+    parsed.searchParams.set("h", String(Math.round(h * scale)));
+  }
+}
+
 /**
  * Normalize cover URLs pasted in CMS (protocol, whitespace).
  * Returns null when the value cannot be treated as a remote image URL.
@@ -23,6 +58,7 @@ export function normalizeCoverImageUrl(
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
       return null;
     }
+    normalizeNasaScienceDynamicUrl(parsed);
     return parsed.toString();
   } catch {
     return null;

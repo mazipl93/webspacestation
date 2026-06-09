@@ -31,6 +31,28 @@ describe("normalizeCoverImageUrl", () => {
     assert.equal(normalizeCoverImageUrl(""), null);
     assert.equal(normalizeCoverImageUrl("not a url"), null);
   });
+
+  it("upscales NASA Science dynamicimage w=768 to ~1920 for optimizer source", () => {
+    const out = normalizeCoverImageUrl(
+      "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/voyager/images/1.jpg?w=768&h=432&fit=crop&crop=faces,focalpoint"
+    );
+    assert.ok(out);
+    const parsed = new URL(out!);
+    assert.equal(parsed.searchParams.get("w"), "1920");
+    assert.equal(parsed.searchParams.get("h"), "1080");
+  });
+
+  it("downscales NASA Science dynamicimage w=4537 before optimizer", () => {
+    const out = normalizeCoverImageUrl(
+      "https://assets.science.nasa.gov/dynamicimage/assets/science/webb/x.png?w=4537&h=4630&fit=crop"
+    );
+    assert.ok(out);
+    const parsed = new URL(out!);
+    const w = Number(parsed.searchParams.get("w"));
+    const h = Number(parsed.searchParams.get("h"));
+    assert.ok(w <= 1920 && h <= 1920);
+    assert.ok(w >= 1800);
+  });
 });
 
 describe("shouldBypassImageOptimizer", () => {

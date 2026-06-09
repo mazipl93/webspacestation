@@ -2,10 +2,14 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, ListPlus, Loader2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Heading2, Link2, ListPlus, Loader2 } from "lucide-react";
 import { insertListItemAtCaret } from "@/lib/articles/content-list";
 import { insertContentImageAtCaret } from "@/lib/articles/content-image";
+import { insertHeadingAtCaret } from "@/lib/articles/content-heading";
+import { insertLinkAtCaret } from "@/lib/articles/content-link";
+import { insertContentVideoAtCaret } from "@/lib/articles/content-video";
 import ContentImageInserter from "@/components/admin/ContentImageInserter";
+import ContentVideoInserter from "@/components/admin/ContentVideoInserter";
 import { adminApi, ApiError, type ArticleWritePayload } from "@/lib/admin/api";
 import type {
   AdminArticle,
@@ -1082,11 +1086,57 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <EditorSection
               step={2}
               title="Treść artykułu"
-              description="Akapity oddziel pustą linią. Listę i grafiki dodasz przyciskami poniżej."
+              description="Akapity oddziel pustą linią. Linki https:// działają w podglądzie. Nagłówki, listy, grafiki i wideo — przyciskami poniżej."
               tone="content"
             >
               <EditorFieldPanel>
                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full justify-center px-2.5 py-2 text-meta sm:w-fit"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      const el = contentRef.current;
+                      const caretStart =
+                        el?.selectionStart ?? contentSelectionRef.current.start;
+                      const caretEnd =
+                        el?.selectionEnd ?? contentSelectionRef.current.end;
+                      const { value, selectionStart, selectionEnd } =
+                        insertHeadingAtCaret(form.content, caretStart, caretEnd, 2);
+                      pendingContentCaretRef.current = {
+                        start: selectionStart,
+                        end: selectionEnd,
+                      };
+                      update("content", value);
+                    }}
+                  >
+                    <Heading2 size={14} aria-hidden />
+                    Nagłówek
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full justify-center px-2.5 py-2 text-meta sm:w-fit"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      const el = contentRef.current;
+                      const caretStart =
+                        el?.selectionStart ?? contentSelectionRef.current.start;
+                      const caretEnd =
+                        el?.selectionEnd ?? contentSelectionRef.current.end;
+                      const { value, selectionStart, selectionEnd } =
+                        insertLinkAtCaret(form.content, caretStart, caretEnd);
+                      pendingContentCaretRef.current = {
+                        start: selectionStart,
+                        end: selectionEnd,
+                      };
+                      update("content", value);
+                    }}
+                  >
+                    <Link2 size={14} aria-hidden />
+                    Link
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
@@ -1134,6 +1184,29 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                       update("content", value);
                     }}
                   />
+                  <ContentVideoInserter
+                    disabled={loading}
+                    onInsertVideo={(src, caption) => {
+                      const el = contentRef.current;
+                      const caretStart =
+                        el?.selectionStart ?? contentSelectionRef.current.start;
+                      const caretEnd =
+                        el?.selectionEnd ?? contentSelectionRef.current.end;
+                      const { value, selectionStart, selectionEnd } =
+                        insertContentVideoAtCaret(
+                          form.content,
+                          caretStart,
+                          caretEnd,
+                          src,
+                          caption
+                        );
+                      pendingContentCaretRef.current = {
+                        start: selectionStart,
+                        end: selectionEnd,
+                      };
+                      update("content", value);
+                    }}
+                  />
                 </div>
               </EditorFieldPanel>
 
@@ -1141,7 +1214,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 <Field
                   label="Treść"
                   htmlFor="content"
-                  hint="Akapity: pusta linia między blokami. Grafika + podpis w jednym bloku (podpis w linii pod URL)."
+                  hint="Link: wpisz https://… lub [tekst](url). Nagłówek: linia # Tytuł (własny akapit). Wideo: ::video URL (przycisk)."
                 >
                   <TextArea
                     ref={contentRef}

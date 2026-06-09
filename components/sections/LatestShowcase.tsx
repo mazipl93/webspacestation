@@ -50,7 +50,7 @@ function LatestSliderCard({
           fallbackCategory={article.category}
           fill
           loading="lazy"
-          quality={74}
+          quality={80}
           sizes={
             featured
               ? "(max-width: 640px) 92vw, (max-width: 1024px) 78vw, 520px"
@@ -118,7 +118,7 @@ function LatestRailLead({ article }: { article: NewsArticle }) {
           fallbackCategory={article.category}
           fill
           loading="lazy"
-          quality={74}
+          quality={80}
           sizes="(max-width: 1024px) 88vw, 480px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
@@ -178,7 +178,7 @@ function LatestStripCard({ article }: { article: NewsArticle }) {
           alt={article.title}
           fill
           loading="lazy"
-          quality={74}
+          quality={80}
           sizes="(max-width: 1320px) 22vw, 320px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
@@ -232,7 +232,7 @@ function LatestRailRow({ article }: { article: NewsArticle }) {
           alt={article.title}
           fill
           loading="lazy"
-          quality={70}
+          quality={76}
           sizes="120px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />

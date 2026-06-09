@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import Image, { type ImageProps } from "next/image";
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
-import { shouldBypassImageOptimizer } from "@/lib/media/cover-url";
+import {
+  normalizeCoverImageUrl,
+  shouldBypassImageOptimizer,
+} from "@/lib/media/cover-url";
 import type { NewsCategory } from "@/types";
 
 type Props = Omit<ImageProps, "src" | "onError" | "alt"> & {
@@ -27,6 +30,7 @@ export default function CoverImage({
   suppressFallback = false,
   priority,
   loading,
+  quality,
   ...rest
 }: Props) {
   const [current, setCurrent] = useState(src);
@@ -41,7 +45,10 @@ export default function CoverImage({
       fallbackSeed?.trim() || src
     );
 
-  const useUnoptimized = shouldBypassImageOptimizer(current);
+  const rawSrc =
+    current || (suppressFallback ? current : resolveErrorFallback());
+  const resolvedSrc = normalizeCoverImageUrl(rawSrc) ?? rawSrc;
+  const useUnoptimized = shouldBypassImageOptimizer(resolvedSrc);
   const isPriority = Boolean(priority);
 
   const resolvedFetchPriority =
@@ -51,11 +58,12 @@ export default function CoverImage({
     <Image
       {...rest}
       alt={alt}
+      quality={quality ?? 78}
       priority={isPriority}
       loading={isPriority ? "eager" : loading}
       fetchPriority={resolvedFetchPriority}
       unoptimized={useUnoptimized}
-      src={current || (suppressFallback ? current : resolveErrorFallback())}
+      src={resolvedSrc}
       onError={() => {
         if (suppressFallback) return;
         const next = resolveErrorFallback();

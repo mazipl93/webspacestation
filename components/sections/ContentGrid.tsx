@@ -132,7 +132,7 @@ function CategorySplitLeadDesktop({
           src={lead.image}
           alt={lead.title}
           fill
-          quality={74}
+          quality={80}
           sizes="(max-width: 1320px) 58vw, 720px"
           className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
         />
@@ -265,7 +265,7 @@ function CategorySection({
                   src={lead.image}
                   alt={lead.title}
                   fill
-                  quality={74}
+                  quality={80}
                   sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 660px"
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                 />

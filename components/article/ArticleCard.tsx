@@ -46,7 +46,7 @@ export default function ArticleCard({
           fallbackSeed={article.slug}
           fallbackCategory={article.category}
           fill
-          quality={featured ? 76 : compact ? 72 : 74}
+          quality={featured ? 82 : compact ? 76 : 80}
           sizes={
             featured
               ? "(max-width: 640px) 100vw, (max-width: 1280px) 44vw, 600px"

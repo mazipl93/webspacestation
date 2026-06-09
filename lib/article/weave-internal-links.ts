@@ -19,6 +19,8 @@ export type WovenBodySegment =
   | { kind: "paragraph"; text: string }
   | { kind: "list"; items: string[] }
   | { kind: "figure"; src: string; caption?: string }
+  | { kind: "heading"; level: 2 | 3 | 4; text: string }
+  | { kind: "video"; src: string; caption?: string }
   | {
       kind: "internal-link";
       article: InternalLinkCandidate;
@@ -131,6 +133,24 @@ export function buildWovenBodySegments(
         kind: "figure",
         src: block.src,
         caption: block.caption,
+      });
+      continue;
+    }
+
+    if (block.kind === "video") {
+      segments.push({
+        kind: "video",
+        src: block.src,
+        caption: block.caption,
+      });
+      continue;
+    }
+
+    if (block.kind === "heading") {
+      segments.push({
+        kind: "heading",
+        level: block.level,
+        text: block.text,
       });
       continue;
     }

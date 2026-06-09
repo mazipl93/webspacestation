@@ -5,6 +5,7 @@ import SourceAttribution from "@/components/article/SourceAttribution";
 import WssContextBox from "@/components/article/WssContextBox";
 import ArticleContentBlocks from "@/components/article/ArticleContentBlocks";
 import ArticleFigure from "@/components/article/ArticleFigure";
+import ArticleVideoEmbed from "@/components/article/ArticleVideoEmbed";
 import InternalLinkTeaser from "@/components/article/InternalLinkTeaser";
 import ArticleEditButton from "@/components/article/ArticleEditButton";
 import {
@@ -82,6 +83,24 @@ export default function ArticlePageBodyMain({
                 src={segment.src}
                 caption={segment.caption}
                 className="max-w-[min(52rem,100%)]"
+              />
+            ) : segment.kind === "video" ? (
+              <ArticleVideoEmbed
+                key={`vid-${i}`}
+                src={segment.src}
+                caption={segment.caption}
+                className="max-w-[min(52rem,100%)]"
+              />
+            ) : segment.kind === "heading" ? (
+              <ArticleContentBlocks
+                key={`h-${i}`}
+                blocks={[
+                  {
+                    kind: "heading",
+                    level: segment.level,
+                    text: segment.text,
+                  },
+                ]}
               />
             ) : (
               <InternalLinkTeaser

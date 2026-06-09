@@ -15,6 +15,8 @@ import { cn } from "@/lib/cn";
 import type { NewsCategory } from "@/types";
 
 const HERO_SIZES = "(max-width: 1320px) 100vw, 1320px";
+/** Article hero — sharper on desktop; cards/preload unchanged. */
+const ARTICLE_HERO_QUALITY = 82;
 
 type Props = {
   src: string;
@@ -166,6 +168,7 @@ export default function ArticleHeroMedia({
             suppressFallback={suppressFallback}
             fill
             priority
+            quality={ARTICLE_HERO_QUALITY}
             sizes={HERO_SIZES}
             className={cn(
               "z-[1] object-center",
