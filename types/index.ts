@@ -28,7 +28,9 @@ export interface NewsArticle {
   featured?: boolean;
   /** Homepage hero slider slot: 0 = off, 1–4 = slide order. */
   heroPosition?: number;
-  /** CMS „Temat tygodnia” — slider pod hero. */
+  /** CMS „W centrum uwagi”: 0 = off, 1–4 = slot order. */
+  weekTopicPosition?: number;
+  /** Legacy — true when weekTopicPosition >= 1. */
   weekTopic?: boolean;
   /** Original create time — editorial metadata; „Najnowsze” uses publishedAt first. */
   createdAt?: string;

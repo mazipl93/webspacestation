@@ -86,6 +86,7 @@ const EMPTY_FORM: ArticleFormValues = {
   categoryId: "",
   featured: false,
   heroPosition: 0,
+  weekTopicPosition: 0,
   weekTopic: false,
   readingTime: null,
   tagsText: "",
@@ -122,6 +123,8 @@ function toForm(a: AdminArticle): ArticleFormValues {
     categoryId: a.category.id,
     featured: a.featured,
     heroPosition: a.heroPosition ?? 0,
+    weekTopicPosition:
+      a.weekTopicPosition ?? (a.weekTopic ? 1 : 0),
     weekTopic: a.weekTopic ?? false,
     readingTime: a.readingTime,
     tagsText: tagsToText(a.tags),
@@ -147,7 +150,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     tags: parseTagsText(form.tagsText),
     featured: form.featured,
     heroPosition: form.heroPosition,
-    weekTopic: form.weekTopic,
+    weekTopicPosition: form.weekTopicPosition,
     readingTime: form.readingTime,
     source: form.sourceName.trim() || null,
     originalUrl: form.sourceUrl.trim() || null,
@@ -1318,7 +1321,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
             <EditorControlPanel
               title="Ważne"
-              description="Znaczek „Ważne” na kartach i w hero. Podbija też ranking w Popularne. Nie mylić z „Temat tygodnia” ani pozycją w sliderze."
+              description="Tylko znaczek „Ważne” na kartach i w hero. Nie wpływa na Popularne ani pozycje w sekcjach."
             >
               <Toggle
                 checked={form.featured}
@@ -1348,15 +1351,30 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               </Field>
             </EditorFieldPanel>
 
-            <EditorControlPanel
-              title="Temat tygodnia"
-              description="Sekcja „W centrum uwagi” pod hero. Kolejność: najnowszy publishedAt = pierwszy. Artykuł musi być opublikowany."
-            >
-              <Toggle
-                checked={form.weekTopic}
-                onChange={(v) => update("weekTopic", v)}
-              />
-            </EditorControlPanel>
+            <EditorFieldPanel>
+              <Field
+                label="Pozycja w „W centrum uwagi”"
+                htmlFor="weekTopicPosition"
+                hint="0 = poza sekcją. 1–4 = kolejność slajdów (jak hero). Artykuł musi być opublikowany."
+              >
+                <Select
+                  id="weekTopicPosition"
+                  value={String(form.weekTopicPosition)}
+                  onChange={(e) =>
+                    update(
+                      "weekTopicPosition",
+                      Number.parseInt(e.target.value, 10) || 0
+                    )
+                  }
+                >
+                  <option value="0">0 — poza sekcją</option>
+                  <option value="1">1 — pierwszy slajd</option>
+                  <option value="2">2 — drugi slajd</option>
+                  <option value="3">3 — trzeci slajd</option>
+                  <option value="4">4 — czwarty slajd</option>
+                </Select>
+              </Field>
+            </EditorFieldPanel>
           </EditorSection>
 
           <EditorSection

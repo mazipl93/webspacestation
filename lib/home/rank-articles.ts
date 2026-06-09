@@ -116,16 +116,10 @@ function popularScore(
   article: RankableArticle,
   engagementBySlug?: Map<string, number>
 ): number {
-  const likes = engagementBySlug?.get(article.slug) ?? 0;
-  let total = likes * 8;
-  total += (article.score ?? 0) * 1.5;
-  total += (article.readTime ?? 0) * 0.75;
-  if (article.featured) total += 10;
-  if (article.isBreaking) total += 6;
-  return total;
+  return (engagementBySlug?.get(article.slug) ?? 0) * 8;
 }
 
-/** Popularne — engagement (likes proxy) + score + read time. */
+/** Popularne — polubienia (tie-break: publishedAt desc). */
 export function rankPopular<T extends RankableArticle>(
   articles: T[],
   options: PopularRankOptions = {}

@@ -93,7 +93,9 @@ model Article {
   featured    Boolean       @default(false)
   /// Homepage hero slider: 0 = off, 1–4 = slide order (ASC on homepage).
   heroPosition Int          @default(0)
-  /// Homepage „Temat tygodnia” — slider pod hero (ręczny przełącznik CMS).
+  /// Homepage „W centrum uwagi”: 0 = off, 1–4 = slot order (ASC).
+  weekTopicPosition Int       @default(0)
+  /// Legacy flag — synced: true when weekTopicPosition >= 1.
   weekTopic   Boolean       @default(false)
   /// News Engine ranking — higher appears first on homepage.
   score       Int           @default(0)
@@ -126,6 +128,7 @@ model Article {
   @@index([featured])
   @@index([heroPosition])
   @@index([weekTopic])
+  @@index([weekTopicPosition])
   @@index([score])
   @@index([publishedAt])
   @@index([source])

@@ -71,6 +71,7 @@ const articleSelect = {
   status: true,
   featured: true,
   heroPosition: true,
+  weekTopicPosition: true,
   weekTopic: true,
   score: true,
   readingTime: true,
@@ -115,6 +116,7 @@ const articleListSelect = {
   status: true,
   featured: true,
   heroPosition: true,
+  weekTopicPosition: true,
   weekTopic: true,
   score: true,
   readingTime: true,
@@ -207,41 +209,35 @@ async function queryPublishedHeroSlidesFromDb(): Promise<ArticleListItem[]> {
   }
 }
 
-async function queryPublishedWeekTopicFromDb(
-  limit: number
-): Promise<ArticleListItem[]> {
+async function queryPublishedWeekTopicSlidesFromDb(): Promise<ArticleListItem[]> {
   try {
-    const rows = await prisma.article.findMany({
+    return await prisma.article.findMany({
       where: {
         ...PUBLISHED_ARTICLE_WHERE,
-        weekTopic: true,
+        weekTopicPosition: { gte: 1, lte: 4 },
       },
-      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
-      take: limit,
+      orderBy: [{ weekTopicPosition: "asc" }, { publishedAt: "desc" }],
+      take: 4,
       select: articleListSelect,
     });
-    traceArticleFetchPublic({ scope: `week-topic-${limit}`, count: rows.length });
-    return rows;
   } catch (error) {
-    console.error("[getPublishedWeekTopicArticles]", error);
+    console.error("[getPublishedWeekTopicSlides]", error);
     return [];
   }
 }
 
-/** Published articles flagged weekTopic (W centrum uwagi), newest first. */
-export async function getPublishedWeekTopicArticles(
-  limit = 8
-): Promise<ArticleListItem[]> {
+/** CMS „W centrum uwagi” slots (weekTopicPosition 1–4), ordered ASC. */
+export async function getPublishedWeekTopicSlides(): Promise<ArticleListItem[]> {
   const tick = await maybeTickScheduledPublish();
   const useLiveQuery =
     process.env.NODE_ENV === "development" ||
     (tick != null && tick.published > 0);
   if (useLiveQuery) {
-    return queryPublishedWeekTopicFromDb(limit);
+    return queryPublishedWeekTopicSlidesFromDb();
   }
   return unstable_cache(
-    () => queryPublishedWeekTopicFromDb(limit),
-    ["published-week-topic", String(limit), "v2-list-no-content"],
+    queryPublishedWeekTopicSlidesFromDb,
+    ["published-week-topic-slides", "v1-list-no-content"],
     { tags: [ARTICLES_TAG] }
   )();
 }
@@ -516,7 +512,13 @@ function buildPrismaContentUpdateInput(
   if (input.categoryId !== undefined) data.categoryId = input.categoryId;
   if (input.featured !== undefined) data.featured = input.featured;
   if (input.heroPosition !== undefined) data.heroPosition = input.heroPosition;
-  if (input.weekTopic !== undefined) data.weekTopic = input.weekTopic;
+  if (input.weekTopicPosition !== undefined) {
+    data.weekTopicPosition = input.weekTopicPosition;
+    data.weekTopic = input.weekTopicPosition >= 1;
+  } else if (input.weekTopic !== undefined) {
+    data.weekTopic = input.weekTopic;
+    if (!input.weekTopic) data.weekTopicPosition = 0;
+  }
   if (input.readingTime !== undefined) data.readingTime = input.readingTime;
   if (input.tags !== undefined) data.tags = input.tags;
   if (input.source !== undefined) data.source = input.source;
@@ -669,7 +671,9 @@ export async function createArticle(
       status: ArticleStatus.DRAFT,
       featured: input.featured,
       heroPosition: input.heroPosition ?? 0,
-      weekTopic: input.weekTopic,
+      weekTopicPosition: input.weekTopicPosition ?? 0,
+      weekTopic:
+        (input.weekTopicPosition ?? 0) >= 1 || input.weekTopic === true,
       readingTime: input.readingTime,
       tags: input.tags,
       source: input.source,
@@ -733,6 +737,17 @@ export async function updateArticle(
     await prisma.article.updateMany({
       where: { heroPosition: input.heroPosition, id: { not: id } },
       data: { heroPosition: 0 },
+    });
+  }
+
+  if (
+    input.weekTopicPosition !== undefined &&
+    input.weekTopicPosition >= 1 &&
+    input.weekTopicPosition <= 4
+  ) {
+    await prisma.article.updateMany({
+      where: { weekTopicPosition: input.weekTopicPosition, id: { not: id } },
+      data: { weekTopicPosition: 0, weekTopic: false },
     });
   }
 

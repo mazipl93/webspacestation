@@ -118,9 +118,6 @@ export function useArticleLikes(slug: string): LikesState {
     if (!supabase) return;
 
     void (async () => {
-      const slugs = await fetchMyLikedSlugs(supabase);
-      replaceAccountLikedSlugs(slugs);
-
       if (!mergedAnonRef.current) {
         const anonId = getAnonLikeIdIfPresent();
         if (anonId) {
@@ -128,6 +125,9 @@ export function useArticleLikes(slug: string): LikesState {
           await mergeAnonLikes(supabase, anonId);
         }
       }
+
+      const slugs = await fetchMyLikedSlugs(supabase);
+      replaceAccountLikedSlugs(slugs);
 
       await refresh();
       window.dispatchEvent(new Event(LIKES_CHANGE_EVENT));
@@ -141,11 +141,6 @@ export function useArticleLikes(slug: string): LikesState {
     if (!supabase) return;
 
     const wasLiked = liked;
-
-    if (!isAuthed && !wasLiked && isAccountLikedLocally(slug)) {
-      setLiked(true);
-      return;
-    }
 
     setToggling(true);
     setError(null);
@@ -185,13 +180,10 @@ export function useArticleLikes(slug: string): LikesState {
         anonLikedRef.current = false;
       } else {
         anonLikedRef.current = result.data.liked;
+        setAccountLikedSlug(slug, result.data.liked);
       }
 
-      setLiked(
-        isAuthed
-          ? result.data.liked
-          : result.data.liked || isAccountLikedLocally(slug)
-      );
+      setLiked(result.data.liked);
       setCount(result.data.count);
       window.dispatchEvent(new Event(LIKES_CHANGE_EVENT));
     })();

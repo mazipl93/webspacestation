@@ -1,4 +1,5 @@
 import type { NewsArticle } from "@/types";
+import { rankLatest } from "@/lib/home/rank-articles";
 
 export type WeekTopicConfig = {
   label: string;
@@ -7,6 +8,8 @@ export type WeekTopicConfig = {
   limit: number;
   accent: string;
 };
+
+export const WEEK_TOPIC_SLOT_MAX = 4;
 
 export function getWeekTopicConfig(): WeekTopicConfig {
   return {
@@ -24,31 +27,39 @@ export type WeekTopicPick = {
   articles: NewsArticle[];
 };
 
-export type WeekTopicPickOptions = {
-  /** Pula już z DB (`weekTopic=true`) — nie filtruj ponownie po fladze. */
-  prefiltered?: boolean;
-};
-
 /**
- * Opublikowane artykuły z `weekTopic === true` (przełącznik CMS).
- * Nie wykluczamy slugów z hero — ten sam artykuł może być w sliderze u góry i tutaj.
+ * CMS slots (weekTopicPosition 1–4, ASC) lub legacy `weekTopic` bez slotu.
+ * Nie wyklucza slugów z hero — ta sama pozycja może być w obu sekcjach.
  */
+export function buildHomepageWeekTopicSlides(
+  cmsOrdered: NewsArticle[],
+  legacyFlagged: NewsArticle[],
+  max = WEEK_TOPIC_SLOT_MAX
+): WeekTopicPick {
+  if (cmsOrdered.length > 0) {
+    const sorted = [...cmsOrdered].sort(
+      (a, b) => (a.weekTopicPosition ?? 0) - (b.weekTopicPosition ?? 0)
+    );
+    return { articles: sorted.slice(0, max) };
+  }
+
+  const legacy = rankLatest(
+    legacyFlagged.filter((a) => a.weekTopic && (a.weekTopicPosition ?? 0) === 0),
+    max
+  );
+  return { articles: legacy };
+}
+
+/** @deprecated Use buildHomepageWeekTopicSlides — kept for tests. */
 export function pickWeekTopicArticles(
   allPublished: NewsArticle[],
   _excludeSlugs: Set<string>,
-  config = getWeekTopicConfig(),
-  options: WeekTopicPickOptions = {}
+  config = getWeekTopicConfig()
 ): WeekTopicPick {
-  const candidates = options.prefiltered
-    ? allPublished
-    : allPublished.filter((a) => a.weekTopic);
-
-  const articles = [...candidates]
+  const cms = [...allPublished]
+    .filter((a) => (a.weekTopicPosition ?? 0) >= 1)
     .sort(
-      (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    )
-    .slice(0, config.limit);
-
-  return { articles };
+      (a, b) => (a.weekTopicPosition ?? 0) - (b.weekTopicPosition ?? 0)
+    );
+  return buildHomepageWeekTopicSlides(cms, allPublished, config.limit);
 }

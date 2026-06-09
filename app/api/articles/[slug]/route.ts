@@ -109,6 +109,7 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       if (
         updated.status === ArticleStatus.PUBLISHED &&
         (content.weekTopic !== undefined ||
+          content.weekTopicPosition !== undefined ||
           content.featured !== undefined ||
           content.heroPosition !== undefined)
       ) {

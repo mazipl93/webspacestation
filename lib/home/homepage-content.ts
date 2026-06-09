@@ -5,28 +5,23 @@ import {
 import {
   getHeroSlideArticles,
   getHomepageArticles,
-  getWeekTopicArticles,
+  getWeekTopicSlideArticles,
 } from "@/lib/articles";
-import {
-  buildHomepageHeroSlides,
-  pickHeroLead,
-} from "@/lib/home/hero-slides";
+import { buildHomepageHeroSlides } from "@/lib/home/hero-slides";
 import {
   markSlugsUsed,
   pickHomepageLatest,
-  rankImportantNow,
   rankLatest,
 } from "@/lib/home/rank-articles";
 import {
+  buildHomepageWeekTopicSlides,
   getWeekTopicConfig,
-  pickWeekTopicArticles,
   type WeekTopicConfig,
   type WeekTopicPick,
 } from "@/lib/home/week-topic";
 import { HOMEPAGE_LAYOUT_V2 } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 
-const IMPORTANT_POOL = 14;
 export const HOMEPAGE_POOL_LIMIT = 80;
 const LATEST_FEED_LIMIT = 12;
 
@@ -49,24 +44,17 @@ export type HomepageContent = {
 export function buildHomepageDerived(
   allPublished: NewsArticle[],
   cmsHeroSlides: NewsArticle[],
-  weekTopicPool: NewsArticle[] = allPublished
+  cmsWeekTopicSlides: NewsArticle[] = []
 ): HomepageDerived {
-  const importantRanked = rankImportantNow(allPublished, IMPORTANT_POOL);
-  let heroSlides = buildHomepageHeroSlides(cmsHeroSlides, importantRanked);
-  if (heroSlides.length === 0) {
-    const fallback =
-      pickHeroLead(importantRanked) ?? rankLatest(allPublished, 1)[0];
-    if (fallback) heroSlides = [fallback];
-  }
+  const heroSlides = buildHomepageHeroSlides(cmsHeroSlides, allPublished);
   const usedSlugs = new Set<string>();
   markSlugsUsed(heroSlides, usedSlugs);
 
   const weekTopicConfig = getWeekTopicConfig();
-  const weekTopicPick = pickWeekTopicArticles(
-    weekTopicPool,
-    usedSlugs,
-    weekTopicConfig,
-    { prefiltered: weekTopicPool !== allPublished }
+  const weekTopicPick = buildHomepageWeekTopicSlides(
+    cmsWeekTopicSlides,
+    allPublished,
+    weekTopicConfig.limit
   );
   markSlugsUsed(weekTopicPick.articles, usedSlugs);
 
@@ -103,17 +91,17 @@ export function buildHomepageDerived(
 /** Single homepage data fetch — shared by page shell (LCP preload) and ContentGrid. */
 export async function loadHomepageContent(): Promise<HomepageContent> {
   const weekTopicConfig = getWeekTopicConfig();
-  const [allPublished, cmsHeroSlides, weekTopicPool] = await Promise.all([
+  const [allPublished, cmsHeroSlides, cmsWeekTopicSlides] = await Promise.all([
     getHomepageArticles(HOMEPAGE_POOL_LIMIT),
     getHeroSlideArticles(),
-    getWeekTopicArticles(weekTopicConfig.limit),
+    getWeekTopicSlideArticles(),
   ]);
   return {
     allPublished,
     derived: buildHomepageDerived(
       allPublished,
       cmsHeroSlides,
-      weekTopicPool
+      cmsWeekTopicSlides
     ),
   };
 }

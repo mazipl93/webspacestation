@@ -5,16 +5,12 @@ import {
   getRecentPublishedArticles,
   getPublishedArticleBySlug,
   getPublishedHeroSlides,
-  getPublishedWeekTopicArticles,
+  getPublishedWeekTopicSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
   getRankedPublishedArticles,
   type ArticleListItem,
   type ArticleWithRelations,
 } from "@/lib/server/articles";
-import {
-  isBreakingScore,
-  isTopPriorityScore,
-} from "@/lib/news/score-thresholds";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import { resolveArticleImageCredit } from "@/lib/articles/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
@@ -77,13 +73,13 @@ export function toNewsArticle(a: ArticleWithRelations | ArticleListItem): NewsAr
     publishedAt: when.toISOString(),
     timeLabel: formatRelativePublishLabel(when),
     image,
-    isBreaking:
-      !isRss && (isBreakingScore(a.score ?? 0) || Boolean(a.featured)),
-    isTopPriority: !isRss && isTopPriorityScore(a.score ?? 0),
+    isBreaking: !isRss && Boolean(a.featured),
+    isTopPriority: false,
     score: a.score,
     featured: a.featured,
     heroPosition: a.heroPosition ?? 0,
     weekTopic: a.weekTopic,
+    weekTopicPosition: a.weekTopicPosition ?? 0,
     createdAt: new Date(a.createdAt).toISOString(),
     updatedAt: new Date(a.updatedAt).toISOString(),
     content: paragraphs.length > 0 ? paragraphs : undefined,
@@ -135,9 +131,9 @@ export async function getHeroSlideArticles(): Promise<NewsArticle[]> {
   return rows.map(toNewsArticle);
 }
 
-/** CMS weekTopic flag — sekcja „W centrum uwagi”, newest first. */
-export async function getWeekTopicArticles(limit = 8): Promise<NewsArticle[]> {
-  const rows = await getPublishedWeekTopicArticles(limit);
+/** CMS „W centrum uwagi” slots (weekTopicPosition 1–4), ordered ASC. */
+export async function getWeekTopicSlideArticles(): Promise<NewsArticle[]> {
+  const rows = await getPublishedWeekTopicSlides();
   return rows.map(toNewsArticle);
 }
 

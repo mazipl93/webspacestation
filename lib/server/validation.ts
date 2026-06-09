@@ -75,18 +75,32 @@ function parseOriginalUrlField(
   return undefined;
 }
 
-function parseHeroPositionField(
-  body: Record<string, unknown>
+function parseSlotPositionField(
+  body: Record<string, unknown>,
+  field: "heroPosition" | "weekTopicPosition"
 ): number | undefined | null {
-  if (body.heroPosition === undefined) return undefined;
+  if (body[field] === undefined) return undefined;
+  const raw = body[field];
   const n =
-    typeof body.heroPosition === "number"
-      ? body.heroPosition
-      : typeof body.heroPosition === "string"
-        ? Number.parseInt(body.heroPosition, 10)
+    typeof raw === "number"
+      ? raw
+      : typeof raw === "string"
+        ? Number.parseInt(raw, 10)
         : NaN;
   if (!Number.isInteger(n) || n < 0 || n > 4) return null;
   return n;
+}
+
+function parseHeroPositionField(
+  body: Record<string, unknown>
+): number | undefined | null {
+  return parseSlotPositionField(body, "heroPosition");
+}
+
+function parseWeekTopicPositionField(
+  body: Record<string, unknown>
+): number | undefined | null {
+  return parseSlotPositionField(body, "weekTopicPosition");
 }
 
 function parseBylineUserIdField(
@@ -129,6 +143,7 @@ export interface ArticleCreateInput {
   status: ArticleStatus;
   featured: boolean;
   heroPosition: number;
+  weekTopicPosition: number;
   weekTopic: boolean;
   readingTime: number | null;
   tags: string[];
@@ -186,6 +201,17 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
     };
   }
 
+  const weekTopicPosition = parseWeekTopicPositionField(body);
+  if (weekTopicPosition === null) {
+    return {
+      ok: false,
+      message: "'weekTopicPosition' must be an integer from 0 to 4.",
+    };
+  }
+
+  const resolvedWeekTopicPosition =
+    weekTopicPosition ?? (body.weekTopic === true ? 1 : 0);
+
   return {
     ok: true,
     value: {
@@ -203,7 +229,8 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       status,
       featured: body.featured === true,
       heroPosition: heroPosition ?? 0,
-      weekTopic: body.weekTopic === true,
+      weekTopicPosition: resolvedWeekTopicPosition,
+      weekTopic: resolvedWeekTopicPosition >= 1,
       readingTime:
         typeof body.readingTime === "number" ? body.readingTime : null,
       tags: parseTagsField(body) ?? [],
@@ -277,7 +304,21 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
     };
   }
   if (heroPosition !== undefined) out.heroPosition = heroPosition;
-  if (body.weekTopic !== undefined) out.weekTopic = body.weekTopic === true;
+  const weekTopicPosition = parseWeekTopicPositionField(body);
+  if (weekTopicPosition === null) {
+    return {
+      ok: false,
+      message: "'weekTopicPosition' must be an integer from 0 to 4.",
+    };
+  }
+  if (weekTopicPosition !== undefined) {
+    out.weekTopicPosition = weekTopicPosition;
+    out.weekTopic = weekTopicPosition >= 1;
+  } else if (body.weekTopic !== undefined) {
+    out.weekTopic = body.weekTopic === true;
+    if (!out.weekTopic) out.weekTopicPosition = 0;
+    else if (out.weekTopicPosition === undefined) out.weekTopicPosition = 1;
+  }
   if (body.readingTime !== undefined) {
     if (body.readingTime !== null && (typeof body.readingTime !== "number" || body.readingTime < 0)) {
       return { ok: false, message: "'readingTime' must be a positive number." };

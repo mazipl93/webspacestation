@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { buildHomepageHeroSlides, pickHeroLead } from "@/lib/home/hero-slides";
+import { buildHomepageHeroSlides } from "@/lib/home/hero-slides";
 import type { NewsArticle } from "@/types";
 
 function article(id: string, overrides: Partial<NewsArticle> = {}): NewsArticle {
@@ -31,23 +31,13 @@ describe("buildHomepageHeroSlides", () => {
     );
   });
 
-  it("falls back to lead + important pool when CMS list is empty", () => {
+  it("falls back to newest published when CMS list is empty", () => {
     const pool = [
-      article("a", { contentOrigin: "EDITORIAL", isTopPriority: true }),
-      article("b"),
+      article("old", { publishedAt: "2026-06-01T10:00:00.000Z" }),
+      article("new", { publishedAt: "2026-06-09T10:00:00.000Z" }),
     ];
     const slides = buildHomepageHeroSlides([], pool, 3);
-    assert.equal(slides[0]?.id, "a");
+    assert.equal(slides[0]?.id, "new");
     assert.equal(slides.length, 2);
-  });
-});
-
-describe("pickHeroLead", () => {
-  it("prefers editorial top priority", () => {
-    const pool = [
-      article("rss", { contentOrigin: "RSS", isTopPriority: true }),
-      article("ed", { contentOrigin: "EDITORIAL", isTopPriority: true }),
-    ];
-    assert.equal(pickHeroLead(pool)?.id, "ed");
   });
 });
