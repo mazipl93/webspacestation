@@ -361,14 +361,37 @@ html[data-portal-theme] .site-cosmos-grain {
     font-feature-settings: "tnum";
   }
 
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  /* Mobile: cienki, dyskretny */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-space-muted);
-    border-radius: 4px;
-    border: 2px solid var(--color-space-bg);
+    background: rgba(110, 120, 148, 0.4);
+    border-radius: 3px;
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+  /* Desktop: normalny, podświetlony pasek przewijania strony */
+  @media (min-width: 1024px) {
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(163, 175, 199, 0.55) rgba(255, 255, 255, 0.08);
+    }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.07);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(163, 175, 199, 0.5);
+      border-radius: 5px;
+      border: 2px solid var(--color-page-fill, var(--color-page-bg));
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(190, 200, 220, 0.68);
+    }
+    ::-webkit-scrollbar-thumb:active {
+      background: rgba(56, 189, 248, 0.55);
+    }
+  }
 
   ::selection {
     background-color: rgba(47, 109, 255, 0.28);

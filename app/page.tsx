@@ -14,9 +14,10 @@ import {
   DEFAULT_OG_IMAGE_WIDTH,
   getDefaultOgImageUrl,
 } from "@/lib/seo/site-og";
+import { SITE_HOME_TITLE } from "@/lib/seo/site-title";
 
 export const metadata: Metadata = {
-  title: { absolute: "Web Space Station – Aktualności kosmiczne" },
+  title: { absolute: SITE_HOME_TITLE },
   alternates: { canonical: getSiteUrl() },
   openGraph: {
     url: getSiteUrl(),

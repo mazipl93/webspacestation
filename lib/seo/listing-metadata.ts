@@ -6,6 +6,7 @@ import {
   getDefaultOgImageUrl,
 } from "@/lib/seo/site-og";
 import { getSiteUrl } from "@/lib/site-url";
+import { formatPageTitle } from "@/lib/seo/site-title";
 
 /** Metadata for indexable listing pages (departments, /aktualnosci). */
 export function buildListingPageMetadata({
@@ -19,7 +20,7 @@ export function buildListingPageMetadata({
 }): Metadata {
   const canonical = `${getSiteUrl()}${path}`;
   const ogImage = getDefaultOgImageUrl();
-  const pageTitle = `${title} | Web Space Station`;
+  const pageTitle = formatPageTitle(title);
 
   return {
     title,

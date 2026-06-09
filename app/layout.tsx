@@ -13,6 +13,12 @@ import {
   DEFAULT_OG_IMAGE_WIDTH,
   getDefaultOgImageUrl,
 } from "@/lib/seo/site-og";
+import {
+  SITE_DEFAULT_TITLE,
+  SITE_NAME,
+  SITE_TITLE_SEP,
+  formatPageTitle,
+} from "@/lib/seo/site-title";
 import "./globals.css";
 import { HERO_IMAGE_PRECONNECT_ORIGINS } from "@/lib/home/hero-lcp";
 
@@ -28,8 +34,16 @@ const WssBrandOswald = Oswald({
 
 export const metadata: Metadata = {
   title: {
-    default: "Web Space Station – Portal informacyjny o kosmosie",
-    template: "%s | Web Space Station",
+    default: SITE_DEFAULT_TITLE,
+    template: `%s${SITE_TITLE_SEP}${SITE_NAME}`,
+  },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   description:
     "Najważniejsze wydarzenia z kosmosu, astronomii i technologii kosmicznych. Śledź starty rakiet, misje kosmiczne i odkrycia astronomiczne na żywo.",
@@ -51,7 +65,7 @@ export const metadata: Metadata = {
     locale: "pl_PL",
     url: "https://webspacestation.pl",
     siteName: "Web Space Station",
-    title: "Web Space Station – Portal informacyjny o kosmosie",
+    title: SITE_DEFAULT_TITLE,
     description:
       "Najważniejsze wydarzenia z kosmosu, astronomii i technologii kosmicznych.",
     images: [
@@ -79,7 +93,7 @@ export const metadata: Metadata = {
   alternates: {
     types: {
       "application/rss+xml": [
-        { url: "/feed.xml", title: "Web Space Station — wszystkie aktualności" },
+        { url: "/feed.xml", title: formatPageTitle("Wszystkie aktualności (RSS)") },
       ],
     },
   },

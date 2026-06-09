@@ -4,9 +4,10 @@ import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/user";
 import { canAccessCms } from "@/lib/auth/permissions";
 import LoginForm from "./LoginForm";
+import { SITE_SHORT_NAME, formatPageTitle } from "@/lib/seo/site-title";
 
 export const metadata: Metadata = {
-  title: "Logowanie do panelu | WSS",
+  title: formatPageTitle("Logowanie do panelu", SITE_SHORT_NAME),
   robots: { index: false, follow: false },
 };
 

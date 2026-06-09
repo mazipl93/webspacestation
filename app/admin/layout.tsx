@@ -4,9 +4,10 @@ import { getAuthContext } from "@/lib/auth/user";
 import { canAccessCms } from "@/lib/auth/permissions";
 import AdminShell from "@/components/admin/AdminShell";
 import { AdminAuthProvider } from "@/components/admin/AdminAuthProvider";
+import { SITE_SHORT_NAME, formatPageTitle } from "@/lib/seo/site-title";
 
 export const metadata: Metadata = {
-  title: "Newsroom CMS | WSS",
+  title: formatPageTitle("Newsroom CMS", SITE_SHORT_NAME),
   robots: { index: false, follow: false },
 };
 

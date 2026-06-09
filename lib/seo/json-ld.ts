@@ -3,7 +3,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import type { NewsArticle } from "@/types";
 
 const ORG_NAME = "Web Space Station";
-const ORG_LOGO_PATH = "/icon.svg";
+const ORG_LOGO_PATH = "/favicon-96.png";
 
 function absoluteUrl(path: string): string {
   const base = getSiteUrl();
