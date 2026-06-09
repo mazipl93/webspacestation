@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { prepareLikesForLogout } from "@/lib/likes/logout-likes";
 import { createClient } from "@/lib/supabase/client";
 import { toSessionUser, type SessionUser } from "@/lib/auth/session-user";
 
@@ -18,7 +19,7 @@ interface AuthContextValue {
   user: SessionUser | null;
   /** True until the first server + client auth check resolves. */
   loading: boolean;
-  signOut: (next?: string) => void;
+  signOut: (next?: string) => void | Promise<void>;
   /** Reload user from Supabase (e.g. after avatar upload). */
   refreshUser: () => Promise<void>;
 }
@@ -134,8 +135,13 @@ export function AuthProvider({
     setUser(toSessionUser(authUser));
   }, []);
 
-  const signOut = useCallback((next = "/") => {
+  const signOut = useCallback(async (next = "/") => {
     const target = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    try {
+      await prepareLikesForLogout(clientRef.current);
+    } catch {
+      /* logout even if like transfer fails */
+    }
     window.location.assign(`/logout?next=${encodeURIComponent(target)}`);
   }, []);
 

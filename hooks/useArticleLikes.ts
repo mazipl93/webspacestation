@@ -141,17 +141,10 @@ export function useArticleLikes(slug: string): LikesState {
     if (!supabase) return;
 
     const wasLiked = liked;
-    const accountLikedLocal = isAccountLikedLocally(slug);
 
-    if (!isAuthed) {
-      if (wasLiked && accountLikedLocal && !anonLikedRef.current) {
-        setError("Zaloguj się, aby cofnąć polubienie.");
-        return;
-      }
-      if (!wasLiked && accountLikedLocal) {
-        setLiked(true);
-        return;
-      }
+    if (!isAuthed && !wasLiked && isAccountLikedLocally(slug)) {
+      setLiked(true);
+      return;
     }
 
     setToggling(true);

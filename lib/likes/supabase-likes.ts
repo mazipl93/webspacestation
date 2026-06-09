@@ -82,6 +82,14 @@ export async function mergeAnonLikes(
   await supabase.rpc("merge_anon_likes", { p_anon_id: anonId });
 }
 
+/** On logout — hand likes to browser anon id so guest can unlike later. */
+export async function transferUserLikesToAnon(
+  supabase: SupabaseClient,
+  anonId: string
+): Promise<void> {
+  await supabase.rpc("transfer_user_likes_to_anon", { p_anon_id: anonId });
+}
+
 /** Slugs liked by the signed-in user — profile. */
 export async function fetchMyLikedSlugs(supabase: SupabaseClient): Promise<string[]> {
   const { data, error } = await supabase.rpc("my_liked_article_slugs");
