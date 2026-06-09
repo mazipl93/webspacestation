@@ -50,8 +50,12 @@ function LatestSliderCard({
           fallbackCategory={article.category}
           fill
           loading="lazy"
-          quality={62}
-          sizes={featured ? "(max-width: 640px) 92vw, 460px" : "(max-width: 640px) 88vw, 420px"}
+          quality={74}
+          sizes={
+            featured
+              ? "(max-width: 640px) 92vw, (max-width: 1024px) 78vw, 520px"
+              : "(max-width: 640px) 88vw, (max-width: 1024px) 72vw, 480px"
+          }
           className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
         />
         <div
@@ -114,7 +118,8 @@ function LatestRailLead({ article }: { article: NewsArticle }) {
           fallbackCategory={article.category}
           fill
           loading="lazy"
-          sizes="400px"
+          quality={74}
+          sizes="(max-width: 1024px) 88vw, 480px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
         <div
@@ -173,7 +178,8 @@ function LatestStripCard({ article }: { article: NewsArticle }) {
           alt={article.title}
           fill
           loading="lazy"
-          sizes="(max-width: 1320px) 20vw, 260px"
+          quality={74}
+          sizes="(max-width: 1320px) 22vw, 320px"
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
         <div
@@ -226,7 +232,8 @@ function LatestRailRow({ article }: { article: NewsArticle }) {
           alt={article.title}
           fill
           loading="lazy"
-          sizes="108px"
+          quality={70}
+          sizes="120px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>

@@ -46,13 +46,13 @@ export default function ArticleCard({
           fallbackSeed={article.slug}
           fallbackCategory={article.category}
           fill
-          quality={featured ? 70 : compact ? 62 : 65}
+          quality={featured ? 76 : compact ? 72 : 74}
           sizes={
             featured
-              ? "(max-width: 640px) 100vw, (max-width: 1280px) 44vw, 520px"
+              ? "(max-width: 640px) 100vw, (max-width: 1280px) 44vw, 600px"
               : compact
-                ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
-                : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+                ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+                : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
           }
           className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
