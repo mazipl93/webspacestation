@@ -41,6 +41,7 @@
     "category:migrate-nauka": "tsx scripts/migrate-nauka-category.ts",
     "editorial:strip-bold": "tsx scripts/strip-editorial-sources.ts",
     "rss:cleanup-db": "tsx scripts/rss-cleanup-db.ts",
+    "rss:purge-queue": "tsx scripts/rss-purge-queue.ts",
     "rss:archive-wired": "tsx scripts/archive-wired-articles.ts",
     "ops:refresh": "tsx scripts/ops-refresh.ts",
     "scores:recalculate": "tsx scripts/recalculate-scores.ts",

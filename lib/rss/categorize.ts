@@ -41,18 +41,17 @@ function scoreCategory(text: string, category: RssEditorialCategory): number {
   );
 }
 
+const MISSION_FEED_IDS = new Set(["nasa", "esa", "spacenews"]);
+
 /** Bucket defaults from feed publisher, refined by keyword rules. */
 function defaultCategoryForFeed(
   feed: ExternalFeedConfig
 ): RssEditorialCategory {
   switch (feed.bucket) {
     case "space":
-      if (feed.id === "nasa" || feed.id === "esa" || feed.id === "spacenews") {
-        return "MISJE";
-      }
+      if (MISSION_FEED_IDS.has(feed.id)) return "MISJE";
       return "ASTRONOMIA";
     case "science":
-      if (feed.id === "phys-tech") return "TECHNOLOGIE";
       return "ASTRONOMIA";
     case "tech":
     default:

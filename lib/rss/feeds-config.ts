@@ -9,27 +9,9 @@ export const RSS_ITEMS_PER_FEED = Math.min(
   Math.max(1, Number(process.env.RSS_ITEMS_PER_FEED) || 5)
 );
 
+/** Space news + astronomy/science — bez ogólnego tech (Verge, TC, Ars). */
 export const EXTERNAL_RSS_FEEDS: ExternalFeedConfig[] = [
-  // TECH
-  {
-    id: "techcrunch",
-    url: "https://techcrunch.com/feed/",
-    source: "TechCrunch",
-    bucket: "tech",
-  },
-  {
-    id: "theverge",
-    url: "https://www.theverge.com/rss/index.xml",
-    source: "The Verge",
-    bucket: "tech",
-  },
-  {
-    id: "arstechnica",
-    url: "https://feeds.arstechnica.com/arstechnica/index",
-    source: "Ars Technica",
-    bucket: "tech",
-  },
-  // SCIENCE / SPACE
+  // SPACE NEWS
   {
     id: "nasa",
     url: "https://www.nasa.gov/news-release/feed/",
@@ -49,15 +31,29 @@ export const EXTERNAL_RSS_FEEDS: ExternalFeedConfig[] = [
     bucket: "space",
   },
   {
+    id: "spacecom",
+    url: "https://www.space.com/feeds/all",
+    source: "Space.com",
+    bucket: "space",
+  },
+  // ASTRONOMY / SCIENCE
+  {
+    id: "noirlab",
+    url: "https://noirlab.edu/public/news/feed/",
+    source: "NOIRLab",
+    bucket: "science",
+  },
+  {
     id: "phys-space",
     url: "https://phys.org/rss-feed/space-news/",
     source: "Phys.org",
     bucket: "science",
   },
+  /** Preprinty — egzoplanety / astrofizyka stelarna (węższe niż całe astro-ph). */
   {
-    id: "phys-tech",
-    url: "https://phys.org/rss-feed/technology-news/",
-    source: "Phys.org",
+    id: "arxiv-astro-ph-ep",
+    url: "https://rss.arxiv.org/rss/astro-ph.EP",
+    source: "arXiv",
     bucket: "science",
   },
 ];
