@@ -36,9 +36,22 @@ test("pickWeekTopicArticles empty when none flagged", () => {
   assert.equal(pick.articles.length, 0);
 });
 
-test("pickWeekTopicArticles falls back when only hero is flagged", () => {
-  const hero = { ...BASE, id: "1", slug: "hero", weekTopic: true };
-  const pick = pickWeekTopicArticles([hero], new Set(["hero"]), CONFIG);
-  assert.equal(pick.articles.length, 1);
+test("pickWeekTopicArticles includes hero-flagged article (no dedup vs hero)", () => {
+  const hero = {
+    ...BASE,
+    id: "1",
+    slug: "hero",
+    weekTopic: true,
+    publishedAt: "2026-06-09T12:00:00.000Z",
+  };
+  const older = {
+    ...BASE,
+    id: "2",
+    slug: "older",
+    weekTopic: true,
+    publishedAt: "2026-06-01T12:00:00.000Z",
+  };
+  const pick = pickWeekTopicArticles([hero, older], new Set(["hero"]), CONFIG);
+  assert.equal(pick.articles.length, 2);
   assert.equal(pick.articles[0]?.slug, "hero");
 });

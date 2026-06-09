@@ -29,34 +29,26 @@ export type WeekTopicPickOptions = {
   prefiltered?: boolean;
 };
 
-/** Opublikowane artykuły z `weekTopic === true` (przełącznik CMS). */
+/**
+ * Opublikowane artykuły z `weekTopic === true` (przełącznik CMS).
+ * Nie wykluczamy slugów z hero — ten sam artykuł może być w sliderze u góry i tutaj.
+ */
 export function pickWeekTopicArticles(
   allPublished: NewsArticle[],
-  excludeSlugs: Set<string>,
+  _excludeSlugs: Set<string>,
   config = getWeekTopicConfig(),
   options: WeekTopicPickOptions = {}
 ): WeekTopicPick {
   const candidates = options.prefiltered
     ? allPublished
     : allPublished.filter((a) => a.weekTopic);
-  const sortByPublished = (list: NewsArticle[]) =>
-    [...list].sort(
+
+  const articles = [...candidates]
+    .sort(
       (a, b) =>
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+    )
+    .slice(0, config.limit);
 
-  const withoutExcluded = sortByPublished(
-    candidates.filter((a) => !excludeSlugs.has(a.slug))
-  ).slice(0, config.limit);
-
-  if (withoutExcluded.length > 0) {
-    return { articles: withoutExcluded };
-  }
-
-  // Jedyny artykuł z flagą jest już w hero — pokaż slider zamiast pustej sekcji.
-  if (candidates.length > 0) {
-    return { articles: sortByPublished(candidates).slice(0, config.limit) };
-  }
-
-  return { articles: [] };
+  return { articles };
 }
