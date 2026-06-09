@@ -83,11 +83,8 @@ export default function HomepageHeroSlider({ articles }: Props) {
       <div
         className={cn(
           "relative w-full overflow-hidden",
-
-          // 🔥 MOBILE — większy hero
-          "max-lg:h-[clamp(55svh,62svh,72svh)] max-lg:max-h-[72svh] max-lg:min-h-[50svh]",
-
-          // 🔥 DESKTOP — wyższy hero
+          // Mobile: 16/9 — bez 50–72 svh (zdjęcia wychodziły poza sensowny kadr)
+          "max-lg:aspect-[16/9] max-lg:h-auto max-lg:max-h-[min(52svh,420px)]",
           "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(78vh,820px)] lg:min-h-[420px]"
         )}
       >
@@ -193,7 +190,7 @@ function HeroSlide({
           fetchPriority={priority ? "high" : undefined}
           quality={HERO_DISPLAY_QUALITY}
           sizes={HERO_IMAGE_SIZES}
-          className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+          className="object-cover object-center max-lg:object-[center_42%] transition-transform duration-700 group-hover:scale-[1.02]"
         />
       )}
 
@@ -209,7 +206,7 @@ function HeroSlide({
         <div className="mb-3">
           <ArticleMetaChips article={article} compact />
         </div>
-        <h2 className="font-extrabold text-text-primary">
+        <h2 className="line-clamp-3 text-balance font-extrabold text-text-primary max-lg:text-[clamp(1.125rem,4.5vw,1.375rem)] max-lg:leading-snug lg:text-[clamp(1.25rem,2.2vw,1.75rem)]">
           {article.title}
         </h2>
 

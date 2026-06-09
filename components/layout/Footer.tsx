@@ -109,7 +109,7 @@ export default function Footer() {
                     Newsletter
                   </p>
                   <p className="mt-1 text-[12px] text-text-tertiary">
-                    Raz w tygodniu — bez spamu.
+                    Co tydzień jeden mail. Bez spamu.
                   </p>
                   <form
                     className="mt-3 flex flex-col gap-2 sm:flex-row"
