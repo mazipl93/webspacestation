@@ -9,8 +9,6 @@ import type {
   ArticleUpdateInput,
 } from "@/lib/server/validation";
 import { calculateScore } from "@/lib/news/calculateScore";
-import { isExternalAggregatorArticle } from "@/lib/news/is-external-article";
-import { isBreakingScore } from "@/lib/news/score-thresholds";
 import {
   ARTICLES_TAG,
   CATEGORIES_TAG,
@@ -207,6 +205,45 @@ async function queryPublishedHeroSlidesFromDb(): Promise<ArticleListItem[]> {
     console.error("[getPublishedHeroSlides]", error);
     return [];
   }
+}
+
+async function queryPublishedWeekTopicFromDb(
+  limit: number
+): Promise<ArticleListItem[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: {
+        ...PUBLISHED_ARTICLE_WHERE,
+        weekTopic: true,
+      },
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      take: limit,
+      select: articleListSelect,
+    });
+    traceArticleFetchPublic({ scope: `week-topic-${limit}`, count: rows.length });
+    return rows;
+  } catch (error) {
+    console.error("[getPublishedWeekTopicArticles]", error);
+    return [];
+  }
+}
+
+/** Published articles flagged weekTopic (W centrum uwagi), newest first. */
+export async function getPublishedWeekTopicArticles(
+  limit = 8
+): Promise<ArticleListItem[]> {
+  const tick = await maybeTickScheduledPublish();
+  const useLiveQuery =
+    process.env.NODE_ENV === "development" ||
+    (tick != null && tick.published > 0);
+  if (useLiveQuery) {
+    return queryPublishedWeekTopicFromDb(limit);
+  }
+  return unstable_cache(
+    () => queryPublishedWeekTopicFromDb(limit),
+    ["published-week-topic", String(limit), "v1-list-no-content"],
+    { tags: [ARTICLES_TAG] }
+  )();
 }
 
 /** CMS hero slider slots (heroPosition 1–4), ordered ASC. */
@@ -785,7 +822,7 @@ export async function maybeTickScheduledPublish(): Promise<SchedulePublishRunRes
   }
 }
 
-/** Recompute score/featured after manual publish (CMS moderation). */
+/** Recompute score after manual publish (CMS moderation). */
 export async function refreshArticleRanking(articleId: string): Promise<void> {
   const row = await prisma.article.findUnique({
     where: { id: articleId },
@@ -807,12 +844,9 @@ export async function refreshArticleRanking(articleId: string): Promise<void> {
     source: row.source,
     publishedAt: row.publishedAt,
   });
-  const featured =
-    !isExternalAggregatorArticle(row) && isBreakingScore(score);
-
   await prisma.article.update({
     where: { id: articleId },
-    data: { score, featured },
+    data: { score },
   });
 }
 

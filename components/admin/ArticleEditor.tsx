@@ -1317,8 +1317,8 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             </EditorFieldPanel>
 
             <EditorControlPanel
-              title="Wyróżniony"
-              description="Podbija ranking w sekcji Popularne i puli pod hero (nie to samo co „Temat tygodnia” ani pozycja 1–4 w sliderze)."
+              title="Ważne"
+              description="Znaczek „Ważne” na kartach i w hero. Podbija też ranking w Popularne. Nie mylić z „Temat tygodnia” ani pozycją w sliderze."
             >
               <Toggle
                 checked={form.featured}
@@ -1350,7 +1350,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
             <EditorControlPanel
               title="Temat tygodnia"
-              description="Slider pod hero na stronie głównej"
+              description="Sekcja „W centrum uwagi” pod hero. Kolejność: najnowszy publishedAt = pierwszy. Artykuł musi być opublikowany."
             >
               <Toggle
                 checked={form.weekTopic}

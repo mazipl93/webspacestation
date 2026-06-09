@@ -5,6 +5,7 @@ import {
   getRecentPublishedArticles,
   getPublishedArticleBySlug,
   getPublishedHeroSlides,
+  getPublishedWeekTopicArticles,
   getArticlesByCategory as dbGetArticlesByCategory,
   getRankedPublishedArticles,
   type ArticleListItem,
@@ -42,7 +43,7 @@ import type { NewsArticle, NewsCategory } from "@/types";
 // originally in data/news.json is migrated into the DB via prisma/seed.ts.
 
 // Map a DB article (with relations) onto the NewsArticle shape the public UI
-// expects. `featured` drives the "Najważniejsze" badge / lead-story pick.
+// expects. `featured` (CMS „Ważne”) → badge „Ważne”; `weekTopic` → „W centrum uwagi”.
 export function toNewsArticle(a: ArticleWithRelations | ArticleListItem): NewsArticle {
   const when = resolvePublicPublishTime({
     status: a.status,
@@ -131,6 +132,12 @@ export async function getRelatedArticlePool(
 /** CMS hero slots (heroPosition 1–4), ordered ASC. */
 export async function getHeroSlideArticles(): Promise<NewsArticle[]> {
   const rows = await getPublishedHeroSlides();
+  return rows.map(toNewsArticle);
+}
+
+/** CMS weekTopic flag — sekcja „W centrum uwagi”, newest first. */
+export async function getWeekTopicArticles(limit = 8): Promise<NewsArticle[]> {
+  const rows = await getPublishedWeekTopicArticles(limit);
   return rows.map(toNewsArticle);
 }
 

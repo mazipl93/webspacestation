@@ -2,7 +2,11 @@ import {
   CATEGORY_SLUG_ORDER,
   HOMEPAGE_DEPARTMENT_SLUGS,
 } from "@/lib/categories";
-import { getHeroSlideArticles, getHomepageArticles } from "@/lib/articles";
+import {
+  getHeroSlideArticles,
+  getHomepageArticles,
+  getWeekTopicArticles,
+} from "@/lib/articles";
 import {
   buildHomepageHeroSlides,
   pickHeroLead,
@@ -44,7 +48,8 @@ export type HomepageContent = {
 
 export function buildHomepageDerived(
   allPublished: NewsArticle[],
-  cmsHeroSlides: NewsArticle[]
+  cmsHeroSlides: NewsArticle[],
+  weekTopicPool: NewsArticle[] = allPublished
 ): HomepageDerived {
   const importantRanked = rankImportantNow(allPublished, IMPORTANT_POOL);
   let heroSlides = buildHomepageHeroSlides(cmsHeroSlides, importantRanked);
@@ -58,7 +63,7 @@ export function buildHomepageDerived(
 
   const weekTopicConfig = getWeekTopicConfig();
   const weekTopicPick = pickWeekTopicArticles(
-    allPublished,
+    weekTopicPool,
     usedSlugs,
     weekTopicConfig
   );
@@ -96,12 +101,18 @@ export function buildHomepageDerived(
 
 /** Single homepage data fetch — shared by page shell (LCP preload) and ContentGrid. */
 export async function loadHomepageContent(): Promise<HomepageContent> {
-  const [allPublished, cmsHeroSlides] = await Promise.all([
+  const weekTopicConfig = getWeekTopicConfig();
+  const [allPublished, cmsHeroSlides, weekTopicPool] = await Promise.all([
     getHomepageArticles(HOMEPAGE_POOL_LIMIT),
     getHeroSlideArticles(),
+    getWeekTopicArticles(weekTopicConfig.limit),
   ]);
   return {
     allPublished,
-    derived: buildHomepageDerived(allPublished, cmsHeroSlides),
+    derived: buildHomepageDerived(
+      allPublished,
+      cmsHeroSlides,
+      weekTopicPool
+    ),
   };
 }

@@ -1,4 +1,4 @@
-/** Score at or above → breaking badge + `featured` (tylko redakcja WSS). */
+/** Score at or above → breaking badge na kartach (tylko redakcja WSS, bez RSS). */
 export const SCORE_BREAKING = 9;
 
 /** Score at or above → top-priority hero (tylko redakcja WSS). */
