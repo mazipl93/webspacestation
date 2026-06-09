@@ -84,6 +84,9 @@ function WeekTopicRailLead({ article }: { article: NewsArticle }) {
           }}
         />
         <div className="absolute inset-x-0 bottom-0 p-3.5">
+          <div className="mb-2">
+            <ArticleMetaChips article={article} compact hideCategory />
+          </div>
           <span
             className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
             style={{ color: cat.color }}
@@ -131,16 +134,19 @@ function WeekTopicRailRow({ article }: { article: NewsArticle }) {
         />
       </div>
       <div className="min-w-0 flex-1">
-        <span
-          className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
-          style={{ color: cat.color }}
-        >
+        <div className="mb-1 flex flex-wrap items-center gap-1.5">
+          <ArticleMetaChips article={article} compact hideCategory />
           <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: cat.color }}
-          />
-          {cat.label}
-        </span>
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
+            style={{ color: cat.color }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: cat.color }}
+            />
+            {cat.label}
+          </span>
+        </div>
         <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-text-primary transition-colors group-hover:text-accent-cyan sm:text-[15px]">
           {article.title}
         </h3>

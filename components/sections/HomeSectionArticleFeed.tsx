@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCategoryInfo, categoryFallbackBg } from "@/lib/categories";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
+import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 import { cn } from "@/lib/cn";
 
 const LEAD_IMAGE_HEIGHT = {
@@ -51,6 +52,9 @@ export function HomeSectionLeadCard({
         />
       </div>
       <div className="relative z-[1] border-t border-hairline-faint px-4 py-4 sm:px-5 sm:py-5">
+        <div className="mb-2">
+          <ArticleMetaChips article={article} compact hideCategory />
+        </div>
         <span
           className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
           style={{ color: accent }}
@@ -100,16 +104,19 @@ export function HomeSectionListRow({ article }: { article: NewsArticle }) {
         />
       </div>
       <div className="min-w-0 flex-1">
-        <span
-          className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
-          style={{ color: cat.color }}
-        >
+        <div className="mb-1 flex flex-wrap items-center gap-1.5">
+          <ArticleMetaChips article={article} compact hideCategory />
           <span
-            className="h-1.5 w-1.5 rounded-full"
-            style={{ background: cat.color }}
-          />
-          {cat.label}
-        </span>
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
+            style={{ color: cat.color }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: cat.color }}
+            />
+            {cat.label}
+          </span>
+        </div>
         <h3 className="line-clamp-2 text-[14px] font-bold leading-snug text-text-primary transition-colors group-hover:text-accent-cyan sm:text-[15px]">
           {article.title}
         </h3>

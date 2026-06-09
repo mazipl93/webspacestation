@@ -24,13 +24,21 @@ export type WeekTopicPick = {
   articles: NewsArticle[];
 };
 
+export type WeekTopicPickOptions = {
+  /** Pula już z DB (`weekTopic=true`) — nie filtruj ponownie po fladze. */
+  prefiltered?: boolean;
+};
+
 /** Opublikowane artykuły z `weekTopic === true` (przełącznik CMS). */
 export function pickWeekTopicArticles(
   allPublished: NewsArticle[],
   excludeSlugs: Set<string>,
-  config = getWeekTopicConfig()
+  config = getWeekTopicConfig(),
+  options: WeekTopicPickOptions = {}
 ): WeekTopicPick {
-  const candidates = allPublished.filter((a) => a.weekTopic);
+  const candidates = options.prefiltered
+    ? allPublished
+    : allPublished.filter((a) => a.weekTopic);
   const sortByPublished = (list: NewsArticle[]) =>
     [...list].sort(
       (a, b) =>

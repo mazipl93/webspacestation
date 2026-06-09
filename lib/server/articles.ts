@@ -241,7 +241,7 @@ export async function getPublishedWeekTopicArticles(
   }
   return unstable_cache(
     () => queryPublishedWeekTopicFromDb(limit),
-    ["published-week-topic", String(limit), "v1-list-no-content"],
+    ["published-week-topic", String(limit), "v2-list-no-content"],
     { tags: [ARTICLES_TAG] }
   )();
 }

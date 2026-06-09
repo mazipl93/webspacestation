@@ -7,6 +7,7 @@ import { categoryFallbackBg, getCategoryInfo } from "@/lib/categories";
 import { HERO_AUTO_MS } from "@/lib/home/hero-slides";
 import type { NewsArticle } from "@/types";
 import CoverImage from "@/components/article/CoverImage";
+import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 import { HERO_DISPLAY_QUALITY, HERO_IMAGE_SIZES } from "@/lib/home/hero-lcp";
 import { cn } from "@/lib/cn";
 
@@ -205,6 +206,9 @@ function HeroSlide({
       />
 
       <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 pt-8 sm:px-6 lg:px-8">
+        <div className="mb-3">
+          <ArticleMetaChips article={article} compact />
+        </div>
         <h2 className="font-extrabold text-text-primary">
           {article.title}
         </h2>

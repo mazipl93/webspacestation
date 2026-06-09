@@ -7,6 +7,8 @@ type Props = {
   /** Compact layout for sidebar rails */
   compact?: boolean;
   className?: string;
+  /** Gdy kategoria jest już pokazana obok (karty homepage). */
+  hideCategory?: boolean;
 };
 
 /** Category and editorial badges. */
@@ -14,6 +16,7 @@ export default function ArticleMetaChips({
   article,
   compact = false,
   className,
+  hideCategory = false,
 }: Props) {
   const meta = getCategoryInfo(article.category);
 
@@ -44,15 +47,17 @@ export default function ArticleMetaChips({
           Ważne
         </span>
       )}
-      <span
-        className={cn(
-          "rounded-md border border-hairline px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em]",
-          compact && "text-[8px]"
-        )}
-        style={{ color: meta.color, borderColor: `${meta.color}44` }}
-      >
-        {meta.label}
-      </span>
+      {!hideCategory ? (
+        <span
+          className={cn(
+            "rounded-md border border-hairline px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em]",
+            compact && "text-[8px]"
+          )}
+          style={{ color: meta.color, borderColor: `${meta.color}44` }}
+        >
+          {meta.label}
+        </span>
+      ) : null}
     </div>
   );
 }

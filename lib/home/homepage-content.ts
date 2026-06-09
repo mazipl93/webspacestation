@@ -65,7 +65,8 @@ export function buildHomepageDerived(
   const weekTopicPick = pickWeekTopicArticles(
     weekTopicPool,
     usedSlugs,
-    weekTopicConfig
+    weekTopicConfig,
+    { prefiltered: weekTopicPool !== allPublished }
   );
   markSlugsUsed(weekTopicPick.articles, usedSlugs);
 

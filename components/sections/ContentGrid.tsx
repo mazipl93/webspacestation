@@ -7,6 +7,7 @@ import { HOMEPAGE_LAYOUT_V2, SITE_CONTAINER } from "@/lib/site-layout";
 import type { NewsArticle } from "@/types";
 import type { HomepageContent } from "@/lib/home/homepage-content";
 import ArticleCard from "@/components/article/ArticleCard";
+import ArticleMetaChips from "@/components/article/ArticleMetaChips";
 import CoverImage from "@/components/article/CoverImage";
 import HomepageTopZone from "@/components/sections/HomepageTopZone";
 import PopularArticles from "@/components/sections/PopularArticles";
@@ -144,6 +145,9 @@ function CategorySplitLeadDesktop({
           }}
         />
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+          <div className="mb-2">
+            <ArticleMetaChips article={lead} compact hideCategory />
+          </div>
           <span
             className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
             style={{ color: meta.color }}
@@ -278,6 +282,9 @@ function CategorySection({
                   }}
                 />
                 <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                  <div className="mb-2">
+                    <ArticleMetaChips article={lead} compact hideCategory />
+                  </div>
                   <span
                     className="mb-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]"
                     style={{ color: meta.color }}
