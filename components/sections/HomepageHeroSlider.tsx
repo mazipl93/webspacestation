@@ -83,8 +83,8 @@ export default function HomepageHeroSlider({ articles }: Props) {
       <div
         className={cn(
           "relative w-full overflow-hidden",
-          // Mobile: 16/9 — bez 50–72 svh (zdjęcia wychodziły poza sensowny kadr)
-          "max-lg:aspect-[16/9] max-lg:h-auto max-lg:max-h-[min(52svh,420px)]",
+          // Mobile: 4/3 — trochę wyżej niż 16/9, bez dawnych 50–72 svh
+          "max-lg:aspect-[4/3] max-lg:h-auto max-lg:max-h-[min(56svh,460px)]",
           "lg:aspect-[16/9] lg:h-auto lg:max-h-[min(78vh,820px)] lg:min-h-[420px]"
         )}
       >
@@ -190,7 +190,7 @@ function HeroSlide({
           fetchPriority={priority ? "high" : undefined}
           quality={HERO_DISPLAY_QUALITY}
           sizes={HERO_IMAGE_SIZES}
-          className="object-cover object-center max-lg:object-[center_42%] transition-transform duration-700 group-hover:scale-[1.02]"
+          className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
       )}
 

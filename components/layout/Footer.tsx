@@ -1,8 +1,4 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import WssLogoWordmark from "@/components/brand/WssLogoWordmark";
@@ -41,20 +37,6 @@ const FOOTER_LEGAL = [
 ] as const;
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-
-  function handleSubscribe(e: React.FormEvent) {
-    e.preventDefault();
-    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-    if (!valid) {
-      setStatus("error");
-      return;
-    }
-    setStatus("success");
-    setEmail("");
-  }
-
   return (
     <footer className="relative mt-14 overflow-hidden border-t border-hairline">
       {/* Kotwica wizualna — pas nad treścią stopki */}
@@ -83,7 +65,7 @@ export default function Footer() {
         <div className={cn(SITE_CONTAINER, "relative py-10 sm:py-12")}>
           <div className="card-surface editorial-surface overflow-hidden rounded-2xl border border-hairline">
             <div className="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
-              {/* Punkt zaczepienia — marka + newsletter */}
+              {/* Punkt zaczepienia — marka */}
               <div className="relative border-b border-hairline-faint bg-[#0c111a] px-6 py-8 sm:px-8 lg:border-b-0 lg:border-r">
                 <div
                   aria-hidden
@@ -103,71 +85,6 @@ export default function Footer() {
                   Polski portal o kosmosie, astronomii i technologiach
                   kosmicznych — newsy, misje i odkrycia.
                 </p>
-
-                <div className="mt-6 border-t border-hairline-faint pt-6">
-                  <p className="text-[13px] font-semibold text-text-primary">
-                    Newsletter
-                  </p>
-                  <p className="mt-1 text-[12px] text-text-tertiary">
-                    Co tydzień jeden mail. Bez spamu.
-                  </p>
-                  <form
-                    className="mt-3 flex flex-col gap-2 sm:flex-row"
-                    onSubmit={handleSubscribe}
-                    noValidate
-                  >
-                    <input
-                      id="newsletter-email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (status !== "idle") setStatus("idle");
-                      }}
-                      placeholder="E-mail"
-                      aria-invalid={status === "error"}
-                      aria-describedby="newsletter-status"
-                      className={cn(
-                        "min-w-0 flex-1 rounded-lg border bg-black/30 px-3.5 py-2.5 text-[13px] text-text-primary outline-none transition-colors placeholder:text-text-muted focus:ring-2 focus:ring-accent-blue/25",
-                        status === "error"
-                          ? "border-accent-live/60"
-                          : "border-hairline focus:border-accent-blue/50",
-                      )}
-                    />
-                    <button
-                      type="submit"
-                      className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-accent-blue px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-accent-blue-hover"
-                    >
-                      {status === "success" ? (
-                        <>
-                          <Check size={15} />
-                          OK
-                        </>
-                      ) : (
-                        "Zapisz"
-                      )}
-                    </button>
-                  </form>
-                  <p
-                    id="newsletter-status"
-                    role="status"
-                    aria-live="polite"
-                    className="mt-2 min-h-[16px] text-[11px]"
-                  >
-                    {status === "success" && (
-                      <span className="text-[#22c55e]">
-                        Sprawdź skrzynkę — potwierdź zapis.
-                      </span>
-                    )}
-                    {status === "error" && (
-                      <span className="text-accent-live">
-                        Podaj poprawny adres e-mail.
-                      </span>
-                    )}
-                  </p>
-                </div>
               </div>
 
               {/* Mapa linków — zwarte kolumny */}
