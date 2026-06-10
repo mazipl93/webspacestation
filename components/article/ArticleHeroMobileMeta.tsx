@@ -20,6 +20,37 @@ type Props = {
   className?: string;
 };
 
+function ArticleHeroLeadCopy({ article }: { article: NewsArticle }) {
+  const subtitle = article.subtitle?.trim();
+  const excerpt = article.excerpt?.trim();
+  const showExcerpt = Boolean(excerpt && excerpt !== subtitle);
+
+  return (
+    <>
+      {subtitle ? (
+        <p
+          className={cn(
+            ARTICLE_PROSE_MAX,
+            "text-[15px] font-medium leading-snug text-text-secondary lg:text-[16px]",
+          )}
+        >
+          {subtitle}
+        </p>
+      ) : null}
+      {showExcerpt || (!subtitle && excerpt) ? (
+        <p
+          className={cn(
+            ARTICLE_PROSE_MAX,
+            "pt-0.5 text-[14px] leading-relaxed text-text-secondary",
+          )}
+        >
+          {excerpt}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
 /** Tytuł, meta i breadcrumb pod okładką — bez nakładki na zdjęciu. */
 export default function ArticleHeroMobileMeta({
   article,
@@ -101,16 +132,7 @@ export default function ArticleHeroMobileMeta({
 
         {byline ? <ArticlePublicByline byline={byline} /> : null}
 
-        {article.excerpt ? (
-          <p
-            className={cn(
-              ARTICLE_PROSE_MAX,
-              "pt-0.5 text-[14px] leading-relaxed text-text-secondary",
-            )}
-          >
-            {article.excerpt}
-          </p>
-        ) : null}
+        <ArticleHeroLeadCopy article={article} />
     </div>
   );
 }

@@ -13,6 +13,8 @@ export interface NewsArticle {
   id: string;
   title: string;
   excerpt: string;
+  /** Krótki dek pod tytułem na stronie artykułu (osobno od zajawki). */
+  subtitle?: string;
   category: NewsCategory;
   publishedAt: string; // ISO 8601
   timeLabel: string; // pre-formatted relative label, e.g. "2 godz. temu"

@@ -46,6 +46,7 @@ import {
   traceArticleWriteInput,
   traceArticleWriteOutput,
 } from "@/lib/server/article-trace";
+import { publishArticleToFacebookSafe } from "@/lib/social/facebook-publish";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -80,6 +81,8 @@ const articleSelect = {
   updatedAt: true,
   publishedAt: true,
   publishAt: true,
+  facebookPostId: true,
+  facebookPostedAt: true,
   source: true,
   originalUrl: true,
   contentOrigin: true,
@@ -310,6 +313,34 @@ export async function getPublishedArticleBySlug(
     ["published-article", slug],
     { tags: [ARTICLES_TAG, articleTag(slug)] }
   )();
+}
+
+/** Lean, uncached read for OG/share-card — FB crawlers must not hit stale cache. */
+const shareCardArticleSelect = {
+  slug: true,
+  title: true,
+  excerpt: true,
+  content: true,
+  coverImage: true,
+  category: { select: { slug: true } },
+} satisfies Prisma.ArticleSelect;
+
+export type ShareCardArticle = Prisma.ArticleGetPayload<{
+  select: typeof shareCardArticleSelect;
+}>;
+
+export async function getPublishedArticleForShareCard(
+  slug: string,
+): Promise<ShareCardArticle | null> {
+  try {
+    return await prisma.article.findFirst({
+      where: { slug, ...PUBLISHED_ARTICLE_WHERE },
+      select: shareCardArticleSelect,
+    });
+  } catch (error) {
+    console.error("[getPublishedArticleForShareCard]", error);
+    return null;
+  }
 }
 
 async function queryArticlesByCategoryFromDb(
@@ -625,6 +656,15 @@ export async function articleStateTransition(
 
   if (action === "PUBLISH") {
     await refreshArticleRanking(id);
+    const isFirstPublish =
+      existing.status !== ArticleStatus.PUBLISHED && !article.facebookPostId;
+    if (isFirstPublish) {
+      revalidatePublicArticleCaches({
+        articleSlug: article.slug,
+        categorySlug: article.category.slug,
+      });
+      void publishArticleToFacebookSafe(article);
+    }
   }
 
   return article;

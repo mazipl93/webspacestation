@@ -63,7 +63,8 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     id: articleId ?? "preview-draft",
     slug,
     title: form.title.trim() || "Tytuł artykułu",
-    excerpt: form.excerpt.trim() || form.subtitle.trim() || "",
+    subtitle: form.subtitle.trim() || undefined,
+    excerpt: form.excerpt.trim() || "",
     category,
     publishedAt: now,
     createdAt: now,
@@ -106,10 +107,4 @@ function resolvePreviewByline(
   const manual = form.authorByline.trim();
   if (!manual) return undefined;
   return resolvePublicArticleByline({ authorByline: manual, bylineUser: null });
-}
-
-/** Hero-only subtitle (form field not on NewsArticle). */
-export function previewSubtitle(form: ArticleFormValues): string | null {
-  const s = form.subtitle.trim();
-  return s || null;
 }

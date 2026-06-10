@@ -50,7 +50,7 @@ export function getArticleBodyBlocks(article: NewsArticle): ArticleContentBlock[
   return parseArticleBodyBlocks(getArticleBodyParagraphs(article));
 }
 
-/** Editorial lead (first paragraph) + remaining blocks for manual articles. */
+/** Editorial lead in hero + cards/SEO — body does not re-extract first paragraph when set. */
 export function splitArticleLeadAndBody(
   article: NewsArticle,
   blocks: ArticleContentBlock[]
@@ -58,11 +58,15 @@ export function splitArticleLeadAndBody(
   if (isRssArticle(article.contentOrigin)) {
     return { lead: null, restBlocks: blocks };
   }
+
+  if (article.excerpt?.trim()) {
+    return { lead: null, restBlocks: blocks };
+  }
+
   if (blocks[0]?.kind === "paragraph") {
     return { lead: blocks[0].text, restBlocks: blocks.slice(1) };
   }
-  const fallbackLead = article.excerpt?.trim();
-  return { lead: fallbackLead || null, restBlocks: blocks };
+  return { lead: null, restBlocks: blocks };
 }
 
 /** Paragraph count in body (after lead) — drives automatic in-body link density. */

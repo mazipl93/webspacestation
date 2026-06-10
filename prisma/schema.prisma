@@ -121,6 +121,9 @@ model Article {
   publishedAt DateTime?
   /// When status is SCHEDULED — auto-publish at or after this time (scheduler).
   publishAt   DateTime?
+  /// Meta Graph API post id after auto-share on first publish (null = not posted yet).
+  facebookPostId String?
+  facebookPostedAt DateTime?
 
   @@index([status])
   @@index([categoryId])

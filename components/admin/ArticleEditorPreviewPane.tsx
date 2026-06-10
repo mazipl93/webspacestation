@@ -10,7 +10,6 @@ import type {
 } from "@/lib/admin/types";
 import {
   formToPreviewArticle,
-  previewSubtitle,
 } from "@/lib/admin/preview-article";
 import type { NewsArticle } from "@/types";
 import ArticlePublicPreview, {
@@ -109,8 +108,6 @@ function ArticleEditorPreviewPaneInner({
     [previewForm, categories, contentOrigin, articleId, bylineAuthors]
   );
 
-  const subtitle = useMemo(() => previewSubtitle(form), [form]);
-
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -133,7 +130,6 @@ function ArticleEditorPreviewPaneInner({
           >
             <ArticlePublicPreview
               article={previewArticle}
-              subtitle={subtitle}
               viewport={viewport}
               embedded
             />

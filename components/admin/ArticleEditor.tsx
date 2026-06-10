@@ -1030,7 +1030,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
             <EditorSection
               step={1}
               title="Tytuł i lead"
-              description="To widzi czytelnik na górze artykułu — tytuł, zajawka i adres URL."
+              description="Podtytuł to krótki dek pod nagłówkiem. Zajawka trafia na karty, SEO i social — nie duplikuj jej w pierwszym akapicie treści."
               tone="content"
             >
               <EditorFieldPanel>
@@ -1045,7 +1045,11 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               </EditorFieldPanel>
 
               <EditorFieldPanel>
-                <Field label="Podtytuł" htmlFor="subtitle">
+                <Field
+                  label="Podtytuł"
+                  htmlFor="subtitle"
+                  hint="Jedno zdanie pod tytułem na stronie artykułu. Nie zastępuje zajawki."
+                >
                   <TextInput
                     id="subtitle"
                     value={form.subtitle}
@@ -1074,12 +1078,16 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               </EditorFieldPanel>
 
               <EditorFieldPanel>
-                <Field label="Zajawka" htmlFor="excerpt">
+                <Field
+                  label="Zajawka"
+                  htmlFor="excerpt"
+                  hint="Lead na kartach artykułu, w Google i na Facebooku. Osobne pole od podtytułu."
+                >
                   <TextArea
                     id="excerpt"
                     rows={3}
                     value={form.excerpt}
-                    placeholder="Lead wyświetlany pod tytułem."
+                    placeholder="Lead na listach i w social — 2–3 zdania."
                     onChange={(e) => update("excerpt", e.target.value)}
                   />
                 </Field>

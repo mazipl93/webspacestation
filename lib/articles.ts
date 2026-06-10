@@ -69,6 +69,9 @@ export function toNewsArticle(a: ArticleWithRelations | ArticleListItem): NewsAr
     slug: a.slug,
     title: polishTypography(a.title),
     excerpt: polishTypography(a.excerpt ?? ""),
+    subtitle: "subtitle" in a && a.subtitle?.trim()
+      ? polishTypography(a.subtitle)
+      : undefined,
     category: a.category.slug as NewsCategory,
     publishedAt: when.toISOString(),
     timeLabel: formatRelativePublishLabel(when),

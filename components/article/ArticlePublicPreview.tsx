@@ -12,7 +12,6 @@ export type ArticlePreviewViewport = "desktop" | "mobile";
 
 export type ArticlePublicPreviewProps = {
   article: NewsArticle;
-  subtitle?: string | null;
   viewport?: ArticlePreviewViewport;
   embedded?: boolean;
 };

@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   formToPreviewArticle,
-  previewSubtitle,
   resolvePreviewImageFromForm,
 } from "@/lib/admin/preview-article";
 import {
@@ -113,12 +112,26 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
     assert.equal(article.imageCredit, "NASA / Joel Kowsky");
   });
 
-  it("previewSubtitle returns trimmed subtitle", () => {
-    assert.equal(previewSubtitle(BASE_FORM), "Podtytuł testowy");
-    assert.equal(
-      previewSubtitle({ ...BASE_FORM, subtitle: "  " }),
-      null
-    );
+  it("maps subtitle and excerpt separately (no fallback merge)", () => {
+    const article = formToPreviewArticle({
+      form: {
+        ...BASE_FORM,
+        subtitle: "Tylko podtytuł",
+        excerpt: "",
+      },
+      categories: CATEGORIES,
+    });
+    assert.equal(article.subtitle, "Tylko podtytuł");
+    assert.equal(article.excerpt, "");
+  });
+
+  it("keeps both subtitle and excerpt when set", () => {
+    const article = formToPreviewArticle({
+      form: BASE_FORM,
+      categories: CATEGORIES,
+    });
+    assert.equal(article.subtitle, "Podtytuł testowy");
+    assert.equal(article.excerpt, "Lead artykułu dla podglądu.");
   });
 });
 
