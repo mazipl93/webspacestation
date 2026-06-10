@@ -40,6 +40,7 @@ export async function publishArticleToFacebook(
       excerpt: article.excerpt,
       subtitle: article.subtitle,
       content: article.content,
+      tags: article.tags,
     },
     articleUrl,
   );

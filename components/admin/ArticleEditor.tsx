@@ -1298,7 +1298,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <Field
                 label="Tagi"
                 htmlFor="tags"
-                hint="Oddziel przecinkami (maks. 5)."
+                hint="Oddziel przecinkami (maks. 5). Krótki hook na kartę FB — pełny lead zostaje w treści posta."
               >
                 <TextInput
                   id="tags"

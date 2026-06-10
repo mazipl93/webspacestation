@@ -320,8 +320,13 @@ const shareCardArticleSelect = {
   slug: true,
   title: true,
   excerpt: true,
+  subtitle: true,
   content: true,
   coverImage: true,
+  coverImageCredit: true,
+  source: true,
+  originalUrl: true,
+  contentOrigin: true,
   category: { select: { slug: true } },
 } satisfies Prisma.ArticleSelect;
 

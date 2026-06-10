@@ -1,9 +1,10 @@
 import { ImageResponse } from "next/og";
+import { resolveArticleImageCredit } from "@/lib/articles/image-credit";
 import { getCategoryInfo } from "@/lib/categories";
 import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
 import { getPublishedArticleForShareCard } from "@/lib/server/articles";
 import { getSiteUrl } from "@/lib/site-url";
-import { extractSocialLead } from "@/lib/social/facebook-caption";
+import { extractShareCardSubline } from "@/lib/social/facebook-caption";
 import { loadShareCardFonts } from "@/lib/social/share-card-fonts";
 import {
   SHARE_CARD_HEIGHT,
@@ -25,10 +26,12 @@ export async function GET(_request: Request, context: RouteContext) {
 
   const category = getCategoryInfo(row.category.slug);
   const coverUrl = normalizeCoverImageUrl(row.coverImage);
+  const imageCredit = resolveArticleImageCredit(row);
   const fonts = await loadShareCardFonts();
-  const lead = extractSocialLead({
+  const subline = extractShareCardSubline({
     title: row.title,
     excerpt: row.excerpt,
+    subtitle: row.subtitle,
     content: row.content,
   });
 
@@ -36,8 +39,9 @@ export async function GET(_request: Request, context: RouteContext) {
     (
       <ShareCardLayout
         title={row.title}
-        excerpt={lead || row.excerpt}
+        excerpt={subline || null}
         coverUrl={coverUrl}
+        imageCredit={imageCredit}
         category={category}
         categorySlug={row.category.slug}
         brandBaseUrl={getSiteUrl()}

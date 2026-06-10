@@ -15,6 +15,8 @@ type ShareCardProps = {
   title: string;
   excerpt?: string | null;
   coverUrl?: string | null;
+  /** Cover photo attribution — manual CMS field or RSS auto-credit. */
+  imageCredit?: string | null;
   category: CategoryInfo;
   categorySlug: string;
   /** Origin for brand assets, e.g. https://webspacestation.pl */
@@ -103,18 +105,46 @@ function WssBrandFooter({ brandBaseUrl }: { brandBaseUrl: string }) {
  * Editorial split layout — mirrors featured ArticleCard + HeroArticle chips.
  * Cover left, category-tinted accent bar, dark space-card panel right.
  */
+function CoverImageCredit({ credit }: { credit: string }) {
+  const label = truncateForShareCard(credit, 72);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 14,
+        right: 14,
+        bottom: 14,
+        display: "flex",
+        padding: "6px 10px",
+        borderRadius: 4,
+        background: "rgba(0,0,0,0.62)",
+        fontFamily: "Inter",
+        fontSize: 11,
+        fontWeight: 500,
+        lineHeight: 1.35,
+        color: "rgba(245,247,251,0.88)",
+        letterSpacing: "0.01em",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
 export function ShareCardLayout({
   title,
   excerpt,
   coverUrl,
+  imageCredit,
   category,
   categorySlug,
   brandBaseUrl,
 }: ShareCardProps) {
-  const displayTitle = truncateForShareCard(title, 100);
-  const displayExcerpt = excerpt
-    ? truncateForShareCard(excerpt, 130)
-    : null;
+  const displayTitle = title.trim();
+  const displayExcerpt = excerpt?.trim() ? excerpt.trim() : null;
+  const titleLineHeight = 1.1;
+  const titleFontSize = 40;
+  const titleMaxLines = 3;
   const fallbackBg = categoryFallbackBg(categorySlug);
 
   return (
@@ -180,6 +210,10 @@ export function ShareCardLayout({
               "linear-gradient(to top, rgba(5,7,9,0.35) 0%, transparent 38%)",
           }}
         />
+
+        {imageCredit?.trim() ? (
+          <CoverImageCredit credit={imageCredit.trim()} />
+        ) : null}
       </div>
 
       {/* Category accent */}
@@ -223,12 +257,14 @@ export function ShareCardLayout({
         <div
           style={{
             marginTop: 22,
-            fontSize: 40,
+            fontSize: titleFontSize,
             fontWeight: 800,
-            lineHeight: 1.1,
+            lineHeight: titleLineHeight,
             letterSpacing: "-0.025em",
             color: TEXT_PRIMARY,
             maxWidth: 460,
+            maxHeight: titleFontSize * titleLineHeight * titleMaxLines,
+            overflow: "hidden",
           }}
         >
           {displayTitle}
@@ -243,6 +279,8 @@ export function ShareCardLayout({
               lineHeight: 1.45,
               color: TEXT_SECONDARY,
               maxWidth: 440,
+              maxHeight: 20 * 1.45 * 2,
+              overflow: "hidden",
             }}
           >
             {displayExcerpt}
