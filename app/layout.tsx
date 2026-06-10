@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Oswald } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import SiteAnalytics from "@/components/consent/SiteAnalytics";
 import SiteBackground from "@/components/layout/SiteBackground";
 import ServiceWorkerCleanup from "@/components/layout/ServiceWorkerCleanup";
 import JsonLd from "@/components/seo/JsonLd";
@@ -139,6 +140,7 @@ export default function RootLayout({
         <SiteBackground />
         <ServiceWorkerCleanup />
         <AuthProvider>{children}</AuthProvider>
+        <SiteAnalytics />
       </body>
     </html>
   );

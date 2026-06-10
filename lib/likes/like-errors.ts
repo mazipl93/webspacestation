@@ -5,7 +5,8 @@ export function articleLikeErrorMessage(raw: string): string {
     msg.includes("does not exist") ||
     msg.includes("could not find") ||
     msg.includes("toggle_article_like") ||
-    msg.includes("toggle_anon_article_like")
+    msg.includes("toggle_anon_article_like") ||
+    msg.includes("user_article_liked")
   ) {
     return "Polubienia nie są jeszcze skonfigurowane na serwerze. Daj znać redakcji.";
   }

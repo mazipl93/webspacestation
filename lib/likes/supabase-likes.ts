@@ -74,6 +74,16 @@ export async function fetchAnonArticleLiked(
   return Boolean(data);
 }
 
+/** Whether the signed-in user liked this slug (server-side, not shared localStorage). */
+export async function fetchUserArticleLiked(
+  supabase: SupabaseClient,
+  slug: string
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc("user_article_liked", { p_slug: slug });
+  if (error) return false;
+  return Boolean(data);
+}
+
 /** After login — attach cookie likes to the account (no double count). */
 export async function mergeAnonLikes(
   supabase: SupabaseClient,

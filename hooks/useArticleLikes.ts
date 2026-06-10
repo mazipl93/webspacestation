@@ -8,17 +8,12 @@ import {
   getAnonLikeIdIfPresent,
   getOrCreateAnonLikeId,
 } from "@/lib/likes/anon-id";
-import {
-  isAccountLikedLocally,
-  replaceAccountLikedSlugs,
-  setAccountLikedSlug,
-} from "@/lib/likes/browser-liked-cache";
 import { fetchSingleArticleLikeCount } from "@/lib/likes/article-like-counts";
 import { LIKES_CHANGE_EVENT } from "@/lib/likes/events";
 import { articleLikeErrorMessage } from "@/lib/likes/like-errors";
 import {
   fetchAnonArticleLiked,
-  fetchMyLikedSlugs,
+  fetchUserArticleLiked,
   mergeAnonLikes,
   toggleAnonArticleLike,
   toggleArticleLike,
@@ -34,21 +29,7 @@ interface LikesState {
   toggle: () => void;
 }
 
-async function fetchUserLiked(
-  supabase: SupabaseClient,
-  slug: string
-): Promise<boolean> {
-  const { data, error } = await supabase
-    .from("user_article_likes")
-    .select("slug")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (error) return false;
-  return !!data;
-}
-
-/** Article likes — logged-in (per account) or anonymous (per browser cookie). */
+/** Article likes — one per account (logged in) or per browser cookie (guest). */
 export function useArticleLikes(slug: string): LikesState {
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
@@ -61,7 +42,6 @@ export function useArticleLikes(slug: string): LikesState {
 
   const clientRef = useRef<SupabaseClient | null>(null);
   const mergedAnonRef = useRef(false);
-  const anonLikedRef = useRef(false);
 
   if (clientRef.current === null) {
     try {
@@ -83,17 +63,14 @@ export function useArticleLikes(slug: string): LikesState {
     setCount(total);
 
     if (user) {
-      const mine = await fetchUserLiked(supabase, slug);
-      setAccountLikedSlug(slug, mine);
-      anonLikedRef.current = false;
+      const mine = await fetchUserArticleLiked(supabase, slug);
       setLiked(mine);
     } else {
       const anonId = getAnonLikeIdIfPresent();
       const anonLiked = anonId
         ? await fetchAnonArticleLiked(supabase, slug, anonId)
         : false;
-      anonLikedRef.current = anonLiked;
-      setLiked(anonLiked || isAccountLikedLocally(slug));
+      setLiked(anonLiked);
     }
     setLoading(false);
   }, [slug, user]);
@@ -125,9 +102,6 @@ export function useArticleLikes(slug: string): LikesState {
           await mergeAnonLikes(supabase, anonId);
         }
       }
-
-      const slugs = await fetchMyLikedSlugs(supabase);
-      replaceAccountLikedSlugs(slugs);
 
       await refresh();
       window.dispatchEvent(new Event(LIKES_CHANGE_EVENT));
@@ -175,14 +149,6 @@ export function useArticleLikes(slug: string): LikesState {
         return;
       }
 
-      if (isAuthed) {
-        setAccountLikedSlug(slug, result.data.liked);
-        anonLikedRef.current = false;
-      } else {
-        anonLikedRef.current = result.data.liked;
-        setAccountLikedSlug(slug, result.data.liked);
-      }
-
       setLiked(result.data.liked);
       setCount(result.data.count);
       window.dispatchEvent(new Event(LIKES_CHANGE_EVENT));
@@ -198,4 +164,4 @@ export function useArticleLikes(slug: string): LikesState {
     isAuthed,
     toggle,
   };
-};
+}

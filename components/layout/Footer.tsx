@@ -1,7 +1,8 @@
 import Link from "next/link";
+import WssLogoWordmark from "@/components/brand/WssLogoWordmark";
+import CookieSettingsButton from "@/components/consent/CookieSettingsButton";
 import { cn } from "@/lib/cn";
 import { SITE_CONTAINER } from "@/lib/site-layout";
-import WssLogoWordmark from "@/components/brand/WssLogoWordmark";
 
 const FOOTER_NAV = {
   Nawigacja: [
@@ -141,6 +142,7 @@ export default function Footer() {
                   {link.label}
                 </Link>
               ))}
+              <CookieSettingsButton className="text-[12px] text-text-tertiary transition-colors hover:text-text-primary" />
             </div>
           </div>
         </div>

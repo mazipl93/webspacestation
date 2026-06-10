@@ -70,9 +70,22 @@ export default function PrivacyPolicyPage() {
         Pliki cookies
       </h2>
       <p>
-        Serwis może używać cookies sesji niezbędnych do logowania oraz cookies
-        preferencji interfejsu. Możesz ograniczyć cookies w ustawieniach
-        przeglądarki; część funkcji (np. konto) może wtedy nie działać poprawnie.
+        Serwis używa cookies niezbędnych do logowania (Supabase) oraz identyfikatora
+        przeglądarki przy polubieniach artykułów bez konta. Te pliki są wymagane do
+        działania wybranych funkcji i nie wymagają osobnej zgody marketingowej.
+      </p>
+      <p>
+        <strong>Google Analytics 4</strong> (Google Ireland Limited) — po Twojej
+        zgodzie w bannerze cookies mierzymy ruch na stronie: liczbę odwiedzin,
+        źródła wejść, przeglądane podstrony i zdarzenia zaangażowania (np.
+        przewinięcia). Adres IP jest anonimizowany. Podstawą prawną jest zgoda
+        (art. 6 ust. 1 lit. a RODO). Zgodę możesz wycofać w dowolnym momencie
+        przez link <strong>Ustawienia cookies</strong> w stopce serwisu.
+      </p>
+      <p>
+        Dopóki nie zaakceptujesz analityki, skrypt Google Analytics nie jest
+        ładowany. Możesz też ograniczyć cookies w ustawieniach przeglądarki;
+        część funkcji (np. konto) może wtedy nie działać poprawnie.
       </p>
 
       <h2 className="pt-2 text-[17px] font-bold text-text-primary">
@@ -117,7 +130,7 @@ export default function PrivacyPolicyPage() {
       </p>
 
       <p className="pt-4 text-[13px] text-text-muted">
-        Ostatnia aktualizacja: 5 czerwca 2026.
+        Ostatnia aktualizacja: 10 czerwca 2026.
       </p>
     </LegalPageShell>
   );
