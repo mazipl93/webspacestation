@@ -12,6 +12,8 @@ type RevalidateOptions = {
   /** When set, only that department page is path-invalidated (plus home + feed). */
   categorySlug?: string;
   articleSlug?: string;
+  /** After slug rename — invalidate cached page at the old path. */
+  previousArticleSlug?: string;
 };
 
 /**
@@ -25,6 +27,10 @@ export function revalidatePublicArticleCaches(options: RevalidateOptions = {}): 
   if (options.articleSlug) {
     revalidateTag(articleTag(options.articleSlug));
     revalidatePath(`/aktualnosci/${options.articleSlug}`, "page");
+  }
+  if (options.previousArticleSlug) {
+    revalidateTag(articleTag(options.previousArticleSlug));
+    revalidatePath(`/aktualnosci/${options.previousArticleSlug}`, "page");
   }
   if (options.categorySlug) {
     revalidateTag(categoryTag(options.categorySlug));

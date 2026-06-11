@@ -317,6 +317,22 @@ export async function getPublishedArticleBySlug(
   )();
 }
 
+/** 301 target when `slug` was renamed in CMS (`previousSlug` on the row). */
+export async function getPublishedSlugRedirect(
+  slug: string,
+): Promise<string | null> {
+  try {
+    const row = await prisma.article.findFirst({
+      where: { previousSlug: slug, ...PUBLISHED_ARTICLE_WHERE },
+      select: { slug: true },
+    });
+    return row?.slug ?? null;
+  } catch (error) {
+    console.error("[getPublishedSlugRedirect]", error);
+    return null;
+  }
+}
+
 /** Lean, uncached read for OG/share-card — FB crawlers must not hit stale cache. */
 const shareCardArticleSelect = {
   slug: true,
@@ -774,7 +790,7 @@ export async function updateArticle(
 ): Promise<ArticleWithRelations | null> {
   const existing = await prisma.article.findUnique({
     where: { id },
-    select: { id: true },
+    select: { id: true, slug: true },
   });
   if (!existing) return null;
 
@@ -803,6 +819,12 @@ export async function updateArticle(
   }
 
   const data = buildPrismaContentUpdateInput(input);
+  if (
+    input.slug !== undefined &&
+    input.slug !== existing.slug
+  ) {
+    data.previousSlug = existing.slug;
+  }
   if (Object.keys(data).length === 0) {
     return getArticleById(id);
   }

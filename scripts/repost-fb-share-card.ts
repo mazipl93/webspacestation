@@ -18,7 +18,7 @@ import { resolveShareCardCopy } from "../lib/social/share-card-copy";
 const prisma = new PrismaClient();
 
 const DEFAULT_SLUG =
-  "astoroida-zabila-dinozaury-chicxulub-8-milionow-lat-zycie";
+  "asteroida-zabila-dinozaury-chicxulub-8-milionow-lat-zycie";
 
 const DEFAULT_SOCIAL_TITLE = "Asteroida zabiła dinozaury";
 const DEFAULT_SOCIAL_HOOK =

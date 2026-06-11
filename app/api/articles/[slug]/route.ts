@@ -11,13 +11,17 @@ import {
 } from "@/lib/server/articles";
 import { statusToAction } from "@/lib/articles/state-transition";
 import { ArticleStatus } from "@prisma/client";
-function revalidatePublishedArticle(article: {
-  slug: string;
-  category: { slug: string };
-}) {
+function revalidatePublishedArticle(
+  article: {
+    slug: string;
+    category: { slug: string };
+  },
+  previousArticleSlug?: string,
+) {
   revalidatePublicArticleCaches({
     articleSlug: article.slug,
     categorySlug: article.category.slug,
+    previousArticleSlug,
   });
 }
 import {
@@ -103,17 +107,16 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
     const existing = await getArticleById(id);
     if (!existing) return jsonError(404, "NOT_FOUND", "Article not found.");
 
+    const previousSlug =
+      content.slug !== undefined && content.slug !== existing.slug
+        ? existing.slug
+        : undefined;
+
     if (Object.keys(content).length > 0) {
       const updated = await updateArticle(id, content);
       if (!updated) return jsonError(404, "NOT_FOUND", "Article not found.");
-      if (
-        updated.status === ArticleStatus.PUBLISHED &&
-        (content.weekTopic !== undefined ||
-          content.weekTopicPosition !== undefined ||
-          content.featured !== undefined ||
-          content.heroPosition !== undefined)
-      ) {
-        revalidatePublishedArticle(updated);
+      if (updated.status === ArticleStatus.PUBLISHED) {
+        revalidatePublishedArticle(updated, previousSlug);
       }
     }
 
@@ -134,7 +137,10 @@ export async function PATCH(request: NextRequest, { params }: Ctx) {
       article = transitioned;
     }
 
-    if (article.status === ArticleStatus.PUBLISHED) {
+    if (
+      article.status === ArticleStatus.PUBLISHED &&
+      Object.keys(content).length === 0
+    ) {
       revalidatePublishedArticle(article);
     }
 

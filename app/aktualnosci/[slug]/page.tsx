@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import type { NewsArticle } from "@/types";
 import {
-  getArticleBySlug,
+  resolveArticlePage,
   getReadNextArticles,
   getRelatedArticlePool,
   getWeaveInternalLinkCandidates,
@@ -92,11 +92,15 @@ function catFallback(c: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
-  if (!article) {
+  const resolved = await resolveArticlePage(slug);
+  if (resolved.kind === "redirect") {
+    permanentRedirect(`/aktualnosci/${resolved.targetSlug}`);
+  }
+  if (resolved.kind === "not-found") {
     return { title: "Artykuł nie znaleziony", robots: SEO_NOINDEX };
   }
-  const canonical = `${getSiteUrl()}/aktualnosci/${slug}`;
+  const article = resolved.article;
+  const canonical = `${getSiteUrl()}/aktualnosci/${article.slug}`;
   return {
     title: article.title,
     description: article.excerpt,
@@ -391,8 +395,14 @@ function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
-  if (!article) notFound();
+  const resolved = await resolveArticlePage(slug);
+  if (resolved.kind === "redirect") {
+    permanentRedirect(`/aktualnosci/${resolved.targetSlug}`);
+  }
+  if (resolved.kind === "not-found") {
+    notFound();
+  }
+  const article = resolved.article;
 
   // In-body links use their own ranking — do NOT exclude „Czytaj dalej” (same pool
   // was leaving long articles with 0–1 weave candidate on prod).

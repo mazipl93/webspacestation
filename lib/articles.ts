@@ -4,6 +4,7 @@ import {
   getPublishedArticles,
   getRecentPublishedArticles,
   getPublishedArticleBySlug,
+  getPublishedSlugRedirect,
   getPublishedHeroSlides,
   getPublishedWeekTopicSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
@@ -157,9 +158,30 @@ export async function getAllSlugs(): Promise<string[]> {
   return articles.map((a) => a.slug);
 }
 
-export async function getArticleBySlug(slug: string): Promise<NewsArticle | null> {
+export type ArticlePageResolve =
+  | { kind: "article"; article: NewsArticle }
+  | { kind: "redirect"; targetSlug: string }
+  | { kind: "not-found" };
+
+export async function resolveArticlePage(
+  slug: string,
+): Promise<ArticlePageResolve> {
   const article = await getPublishedArticleBySlug(slug);
-  return article ? toNewsArticle(article) : null;
+  if (article) {
+    return { kind: "article", article: toNewsArticle(article) };
+  }
+
+  const targetSlug = await getPublishedSlugRedirect(slug);
+  if (targetSlug) {
+    return { kind: "redirect", targetSlug };
+  }
+
+  return { kind: "not-found" };
+}
+
+export async function getArticleBySlug(slug: string): Promise<NewsArticle | null> {
+  const resolved = await resolveArticlePage(slug);
+  return resolved.kind === "article" ? resolved.article : null;
 }
 
 export async function getArticlesByCategory(

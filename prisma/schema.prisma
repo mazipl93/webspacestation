@@ -75,6 +75,8 @@ model Category {
 model Article {
   id          String        @id @default(cuid())
   slug        String        @unique
+  /// Previous slug after CMS rename — 301 from /aktualnosci/{previousSlug}.
+  previousSlug String?
   title       String
   subtitle    String?
   excerpt     String?
