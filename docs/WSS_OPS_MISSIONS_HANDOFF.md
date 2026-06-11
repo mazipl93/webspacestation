@@ -37,7 +37,89 @@ npm run ops:refresh   # LL2 + ISS + briefy (max 8)
 npm run ops:briefs    # tylko briefy z cache
 ```
 
-**Kolejne:** fix „zapas” w stripie → playbook FB → deploy po OK.
+**Kolejne:** patrz sekcja **„Roadmap Centrum operacyjne”** poniżej — krok po kroku.
+
+**Commit sesji ops:** `8ce2737` — `feat(ops): Centrum operacyjne, briefy AI startów i świeże dane LL2`
+
+---
+
+## Co to jest „Centrum operacyjne” (stan po `8ce2737`)
+
+Jeden produkt, **dwa miejsca na homepage** (to trzeba uporządkować w roadmapie):
+
+| Warstwa | Gdzie | Co pokazuje | Pliki |
+|--------|--------|-------------|--------|
+| **Strip (NOWY)** | Tuż **pod hero**, above the fold | Następny start + odliczenie + **AI brief** + „Ostatnio: start udany” + **ISS** (pozycja, wysokość, prędkość) + skróty Starty/Terminy/Mapa | `HomepageOpsStrip.tsx`, `OpsLaunchShowcase`, `OpsIssShowcase`, `OpsQuickNav` |
+| **Panel (STARY)** | **Dół homepage** w `ContentGrid` | Duży dashboard: lista startów, timeline, mapa — **duplikat** stripa | `ContentGrid.tsx` → `HomepageOpsDashboardLoader` |
+
+**Odkrywaj (osobne strony):**
+
+| URL | Rola w funnelu |
+|-----|----------------|
+| `/starty` | Pełna siatka startów + briefy AI + odliczenia |
+| `/kalendarz` | Timeline NET (`OpsTimeline`) |
+| `/mapa` | ISS na orbicie + pady startowe (`OpsMissionMap`) |
+| `/misje` | Artykuły redakcyjne + **banner** z następnym startem |
+
+**Dane (jeden rdzeń):** `getHomepageOpsData()` → LL2 + ISS + cache DB (`ops_cache_entries`), cron `ops-refresh` co 1 h (`vercel.json`).
+
+**ISS w stripie:** tylko **podgląd** (współrzędne, km/h) + link „Orbita na mapie” → `/mapa`. **Nie** zastępuje działu `/iss` (newsy o stacji).
+
+---
+
+## Roadmap Centrum operacyjne — krok po kroku
+
+Statusy: ✅ DONE · 🔄 PARTIAL · ⏳ TODO · 🚫 poza scope (user)
+
+| # | Krok | Status | Opis / pliki |
+|---|------|--------|----------------|
+| **0** | Audyt Misje·Starty·ISS·Odkrywaj | ✅ | Hipoteza retencji, priorytety 1–5 |
+| **1** | Ops **strip pod hero** | ✅ | Widoczny start bez scrolla |
+| **2** | `/starty` w nav + banner **`/misje`** | ✅ | `nav-menu-config.ts`, `CategoryOpsLaunchBanner` |
+| **3** | **Świeże dane LL2** | ✅ | upcoming+previous, fazy, staleness, cron 1 h |
+| **3b** | **AI briefy** startów (OpenAI mini) | ✅ | `generate-launch-briefs.ts`, klucz `OPS_LAUNCH_BRIEFS_OPENAI_API_KEY` (wss-starty) |
+| **3c** | Most artykuł ↔ start (opcjonalny link WSS) | ✅ | `match-launch-articles.ts` — tylko gdy tytuł = kod misji |
+| **4** | **Fix „Starship (zapas)”** | ⏳ **PIERWSZE w następnym czacie** | LL2 429 → fallback nadpisuje cache; nie pokazywać mocków jako live |
+| **5** | **Deploy** strip + dane + cron + env Vercel | ⏳ | Po OK usera; `OPS_LAUNCH_BRIEFS_OPENAI_API_KEY` na prod |
+| **6** | **Uporządkować duplikat** — stary panel na dole homepage | ⏳ | Opcje: usunąć / zwinąć / zostawić tylko mapę+timeline; strip = główne CO |
+| **7** | **ISS funnel** spójny | ⏳ | Strip → `/mapa`; ewent. cross-link `/iss` „ISS teraz”; bez 3× tego samego |
+| **8** | **`/starty` + `/kalendarz` UX** | 🔄 | Działa; ewent. briefy na wszystkich kartach, fazy na countdown |
+| **9** | **AI briefy faza B** — web search (Responses API) | ⏳ | Tylko „ciekawe” starty (NROL, Crew, debiuty); nie każdy Starlink |
+| **10** | **Playbook FB** przed startem | ⏳ | Proces (nie kod): post „za X h”, link w komentarzu, `/starty` |
+| **11** | **CMS `linkedLaunchId`** (opcjonalnie) | ⏳ | Ręczne przypięcie news ↔ start, gdy redakcja pisze o locie |
+| **12** | Newsletter / TikTok | 🚫 | User: później / nie teraz |
+
+**Kolejność rekomendowana dla następnych czatów:** 4 → 5 → 6 → 7 → 9 → 10.
+
+---
+
+## ISS — co robimy, a czego nie
+
+| Element | Teraz | Docelowo |
+|---------|--------|----------|
+| **Strip homepage** | Mini ISS ( pozycja, prędkość ) | Zostaje — „live hook” |
+| **`/mapa`** | Pełna orbita + pady | Główne narzędzie ISS |
+| **`/iss`** | Artykuły o stacji | Newsy redakcyjne, nie duplikat trackera |
+| **Stary panel CO na dole** | Pełna mapa/timeline | Prawdopodobnie **uproszczyć** po kroku 6 |
+
+ISS tracker = **Open Notify / wss API** w `lib/ops/iss-tracker.ts` — bez płatnego API.
+
+---
+
+## Env (local + Vercel prod)
+
+```env
+OPS_LAUNCH_BRIEFS_OPENAI_API_KEY="..."   # projekt OpenAI wss-starty
+OPENAI_API_KEY="..."                      # wss-news-engine — RSS only
+OPENAI_TRANSLATION_MODEL="gpt-5.4-mini"
+CRON_SECRET="..."
+# OPS_LAUNCH_BRIEFS=false                 # wyłącz briefy
+```
+
+```bash
+npm run ops:refresh   # LL2 + ISS + briefy (max 8 startów / run)
+npm run ops:briefs    # tylko briefy z cache (gdy LL2 throttle)
+```
 
 ---
 
@@ -128,10 +210,11 @@ Hipoteza strategiczna (user + ChatGPT + audyt Cursor): **starty + ISS + kalendar
 | Element | Plik | Uwaga |
 |---------|------|--------|
 | CTA „Starty rakiet” w hero | `components/sections/Hero.tsx` | link `/starty` |
-| Panel ops (starty, ISS, mapa, timeline) | `components/sections/ContentGrid.tsx` | **`HomepageOpsDashboardLoader`** — **na dole** homepage, **po** sekcjach działów i Popularne |
-| Suspense + skeleton | `ContentGrid.tsx` | lazy load ops |
+| **Strip CO (NOWY)** | `HomepageTopZone` → `HomepageOpsStrip` | **Pod hero** — główny punkt retencji |
+| Panel ops (STARY) | `ContentGrid.tsx` → `HomepageOpsDashboardLoader` | **Na dole** homepage — **duplikat**, krok 6 roadmapy |
+| Suspense + skeleton | oba komponenty | lazy load ops |
 
-**Pytania audytu:** czy ops powinno być wyżej (pod hero / obok Najnowsze)? czy wystarczająco widoczne na mobile?
+**Audyt (zrobiony):** strip above the fold — ✅. Stary panel — do decyzji w kroku 6.
 
 ### Backend / cache
 
@@ -166,37 +249,32 @@ Hipoteza strategiczna (user + ChatGPT + audyt Cursor): **starty + ISS + kalendar
 
 ---
 
-## Prompt na nowy czat (SKOPIUJ PONIŻEJ)
+## Prompt na następny czat (SKOPIUJ PONIŻEJ)
 
 ```
-Kontynuacja WSS — audyt Misje · Starty · ISS · Odkrywaj (repo: wss-nowa, prod: https://webspacestation.pl)
+Kontynuacja WSS — Centrum operacyjne (repo: wss-nowa, main, commit 8ce2737+)
 
 ## Przeczytaj najpierw
-- docs/WSS_OPS_MISSIONS_HANDOFF.md (ten plik — pełny kontekst sesji SEO + strategia)
-- docs/WSS_CONTENT_ARCHITECTURE.md (Misje vs Nauka vs ISS)
+- docs/WSS_OPS_MISSIONS_HANDOFF.md — sekcje: „Starship (zapas)”, „Roadmap Centrum operacyjne”, „ISS”
+- docs/WSS_CONTENT_ARCHITECTURE.md
 
-## Kontekst (skrót)
-- SEO/indeksacja: sitemap+feed naprawione, paginacja ?strona=N, user zgłosił 5 evergreenów Nauki w GSC
-- FB+IG auto-post przy PUBLISH — DONE, nie proponuj od nowa
-- Strategia: starty+kalendarz+ISS = potencjalny #1 powód powrotu na stronę (retencja); artykuły = Google (pozyskanie)
-- User: solo, bez wypalenia; 1 ręczny post FB/dzień > auto-only; TikTok później
+## Kontekst
+- Strip pod hero DONE (start + ISS + briefy AI). Stary duży panel ops nadal na DOLE homepage (ContentGrid) — duplikat, krok 6 w roadmapie.
+- Strategia: starty + ISS + kalendarz = retencja; artykuły = SEO. User solo, bez wypalenia.
+- FB auto-post przy PUBLISH — DONE, nie proponuj od nowa.
+- Bez deploy/commit bez explicit OK usera (chyba że prosi).
 
-## Twoje zadanie (TYLKO audyt na start — bez implementacji chyba że poproszę)
-1. Sprawdź prod + repo: jak działają /starty, /kalendarz, /mapa (dane Launch Library 2, ISS, cache, cron ops-refresh)
-2. Sprawdź homepage: gdzie jest panel ops (ContentGrid), Hero CTA, czy starty/ISS są wystarczająco widoczne
-3. Oceń dział /misje vs narzędzia Odkrywaj — spójność, duplikaty, luki
-4. Dla każdego obszaru: DONE / PARTIAL / TODO + 1 zdanie dowodu (plik, endpoint, prod URL)
-5. Rekomendacje: co przenieść na homepage, jak usprawnić funnel Misje→starty→mapa, jak to spiąć z ręcznym FB przed startem
-6. 3–5 priorytetów wdrożenia (krótko) — bez kodu do OK usera
-7. Nie commituj, nie deployuj bez mojego OK
+## Zadanie 1 (pilne)
+Dlaczego w Centrum operacyjnym widać „Starship (zapas)” zamiast LL2? Napraw: fallback nie może nadpisywać live cache. Potem npm run ops:refresh gdy LL2 OK.
+
+## Zadanie 2+ (roadmap — krok po kroku, pytaj usera co dalej)
+4 fix zapas → 5 deploy → 6 usunąć/uprosścić stary panel CO na dole → 7 ISS funnel → 9 web search briefy → 10 playbook FB.
 
 ## Kluczowe pliki
-- app/starty/page.tsx, app/kalendarz/page.tsx, app/mapa/page.tsx, app/misje/page.tsx, app/iss/page.tsx
-- lib/ops/*, components/discover/*, components/sections/ContentGrid.tsx, Hero.tsx
-- app/api/cron/ops-refresh/route.ts
-
-## Architektura treści
-Misje = news startów/programów. Evergreen „jak działa rakieta” → Nauka. ISS news w /iss, pozycja ISS na /mapa.
+- components/sections/HomepageOpsStrip.tsx, ContentGrid.tsx (stary panel)
+- lib/ops/fallback.ts, fetch-core-snapshot.ts, get-ops-data.ts, generate-launch-briefs.ts
+- components/discover/OpsIssShowcase.tsx, OpsMissionMap (mapa)
+- app/api/cron/ops-refresh/route.ts, vercel.json
 ```
 
 ---
