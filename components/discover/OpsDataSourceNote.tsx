@@ -1,4 +1,5 @@
 import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
+import { OPS_LAUNCH_FEED_STALE_BODY } from "@/lib/ops/ops-outage-copy";
 
 type Props = {
   live: boolean;
@@ -13,7 +14,7 @@ export default function OpsDataSourceNote({ live, fetchedAt }: Props) {
           <OpsPreviewBadge />
         </div>
         <p className="text-[11px] leading-relaxed text-text-tertiary">
-          API niedostępne — wyświetlamy dane zapasowe. Spróbuj odświeżyć za chwilę.
+          {OPS_LAUNCH_FEED_STALE_BODY}
         </p>
       </div>
     );
@@ -32,7 +33,7 @@ export default function OpsDataSourceNote({ live, fetchedAt }: Props) {
         Dane na żywo
       </p>
       <p className="mt-2 text-[11px] leading-relaxed text-text-tertiary">
-        Launch Library · ISS · NASA
+        Starty · ISS · NASA
         {time ? ` · odświeżono ${time}` : ""}
       </p>
     </div>

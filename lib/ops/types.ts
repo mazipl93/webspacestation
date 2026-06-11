@@ -106,7 +106,7 @@ export type OpsSnapshot = {
   mapPins: OpsMapPin[];
   gallery: OpsGalleryItem[];
   videos: OpsVideoItem[];
-  /** true = API OK; false = fallback mock */
+  /** true = świeży harmonogram LL2 w tym fetchu */
   live: boolean;
   fetchedAt: string;
 };

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar, Map, ChevronRight } from "lucide-react";
+import {
+  OPS_LAUNCH_FEED_PAUSED_BODY,
+  OPS_LAUNCH_FEED_PAUSED_TITLE,
+} from "@/lib/ops/ops-outage-copy";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import LaunchCard from "@/components/discover/LaunchCard";
 import { getCoreOpsData } from "@/lib/ops/get-ops-data";
@@ -55,14 +59,25 @@ export default async function StartyPage() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
-          {ops.launches.map((launch) => (
-            <LaunchCard
-              key={launch.id}
-              launch={launch}
-              variant="featured"
-              wssArticle={linkForLaunch(launch.id, articleLinks)}
-            />
-          ))}
+          {ops.launches.length === 0 ? (
+            <div className="card-surface col-span-full rounded-xl border border-hairline p-6 sm:p-8">
+              <p className="text-[13px] font-semibold text-text-primary">
+                {OPS_LAUNCH_FEED_PAUSED_TITLE}
+              </p>
+              <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-text-tertiary">
+                {OPS_LAUNCH_FEED_PAUSED_BODY}
+              </p>
+            </div>
+          ) : (
+            ops.launches.map((launch) => (
+              <LaunchCard
+                key={launch.id}
+                launch={launch}
+                variant="featured"
+                wssArticle={linkForLaunch(launch.id, articleLinks)}
+              />
+            ))
+          )}
         </div>
       </section>
 

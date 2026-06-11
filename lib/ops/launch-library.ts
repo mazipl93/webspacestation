@@ -154,6 +154,15 @@ function mapLaunch(raw: Ll2Launch): OpsLaunch {
   return localizeOpsLaunch(enrichLaunchPhase(base));
 }
 
+function ll2RequestHeaders(): HeadersInit {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const token = process.env.LAUNCH_LIBRARY_API_TOKEN?.trim();
+  if (token) {
+    headers.Authorization = `Token ${token}`;
+  }
+  return headers;
+}
+
 async function fetchLaunchesFromList(
   list: "upcoming" | "previous",
   limit: number,
@@ -169,7 +178,7 @@ async function fetchLaunchesFromList(
 
   const url = `${LL2_BASE}/launches/${list}/?${params}`;
   const res = await fetchExternal(url, {
-    headers: { Accept: "application/json" },
+    headers: ll2RequestHeaders(),
     cache: "no-store",
   });
 
@@ -192,10 +201,10 @@ export async function fetchLaunchSchedule(
   upcomingLimit = 16,
   recentLimit = 4,
 ): Promise<LaunchSchedule> {
-  const [upcomingRaw, recentRaw] = await Promise.all([
-    fetchLaunchesFromList("upcoming", upcomingLimit),
-    fetchLaunchesFromList("previous", recentLimit).catch(() => [] as Ll2Launch[]),
-  ]);
+  const upcomingRaw = await fetchLaunchesFromList("upcoming", upcomingLimit);
+  const recentRaw = await fetchLaunchesFromList("previous", recentLimit).catch(
+    () => [] as Ll2Launch[],
+  );
 
   const upcoming = upcomingRaw
     .map(mapLaunch)

@@ -1,3 +1,4 @@
+import { sanitizeCorePayload } from "@/lib/ops/fallback";
 import { prisma } from "@/lib/prisma";
 import {
   OPS_CACHE_KEYS,
@@ -59,7 +60,8 @@ export async function writeOpsCacheEntry(
 
 export async function readStoredCore(): Promise<OpsCorePayload | null> {
   const row = await readOpsCacheEntry(OPS_CACHE_KEYS.core);
-  return row?.core ?? null;
+  const core = row?.core ?? null;
+  return core ? sanitizeCorePayload(core) : null;
 }
 
 export async function readStoredGallery(): Promise<OpsGalleryPayload | null> {

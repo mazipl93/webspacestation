@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import OpsIssShowcase from "@/components/discover/OpsIssShowcase";
+import OpsLaunchFeedPaused from "@/components/discover/OpsLaunchFeedPaused";
 import OpsLaunchShowcase from "@/components/discover/OpsLaunchShowcase";
 import OpsQuickNav from "@/components/discover/OpsQuickNav";
 import { cn } from "@/lib/cn";
@@ -29,11 +30,9 @@ function HomepageOpsStripView({
   wssArticle: LaunchWssArticleLink | null;
 }) {
   const next = pickPrimaryLaunch(launches);
-  if (!next) return null;
-
   const issStats = formatIssStats(iss);
-  const imminent = isOpsLaunchImminent(next.net);
-  const upNext = launches.find((l) => l.id !== next.id);
+  const imminent = next ? isOpsLaunchImminent(next.net) : false;
+  const upNext = next ? launches.find((l) => l.id !== next.id) : null;
 
   return (
     <section
@@ -41,7 +40,7 @@ function HomepageOpsStripView({
         "homepage-ops-strip reveal mt-4 sm:mt-5",
         imminent && "homepage-ops-strip--imminent",
       )}
-      aria-label="Centrum operacyjne — starty i ISS"
+      aria-label="Centrum operacyjne, starty i ISS"
     >
       <div className="ops-widget-shell">
         <header className="ops-widget-shell__header">
@@ -50,15 +49,19 @@ function HomepageOpsStripView({
         </header>
 
         <div className="ops-widget-grid">
-          <OpsLaunchShowcase
-            launch={next}
-            live={live}
-            imminent={imminent}
-            upcomingCount={Math.max(0, launches.length - 1)}
-            upNext={upNext ?? null}
-            recentCompleted={recentLaunches[0] ?? null}
-            wssArticle={wssArticle}
-          />
+          {next ? (
+            <OpsLaunchShowcase
+              launch={next}
+              live={live}
+              imminent={imminent}
+              upcomingCount={Math.max(0, launches.length - 1)}
+              upNext={upNext ?? null}
+              recentCompleted={recentLaunches[0] ?? null}
+              wssArticle={wssArticle}
+            />
+          ) : (
+            <OpsLaunchFeedPaused />
+          )}
 
           <aside className="ops-widget-side">
             <OpsIssShowcase
@@ -84,10 +87,14 @@ export function HomepageOpsStripSkeleton() {
 
 async function HomepageOpsStripLoader() {
   const ops = await getHomepageOpsData();
-  if (ops.launches.length === 0) return null;
+  const hasLaunches = ops.launches.length > 0;
+  const hasIss = ops.iss != null;
+  if (!hasLaunches && !hasIss) return null;
 
-  const articleLinks = await getLaunchWssArticleLinks(ops.launches);
-  const next = pickPrimaryLaunch(ops.launches);
+  const articleLinks = hasLaunches
+    ? await getLaunchWssArticleLinks(ops.launches)
+    : new Map<string, LaunchWssArticleLink>();
+  const next = hasLaunches ? pickPrimaryLaunch(ops.launches) : null;
 
   return (
     <HomepageOpsStripView

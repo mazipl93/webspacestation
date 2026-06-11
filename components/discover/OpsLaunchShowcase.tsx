@@ -85,7 +85,7 @@ export default function OpsLaunchShowcase({
                 Na żywo
               </span>
             ) : (
-              <OpsPreviewBadge />
+              <OpsPreviewBadge variant="stale" />
             )}
             {launch.statusLabel ? (
               <span className="ops-launch-showcase__status">{launch.statusLabel}</span>

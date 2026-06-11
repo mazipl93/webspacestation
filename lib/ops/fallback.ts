@@ -1,100 +1,94 @@
 import { buildCalendarFromLaunches } from "@/lib/ops/calendar-from-launches";
-import { enrichLaunchPhase } from "@/lib/ops/launch-phase";
-import type { OpsLaunch, OpsSnapshot } from "@/lib/ops/types";
+import type { OpsCorePayload } from "@/lib/ops/payloads";
 import { buildMapPins } from "@/lib/ops/map-geo";
+import type { OpsLaunch, OpsSnapshot } from "@/lib/ops/types";
 
-/** Stałe daty zapasowe — NIE odświeżane co request (unikamy fałszywego 24:00:00). */
-const FALLBACK_NET_ISO = [
-  "2026-06-10T12:00:00Z",
-  "2026-06-18T08:30:00Z",
-  "2026-07-02T14:15:00Z",
-  "2026-07-22T06:00:00Z",
-] as const;
+const MOCK_LAUNCH_ID_PREFIX = "fallback-";
 
-function mockLaunches(): OpsLaunch[] {
-  return [
-    enrichLaunchPhase({
-      id: "fallback-1",
-      provider: "SpaceX",
-      mission: "Starlink Group (zapas)",
-      rocketName: "Falcon 9 Block 5",
-      net: FALLBACK_NET_ISO[0],
-      site: "SLC-40, Cape Canaveral",
-      image:
-        "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=800&q=70",
-      hue: 212,
-      statusLabel: "API niedostępne",
-      statusAbbrev: "TBD",
-      phase: "countdown",
-      windowLabel: "Dane zapasowe",
-    }),
-    enrichLaunchPhase({
-      id: "fallback-2",
-      provider: "SpaceX",
-      mission: "Starship (zapas)",
-      net: FALLBACK_NET_ISO[1],
-      site: "Starbase, Teksas",
-      image:
-        "https://images.unsplash.com/photo-1457364887197-9150188c107b?auto=format&fit=crop&w=800&q=70",
-      hue: 26,
-      statusLabel: "API niedostępne",
-      phase: "countdown",
-    }),
-    enrichLaunchPhase({
-      id: "fallback-3",
-      provider: "ArianeGroup",
-      mission: "Ariane 6 (zapas)",
-      net: FALLBACK_NET_ISO[2],
-      site: "Kourou, Gujana",
-      image:
-        "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=800&q=70",
-      hue: 156,
-      statusLabel: "API niedostępne",
-      phase: "countdown",
-    }),
-    enrichLaunchPhase({
-      id: "fallback-4",
-      provider: "Blue Origin",
-      mission: "New Glenn (zapas)",
-      net: FALLBACK_NET_ISO[3],
-      site: "LC-36, Cape Canaveral",
-      image:
-        "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=70",
-      hue: 268,
-      statusLabel: "API niedostępne",
-      phase: "countdown",
-    }),
-  ];
+/** Stare mocki zapisane w cache — nie pokazujemy ich jako prawdziwych startów. */
+export function isMockFallbackLaunch(launch: Pick<OpsLaunch, "id">): boolean {
+  return launch.id.startsWith(MOCK_LAUNCH_ID_PREFIX);
 }
 
-export function buildFallbackOpsSnapshot(): OpsSnapshot {
-  return coreToFullSnapshot(buildFallbackCoreSnapshot());
+export function filterRealLaunches(launches: OpsLaunch[]): OpsLaunch[] {
+  return launches.filter((l) => !isMockFallbackLaunch(l));
 }
 
-export function buildFallbackCoreSnapshot(): Omit<
-  OpsSnapshot,
-  "gallery" | "videos"
-> {
-  const launches = mockLaunches();
+export function hasRealLaunchData(launches: OpsLaunch[]): boolean {
+  return filterRealLaunches(launches).length > 0;
+}
+
+/** Usuwa mocki „(zapas)” z payloadu odczytanego z DB. */
+export function sanitizeCorePayload(core: OpsCorePayload): OpsCorePayload {
+  const launches = filterRealLaunches(core.launches);
+  const recentLaunches = filterRealLaunches(core.recentLaunches ?? []);
+  if (
+    launches.length === core.launches.length &&
+    recentLaunches.length === (core.recentLaunches ?? []).length
+  ) {
+    return core;
+  }
   return {
+    ...core,
     launches,
+    recentLaunches,
+    calendar:
+      launches.length > 0
+        ? buildCalendarFromLaunches(launches)
+        : [],
+    live: launches.length > 0 ? core.live : false,
+  };
+}
+
+/** Pusty rdzeń — bez fałszywych startów. */
+export function buildEmptyCoreSnapshot(
+  partial: Partial<Omit<OpsCorePayload, "live" | "fetchedAt">> = {},
+): Omit<OpsSnapshot, "gallery" | "videos"> {
+  return {
+    launches: [],
     recentLaunches: [],
-    calendar: buildCalendarFromLaunches(launches),
+    calendar: [],
     iss: null,
     issOrbit: [],
     mapPins: buildMapPins(null, []),
     live: false,
     fetchedAt: new Date().toISOString(),
+    ...partial,
   };
 }
 
-function coreToFullSnapshot(
-  core: Omit<OpsSnapshot, "gallery" | "videos">
-): OpsSnapshot {
+/** @deprecated alias — bez mocków, tylko pusty stan */
+export function buildFallbackCoreSnapshot(): Omit<
+  OpsSnapshot,
+  "gallery" | "videos"
+> {
+  return buildEmptyCoreSnapshot();
+}
+
+export function buildFallbackOpsSnapshot(): OpsSnapshot {
+  return { ...buildEmptyCoreSnapshot(), gallery: [], videos: [] };
+}
+
+/** Aktualizuj ISS/mapę bez kasowania ostatniego harmonogramu startów. */
+export function mergeIssRefreshIntoCore(
+  stored: OpsCorePayload,
+  fresh: Pick<OpsCorePayload, "iss" | "issOrbit" | "mapPins" | "fetchedAt">,
+): OpsCorePayload {
   return {
-    ...core,
-    recentLaunches: core.recentLaunches ?? [],
-    gallery: [],
-    videos: [],
+    ...stored,
+    iss: fresh.iss ?? stored.iss,
+    issOrbit: fresh.issOrbit.length > 0 ? fresh.issOrbit : stored.issOrbit,
+    mapPins: fresh.mapPins.length > 0 ? fresh.mapPins : stored.mapPins,
+    fetchedAt: fresh.fetchedAt,
   };
+}
+
+/** Nie zapisuj pustego harmonogramu zamiast ostatniego live snapshotu. */
+export function shouldPersistCoreSnapshot(
+  incoming: OpsCorePayload,
+  stored: OpsCorePayload | null,
+): boolean {
+  if (hasRealLaunchData(incoming.launches)) return true;
+  if (!stored || !hasRealLaunchData(stored.launches)) return true;
+  return false;
 }

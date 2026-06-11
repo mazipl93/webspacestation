@@ -1,10 +1,14 @@
 import { unstable_cache } from "next/cache";
+import { shouldFetchExternalOpsOnSsr } from "@/lib/ops/ops-ssr-mode";
 import { fetchCoreOpsSnapshot } from "@/lib/ops/fetch-core-snapshot";
 import { fetchGalleryOpsSnapshot } from "@/lib/ops/fetch-gallery-snapshot";
 import { fetchVideoOpsSnapshot } from "@/lib/ops/fetch-video-snapshot";
 import {
-  buildFallbackCoreSnapshot,
+  buildEmptyCoreSnapshot,
   buildFallbackOpsSnapshot,
+  hasRealLaunchData,
+  mergeIssRefreshIntoCore,
+  shouldPersistCoreSnapshot,
 } from "@/lib/ops/fallback";
 import {
   coreToOpsSnapshot,
@@ -45,16 +49,22 @@ async function bootstrapCore(): Promise<OpsCorePayload> {
       null
     );
     if (fresh) {
-      await writeOpsCacheEntry(OPS_CACHE_KEYS.core, fresh, fresh.live).catch(
-        () => {}
-      );
+      if (shouldPersistCoreSnapshot(fresh, stored)) {
+        await writeOpsCacheEntry(OPS_CACHE_KEYS.core, fresh, fresh.live).catch(
+          () => {}
+        );
+        return fresh;
+      }
+      if (stored && hasRealLaunchData(stored.launches)) {
+        return mergeIssRefreshIntoCore(stored, fresh);
+      }
       return fresh;
     }
   } catch (error) {
     console.error("[ops] bootstrap core failed", error);
   }
-  if (stored) return stored;
-  return buildFallbackCoreSnapshot();
+  if (stored && hasRealLaunchData(stored.launches)) return stored;
+  return buildEmptyCoreSnapshot();
 }
 
 async function bootstrapGallery(): Promise<OpsGalleryPayload> {
@@ -103,6 +113,12 @@ async function bootstrapVideo(): Promise<OpsVideoPayload> {
 
 async function loadCoreFromStore(): Promise<OpsCorePayload> {
   const stored = await readStoredCore();
+
+  if (!shouldFetchExternalOpsOnSsr()) {
+    if (stored) return stored;
+    return buildEmptyCoreSnapshot();
+  }
+
   if (
     stored &&
     !isLaunchFeedStale(stored.launches, stored.fetchedAt, OPS_MAX_AGE_MS)
@@ -114,12 +130,20 @@ async function loadCoreFromStore(): Promise<OpsCorePayload> {
 
 async function loadGalleryFromStore(): Promise<OpsGalleryPayload> {
   const stored = await readStoredGallery();
+  if (!shouldFetchExternalOpsOnSsr()) {
+    if (stored) return stored;
+    return { gallery: [], live: false, fetchedAt: new Date().toISOString() };
+  }
   if (stored) return stored;
   return bootstrapGallery();
 }
 
 async function loadVideoFromStore(): Promise<OpsVideoPayload> {
   const stored = await readStoredVideo();
+  if (!shouldFetchExternalOpsOnSsr()) {
+    if (stored) return stored;
+    return { videos: [], live: false, fetchedAt: new Date().toISOString() };
+  }
   if (stored) return stored;
   return bootstrapVideo();
 }

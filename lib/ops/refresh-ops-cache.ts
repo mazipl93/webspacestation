@@ -1,4 +1,9 @@
 import { revalidateTag } from "next/cache";
+import {
+  hasRealLaunchData,
+  mergeIssRefreshIntoCore,
+  shouldPersistCoreSnapshot,
+} from "@/lib/ops/fallback";
 import { fetchCoreOpsSnapshot } from "@/lib/ops/fetch-core-snapshot";
 import { fetchGalleryOpsSnapshot } from "@/lib/ops/fetch-gallery-snapshot";
 import { fetchVideoOpsSnapshot } from "@/lib/ops/fetch-video-snapshot";
@@ -9,7 +14,10 @@ import {
   type OpsGalleryPayload,
   type OpsVideoPayload,
 } from "@/lib/ops/payloads";
-import { writeOpsCacheEntry } from "@/lib/ops/snapshot-store";
+import {
+  readStoredCore,
+  writeOpsCacheEntry,
+} from "@/lib/ops/snapshot-store";
 
 export type OpsRefreshResult = {
   core: { live: boolean; launches: number; fetchedAt: string };
@@ -27,8 +35,26 @@ export async function refreshOpsCache(): Promise<OpsRefreshResult> {
 
   let core: OpsCorePayload;
   if (coreResult.status === "fulfilled") {
-    core = coreResult.value;
-    await writeOpsCacheEntry(OPS_CACHE_KEYS.core, core, core.live);
+    const fetched = coreResult.value;
+    const stored = await readStoredCore().catch(() => null);
+
+    if (shouldPersistCoreSnapshot(fetched, stored)) {
+      core = fetched;
+      await writeOpsCacheEntry(OPS_CACHE_KEYS.core, core, core.live);
+    } else if (stored) {
+      core = mergeIssRefreshIntoCore(stored, fetched);
+      await writeOpsCacheEntry(
+        OPS_CACHE_KEYS.core,
+        core,
+        hasRealLaunchData(core.launches),
+      );
+      console.warn(
+        "[ops] LL2 empty — kept cached launches, refreshed ISS/map only",
+      );
+    } else {
+      core = fetched;
+      await writeOpsCacheEntry(OPS_CACHE_KEYS.core, core, false);
+    }
   } else {
     console.error("[ops] cron core fetch failed", coreResult.reason);
     throw coreResult.reason;

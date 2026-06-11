@@ -393,7 +393,7 @@ function LiveMissionCenter({ ops }: { ops: OpsSnapshot }) {
       <SectionHeader label="Stacja ISS" accent="#38bdf8" href="/mapa" cta="Mapa" />
       {!ops.live ? (
         <div>
-          <OpsPreviewBadge />
+          <OpsPreviewBadge variant="stale" />
         </div>
       ) : null}
       <div className="well flex-1 p-4">

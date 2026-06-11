@@ -1,5 +1,8 @@
 import { buildCalendarFromLaunches } from "@/lib/ops/calendar-from-launches";
-import { buildFallbackCoreSnapshot } from "@/lib/ops/fallback";
+import {
+  buildEmptyCoreSnapshot,
+  filterRealLaunches,
+} from "@/lib/ops/fallback";
 import {
   applyLaunchBriefPipeline,
   type FetchCoreOpsOptions,
@@ -19,12 +22,14 @@ export async function fetchCoreOpsSnapshot(
 ): Promise<OpsCorePayload> {
   let launches: OpsCorePayload["launches"] = [];
   let recentLaunches: OpsCorePayload["recentLaunches"] = [];
-  let live = false;
+  let launchesLive = false;
 
-  const previous =
-    options.previousLaunches ??
-    (await readStoredCore().catch(() => null))?.launches ??
-    [];
+  const stored = await readStoredCore().catch(() => null);
+  const previous = filterRealLaunches(
+    options.previousLaunches?.length
+      ? options.previousLaunches
+      : (stored?.launches ?? []),
+  );
 
   try {
     const schedule = await fetchLaunchSchedule(16, 4);
@@ -33,7 +38,7 @@ export async function fetchCoreOpsSnapshot(
       previousLaunches: previous,
     });
     recentLaunches = schedule.recent;
-    live = launches.length > 0 || recentLaunches.length > 0;
+    launchesLive = launches.length > 0 || recentLaunches.length > 0;
   } catch (error) {
     console.error("[ops] Launch Library failed", error);
   }
@@ -41,24 +46,44 @@ export async function fetchCoreOpsSnapshot(
   const [iss, issOrbit, pads] = await Promise.all([
     fetchIssPosition().catch(() => null),
     computeIssOrbitSegments().catch(
-      () => [] as { lat: number; lon: number }[][]
+      () => [] as { lat: number; lon: number }[][],
     ),
     fetchLaunchPadCoords(12).catch(() => []),
   ]);
 
-  if (iss != null || pads.length > 0) {
-    live = true;
-  }
+  const mapPins = buildMapPins(iss, pads);
+  const fetchedAt = new Date().toISOString();
 
   if (launches.length === 0) {
-    const fallback = buildFallbackCoreSnapshot();
+    const staleRecent = filterRealLaunches(stored?.recentLaunches ?? []);
+
+    if (previous.length > 0) {
+      const calendar = buildCalendarFromLaunches(previous);
+      const primary = pickPrimaryLaunch(previous);
+      if (primary) {
+        for (const ev of calendar) {
+          ev.active = ev.id === primary.id;
+        }
+      }
+
+      return {
+        launches: previous,
+        recentLaunches: staleRecent,
+        calendar,
+        iss,
+        issOrbit,
+        mapPins,
+        live: false,
+        fetchedAt,
+      };
+    }
+
     return {
-      ...fallback,
-      iss: iss ?? fallback.iss,
-      issOrbit: issOrbit.length > 0 ? issOrbit : fallback.issOrbit,
-      mapPins: buildMapPins(iss, pads),
-      live,
-      fetchedAt: new Date().toISOString(),
+      ...buildEmptyCoreSnapshot(),
+      iss,
+      issOrbit,
+      mapPins,
+      fetchedAt,
     };
   }
 
@@ -76,8 +101,8 @@ export async function fetchCoreOpsSnapshot(
     calendar,
     iss,
     issOrbit,
-    mapPins: buildMapPins(iss, pads),
-    live,
-    fetchedAt: new Date().toISOString(),
+    mapPins,
+    live: launchesLive,
+    fetchedAt,
   };
 }
