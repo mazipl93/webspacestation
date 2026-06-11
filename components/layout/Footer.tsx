@@ -21,6 +21,7 @@ const FOOTER_NAV = {
     { label: "Mapa startów i ISS", href: "/mapa" },
     { label: "Galeria zdjęć", href: "/galeria" },
     { label: "Wideo", href: "/wideo" },
+    { label: "Subskrypcje RSS", href: "/rss" },
   ],
   Społeczność: [
     { label: "Discord", href: "https://discord.gg/wss" },
