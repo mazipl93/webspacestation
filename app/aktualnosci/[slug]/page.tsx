@@ -9,7 +9,7 @@ import {
   getRelatedArticlePool,
   getWeaveInternalLinkCandidates,
 } from "@/lib/articles";
-import { pickWeaveInternalLinkCandidates } from "@/lib/article/weave-internal-links";
+import { pickSameCategoryRelatedExcluding } from "@/lib/article/related-articles";
 import ReadNextSection from "@/components/article/ReadNextSection";
 import ArticleMainColumnShell from "@/components/article/ArticleMainColumnShell";
 import JsonLd from "@/components/seo/JsonLd";
@@ -289,7 +289,7 @@ function ArticleBody({
 
             <div
               id="article-body"
-              className="reveal py-6 max-sm:py-5 sm:py-8 xl:pt-8"
+              className="py-6 max-sm:py-5 sm:py-8 xl:pt-8"
             >
               <ArticlePageBodyMain
                 article={article}
@@ -351,12 +351,10 @@ function ReturnBand({ category }: { category: string }) {
 }
 
 // ─── "Powiązane artykuły" strip ───────────────────────────────────────────────
-// Uses `reveal` class so it scroll-animates in — reinforces the spatial loop.
-
 function RelatedArticlesStrip({ articles }: { articles: NewsArticle[] }) {
   if (articles.length === 0) return null;
   return (
-    <ArticleMainColumnShell shellClassName="pb-14 reveal">
+    <ArticleMainColumnShell shellClassName="pb-14">
       <div className="article-panel card-surface p-5">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -414,14 +412,20 @@ export default async function ArticlePage({ params }: Props) {
   for (const a of weaveCandidates) reservedIds.add(a.id);
   for (const a of readNextList) reservedIds.add(a.id);
 
-  const sidebarRelated = pickWeaveInternalLinkCandidates(article, all, 3, {
-    excludeIds: reservedIds,
-  });
+  const sidebarRelated = pickSameCategoryRelatedExcluding(
+    article,
+    all,
+    3,
+    reservedIds,
+  );
   for (const a of sidebarRelated) reservedIds.add(a.id);
 
-  const stripRelated = pickWeaveInternalLinkCandidates(article, all, 6, {
-    excludeIds: reservedIds,
-  });
+  const stripRelated = pickSameCategoryRelatedExcluding(
+    article,
+    all,
+    6,
+    reservedIds,
+  );
 
   return (
     <>

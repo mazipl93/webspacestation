@@ -2,11 +2,7 @@ import {
   calculateRelatedScore,
   type RelatableArticle,
 } from "@/lib/article/related-articles";
-import {
-  getWeaveCategoryTiers,
-  isWeaveTargetAllowed,
-  weaveCategoryAffinityBonus,
-} from "@/lib/article/weave-category-rules";
+import { weaveCategoryAffinityBonus } from "@/lib/article/weave-category-rules";
 import type { ArticleContentBlock } from "@/lib/articles/parse-content-blocks";
 import type { NewsArticle } from "@/types";
 
@@ -334,31 +330,14 @@ export function pickWeaveInternalLinkCandidates<
   exclude.add(source.id);
 
   const eligible = pool.filter(
-    (a) =>
-      !exclude.has(a.id) &&
-      isWeaveTargetAllowed(source.category, a.category)
+    (a) => !exclude.has(a.id) && a.category === source.category,
   );
   if (eligible.length === 0) return [];
 
   const nowMs = Date.now();
-  const tiers = getWeaveCategoryTiers(source.category);
-  const result: T[] = [];
-  const used = new Set<string>();
-
-  for (const tierCategories of tiers) {
-    if (result.length >= max) break;
-    const tierPool = eligible.filter((a) => tierCategories.includes(a.category));
-    const ranked = rankWeavePool(source, tierPool, nowMs);
-    for (const row of ranked) {
-      if (result.length >= max) break;
-      if (used.has(row.article.id)) continue;
-      result.push(row.article);
-      used.add(row.article.id);
-    }
-  }
-
-  const allRanked = rankWeavePool(source, eligible, nowMs);
-  return maybeSwapArchivePick(source, result, allRanked, max, nowMs);
+  const ranked = rankWeavePool(source, eligible, nowMs);
+  const result = ranked.slice(0, max).map((row) => row.article);
+  return maybeSwapArchivePick(source, result, ranked, max, nowMs);
 }
 
 /** Dedupe by id, preserve order. */

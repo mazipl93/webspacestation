@@ -124,55 +124,51 @@ describe("pickReadNextArticles", () => {
     assert.equal(list[0]?.id, "same");
   });
 
-  it("returns up to limit without duplicates", () => {
-    const source = article("src");
+  it("returns only same-category articles up to limit", () => {
+    const source = article("src", { category: "misje" });
     const pool = [
       source,
-      article("a"),
-      article("b"),
-      article("c"),
-      article("d"),
-      article("e"),
-      article("f"),
+      article("a", { category: "misje" }),
+      article("b", { category: "misje" }),
+      article("c", { category: "technologie" }),
+      article("d", { category: "iss" }),
     ];
     const list = pickReadNextArticles(source, pool, { limit: 5 });
-    assert.equal(list.length, 5);
-    assert.ok(list.every((a) => a.id !== "src"));
-    assert.equal(new Set(list.map((a) => a.id)).size, 5);
+    assert.equal(list.length, 2);
+    assert.ok(list.every((a) => a.category === "misje"));
   });
 });
 
 describe("pickReadNext (PR9)", () => {
-  it("returns the next older article in newest-first feed order", () => {
-    const newest = article("new", {
-      createdAt: "2026-06-03T10:00:00.000Z",
-      publishedAt: "2026-06-03T10:00:00.000Z",
-    });
+  it("returns the best same-category match", () => {
     const current = article("cur", {
+      category: "misje",
+      tags: ["spacex"],
       createdAt: "2026-06-02T10:00:00.000Z",
       publishedAt: "2026-06-02T10:00:00.000Z",
     });
-    const older = article("old", {
+    const match = article("match", {
+      category: "misje",
+      tags: ["spacex", "falcon"],
       createdAt: "2026-06-01T10:00:00.000Z",
       publishedAt: "2026-06-01T10:00:00.000Z",
     });
-    const next = pickReadNext(current, [newest, current, older]);
-    assert.equal(next?.id, "old");
-  });
-
-  it("falls back to popular when current is the oldest in feed", () => {
-    const current = article("cur", {
-      createdAt: "2026-06-01T10:00:00.000Z",
-      publishedAt: "2026-06-01T10:00:00.000Z",
-      score: 1,
-    });
-    const popular = article("pop", {
+    const otherDept = article("other", {
+      category: "iss",
+      tags: ["spacex"],
       createdAt: "2026-06-03T10:00:00.000Z",
       publishedAt: "2026-06-03T10:00:00.000Z",
-      score: 50,
+      score: 99,
       featured: true,
     });
-    const next = pickReadNext(current, [popular, current]);
-    assert.equal(next?.id, "pop");
+    const next = pickReadNext(current, [otherDept, current, match]);
+    assert.equal(next?.id, "match");
+  });
+
+  it("returns null when no peers in the same category", () => {
+    const current = article("cur", { category: "misje" });
+    const otherDept = article("other", { category: "iss" });
+    const next = pickReadNext(current, [otherDept, current]);
+    assert.equal(next, null);
   });
 });

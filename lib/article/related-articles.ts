@@ -1,4 +1,4 @@
-import { rankPopular, type RankableArticle } from "@/lib/home/rank-articles";
+import type { RankableArticle } from "@/lib/home/rank-articles";
 import type { NewsArticle, NewsCategory } from "@/types";
 
 /** Article fields used for related / read-next (frontend only). */
@@ -127,22 +127,8 @@ export function pickRelatedArticles<T extends RelatableArticle>(
 
 export const READ_NEXT_LIST_LIMIT = 5;
 
-function pushUnique<T extends RelatableArticle>(
-  result: T[],
-  seen: Set<string>,
-  candidates: T[],
-  limit: number
-): void {
-  for (const article of candidates) {
-    if (result.length >= limit) return;
-    if (seen.has(article.id)) continue;
-    seen.add(article.id);
-    result.push(article);
-  }
-}
-
 /**
- * Propozycje „Czytaj dalej”: ten sam dział → kolejne w kanale (publishedAt desc) → powiązane → popularne.
+ * Propozycje „Czytaj dalej” — wyłącznie z tego samego działu (SEO hub w kategorii).
  */
 export function pickReadNextArticles<T extends RelatableArticle>(
   source: T,
@@ -150,37 +136,23 @@ export function pickReadNextArticles<T extends RelatableArticle>(
   options: { limit?: number } = {}
 ): T[] {
   const limit = Math.min(Math.max(options.limit ?? READ_NEXT_LIST_LIMIT, 1), 6);
-  const seen = new Set<string>([source.id]);
-  const result: T[] = [];
-
-  pushUnique(
-    result,
-    seen,
-    pickSameCategoryRelated(source, all, limit),
-    limit
+  const pool = all.filter(
+    (a) => a.id !== source.id && a.category === source.category,
   );
+  return pickRelatedArticles(source, pool, { min: 1, max: limit });
+}
 
-  const sorted = [...all].sort(
-    (a, b) => articleTimestamp(b) - articleTimestamp(a)
-  );
-  const index = sorted.findIndex((a) => a.id === source.id);
-  if (index !== -1) {
-    pushUnique(result, seen, sorted.slice(index + 1), limit);
-  }
-
-  pushUnique(
-    result,
-    seen,
-    pickRelatedArticles(source, all, { min: 1, max: limit }),
-    limit
-  );
-
-  if (result.length < limit) {
-    const others = all.filter((a) => !seen.has(a.id));
-    pushUnique(result, seen, rankPopular(others, { limit }), limit);
-  }
-
-  return result;
+/** Sidebar / strip — ten sam dział, bez duplikatów z in-body i „Czytaj dalej”. */
+export function pickSameCategoryRelatedExcluding<T extends RelatableArticle>(
+  source: T,
+  all: T[],
+  max: number,
+  excludeIds: Iterable<string> = [],
+): T[] {
+  const exclude = new Set(excludeIds);
+  exclude.add(source.id);
+  const pool = all.filter((a) => !exclude.has(a.id));
+  return pickSameCategoryRelated(source, pool, max);
 }
 
 /** Pierwsza propozycja z listy (kompatybilność wsteczna). */

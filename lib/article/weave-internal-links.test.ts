@@ -244,7 +244,7 @@ describe("pickWeaveInternalLinkCandidates", () => {
     assert.equal(picked[0]?.category, "nauka");
   });
 
-  it("nauka without peer articles prefers astronomia/misje over technologie news", () => {
+  it("nauka without peer articles does not weave other departments", () => {
     const source = {
       id: "proznia",
       slug: "dlaczego-w-kosmosie-jest-proznia",
@@ -293,9 +293,6 @@ describe("pickWeaveInternalLinkCandidates", () => {
       },
     ];
     const picked = pickWeaveInternalLinkCandidates(source, pool, 4);
-    assert.deepEqual(
-      picked.map((a) => a.category),
-      ["astronomia", "misje", "technologie"]
-    );
+    assert.equal(picked.length, 0);
   });
 });

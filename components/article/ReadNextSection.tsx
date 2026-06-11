@@ -20,7 +20,7 @@ export default function ReadNextSection({ articles, category }: Props) {
   return (
     <ArticleMainColumnShell
       as="section"
-      shellClassName="pb-8 reveal"
+      shellClassName="pb-8"
       aria-label="Czytaj dalej"
     >
       <div className="article-panel card-surface overflow-hidden p-0">

@@ -4,8 +4,8 @@ import type { NewsCategory } from "@/types";
  * Weave (in-body „polecamy lekturę”) — reguły per dział.
  * Fundament: docs/WSS_CONTENT_ARCHITECTURE.md
  *
- * Zasada: najpierw ten sam dział → potem sąsiednie kosmos/nauka → nigdy Rozrywka
- * w działach redakcyjnych.
+ * Zasada: linki w treści artykułu — wyłącznie ten sam dział (hub SEO).
+ * Fallback tiers zostają na przyszłość; in-body weave ich nie używa.
  */
 export const WEAVE_DENIED_TARGETS: Partial<
   Record<NewsCategory, readonly NewsCategory[]>

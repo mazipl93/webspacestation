@@ -158,8 +158,7 @@ export default function ArticlePageBodyMain({
     <div
       className={cn(
         cn(ARTICLE_SHELL, "py-6 max-sm:py-5 sm:py-10"),
-        preview ? "" : "reveal",
-        className
+        className,
       )}
     >
       {articleCard}
