@@ -21,6 +21,12 @@ export type LaunchWssArticleLink = {
   href: string;
 };
 
+function toIsoString(value: Date | string | null | undefined): string | null {
+  if (value == null) return null;
+  if (typeof value === "string") return value;
+  return value.toISOString();
+}
+
 function toBridgeArticle(article: ArticleListItem): BridgeArticle {
   return {
     id: article.id,
@@ -28,7 +34,7 @@ function toBridgeArticle(article: ArticleListItem): BridgeArticle {
     title: article.title,
     tags: Array.isArray(article.tags) ? article.tags : [],
     categorySlug: article.category.slug,
-    publishedAt: article.publishedAt?.toISOString() ?? null,
+    publishedAt: toIsoString(article.publishedAt),
   };
 }
 
