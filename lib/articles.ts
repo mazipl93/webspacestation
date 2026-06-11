@@ -11,6 +11,7 @@ import {
   getRankedPublishedArticles,
   type ArticleListItem,
   type ArticleWithRelations,
+  type PublishedReadOptions,
 } from "@/lib/server/articles";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import { resolveArticleImageCredit } from "@/lib/articles/image-credit";
@@ -148,8 +149,23 @@ export async function getRankedArticles(limit = 20): Promise<NewsArticle[]> {
 }
 
 /** Public feed — newest by CMS publish time (Najnowsze). */
-export async function getLatestArticles(limit = 40): Promise<NewsArticle[]> {
-  const articles = await getRecentPublishedArticles(limit);
+export async function getLatestArticles(
+  limit = 40,
+  options: PublishedReadOptions = {},
+): Promise<NewsArticle[]> {
+  const articles = await getRecentPublishedArticles(limit, options);
+  return articles.map(toNewsArticle);
+}
+
+/** RSS category feed — bounded read, no scheduled-publish side effects. */
+export async function getFeedArticlesByCategory(
+  category: string,
+  limit: number,
+): Promise<NewsArticle[]> {
+  const articles = await dbGetArticlesByCategory(category, {
+    limit,
+    tickSchedule: false,
+  });
   return articles.map(toNewsArticle);
 }
 

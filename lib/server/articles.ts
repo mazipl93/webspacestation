@@ -167,6 +167,22 @@ export type ArticleListItem = Prisma.ArticleGetPayload<{
   select: typeof articleListSelect;
 }>;
 
+/** Lean rows for sitemap.xml — no schedule tick, no heavy joins. */
+const sitemapArticleSelect = {
+  slug: true,
+  updatedAt: true,
+  publishedAt: true,
+} satisfies Prisma.ArticleSelect;
+
+export type SitemapArticleEntry = Prisma.ArticleGetPayload<{
+  select: typeof sitemapArticleSelect;
+}>;
+
+export type PublishedReadOptions = {
+  /** Scheduled publish tick on page traffic; skip on sitemap/RSS (avoids Hobby timeouts). */
+  tickSchedule?: boolean;
+};
+
 export type CategoryRecord = Prisma.CategoryGetPayload<{
   select: {
     id: true;
@@ -185,6 +201,28 @@ export type CategoryRecord = Prisma.CategoryGetPayload<{
 // build-time prerender (or a transient DB blip) never fails — the first live
 // request after deploy repopulates the cache. Mutations invalidate via
 // `revalidateTag` (see app/api/articles & app/api/categories).
+
+async function querySitemapArticlesFromDb(): Promise<SitemapArticleEntry[]> {
+  try {
+    return await prisma.article.findMany({
+      where: PUBLISHED_ARTICLE_WHERE,
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      select: sitemapArticleSelect,
+    });
+  } catch (error) {
+    console.error("[getPublishedSitemapEntries]", error);
+    return [];
+  }
+}
+
+/** All published slugs for sitemap.xml — no schedule side effects. */
+export async function getPublishedSitemapEntries(): Promise<SitemapArticleEntry[]> {
+  return unstable_cache(
+    querySitemapArticlesFromDb,
+    ["published-sitemap-entries", "v1"],
+    { tags: [ARTICLES_TAG] },
+  )();
+}
 
 async function queryPublishedArticlesFromDb(): Promise<ArticleListItem[]> {
   try {
@@ -301,9 +339,11 @@ export async function getPublishedArticles(): Promise<ArticleListItem[]> {
 
 /** Recent published articles (homepage / related pools) — bounded DB read. */
 export async function getRecentPublishedArticles(
-  limit = 80
+  limit = 80,
+  options: PublishedReadOptions = {},
 ): Promise<ArticleListItem[]> {
-  const tick = await maybeTickScheduledPublish();
+  const tickSchedule = options.tickSchedule !== false;
+  const tick = tickSchedule ? await maybeTickScheduledPublish() : null;
   const useLiveQuery =
     process.env.NODE_ENV === "development" ||
     (tick != null && tick.published > 0);
@@ -313,7 +353,7 @@ export async function getRecentPublishedArticles(
   return unstable_cache(
     () => queryRecentPublishedFromDb(limit),
     ["recent-articles", String(limit), "v1-list-no-content"],
-    { tags: [ARTICLES_TAG] }
+    { tags: [ARTICLES_TAG] },
   )();
 }
 
@@ -389,7 +429,8 @@ export async function getPublishedArticleForShareCard(
 }
 
 async function queryArticlesByCategoryFromDb(
-  categorySlug: string
+  categorySlug: string,
+  limit?: number,
 ): Promise<ArticleListItem[]> {
   const slugs = categorySlugsForDepartmentFeed(categorySlug);
   try {
@@ -402,6 +443,7 @@ async function queryArticlesByCategoryFromDb(
             : { slug: { in: slugs } },
       },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      ...(limit != null ? { take: limit } : {}),
       select: articleListSelect,
     });
     traceArticleFetchPublic({
@@ -417,19 +459,22 @@ async function queryArticlesByCategoryFromDb(
 
 /** Published articles within a category (by category slug), newest first. */
 export async function getArticlesByCategory(
-  categorySlug: string
+  categorySlug: string,
+  options: PublishedReadOptions & { limit?: number } = {},
 ): Promise<ArticleListItem[]> {
-  const tick = await maybeTickScheduledPublish();
+  const tickSchedule = options.tickSchedule !== false;
+  const tick = tickSchedule ? await maybeTickScheduledPublish() : null;
   const useLiveQuery =
     process.env.NODE_ENV === "development" ||
     (tick != null && tick.published > 0);
+  const limitKey = options.limit != null ? String(options.limit) : "all";
   if (useLiveQuery) {
-    return queryArticlesByCategoryFromDb(categorySlug);
+    return queryArticlesByCategoryFromDb(categorySlug, options.limit);
   }
   return unstable_cache(
-    () => queryArticlesByCategoryFromDb(categorySlug),
-    ["category-articles", categorySlug, "v3-list-no-content"],
-    { tags: [ARTICLES_TAG, categoryTag(categorySlug)] }
+    () => queryArticlesByCategoryFromDb(categorySlug, options.limit),
+    ["category-articles", categorySlug, limitKey, "v3-list-no-content"],
+    { tags: [ARTICLES_TAG, categoryTag(categorySlug)] },
   )();
 }
 

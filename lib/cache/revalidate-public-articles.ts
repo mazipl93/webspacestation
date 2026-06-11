@@ -1,6 +1,9 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { CATEGORY_SLUG_ORDER } from "@/lib/categories";
 import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
+import { RSS_CATEGORY_FEEDS } from "@/lib/rss-feeds";
+
+const SEO_FEED_PATHS = ["/sitemap.xml", "/feed.xml"] as const;
 
 const PUBLIC_LIST_PATHS = [
   "/",
@@ -38,6 +41,13 @@ export function revalidatePublicArticleCaches(options: RevalidateOptions = {}): 
 
   revalidatePath("/", "page");
   revalidatePath("/aktualnosci", "page");
+
+  for (const path of SEO_FEED_PATHS) {
+    revalidatePath(path, "page");
+  }
+  for (const feed of RSS_CATEGORY_FEEDS) {
+    revalidatePath(feed.path, "page");
+  }
 
   if (options.categorySlug) {
     revalidatePath(`/${options.categorySlug}`, "page");

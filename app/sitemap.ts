@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getPublishedArticles } from "@/lib/server/articles";
+import { getPublishedSitemapEntries } from "@/lib/server/articles";
 import { SEO_SITEMAP_PATHS } from "@/lib/seo/public-routes";
 import { getSiteUrl } from "@/lib/site-url";
+
+// Align with article ISR; refreshed on publish via revalidateTag + revalidatePath.
+export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
@@ -16,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let articleEntries: MetadataRoute.Sitemap = [];
   try {
-    const articles = await getPublishedArticles();
+    const articles = await getPublishedSitemapEntries();
     articleEntries = articles.map((a) => ({
       url: `${base}/aktualnosci/${a.slug}`,
       lastModified: a.updatedAt ?? a.publishedAt ?? now,
