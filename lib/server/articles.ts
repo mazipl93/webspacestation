@@ -668,7 +668,7 @@ export async function articleStateTransition(
         articleSlug: article.slug,
         categorySlug: article.category.slug,
       });
-      void publishArticleToFacebookSafe(article);
+      await publishArticleToFacebookSafe(article);
     }
   }
 
