@@ -1,6 +1,6 @@
 import { stripHtml } from "@/lib/rss/normalize";
 
-type CaptionInput = {
+export type CaptionInput = {
   title: string;
   excerpt?: string | null;
   subtitle?: string | null;

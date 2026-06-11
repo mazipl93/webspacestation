@@ -5,7 +5,9 @@
  * Required in .env.fb.test:
  *   FACEBOOK_APP_ID
  *   FACEBOOK_APP_SECRET
- *   FACEBOOK_USER_TOKEN   (short-lived user token from Graph API Explorer)
+ * Required user token scopes (Graph API Explorer):
+ *   pages_manage_posts, pages_show_list, pages_read_engagement,
+ *   instagram_basic, instagram_content_publish
  *
  * Usage: npx tsx scripts/fetch-long-lived-page-token.ts
  */
@@ -87,7 +89,9 @@ async function main() {
   }
   if (!userToken) {
     throw new Error(
-      "Ustaw FACEBOOK_USER_TOKEN — krótkotrwały user token z Graph API Explorer (pages_manage_posts, pages_show_list)",
+      "Ustaw FACEBOOK_USER_TOKEN — krótkotrwały user token z Graph API Explorer\n" +
+        "  (pages_manage_posts, pages_show_list, pages_read_engagement,\n" +
+        "   instagram_basic, instagram_content_publish)",
     );
   }
 

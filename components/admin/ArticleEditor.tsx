@@ -1107,9 +1107,9 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
 
               <EditorFieldPanel>
                 <Field
-                  label="Nagłówek na grafice FB"
+                  label="Nagłówek na grafice social (FB + IG)"
                   htmlFor="socialCardTitle"
-                  hint={`Tylko obrazek 1200×630 — max ${SOCIAL_CARD_TITLE_MAX} znaków (${form.socialCardTitle.length}/${SOCIAL_CARD_TITLE_MAX}). Post tekstowy używa tytułu artykułu.`}
+                  hint={`FB 1200×630 · IG 1080×1350 — max ${SOCIAL_CARD_TITLE_MAX} znaków (${form.socialCardTitle.length}/${SOCIAL_CARD_TITLE_MAX}). Caption posta = tytuł artykułu.`}
                 >
                   <TextInput
                     id="socialCardTitle"
@@ -1130,7 +1130,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 <Field
                   label="Linia pod nagłówkiem (grafika FB)"
                   htmlFor="socialCardHook"
-                  hint={`Opcjonalnie, jedno krótkie zdanie — max ${SOCIAL_CARD_HOOK_MAX} znaków (${form.socialCardHook.length}/${SOCIAL_CARD_HOOK_MAX}).`}
+                  hint={`Opcjonalnie — FB i IG. Max ${SOCIAL_CARD_HOOK_MAX} znaków (${form.socialCardHook.length}/${SOCIAL_CARD_HOOK_MAX}).`}
                 >
                   <TextInput
                     id="socialCardHook"

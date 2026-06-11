@@ -47,6 +47,7 @@ import {
   traceArticleWriteOutput,
 } from "@/lib/server/article-trace";
 import { publishArticleToFacebookSafe } from "@/lib/social/facebook-publish";
+import { publishArticleToInstagramSafe } from "@/lib/social/instagram-publish";
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -85,6 +86,8 @@ const articleSelect = {
   publishAt: true,
   facebookPostId: true,
   facebookPostedAt: true,
+  instagramPostId: true,
+  instagramPostedAt: true,
   source: true,
   originalUrl: true,
   contentOrigin: true,
@@ -681,14 +684,20 @@ export async function articleStateTransition(
 
   if (action === "PUBLISH") {
     await refreshArticleRanking(id);
-    const isFirstPublish =
-      existing.status !== ArticleStatus.PUBLISHED && !article.facebookPostId;
+    const isFirstPublish = existing.status !== ArticleStatus.PUBLISHED;
     if (isFirstPublish) {
       revalidatePublicArticleCaches({
         articleSlug: article.slug,
         categorySlug: article.category.slug,
       });
-      await publishArticleToFacebookSafe(article);
+      await Promise.all([
+        !article.facebookPostId
+          ? publishArticleToFacebookSafe(article)
+          : Promise.resolve(),
+        !article.instagramPostId
+          ? publishArticleToInstagramSafe(article)
+          : Promise.resolve(),
+      ]);
     }
   }
 

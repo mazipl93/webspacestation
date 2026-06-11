@@ -80,9 +80,9 @@ model Article {
   title       String
   subtitle    String?
   excerpt     String?
-  /// Headline on FB share-card image (max ~60 chars in CMS).
+  /// Headline on social share-card images — FB 1200×630, IG 1080×1350 (max ~60 chars in CMS).
   socialCardTitle String?
-  /// Hook line under headline on FB share-card (max ~90 chars in CMS).
+  /// Hook line under headline on social cards (max ~90 chars in CMS).
   socialCardHook  String?
   content     String?       @db.Text
   /// WSS editorial context for RSS articles (general trend framing, not source facts).
@@ -130,6 +130,9 @@ model Article {
   /// Meta Graph API post id after auto-share on first publish (null = not posted yet).
   facebookPostId String?
   facebookPostedAt DateTime?
+  /// Instagram Graph API media id after auto-share on first publish.
+  instagramPostId String?
+  instagramPostedAt DateTime?
 
   @@index([status])
   @@index([categoryId])
