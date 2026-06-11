@@ -71,12 +71,20 @@ import {
   toDatetimeLocalValue,
   validateScheduleLocal,
 } from "@/lib/admin/schedule-datetime";
+import {
+  clampSocialCardHook,
+  clampSocialCardTitle,
+  SOCIAL_CARD_HOOK_MAX,
+  SOCIAL_CARD_TITLE_MAX,
+} from "@/lib/social/share-card-copy";
 
 const EMPTY_FORM: ArticleFormValues = {
   title: "",
   slug: "",
   subtitle: "",
   excerpt: "",
+  socialCardTitle: "",
+  socialCardHook: "",
   content: "",
   contextNote: "",
   coverImage: "",
@@ -114,6 +122,8 @@ function toForm(a: AdminArticle): ArticleFormValues {
     slug: a.slug,
     subtitle: a.subtitle ?? "",
     excerpt: a.excerpt ?? "",
+    socialCardTitle: a.socialCardTitle ?? "",
+    socialCardHook: a.socialCardHook ?? "",
     content: a.content ?? "",
     contextNote: a.contextNote ?? "",
     coverImage: a.coverImage ?? "",
@@ -140,6 +150,8 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     slug: form.slug,
     subtitle: form.subtitle || null,
     excerpt: form.excerpt || null,
+    socialCardTitle: form.socialCardTitle.trim() || null,
+    socialCardHook: form.socialCardHook.trim() || null,
     content: form.content || null,
     contextNote: form.contextNote || null,
     coverImage: form.coverImage.trim() || null,
@@ -1081,14 +1093,56 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                 <Field
                   label="Zajawka"
                   htmlFor="excerpt"
-                  hint="Lead na kartach artykułu, w Google i na Facebooku. Osobne pole od podtytułu."
+                  hint="Lead na kartach artykułu i w Google — nie trafia na grafikę FB (osobne pola poniżej)."
                 >
                   <TextArea
                     id="excerpt"
                     rows={3}
                     value={form.excerpt}
-                    placeholder="Lead na listach i w social — 2–3 zdania."
+                    placeholder="Lead na listach — 2–3 zdania."
                     onChange={(e) => update("excerpt", e.target.value)}
+                  />
+                </Field>
+              </EditorFieldPanel>
+
+              <EditorFieldPanel>
+                <Field
+                  label="Nagłówek na grafice FB"
+                  htmlFor="socialCardTitle"
+                  hint={`Tylko obrazek 1200×630 — max ${SOCIAL_CARD_TITLE_MAX} znaków (${form.socialCardTitle.length}/${SOCIAL_CARD_TITLE_MAX}). Post tekstowy używa tytułu artykułu.`}
+                >
+                  <TextInput
+                    id="socialCardTitle"
+                    value={form.socialCardTitle}
+                    maxLength={SOCIAL_CARD_TITLE_MAX}
+                    placeholder="Krótki nagłówek na grafikę — np. pierwsze zdanie tytułu"
+                    onChange={(e) =>
+                      update(
+                        "socialCardTitle",
+                        clampSocialCardTitle(e.target.value),
+                      )
+                    }
+                  />
+                </Field>
+              </EditorFieldPanel>
+
+              <EditorFieldPanel>
+                <Field
+                  label="Linia pod nagłówkiem (grafika FB)"
+                  htmlFor="socialCardHook"
+                  hint={`Opcjonalnie, jedno krótkie zdanie — max ${SOCIAL_CARD_HOOK_MAX} znaków (${form.socialCardHook.length}/${SOCIAL_CARD_HOOK_MAX}).`}
+                >
+                  <TextInput
+                    id="socialCardHook"
+                    value={form.socialCardHook}
+                    maxLength={SOCIAL_CARD_HOOK_MAX}
+                    placeholder="Hook pod nagłówkiem na obrazku"
+                    onChange={(e) =>
+                      update(
+                        "socialCardHook",
+                        clampSocialCardHook(e.target.value),
+                      )
+                    }
                   />
                 </Field>
               </EditorFieldPanel>
@@ -1298,7 +1352,7 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
               <Field
                 label="Tagi"
                 htmlFor="tags"
-                hint="Oddziel przecinkami (maks. 5). Krótki hook na kartę FB — pełny lead zostaje w treści posta."
+                hint="Oddziel przecinkami (maks. 5). Hashtagi w poście na Facebooku — pod linkiem."
               >
                 <TextInput
                   id="tags"

@@ -64,6 +64,8 @@ export interface ArticleWritePayload {
   slug?: string;
   subtitle?: string | null;
   excerpt?: string | null;
+  socialCardTitle?: string | null;
+  socialCardHook?: string | null;
   content?: string | null;
   contextNote?: string | null;
   coverImage?: string | null;

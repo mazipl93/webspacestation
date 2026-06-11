@@ -66,6 +66,8 @@ export interface AdminArticle {
   title: string;
   subtitle: string | null;
   excerpt: string | null;
+  socialCardTitle: string | null;
+  socialCardHook: string | null;
   content: string | null;
   contextNote: string | null;
   coverImage: string | null;
@@ -98,6 +100,8 @@ export interface ArticleFormValues {
   slug: string;
   subtitle: string;
   excerpt: string;
+  socialCardTitle: string;
+  socialCardHook: string;
   content: string;
   contextNote: string;
   coverImage: string;

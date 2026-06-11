@@ -11,8 +11,6 @@ type CaptionInput = {
 
 const MAX_CAPTION = 2000;
 const MIN_LEAD_CHARS = 40;
-/** Share-card subline — one hook line under the title. */
-export const SHARE_CARD_SUBLINE_MAX = 100;
 
 /** CMS paragraph titles use "# " for bold — strip before social / FB copy. */
 export function stripCmsHeadingMarker(text: string): string {
@@ -44,25 +42,6 @@ export function extractFirstSentence(text: string): string {
   if (match?.[1]) return match[1].trim();
 
   return trimmed;
-}
-
-/**
- * Short hook on share-card image — not the FB post lead.
- * Priority: CMS excerpt/subtitle → first sentence of body lead.
- */
-export function extractShareCardSubline(input: CaptionInput): string {
-  const excerpt = (input.excerpt ?? input.subtitle ?? "").trim();
-  if (excerpt) {
-    return fitShareCardLine(sanitizeSocialText(excerpt), SHARE_CARD_SUBLINE_MAX);
-  }
-
-  const lead = extractSocialLead(input);
-  if (!lead) return "";
-
-  return fitShareCardLine(
-    sanitizeSocialText(extractFirstSentence(lead)),
-    SHARE_CARD_SUBLINE_MAX,
-  );
 }
 
 /** First substantive paragraph from article body — FB post lead only. */

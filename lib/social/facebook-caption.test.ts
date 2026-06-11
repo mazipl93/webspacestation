@@ -4,7 +4,6 @@ import {
   buildFacebookCaption,
   buildFacebookHashtagLine,
   extractFirstSentence,
-  extractShareCardSubline,
   extractSocialLead,
   fitShareCardLine,
   formatFacebookHashtag,
@@ -101,29 +100,6 @@ describe("buildFacebookHashtagLine", () => {
       buildFacebookHashtagLine(["NASA", "nasa", "ESA"]),
       "#NASA #ESA",
     );
-  });
-});
-
-describe("extractShareCardSubline", () => {
-  it("prefers excerpt over body lead", () => {
-    const subline = extractShareCardSubline({
-      title: "Tytuł",
-      excerpt: "Krótki hook na kartę graficzną.",
-      content:
-        "<p>Długi pierwszy akapit z treści artykułu, który trafia tylko do posta na Facebooku i nie powinien być na obrazku.</p>",
-    });
-    assert.equal(subline, "Krótki hook na kartę graficzną.");
-  });
-
-  it("falls back to first sentence of lead without ellipsis", () => {
-    const content =
-      "# Galaktyczny kapelusz, który zachwyca od ponad dwóch stuleci. Drugie zdanie tylko do FB.";
-    const subline = extractShareCardSubline({ title: "Tytuł", content });
-    assert.equal(
-      subline,
-      "Galaktyczny kapelusz, który zachwyca od ponad dwóch stuleci.",
-    );
-    assert.doesNotMatch(subline, /…/);
   });
 });
 

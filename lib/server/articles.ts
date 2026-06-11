@@ -55,6 +55,8 @@ const articleSelect = {
   title: true,
   subtitle: true,
   excerpt: true,
+  socialCardTitle: true,
+  socialCardHook: true,
   content: true,
   contextNote: true,
   coverImage: true,
@@ -319,9 +321,9 @@ export async function getPublishedArticleBySlug(
 const shareCardArticleSelect = {
   slug: true,
   title: true,
-  excerpt: true,
   subtitle: true,
-  content: true,
+  socialCardTitle: true,
+  socialCardHook: true,
   coverImage: true,
   coverImageCredit: true,
   source: true,
@@ -533,6 +535,8 @@ function buildPrismaContentUpdateInput(
   if (input.slug !== undefined) data.slug = input.slug;
   if (input.subtitle !== undefined) data.subtitle = input.subtitle;
   if (input.excerpt !== undefined) data.excerpt = input.excerpt;
+  if (input.socialCardTitle !== undefined) data.socialCardTitle = input.socialCardTitle;
+  if (input.socialCardHook !== undefined) data.socialCardHook = input.socialCardHook;
   if (input.content !== undefined) data.content = input.content;
   if (input.contextNote !== undefined) data.contextNote = input.contextNote;
   if (input.coverImage !== undefined) data.coverImage = input.coverImage;
@@ -707,6 +711,8 @@ export async function createArticle(
       title: input.title,
       subtitle: input.subtitle,
       excerpt: input.excerpt,
+      socialCardTitle: input.socialCardTitle,
+      socialCardHook: input.socialCardHook,
       content: input.content,
       contextNote: input.contextNote,
       coverImage: input.coverImage,

@@ -1,4 +1,8 @@
 import { ArticleStatus } from "@prisma/client";
+import {
+  SOCIAL_CARD_HOOK_MAX,
+  SOCIAL_CARD_TITLE_MAX,
+} from "@/lib/social/share-card-copy";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import {
   parseCoverImageForCreate,
@@ -48,6 +52,23 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 
 function asTrimmedString(v: unknown): string | undefined {
   return typeof v === "string" ? v.trim() : undefined;
+}
+
+function parseSocialCardField(
+  value: unknown,
+  max: number,
+  fieldName: string,
+): Validated<string | null> | undefined {
+  if (value === undefined) return undefined;
+  const trimmed = asTrimmedString(value);
+  if (!trimmed) return { ok: true, value: null };
+  if (trimmed.length > max) {
+    return {
+      ok: false,
+      message: `'${fieldName}' — maksymalnie ${max} znaków.`,
+    };
+  }
+  return { ok: true, value: trimmed };
 }
 
 function parseTagsField(body: Record<string, unknown>): string[] | undefined {
@@ -133,6 +154,8 @@ export interface ArticleCreateInput {
   slug: string;
   subtitle: string | null;
   excerpt: string | null;
+  socialCardTitle: string | null;
+  socialCardHook: string | null;
   content: string | null;
   contextNote: string | null;
   coverImage: string | null;
@@ -212,6 +235,20 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
   const resolvedWeekTopicPosition =
     weekTopicPosition ?? (body.weekTopic === true ? 1 : 0);
 
+  const socialCardTitle = parseSocialCardField(
+    body.socialCardTitle,
+    SOCIAL_CARD_TITLE_MAX,
+    "socialCardTitle",
+  );
+  if (socialCardTitle && !socialCardTitle.ok) return socialCardTitle;
+
+  const socialCardHook = parseSocialCardField(
+    body.socialCardHook,
+    SOCIAL_CARD_HOOK_MAX,
+    "socialCardHook",
+  );
+  if (socialCardHook && !socialCardHook.ok) return socialCardHook;
+
   return {
     ok: true,
     value: {
@@ -219,6 +256,8 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       slug,
       subtitle: asTrimmedString(body.subtitle) ?? null,
       excerpt: asTrimmedString(body.excerpt) ?? null,
+      socialCardTitle: socialCardTitle?.ok ? socialCardTitle.value : null,
+      socialCardHook: socialCardHook?.ok ? socialCardHook.value : null,
       content: typeof body.content === "string" ? body.content : null,
       contextNote: asTrimmedString(body.contextNote) ?? null,
       coverImage: parseCoverImageForCreate(body),
@@ -279,6 +318,26 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   }
   if (body.subtitle !== undefined) out.subtitle = asTrimmedString(body.subtitle) ?? null;
   if (body.excerpt !== undefined) out.excerpt = asTrimmedString(body.excerpt) ?? null;
+
+  const socialCardTitle = parseSocialCardField(
+    body.socialCardTitle,
+    SOCIAL_CARD_TITLE_MAX,
+    "socialCardTitle",
+  );
+  if (socialCardTitle !== undefined) {
+    if (!socialCardTitle.ok) return socialCardTitle;
+    out.socialCardTitle = socialCardTitle.value;
+  }
+
+  const socialCardHook = parseSocialCardField(
+    body.socialCardHook,
+    SOCIAL_CARD_HOOK_MAX,
+    "socialCardHook",
+  );
+  if (socialCardHook !== undefined) {
+    if (!socialCardHook.ok) return socialCardHook;
+    out.socialCardHook = socialCardHook.value;
+  }
   if (body.content !== undefined) {
     out.content = typeof body.content === "string" ? body.content : null;
   }

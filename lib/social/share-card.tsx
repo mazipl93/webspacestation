@@ -13,7 +13,7 @@ const TEXT_SECONDARY = "#a3afc7";
 
 type ShareCardProps = {
   title: string;
-  excerpt?: string | null;
+  hook?: string | null;
   coverUrl?: string | null;
   /** Cover photo attribution — manual CMS field or RSS auto-credit. */
   imageCredit?: string | null;
@@ -133,7 +133,7 @@ function CoverImageCredit({ credit }: { credit: string }) {
 
 export function ShareCardLayout({
   title,
-  excerpt,
+  hook,
   coverUrl,
   imageCredit,
   category,
@@ -141,7 +141,7 @@ export function ShareCardLayout({
   brandBaseUrl,
 }: ShareCardProps) {
   const displayTitle = title.trim();
-  const displayExcerpt = excerpt?.trim() ? excerpt.trim() : null;
+  const displayHook = hook?.trim() ? hook.trim() : null;
   const titleLineHeight = 1.1;
   const titleFontSize = 40;
   const titleMaxLines = 3;
@@ -270,7 +270,7 @@ export function ShareCardLayout({
           {displayTitle}
         </div>
 
-        {displayExcerpt ? (
+        {displayHook ? (
           <div
             style={{
               marginTop: 18,
@@ -279,11 +279,9 @@ export function ShareCardLayout({
               lineHeight: 1.45,
               color: TEXT_SECONDARY,
               maxWidth: 440,
-              maxHeight: 20 * 1.45 * 2,
-              overflow: "hidden",
             }}
           >
-            {displayExcerpt}
+            {displayHook}
           </div>
         ) : null}
 

@@ -4,7 +4,7 @@ import { getCategoryInfo } from "@/lib/categories";
 import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
 import { getPublishedArticleForShareCard } from "@/lib/server/articles";
 import { getSiteUrl } from "@/lib/site-url";
-import { extractShareCardSubline } from "@/lib/social/facebook-caption";
+import { resolveShareCardCopy } from "@/lib/social/share-card-copy";
 import { loadShareCardFonts } from "@/lib/social/share-card-fonts";
 import {
   SHARE_CARD_HEIGHT,
@@ -28,18 +28,18 @@ export async function GET(_request: Request, context: RouteContext) {
   const coverUrl = normalizeCoverImageUrl(row.coverImage);
   const imageCredit = resolveArticleImageCredit(row);
   const fonts = await loadShareCardFonts();
-  const subline = extractShareCardSubline({
+  const cardCopy = resolveShareCardCopy({
+    socialCardTitle: row.socialCardTitle,
+    socialCardHook: row.socialCardHook,
     title: row.title,
-    excerpt: row.excerpt,
     subtitle: row.subtitle,
-    content: row.content,
   });
 
   return new ImageResponse(
     (
       <ShareCardLayout
-        title={row.title}
-        excerpt={subline || null}
+        title={cardCopy.title}
+        hook={cardCopy.hook}
         coverUrl={coverUrl}
         imageCredit={imageCredit}
         category={category}

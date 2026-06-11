@@ -78,6 +78,10 @@ model Article {
   title       String
   subtitle    String?
   excerpt     String?
+  /// Headline on FB share-card image (max ~60 chars in CMS).
+  socialCardTitle String?
+  /// Hook line under headline on FB share-card (max ~90 chars in CMS).
+  socialCardHook  String?
   content     String?       @db.Text
   /// WSS editorial context for RSS articles (general trend framing, not source facts).
   contextNote String?       @db.Text

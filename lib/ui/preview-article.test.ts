@@ -26,6 +26,8 @@ const BASE_FORM: ArticleFormValues = {
   slug: "starship-flight-8",
   subtitle: "Podtytuł testowy",
   excerpt: "Lead artykułu dla podglądu.",
+  socialCardTitle: "",
+  socialCardHook: "",
   content: "Pierwszy akapit treści.\n\nDrugi akapit treści.",
   contextNote: "",
   coverImage: "https://example.com/cover.jpg",
