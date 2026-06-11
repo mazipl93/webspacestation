@@ -228,12 +228,13 @@ export function InstagramCardLayout({
           </div>
         ) : null}
 
+        <div style={{ flex: 1, minHeight: 12 }} />
+
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginTop: "auto",
             paddingTop: 28,
             borderTop: "1px solid rgba(255,255,255,0.1)",
           }}

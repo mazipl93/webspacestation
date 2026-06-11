@@ -25,6 +25,8 @@ const slug =
   argValue("--slug") ??
   process.argv.find((a) => !a.startsWith("-") && !a.includes("tsx") && !a.includes("test-social")) ??
   "";
+const instagramOnly = process.argv.includes("--instagram-only");
+const facebookOnly = process.argv.includes("--facebook-only");
 
 if (!slug) {
   console.error("Usage: npx tsx scripts/test-social-post-by-slug.ts --slug=<slug>");
@@ -203,32 +205,52 @@ async function main() {
     throw new Error(`Artykuł nie opublikowany (${existing.status})`);
   }
 
+  const resetData: {
+    facebookPostId?: null;
+    facebookPostedAt?: null;
+    instagramPostId?: null;
+    instagramPostedAt?: null;
+  } = {};
+  if (!instagramOnly) {
+    resetData.facebookPostId = null;
+    resetData.facebookPostedAt = null;
+  }
+  if (!facebookOnly) {
+    resetData.instagramPostId = null;
+    resetData.instagramPostedAt = null;
+  }
   await prisma.article.update({
     where: { id: existing.id },
-    data: {
-      facebookPostId: null,
-      facebookPostedAt: null,
-      instagramPostId: null,
-      instagramPostedAt: null,
-    },
+    data: resetData,
   });
   console.log("Reset post ids OK");
 
-  await verifyImageUrl(getShareCardUrl(slug), "FB share-card");
-  await verifyImageUrl(getInstagramCardUrl(slug), "IG share-card");
+  if (!instagramOnly) {
+    await verifyImageUrl(getShareCardUrl(slug), "FB share-card");
+  }
+  if (!facebookOnly) {
+    await verifyImageUrl(getInstagramCardUrl(slug), "IG share-card");
+  }
 
   const article = await prisma.article.findUniqueOrThrow({ where: { slug } });
 
-  const fbId = await postFacebook(article);
-  console.log("FB post id:", fbId);
+  if (!instagramOnly) {
+    const fbId = await postFacebook(article);
+    console.log("FB post id:", fbId);
+    const fbPermalink = await fetch(
+      `https://graph.facebook.com/v21.0/${fbId}?fields=permalink_url&access_token=${encodeURIComponent(getFacebookConfig()!.accessToken)}`,
+    ).then((r) => r.json()) as { permalink_url?: string };
+    console.log("FB permalink:", fbPermalink.permalink_url ?? "(brak)");
+  }
 
-  const igId = await postInstagram(article);
-  console.log("IG media id:", igId);
-
-  const fbPermalink = await fetch(
-    `https://graph.facebook.com/v21.0/${fbId}?fields=permalink_url&access_token=${encodeURIComponent(getFacebookConfig()!.accessToken)}`,
-  ).then((r) => r.json()) as { permalink_url?: string };
-  console.log("FB permalink:", fbPermalink.permalink_url ?? "(brak)");
+  if (!facebookOnly) {
+    const igId = await postInstagram(article);
+    console.log("IG media id:", igId);
+    const igMeta = await fetch(
+      `https://graph.facebook.com/v21.0/${igId}?fields=permalink&access_token=${encodeURIComponent(getInstagramConfig()!.accessToken)}`,
+    ).then((r) => r.json()) as { permalink?: string };
+    console.log("IG permalink:", igMeta.permalink ?? "(brak)");
+  }
 
   console.log("IG profile: https://www.instagram.com/webspacestation/");
 }
