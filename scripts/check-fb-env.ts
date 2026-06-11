@@ -6,6 +6,8 @@ const keys = [
   "FACEBOOK_PAGE_ID",
   "FACEBOOK_GRAPH_VERSION",
   "FACEBOOK_PAGE_ACCESS_TOKEN",
+  "INSTAGRAM_AUTO_POST",
+  "INSTAGRAM_BUSINESS_ACCOUNT_ID",
 ] as const;
 for (const k of keys) {
   const v = process.env[k] ?? "";

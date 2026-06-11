@@ -6,8 +6,11 @@ import { truncateForShareCard } from "@/lib/social/facebook-caption";
 export const INSTAGRAM_CARD_WIDTH = 1080;
 export const INSTAGRAM_CARD_HEIGHT = 1350;
 
+const PANEL_BG = "#0c1018";
 const TEXT_PRIMARY = "#f5f7fb";
-const TEXT_SECONDARY = "#c8d0e0";
+const TEXT_SECONDARY = "#a3afc7";
+/** Solid footer — title, category, logo, domain. */
+const BOTTOM_PANEL_HEIGHT = 448;
 
 type InstagramCardProps = {
   title: string;
@@ -25,12 +28,13 @@ function CategoryChip({ label, color }: { label: string; color: string }) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 10,
-        padding: "10px 18px",
+        gap: 12,
+        alignSelf: "flex-start",
+        padding: "12px 22px",
         borderRadius: 8,
         border: `1px solid ${color}66`,
-        background: "rgba(0,0,0,0.55)",
-        fontSize: 15,
+        background: "rgba(255,255,255,0.04)",
+        fontSize: 18,
         fontWeight: 700,
         letterSpacing: "0.12em",
         textTransform: "uppercase",
@@ -40,8 +44,8 @@ function CategoryChip({ label, color }: { label: string; color: string }) {
     >
       <div
         style={{
-          width: 7,
-          height: 7,
+          width: 9,
+          height: 9,
           borderRadius: 999,
           background: color,
         }}
@@ -51,12 +55,18 @@ function CategoryChip({ label, color }: { label: string; color: string }) {
   );
 }
 
-const LOGO_HEIGHT = 44;
+const LOGO_HEIGHT = 58;
 const LOGO_ASPECT = 1120 / 405;
 const LOGO_WIDTH = Math.round(LOGO_HEIGHT * LOGO_ASPECT);
 
+function formatFotoCredit(credit: string): string {
+  const trimmed = credit.trim();
+  const body = truncateForShareCard(trimmed, 72);
+  return /^foto\s*:/i.test(body) ? body : `Foto: ${body}`;
+}
+
 /**
- * Full-bleed cover with bottom gradient overlay — title on image, IG-native feel.
+ * Cover on top, solid editorial panel below — legible on any photo.
  */
 export function InstagramCardLayout({
   title,
@@ -70,9 +80,12 @@ export function InstagramCardLayout({
   const displayTitle = title.trim();
   const displayHook = hook?.trim() ? hook.trim() : null;
   const fallbackBg = categoryFallbackBg(categorySlug);
-  const titleFontSize = 46;
+  const titleFontSize = 44;
   const titleLineHeight = 1.12;
   const titleMaxLines = 4;
+  const fotoLabel = imageCredit?.trim()
+    ? formatFotoCredit(imageCredit.trim())
+    : null;
 
   return (
     <div
@@ -81,106 +94,112 @@ export function InstagramCardLayout({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        position: "relative",
-        background: fallbackBg,
+        background: PANEL_BG,
         fontFamily: "Inter",
       }}
     >
-      {coverUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires native img
-        <img
-          src={coverUrl}
-          alt=""
+      {/* Cover */}
+      <div
+        style={{
+          position: "relative",
+          flexShrink: 0,
+          height: INSTAGRAM_CARD_HEIGHT - BOTTOM_PANEL_HEIGHT,
+          width: "100%",
+          background: fallbackBg,
+          overflow: "hidden",
+        }}
+      >
+        {coverUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- ImageResponse requires native img
+          <img
+            src={coverUrl}
+            alt=""
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center",
+            }}
+          />
+        ) : null}
+
+        <div
           style={{
             position: "absolute",
             inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center",
+            background: `radial-gradient(circle at 20% 15%, ${category.color}22 0%, transparent 45%)`,
           }}
         />
-      ) : null}
 
-      {/* Category tint */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: `radial-gradient(circle at 20% 15%, ${category.color}28 0%, transparent 45%)`,
-        }}
-      />
-
-      {/* Bottom read gradient — keeps text legible on any cover */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(to top, rgba(6,8,16,0.97) 0%, rgba(6,8,16,0.88) 28%, rgba(6,8,16,0.35) 52%, transparent 68%)",
-        }}
-      />
-
-      {/* Accent line above text block */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 340,
-          height: 3,
-          background: `linear-gradient(90deg, ${category.color} 0%, ${category.color}88 40%, transparent 100%)`,
-        }}
-      />
-
-      {/* Top chip */}
-      <div
-        style={{
-          position: "absolute",
-          top: 48,
-          left: 48,
-          display: "flex",
-        }}
-      >
-        <CategoryChip label={category.label} color={category.color} />
-      </div>
-
-      {imageCredit?.trim() ? (
+        {/* Soft fade into bottom panel */}
         <div
           style={{
             position: "absolute",
-            top: 48,
-            right: 48,
-            maxWidth: 320,
-            padding: "8px 12px",
-            borderRadius: 6,
-            background: "rgba(0,0,0,0.55)",
-            fontFamily: "Inter",
-            fontSize: 12,
-            fontWeight: 500,
-            lineHeight: 1.35,
-            color: "rgba(245,247,251,0.85)",
-            textAlign: "right",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 120,
+            background: `linear-gradient(to top, ${PANEL_BG} 0%, transparent 100%)`,
           }}
-        >
-          {truncateForShareCard(imageCredit.trim(), 64)}
-        </div>
-      ) : null}
+        />
 
-      {/* Text block + brand */}
+        {fotoLabel ? (
+          <div
+            style={{
+              position: "absolute",
+              left: 40,
+              right: 40,
+              bottom: 22,
+              display: "flex",
+              padding: "10px 16px",
+              borderRadius: 8,
+              background: "rgba(0,0,0,0.72)",
+              fontFamily: "Inter",
+              fontSize: 16,
+              fontWeight: 600,
+              lineHeight: 1.35,
+              color: "rgba(245,247,251,0.92)",
+              letterSpacing: "0.01em",
+            }}
+          >
+            {fotoLabel}
+          </div>
+        ) : null}
+      </div>
+
+      {/* Solid bottom panel — text + brand */}
       <div
         style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
+          flexShrink: 0,
+          height: BOTTOM_PANEL_HEIGHT,
           display: "flex",
           flexDirection: "column",
-          padding: "0 48px 52px",
+          padding: "28px 44px 40px",
+          background: PANEL_BG,
+          borderTop: `4px solid ${category.color}`,
+          position: "relative",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
+            position: "absolute",
+            top: -48,
+            right: -48,
+            width: 200,
+            height: 200,
+            borderRadius: 999,
+            background: `radial-gradient(circle, ${category.color}22 0%, transparent 68%)`,
+          }}
+        />
+
+        <CategoryChip label={category.label} color={category.color} />
+
+        <div
+          style={{
+            marginTop: 22,
             fontSize: titleFontSize,
             fontWeight: 800,
             lineHeight: titleLineHeight,
@@ -196,12 +215,13 @@ export function InstagramCardLayout({
         {displayHook ? (
           <div
             style={{
-              marginTop: 20,
-              fontSize: 24,
+              marginTop: 16,
+              fontSize: 23,
               fontWeight: 600,
               lineHeight: 1.4,
               color: TEXT_SECONDARY,
-              maxWidth: 920,
+              maxWidth: 960,
+              overflow: "hidden",
             }}
           >
             {displayHook}
@@ -213,9 +233,9 @@ export function InstagramCardLayout({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginTop: 36,
+            marginTop: "auto",
             paddingTop: 28,
-            borderTop: "1px solid rgba(255,255,255,0.12)",
+            borderTop: "1px solid rgba(255,255,255,0.1)",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -234,8 +254,8 @@ export function InstagramCardLayout({
           <div
             style={{
               fontFamily: "Inter",
-              fontSize: 17,
-              fontWeight: 600,
+              fontSize: 22,
+              fontWeight: 700,
               color: "#38bdf8",
               letterSpacing: "0.02em",
             }}
