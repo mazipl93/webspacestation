@@ -1,5 +1,6 @@
 import "server-only";
 
+import { after } from "next/server";
 import { unstable_cache } from "next/cache";
 import { revalidatePublicArticleCaches } from "@/lib/cache/revalidate-public-articles";
 import { prisma } from "@/lib/prisma";
@@ -48,6 +49,24 @@ import {
 } from "@/lib/server/article-trace";
 import { publishArticleToFacebookSafe } from "@/lib/social/facebook-publish";
 import { publishArticleToInstagramSafe } from "@/lib/social/instagram-publish";
+
+/** FB + IG can take 15–20s (IG container poll). Run after CMS response on Vercel Hobby (10s limit). */
+function scheduleSocialAutoPostsOnFirstPublish(
+  article: ArticleWithRelations,
+): void {
+  if (article.facebookPostId && article.instagramPostId) return;
+
+  after(async () => {
+    await Promise.all([
+      !article.facebookPostId
+        ? publishArticleToFacebookSafe(article)
+        : Promise.resolve(),
+      !article.instagramPostId
+        ? publishArticleToInstagramSafe(article)
+        : Promise.resolve(),
+    ]);
+  });
+}
 
 // Shared selection — never leaks sensitive author fields (e.g. passwordHash).
 const articleSelect = {
@@ -690,14 +709,7 @@ export async function articleStateTransition(
         articleSlug: article.slug,
         categorySlug: article.category.slug,
       });
-      await Promise.all([
-        !article.facebookPostId
-          ? publishArticleToFacebookSafe(article)
-          : Promise.resolve(),
-        !article.instagramPostId
-          ? publishArticleToInstagramSafe(article)
-          : Promise.resolve(),
-      ]);
+      scheduleSocialAutoPostsOnFirstPublish(article);
     }
   }
 
