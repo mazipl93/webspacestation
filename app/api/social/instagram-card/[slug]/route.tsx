@@ -35,7 +35,7 @@ export async function GET(_request: Request, context: RouteContext) {
     subtitle: row.subtitle,
   });
 
-  return new ImageResponse(
+  const image = new ImageResponse(
     (
       <InstagramCardLayout
         title={cardCopy.title}
@@ -53,4 +53,11 @@ export async function GET(_request: Request, context: RouteContext) {
       fonts,
     },
   );
+
+  // Short TTL — card layout can change; Meta fetches at publish time via ?v= cache-bust.
+  image.headers.set(
+    "Cache-Control",
+    "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+  );
+  return image;
 }

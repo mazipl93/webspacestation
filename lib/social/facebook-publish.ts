@@ -1,9 +1,12 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { getSiteUrl } from "@/lib/site-url";
 import { buildFacebookCaption } from "@/lib/social/facebook-caption";
 import { getFacebookConfig } from "@/lib/social/facebook-config";
+import {
+  getPublicArticleUrl,
+  getShareCardUrl,
+} from "@/lib/social/social-card-urls";
 import type { ArticleWithRelations } from "@/lib/server/articles";
 
 type FacebookPhotoResponse = {
@@ -12,13 +15,7 @@ type FacebookPhotoResponse = {
   error?: { message?: string; type?: string; code?: number };
 };
 
-export function getShareCardUrl(slug: string): string {
-  return `${getSiteUrl()}/api/social/share-card/${encodeURIComponent(slug)}`;
-}
-
-export function getPublicArticleUrl(slug: string): string {
-  return `${getSiteUrl()}/aktualnosci/${encodeURIComponent(slug)}`;
-}
+export { getPublicArticleUrl, getShareCardUrl } from "@/lib/social/social-card-urls";
 
 /**
  * Posts a branded photo + caption to the Facebook Page.
@@ -33,7 +30,7 @@ export async function publishArticleToFacebook(
   if (article.facebookPostId) return;
 
   const articleUrl = getPublicArticleUrl(article.slug);
-  const shareCardUrl = getShareCardUrl(article.slug);
+  const shareCardUrl = getShareCardUrl(article.slug, { forMetaPublish: true });
   const caption = buildFacebookCaption(
     {
       title: article.title,

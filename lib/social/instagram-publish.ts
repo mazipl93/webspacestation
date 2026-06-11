@@ -1,9 +1,12 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { getSiteUrl } from "@/lib/site-url";
 import { buildInstagramCaption } from "@/lib/social/instagram-caption";
 import { getInstagramConfig } from "@/lib/social/instagram-config";
+import {
+  getInstagramCardUrl,
+  getPublicArticleUrl,
+} from "@/lib/social/social-card-urls";
 import type { ArticleWithRelations } from "@/lib/server/articles";
 
 type GraphError = { message?: string; type?: string; code?: number };
@@ -26,13 +29,7 @@ type ContainerStatusResponse = {
 const CONTAINER_POLL_MS = 1500;
 const CONTAINER_POLL_MAX = 12;
 
-export function getInstagramCardUrl(slug: string): string {
-  return `${getSiteUrl()}/api/social/instagram-card/${encodeURIComponent(slug)}`;
-}
-
-export function getPublicArticleUrl(slug: string): string {
-  return `${getSiteUrl()}/aktualnosci/${encodeURIComponent(slug)}`;
-}
+export { getInstagramCardUrl, getPublicArticleUrl } from "@/lib/social/social-card-urls";
 
 async function waitForContainerReady(
   containerId: string,
@@ -76,7 +73,7 @@ export async function publishArticleToInstagram(
   if (article.instagramPostId) return;
 
   const articleUrl = getPublicArticleUrl(article.slug);
-  const cardUrl = getInstagramCardUrl(article.slug);
+  const cardUrl = getInstagramCardUrl(article.slug, { forMetaPublish: true });
   const caption = buildInstagramCaption(
     {
       title: article.title,

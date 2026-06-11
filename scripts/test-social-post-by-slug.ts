@@ -12,6 +12,11 @@ import { buildFacebookCaption } from "../lib/social/facebook-caption";
 import { buildInstagramCaption } from "../lib/social/instagram-caption";
 import { getFacebookConfig } from "../lib/social/facebook-config";
 import { getInstagramConfig } from "../lib/social/instagram-config";
+import {
+  getInstagramCardUrl,
+  getPublicArticleUrl,
+  getShareCardUrl,
+} from "../lib/social/social-card-urls";
 import { getSiteUrl } from "../lib/site-url";
 
 const prisma = new PrismaClient();
@@ -33,16 +38,12 @@ if (!slug) {
   process.exit(1);
 }
 
-function getShareCardUrl(s: string): string {
-  return `${getSiteUrl()}/api/social/share-card/${encodeURIComponent(s)}`;
+function getShareCardUrlForTest(s: string): string {
+  return getShareCardUrl(s, { forMetaPublish: true });
 }
 
-function getInstagramCardUrl(s: string): string {
-  return `${getSiteUrl()}/api/social/instagram-card/${encodeURIComponent(s)}`;
-}
-
-function getPublicArticleUrl(s: string): string {
-  return `${getSiteUrl()}/aktualnosci/${encodeURIComponent(s)}`;
+function getInstagramCardUrlForTest(s: string): string {
+  return getInstagramCardUrl(s, { forMetaPublish: true });
 }
 
 async function verifyImageUrl(url: string, label: string): Promise<void> {
@@ -68,7 +69,7 @@ async function postFacebook(article: {
   if (!fb) throw new Error("FB not configured");
 
   const articleUrl = getPublicArticleUrl(article.slug);
-  const shareCardUrl = getShareCardUrl(article.slug);
+  const shareCardUrl = getShareCardUrlForTest(article.slug);
   const caption = buildFacebookCaption(
     {
       title: article.title,
@@ -137,7 +138,7 @@ async function postInstagram(article: {
   if (!ig) throw new Error("IG not configured");
 
   const articleUrl = getPublicArticleUrl(article.slug);
-  const cardUrl = getInstagramCardUrl(article.slug);
+  const cardUrl = getInstagramCardUrlForTest(article.slug);
   const caption = buildInstagramCaption(
     {
       title: article.title,
@@ -226,10 +227,10 @@ async function main() {
   console.log("Reset post ids OK");
 
   if (!instagramOnly) {
-    await verifyImageUrl(getShareCardUrl(slug), "FB share-card");
+    await verifyImageUrl(getShareCardUrlForTest(slug), "FB share-card");
   }
   if (!facebookOnly) {
-    await verifyImageUrl(getInstagramCardUrl(slug), "IG share-card");
+    await verifyImageUrl(getInstagramCardUrlForTest(slug), "IG share-card");
   }
 
   const article = await prisma.article.findUniqueOrThrow({ where: { slug } });
