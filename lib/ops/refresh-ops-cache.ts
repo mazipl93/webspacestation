@@ -20,7 +20,7 @@ export type OpsRefreshResult = {
 /** Fetch external APIs and persist snapshots — invoked by cron, never by user SSR. */
 export async function refreshOpsCache(): Promise<OpsRefreshResult> {
   const [coreResult, galleryResult, videoResult] = await Promise.allSettled([
-    fetchCoreOpsSnapshot(),
+    fetchCoreOpsSnapshot({ generateBriefs: true }),
     fetchGalleryOpsSnapshot(),
     fetchVideoOpsSnapshot(),
   ]);

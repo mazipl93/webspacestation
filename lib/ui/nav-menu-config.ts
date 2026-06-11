@@ -90,6 +90,13 @@ export const NAV_CATEGORY_LINKS: NavMenuLink[] = [
 
 export const NAV_MORE_LINKS: NavMenuLink[] = [
   {
+    label: "Starty rakiet",
+    href: "/starty",
+    accentKey: "starty",
+    description: "Odliczenia i harmonogram Launch Library",
+    icon: Rocket,
+  },
+  {
     label: "Galeria zdjęć",
     href: "/galeria",
     accentKey: "galeria",

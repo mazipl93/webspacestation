@@ -1,4 +1,5 @@
 import { buildCalendarFromLaunches } from "@/lib/ops/calendar-from-launches";
+import { enrichLaunchPhase } from "@/lib/ops/launch-phase";
 import type { OpsLaunch, OpsSnapshot } from "@/lib/ops/types";
 import { buildMapPins } from "@/lib/ops/map-geo";
 
@@ -12,7 +13,7 @@ const FALLBACK_NET_ISO = [
 
 function mockLaunches(): OpsLaunch[] {
   return [
-    {
+    enrichLaunchPhase({
       id: "fallback-1",
       provider: "SpaceX",
       mission: "Starlink Group (zapas)",
@@ -23,9 +24,11 @@ function mockLaunches(): OpsLaunch[] {
         "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=800&q=70",
       hue: 212,
       statusLabel: "API niedostępne",
+      statusAbbrev: "TBD",
+      phase: "countdown",
       windowLabel: "Dane zapasowe",
-    },
-    {
+    }),
+    enrichLaunchPhase({
       id: "fallback-2",
       provider: "SpaceX",
       mission: "Starship (zapas)",
@@ -35,8 +38,9 @@ function mockLaunches(): OpsLaunch[] {
         "https://images.unsplash.com/photo-1457364887197-9150188c107b?auto=format&fit=crop&w=800&q=70",
       hue: 26,
       statusLabel: "API niedostępne",
-    },
-    {
+      phase: "countdown",
+    }),
+    enrichLaunchPhase({
       id: "fallback-3",
       provider: "ArianeGroup",
       mission: "Ariane 6 (zapas)",
@@ -46,8 +50,9 @@ function mockLaunches(): OpsLaunch[] {
         "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&w=800&q=70",
       hue: 156,
       statusLabel: "API niedostępne",
-    },
-    {
+      phase: "countdown",
+    }),
+    enrichLaunchPhase({
       id: "fallback-4",
       provider: "Blue Origin",
       mission: "New Glenn (zapas)",
@@ -57,7 +62,8 @@ function mockLaunches(): OpsLaunch[] {
         "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=70",
       hue: 268,
       statusLabel: "API niedostępne",
-    },
+      phase: "countdown",
+    }),
   ];
 }
 
@@ -72,6 +78,7 @@ export function buildFallbackCoreSnapshot(): Omit<
   const launches = mockLaunches();
   return {
     launches,
+    recentLaunches: [],
     calendar: buildCalendarFromLaunches(launches),
     iss: null,
     issOrbit: [],
@@ -86,6 +93,7 @@ function coreToFullSnapshot(
 ): OpsSnapshot {
   return {
     ...core,
+    recentLaunches: core.recentLaunches ?? [],
     gallery: [],
     videos: [],
   };

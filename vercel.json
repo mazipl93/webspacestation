@@ -9,7 +9,7 @@
     },
     {
       "path": "/api/cron/ops-refresh",
-      "schedule": "0 5 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }

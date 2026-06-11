@@ -48,12 +48,15 @@ function computeCountdown(netIso: string): CountdownParts {
   };
 }
 
+import type { OpsLaunchPhase } from "@/lib/ops/types";
+
 type Props = {
   net: string;
   featured?: boolean;
+  phase?: OpsLaunchPhase;
 };
 
-export default function LaunchCountdown({ net, featured }: Props) {
+export default function LaunchCountdown({ net, featured, phase = "countdown" }: Props) {
   const [parts, setParts] = useState(HYDRATE_PLACEHOLDER);
 
   useEffect(() => {
@@ -63,12 +66,34 @@ export default function LaunchCountdown({ net, featured }: Props) {
     return () => window.clearInterval(id);
   }, [net]);
 
+  if (phase === "window") {
+    return (
+      <p className={`font-bold text-accent-cyan live-breathe ${featured ? "text-[14px]" : "text-[12px]"}`}>
+        Okno startowe otwarte
+      </p>
+    );
+  }
+  if (phase === "live") {
+    return (
+      <p className={`font-bold text-accent-cyan live-breathe ${featured ? "text-[14px]" : "text-[12px]"}`}>
+        Start w toku
+      </p>
+    );
+  }
+  if (phase === "success" || phase === "failure") {
+    return (
+      <p className={`font-bold text-text-secondary ${featured ? "text-[14px]" : "text-[12px]"}`}>
+        {phase === "success" ? "Start udany" : "Start nieudany"}
+      </p>
+    );
+  }
+
   if (parts.past) {
     return (
       <p
         className={`font-bold text-text-tertiary ${featured ? "text-[14px]" : "text-[12px]"}`}
       >
-        Okno startowe minęło · sprawdź status
+        {phase === "hold" ? "Wstrzymany · sprawdź NET" : "Okno startowe · sprawdź status"}
       </p>
     );
   }

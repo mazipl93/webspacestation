@@ -44,7 +44,7 @@ export function buildCalendarFromLaunches(launches: OpsLaunch[]): OpsCalendarEve
       dateLabel,
       title: l.mission,
       hint: `${dateStr} UTC · ${formatLaunchSummary(l)}`,
-      active: index === 0,
+      active: false,
       net: l.net,
     };
   });

@@ -8,6 +8,7 @@ import {
 import type { WeekTopicConfig, WeekTopicPick } from "@/lib/home/week-topic";
 import type { NewsArticle } from "@/types";
 import HomepageHeroSlider from "@/components/sections/HomepageHeroSlider";
+import HomepageOpsStrip from "@/components/sections/HomepageOpsStrip";
 import LatestShowcase from "@/components/sections/LatestShowcase";
 import WeekTopicSection from "@/components/sections/WeekTopicSection";
 
@@ -33,6 +34,8 @@ function HomepageTopZoneV2({
   return (
     <div className={BELOW_FIXED_NAV_OFFSET_CLASS}>
       <HomepageHeroSlider articles={heroSlides} />
+
+      <HomepageOpsStrip />
 
       <div className="mt-5 hidden lg:block">
         <LatestShowcase articles={latestStrip} variant="strip" />
@@ -75,6 +78,8 @@ function HomepageTopZoneLegacy({
       <div className={cn("gap-8 lg:items-stretch", HOMEPAGE_HERO_DOUBLE_GRID)}>
         <div className="flex min-w-0 flex-col">
           <HomepageHeroSlider articles={heroSlides} />
+
+          <HomepageOpsStrip />
 
           {hasWeekTopic ? (
             <div className="mt-6 hidden lg:block">

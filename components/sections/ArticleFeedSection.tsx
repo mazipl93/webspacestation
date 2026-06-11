@@ -15,6 +15,7 @@ import { SITE_CONTAINER } from "@/lib/site-layout";
 import ArticleCard from "@/components/article/ArticleCard";
 import DepartmentSubscribeButton from "@/components/departments/DepartmentSubscribeButton";
 import ArticleFeedPagination from "@/components/sections/ArticleFeedPagination";
+import CategoryOpsLaunchBanner from "@/components/discover/CategoryOpsLaunchBanner";
 import { cn } from "@/lib/cn";
 
 const FEED_FILTERS = [
@@ -167,6 +168,9 @@ export default async function ArticleFeedSection({
       </div>
 
       <div className={cn(SITE_CONTAINER, "py-9")}>
+        {category === "misje" && safePage === 1 ? (
+          <CategoryOpsLaunchBanner />
+        ) : null}
         {articles.length === 0 ? (
           <div className="card-surface px-8 py-16 text-center">
             <p className="text-[14px] text-text-secondary">

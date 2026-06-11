@@ -1,5 +1,14 @@
 /** Normalized ops feed for Odkrywaj + homepage Centrum operacyjne. */
 
+export type OpsLaunchPhase =
+  | "countdown"
+  | "window"
+  | "live"
+  | "hold"
+  | "success"
+  | "failure"
+  | "unknown";
+
 export type OpsLaunch = {
   id: string;
   provider: string;
@@ -9,12 +18,28 @@ export type OpsLaunch = {
   rocketName?: string;
   /** ISO 8601 — moment startu (NET) */
   net: string;
+  windowStart?: string;
+  windowEnd?: string;
   site: string;
   image: string;
   hue: number;
   statusLabel: string;
+  statusAbbrev?: string;
+  statusId?: number;
+  phase: OpsLaunchPhase;
   windowLabel?: string;
   detailUrl?: string;
+  lastUpdated?: string;
+  netPrecisionLabel?: string;
+  /** Krótki kontekst PL (OpenAI + LL2), cache w ops snapshot. */
+  brief?: OpsLaunchBrief;
+};
+
+export type OpsLaunchBrief = {
+  text: string;
+  basedOnNet: string;
+  generatedAt: string;
+  model?: string;
 };
 
 export type OpsIssPosition = {
@@ -72,6 +97,8 @@ export type OpsVideoItem = {
 
 export type OpsSnapshot = {
   launches: OpsLaunch[];
+  /** Ostatnie zakończone starty (LL2 /previous/) — sukces / awaria. */
+  recentLaunches: OpsLaunch[];
   calendar: OpsCalendarEvent[];
   iss: OpsIssPosition | null;
   /** Ground track ISS (segmenty bez skoku dateline) */

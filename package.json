@@ -44,6 +44,7 @@
     "rss:purge-queue": "tsx scripts/rss-purge-queue.ts",
     "rss:archive-wired": "tsx scripts/archive-wired-articles.ts",
     "ops:refresh": "tsx scripts/ops-refresh.ts",
+    "ops:briefs": "tsx scripts/ops-generate-briefs.ts",
     "scores:recalculate": "tsx scripts/recalculate-scores.ts",
     "publish:scheduled": "tsx scripts/publish-scheduled.ts",
     "publish:scheduled:watch": "tsx scripts/publish-scheduled-watch.ts"

@@ -4,6 +4,7 @@ import { Calendar, Map, ChevronRight } from "lucide-react";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import LaunchCard from "@/components/discover/LaunchCard";
 import { getCoreOpsData } from "@/lib/ops/get-ops-data";
+import { getLaunchWssArticleLinks, linkForLaunch } from "@/lib/ops/launch-article-bridge";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ const DISCOVER_LINKS = [
 
 export default async function StartyPage() {
   const ops = await getCoreOpsData();
+  const articleLinks = await getLaunchWssArticleLinks(ops.launches);
 
   return (
     <DiscoverPageShell
@@ -54,7 +56,12 @@ export default async function StartyPage() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
           {ops.launches.map((launch) => (
-            <LaunchCard key={launch.id} launch={launch} variant="featured" />
+            <LaunchCard
+              key={launch.id}
+              launch={launch}
+              variant="featured"
+              wssArticle={linkForLaunch(launch.id, articleLinks)}
+            />
           ))}
         </div>
       </section>

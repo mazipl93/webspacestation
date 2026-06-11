@@ -7,6 +7,7 @@ import type {
   OpsSnapshot,
   OpsVideoItem,
 } from "@/lib/ops/types";
+import { migrateLaunchRecord } from "@/lib/ops/launch-phase";
 
 export const OPS_CACHE_TAG = "ops-data";
 
@@ -20,6 +21,7 @@ export type OpsCacheKey = (typeof OPS_CACHE_KEYS)[keyof typeof OPS_CACHE_KEYS];
 
 export type OpsCorePayload = {
   launches: OpsLaunch[];
+  recentLaunches: OpsLaunch[];
   calendar: OpsCalendarEvent[];
   iss: OpsIssPosition | null;
   issOrbit: { lat: number; lon: number }[][];
@@ -76,8 +78,13 @@ export function parseCorePayload(raw: unknown): OpsCorePayload | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Partial<OpsCorePayload>;
   if (!Array.isArray(o.launches) || !Array.isArray(o.calendar)) return null;
+  const launches = o.launches.map((l) => migrateLaunchRecord(l as OpsLaunch));
+  const recentLaunches = Array.isArray(o.recentLaunches)
+    ? o.recentLaunches.map((l) => migrateLaunchRecord(l as OpsLaunch))
+    : [];
   return {
-    launches: o.launches,
+    launches,
+    recentLaunches,
     calendar: o.calendar,
     iss: o.iss ?? null,
     issOrbit: Array.isArray(o.issOrbit) ? o.issOrbit : [],
@@ -115,6 +122,7 @@ export function parseVideoPayload(raw: unknown): OpsVideoPayload | null {
 export function galleryToOpsSnapshot(payload: OpsGalleryPayload): OpsSnapshot {
   return {
     launches: [],
+    recentLaunches: [],
     calendar: [],
     iss: null,
     issOrbit: [],
@@ -129,6 +137,7 @@ export function galleryToOpsSnapshot(payload: OpsGalleryPayload): OpsSnapshot {
 export function videoToOpsSnapshot(payload: OpsVideoPayload): OpsSnapshot {
   return {
     launches: [],
+    recentLaunches: [],
     calendar: [],
     iss: null,
     issOrbit: [],

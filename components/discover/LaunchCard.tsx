@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import LaunchCountdown from "@/components/discover/LaunchCountdown";
+import LaunchBriefBlock from "@/components/discover/LaunchBriefBlock";
+import LaunchWssArticleLink from "@/components/discover/LaunchWssArticleLink";
 import { OPS_LAUNCH_IMAGE_GRADIENT } from "@/lib/ops/discover-data";
+import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge";
 import type { OpsLaunch } from "@/lib/ops/types";
 import { cn } from "@/lib/cn";
 
@@ -9,9 +12,10 @@ type Props = {
   launch: OpsLaunch;
   variant?: "compact" | "featured";
   href?: string;
+  wssArticle?: WssArticleLink | null;
 };
 
-export default function LaunchCard({ launch, variant = "compact", href }: Props) {
+export default function LaunchCard({ launch, variant = "compact", href, wssArticle }: Props) {
   const featured = variant === "featured";
   const {
     provider,
@@ -85,12 +89,23 @@ export default function LaunchCard({ launch, variant = "compact", href }: Props)
           {windowLabel && featured && (
             <p className="mt-1 text-[10px] text-text-muted">{windowLabel}</p>
           )}
+          {launch.brief && featured ? (
+            <LaunchBriefBlock brief={launch.brief} className="mt-3" />
+          ) : null}
         </div>
         <div className={featured ? "mt-4" : undefined}>
-          <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">
-            Start za
-          </p>
-          <LaunchCountdown net={net} featured={featured} />
+          {launch.phase === "countdown" || launch.phase === "hold" ? (
+            <>
+              <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">
+                Start za
+              </p>
+              <LaunchCountdown net={net} featured={featured} phase={launch.phase} />
+            </>
+          ) : (
+            <p className={`font-bold text-accent-cyan ${featured ? "text-[14px]" : "text-[12px]"}`}>
+              {launch.statusLabel}
+            </p>
+          )}
           <p
             className={`truncate text-text-muted ${featured ? "mt-2 text-[11px]" : "mt-1.5 text-[9.5px]"}`}
           >
@@ -106,6 +121,9 @@ export default function LaunchCard({ launch, variant = "compact", href }: Props)
               Szczegóły w Launch Library →
             </a>
           )}
+          {wssArticle ? (
+            <LaunchWssArticleLink article={wssArticle} className="mt-3" />
+          ) : null}
         </div>
       </div>
     </article>

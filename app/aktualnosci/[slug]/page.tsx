@@ -25,6 +25,10 @@ import ArticlePageHero from "@/components/article/ArticlePageHero";
 import ArticleHeroMobileMeta from "@/components/article/ArticleHeroMobileMeta";
 import ArticleInfoPanel from "@/components/article/ArticleInfoPanel";
 import ArticlePageBodyMain from "@/components/article/ArticlePageBodyMain";
+import ArticleOpsLaunchWidget from "@/components/discover/ArticleOpsLaunchWidget";
+import { getHomepageOpsData } from "@/lib/ops/get-ops-data";
+import { matchLaunchForArticle } from "@/lib/ops/launch-article-bridge";
+import type { OpsLaunch } from "@/lib/ops/types";
 import {
   ARTICLE_HERO_SHELL_WRAP,
   ARTICLE_PAGE_GRID,
@@ -241,10 +245,12 @@ function ArticleBody({
   article,
   sidebarRelated,
   weaveCandidates,
+  matchedLaunch,
 }: {
   article: NewsArticle;
   sidebarRelated: NewsArticle[];
   weaveCandidates: import("@/lib/article/weave-internal-links").InternalLinkCandidate[];
+  matchedLaunch: OpsLaunch | null;
 }) {
   const meta = catMeta(article.category);
 
@@ -255,6 +261,9 @@ function ArticleBody({
         categoryLabel={meta.label}
         categoryColor={meta.color}
       />
+      {matchedLaunch ? (
+        <ArticleOpsLaunchWidget launch={matchedLaunch} className="mt-4" />
+      ) : null}
       <SidebarRelatedArticles articles={sidebarRelated} />
     </>
   );
@@ -286,6 +295,12 @@ function ArticleBody({
               categoryColor={meta.color}
               className="mt-5 xl:hidden"
             />
+            {matchedLaunch ? (
+              <ArticleOpsLaunchWidget
+                launch={matchedLaunch}
+                className="mt-4 xl:hidden"
+              />
+            ) : null}
 
             <div
               id="article-body"
@@ -402,9 +417,19 @@ export default async function ArticlePage({ params }: Props) {
   }
   const article = resolved.article;
 
-  // In-body links use their own ranking — do NOT exclude „Czytaj dalej” (same pool
-  // was leaving long articles with 0–1 weave candidate on prod).
-  const all = await getRelatedArticlePool();
+  const [all, ops] = await Promise.all([
+    getRelatedArticlePool(),
+    getHomepageOpsData(),
+  ]);
+  const matchedLaunch = await matchLaunchForArticle({
+    id: article.id,
+    slug: article.slug,
+    title: article.title,
+    tags: article.tags,
+    categorySlug: article.category,
+    publishedAt: article.publishedAt,
+    launches: ops.launches,
+  });
   const readNextList = await getReadNextArticles(article, undefined, { pool: all });
   const weaveCandidates = await getWeaveInternalLinkCandidates(article, { pool: all });
 
@@ -438,6 +463,7 @@ export default async function ArticlePage({ params }: Props) {
           article={article}
           sidebarRelated={sidebarRelated}
           weaveCandidates={weaveCandidates}
+          matchedLaunch={matchedLaunch}
         />
         <ArticleInteractions slug={article.slug} title={article.title} />
         <ReturnBand category={article.category} />

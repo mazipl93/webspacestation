@@ -1,6 +1,10 @@
 import type { OpsLaunch } from "@/lib/ops/types";
 import { fetchExternal } from "@/lib/ops/fetch-external";
 import { localizeOpsLaunch, localizeStatus } from "@/lib/ops/localize-ops";
+import {
+  enrichLaunchPhase,
+  isActionableUpcoming,
+} from "@/lib/ops/launch-phase";
 
 /** LL2 prod — 2.3.0 stabilne; 2.4.0 bywa 500. Endpoint: /launches/ (liczba mnoga). */
 const LL2_BASE =
@@ -15,11 +19,26 @@ type Ll2Image = {
   thumbnail_url?: string | null;
 };
 
+type Ll2Status = {
+  id?: number;
+  name?: string;
+  abbrev?: string;
+};
+
+type Ll2Precision = {
+  name?: string;
+  abbrev?: string;
+};
+
 type Ll2Launch = {
   id: string;
   name: string;
   net: string;
-  status?: { name?: string; abbrev?: string };
+  window_start?: string | null;
+  window_end?: string | null;
+  last_updated?: string;
+  status?: Ll2Status;
+  net_precision?: Ll2Precision;
   image?: string | Ll2Image | null;
   mission?: { name?: string | null };
   launch_service_provider?: { name?: string };
@@ -36,6 +55,8 @@ type Ll2Launch = {
     location?: { name?: string; country_code?: string };
   };
 };
+
+type Ll2Response = { results?: Ll2Launch[] };
 
 function launchMissionTitle(raw: Ll2Launch): string {
   const fromMission = raw.mission?.name?.trim();
@@ -56,8 +77,6 @@ function launchRocketName(raw: Ll2Launch): string | undefined {
   if (rocket === title) return undefined;
   return rocket;
 }
-
-type Ll2Response = { results?: Ll2Launch[] };
 
 export function providerHue(name: string): number {
   let h = 0;
@@ -80,6 +99,20 @@ function resolveLaunchImage(raw: Ll2Launch): string {
   return DEFAULT_LAUNCH_IMAGE;
 }
 
+function formatWindowLabel(net: string, windowEnd?: string | null): string {
+  const fmt = new Intl.DateTimeFormat("pl-PL", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  });
+  const netLabel = `${fmt.format(new Date(net))} UTC`;
+  if (windowEnd && windowEnd !== net) {
+    const endLabel = fmt.format(new Date(windowEnd));
+    return `NET ${netLabel} · okno do ${endLabel} UTC`;
+  }
+  return netLabel;
+}
+
 function mapLaunch(raw: Ll2Launch): OpsLaunch {
   const provider = raw.launch_service_provider?.name?.trim() || "Operator";
   const mission = launchMissionTitle(raw);
@@ -93,49 +126,112 @@ function mapLaunch(raw: Ll2Launch): OpsLaunch {
     throw new Error(`Launch ${raw.id}: missing net`);
   }
 
-  const windowLabel =
-    new Intl.DateTimeFormat("pl-PL", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "UTC",
-    }).format(new Date(net)) + " UTC";
+  const statusName = raw.status?.name || raw.status?.abbrev || "Zaplanowany";
+  const windowStart = raw.window_start?.trim() || undefined;
+  const windowEnd = raw.window_end?.trim() || undefined;
 
-  return localizeOpsLaunch({
+  const base: OpsLaunch = {
     id: String(raw.id),
     provider,
     mission,
     rocketName,
     net,
+    windowStart,
+    windowEnd,
     site,
     image: resolveLaunchImage(raw),
     hue: providerHue(provider),
-    statusLabel: localizeStatus(raw.status?.name || raw.status?.abbrev || "Zaplanowany"),
-    windowLabel,
+    statusLabel: localizeStatus(statusName),
+    statusAbbrev: raw.status?.abbrev?.trim(),
+    statusId: raw.status?.id,
+    phase: "countdown",
+    windowLabel: formatWindowLabel(net, windowEnd),
     detailUrl: `${LL2_BASE}/launches/${raw.id}/`,
-  });
+    lastUpdated: raw.last_updated?.trim(),
+    netPrecisionLabel: raw.net_precision?.name?.trim(),
+  };
+
+  return localizeOpsLaunch(enrichLaunchPhase(base));
 }
 
-export async function fetchUpcomingLaunches(limit = 12): Promise<OpsLaunch[]> {
+async function fetchLaunchesFromList(
+  list: "upcoming" | "previous",
+  limit: number,
+  extraParams?: Record<string, string>,
+): Promise<Ll2Launch[]> {
   const params = new URLSearchParams({
     limit: String(limit),
-    hide_recent_previous: "true",
+    ...extraParams,
   });
-  const url = `${LL2_BASE}/launches/upcoming/?${params}`;
+  if (list === "upcoming") {
+    params.set("hide_recent_previous", "true");
+  }
+
+  const url = `${LL2_BASE}/launches/${list}/?${params}`;
   const res = await fetchExternal(url, {
     headers: { Accept: "application/json" },
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
 
   if (!res.ok) {
     const snippet = (await res.text()).slice(0, 120);
-    throw new Error(`Launch Library HTTP ${res.status}: ${snippet}`);
+    throw new Error(`Launch Library ${list} HTTP ${res.status}: ${snippet}`);
   }
 
   const data = (await res.json()) as Ll2Response;
-  const results = data.results ?? [];
-  if (results.length === 0) {
-    throw new Error("Launch Library: empty results");
+  return data.results ?? [];
+}
+
+export type LaunchSchedule = {
+  upcoming: OpsLaunch[];
+  recent: OpsLaunch[];
+};
+
+/** Nadchodzące + ostatnie zakończone — pełniejszy obraz niż sam /upcoming/. */
+export async function fetchLaunchSchedule(
+  upcomingLimit = 16,
+  recentLimit = 4,
+): Promise<LaunchSchedule> {
+  const [upcomingRaw, recentRaw] = await Promise.all([
+    fetchLaunchesFromList("upcoming", upcomingLimit),
+    fetchLaunchesFromList("previous", recentLimit).catch(() => [] as Ll2Launch[]),
+  ]);
+
+  const upcoming = upcomingRaw
+    .map(mapLaunch)
+    .filter(isActionableUpcoming)
+    .sort((a, b) => Date.parse(a.net) - Date.parse(b.net));
+
+  let resolvedUpcoming = upcoming;
+  if (resolvedUpcoming.length === 0 && upcomingRaw.length > 0) {
+    resolvedUpcoming = upcomingRaw
+      .map(mapLaunch)
+      .filter(
+        (l) =>
+          l.phase === "countdown" ||
+          l.phase === "hold" ||
+          Date.parse(l.net) > Date.now(),
+      )
+      .sort((a, b) => Date.parse(a.net) - Date.parse(b.net));
   }
 
-  return results.map(mapLaunch);
+  const recent = recentRaw
+    .map(mapLaunch)
+    .filter((l) => l.phase === "success" || l.phase === "failure")
+    .sort((a, b) => Date.parse(b.net) - Date.parse(a.net));
+
+  if (resolvedUpcoming.length === 0 && upcomingRaw.length === 0) {
+    throw new Error("Launch Library: empty upcoming results");
+  }
+
+  return {
+    upcoming: resolvedUpcoming.slice(0, 12),
+    recent: recent.slice(0, 3),
+  };
+}
+
+/** @deprecated Użyj fetchLaunchSchedule — zostawione dla powiadomień. */
+export async function fetchUpcomingLaunches(limit = 12): Promise<OpsLaunch[]> {
+  const { upcoming } = await fetchLaunchSchedule(limit + 4, 0);
+  return upcoming.slice(0, limit);
 }

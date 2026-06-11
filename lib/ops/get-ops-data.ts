@@ -25,11 +25,16 @@ import {
 } from "@/lib/ops/snapshot-store";
 import type { OpsSnapshot } from "@/lib/ops/types";
 import { withTimeout } from "@/lib/ops/with-timeout";
+import { isLaunchFeedStale } from "@/lib/ops/launch-phase";
 
 export { OPS_CACHE_TAG };
 
 const BOOTSTRAP_TIMEOUT_MS =
   process.env.NODE_ENV === "development" ? 14_000 : 8_000;
+
+/** Maks. wiek snapshotu z DB zanim wymusimy fetch LL2 + ISS. */
+const OPS_MAX_AGE_MS =
+  process.env.NODE_ENV === "development" ? 2 * 60_000 : 10 * 60_000;
 
 async function bootstrapCore(): Promise<OpsCorePayload> {
   const stored = await readStoredCore();
@@ -98,7 +103,12 @@ async function bootstrapVideo(): Promise<OpsVideoPayload> {
 
 async function loadCoreFromStore(): Promise<OpsCorePayload> {
   const stored = await readStoredCore();
-  if (stored) return stored;
+  if (
+    stored &&
+    !isLaunchFeedStale(stored.launches, stored.fetchedAt, OPS_MAX_AGE_MS)
+  ) {
+    return stored;
+  }
   return bootstrapCore();
 }
 
@@ -118,8 +128,8 @@ function cachedCoreLoader() {
   if (process.env.NODE_ENV === "development") {
     return loadCoreFromStore();
   }
-  return unstable_cache(loadCoreFromStore, ["ops-core-v1"], {
-    revalidate: 300,
+  return unstable_cache(loadCoreFromStore, ["ops-core-v2"], {
+    revalidate: 120,
     tags: [OPS_CACHE_TAG],
   })();
 }
