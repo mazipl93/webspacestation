@@ -102,6 +102,8 @@ export function InstagramCardLayout({
       <div
         style={{
           position: "relative",
+          display: "flex",
+          flexDirection: "column",
           flexShrink: 0,
           height: INSTAGRAM_CARD_HEIGHT - BOTTOM_PANEL_HEIGHT,
           width: "100%",
@@ -228,7 +230,7 @@ export function InstagramCardLayout({
           </div>
         ) : null}
 
-        <div style={{ flex: 1, minHeight: 12 }} />
+        <div style={{ display: "flex", flex: 1, minHeight: 12 }} />
 
         <div
           style={{
