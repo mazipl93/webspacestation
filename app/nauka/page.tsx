@@ -1,25 +1,29 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
-import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import ArticleListingPageShell, {
+  buildArticleListingMetadata,
+  type ArticleListingConfig,
+} from "@/components/pages/ArticleListingPageShell";
 
-export const metadata: Metadata = buildListingPageMetadata({
+const LISTING: ArticleListingConfig = {
   title: "Nauka",
   description: "Jak działa kosmos — fizyka, astronomia i technologie orbitalne.",
   path: "/nauka",
-});
+};
 
-export const revalidate = 300;
+type Props = {
+  searchParams: Promise<{ strona?: string }>;
+};
 
-export default function NaukaPage() {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  return buildArticleListingMetadata(LISTING, searchParams);
+}
+
+export default function NaukaPage({ searchParams }: Props) {
   return (
-    <>
-      <Navbar />
-      <main className="min-h-screen">
-        <ArticleFeedSection category="nauka" />
-      </main>
-      <Footer />
-    </>
+    <ArticleListingPageShell
+      listing={LISTING}
+      category="nauka"
+      searchParams={searchParams}
+    />
   );
 }

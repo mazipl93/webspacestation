@@ -1,27 +1,30 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
-import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import ArticleListingPageShell, {
+  buildArticleListingMetadata,
+  type ArticleListingConfig,
+} from "@/components/pages/ArticleListingPageShell";
 
-export const metadata: Metadata = buildListingPageMetadata({
-  title: "Technologie kosmiczne",
+const LISTING: ArticleListingConfig = {
+  title: "Technologie",
   description:
     "Rakiety, satelity, napędy i inżynieria kosmiczna — w tym AI w kontekście badań i eksploracji.",
   path: "/technologie",
-});
+};
 
-// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
-export const revalidate = 300;
+type Props = {
+  searchParams: Promise<{ strona?: string }>;
+};
 
-export default function TechnologiePage() {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  return buildArticleListingMetadata(LISTING, searchParams);
+}
+
+export default function TechnologiePage({ searchParams }: Props) {
   return (
-    <>
-      <Navbar />
-      <main className="min-h-screen">
-        <ArticleFeedSection category="technologie" />
-      </main>
-      <Footer />
-    </>
+    <ArticleListingPageShell
+      listing={LISTING}
+      category="technologie"
+      searchParams={searchParams}
+    />
   );
 }

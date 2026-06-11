@@ -1,27 +1,24 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
-import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import ArticleListingPageShell, {
+  buildArticleListingMetadata,
+  type ArticleListingConfig,
+} from "@/components/pages/ArticleListingPageShell";
 
-export const metadata: Metadata = buildListingPageMetadata({
+const LISTING: ArticleListingConfig = {
   title: "Aktualności",
   description:
     "Najnowsze wiadomości ze świata kosmosu, astronomii i technologii kosmicznych. Śledź misje, starty rakiet i odkrycia naukowe.",
   path: "/aktualnosci",
-});
+};
 
-// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
-export const revalidate = 300;
+type Props = {
+  searchParams: Promise<{ strona?: string }>;
+};
 
-export default function AktualnostiPage() {
-  return (
-    <>
-      <Navbar />
-      <main className="min-h-screen">
-        <ArticleFeedSection />
-      </main>
-      <Footer />
-    </>
-  );
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  return buildArticleListingMetadata(LISTING, searchParams);
+}
+
+export default function AktualnostiPage({ searchParams }: Props) {
+  return <ArticleListingPageShell listing={LISTING} searchParams={searchParams} />;
 }

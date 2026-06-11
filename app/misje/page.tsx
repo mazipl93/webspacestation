@@ -1,27 +1,30 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
-import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import ArticleListingPageShell, {
+  buildArticleListingMetadata,
+  type ArticleListingConfig,
+} from "@/components/pages/ArticleListingPageShell";
 
-export const metadata: Metadata = buildListingPageMetadata({
+const LISTING: ArticleListingConfig = {
   title: "Misje",
   description:
     "Artykuły o misjach kosmicznych — eksploracja planet, loty załogowe, starty rakiet i programy kosmiczne NASA, SpaceX i ESA.",
   path: "/misje",
-});
+};
 
-// ISR: cached for 5 min, invalidated on publish via revalidateTag(ARTICLES_TAG).
-export const revalidate = 300;
+type Props = {
+  searchParams: Promise<{ strona?: string }>;
+};
 
-export default function MisjePage() {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  return buildArticleListingMetadata(LISTING, searchParams);
+}
+
+export default function MisjePage({ searchParams }: Props) {
   return (
-    <>
-      <Navbar />
-      <main className="min-h-screen">
-        <ArticleFeedSection category="misje" />
-      </main>
-      <Footer />
-    </>
+    <ArticleListingPageShell
+      listing={LISTING}
+      category="misje"
+      searchParams={searchParams}
+    />
   );
 }

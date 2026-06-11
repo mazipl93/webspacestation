@@ -8,11 +8,17 @@ import {
   getPublishedHeroSlides,
   getPublishedWeekTopicSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
+  getArticlesByCategoryPage as dbGetArticlesByCategoryPage,
+  getPublishedArticlesPage as dbGetPublishedArticlesPage,
   getRankedPublishedArticles,
   type ArticleListItem,
   type ArticleWithRelations,
+  type PaginatedArticleList,
   type PublishedReadOptions,
 } from "@/lib/server/articles";
+import {
+  ARTICLE_FEED_PAGE_SIZE,
+} from "@/lib/seo/article-listing";
 import { isRssArticle } from "@/lib/ui/article-kind";
 import { resolveArticleImageCredit } from "@/lib/articles/image-credit";
 import { polishTypography } from "@/lib/rss/translate";
@@ -167,6 +173,45 @@ export async function getFeedArticlesByCategory(
     tickSchedule: false,
   });
   return articles.map(toNewsArticle);
+}
+
+export type PaginatedNewsArticles = Omit<PaginatedArticleList, "items"> & {
+  items: NewsArticle[];
+};
+
+function mapPaginatedArticles(
+  result: PaginatedArticleList,
+): PaginatedNewsArticles {
+  return {
+    ...result,
+    items: result.items.map(toNewsArticle),
+  };
+}
+
+/** Paginated /aktualnosci archive. */
+export async function getLatestArticlesPage(
+  page: number,
+  pageSize = ARTICLE_FEED_PAGE_SIZE,
+  options: PublishedReadOptions = {},
+): Promise<PaginatedNewsArticles> {
+  const result = await dbGetPublishedArticlesPage(page, pageSize, options);
+  return mapPaginatedArticles(result);
+}
+
+/** Paginated department listing. */
+export async function getArticlesByCategoryPage(
+  category: string,
+  page: number,
+  pageSize = ARTICLE_FEED_PAGE_SIZE,
+  options: PublishedReadOptions = {},
+): Promise<PaginatedNewsArticles> {
+  const result = await dbGetArticlesByCategoryPage(
+    category,
+    page,
+    pageSize,
+    options,
+  );
+  return mapPaginatedArticles(result);
 }
 
 export async function getAllSlugs(): Promise<string[]> {

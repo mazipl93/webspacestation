@@ -1,26 +1,30 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
-import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import ArticleListingPageShell, {
+  buildArticleListingMetadata,
+  type ArticleListingConfig,
+} from "@/components/pages/ArticleListingPageShell";
 
-export const metadata: Metadata = buildListingPageMetadata({
+const LISTING: ArticleListingConfig = {
   title: "Rozrywka",
   description:
     "Gry, filmy i kultura sci-fi — kosmos w rozrywce: symulatory, RPG, premiery i seriale tematyczne.",
   path: "/rozrywka",
-});
+};
 
-export const revalidate = 300;
+type Props = {
+  searchParams: Promise<{ strona?: string }>;
+};
 
-export default function RozrywkaPage() {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  return buildArticleListingMetadata(LISTING, searchParams);
+}
+
+export default function RozrywkaPage({ searchParams }: Props) {
   return (
-    <>
-      <Navbar />
-      <main className="min-h-screen">
-        <ArticleFeedSection category="rozrywka" />
-      </main>
-      <Footer />
-    </>
+    <ArticleListingPageShell
+      listing={LISTING}
+      category="rozrywka"
+      searchParams={searchParams}
+    />
   );
 }

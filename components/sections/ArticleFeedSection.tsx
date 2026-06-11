@@ -1,13 +1,20 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { getArticlesByCategory, getLatestArticles } from "@/lib/articles";
-import { rankLatest } from "@/lib/home/rank-articles";
-
-const LATEST_FEED_LIMIT = 40;
+import {
+  getArticlesByCategoryPage,
+  getLatestArticlesPage,
+} from "@/lib/articles";
+import {
+  ARTICLE_FEED_PAGE_SIZE,
+  clampListingPage,
+  listingPageHref,
+} from "@/lib/seo/article-listing";
 import { CATEGORY_SLUG_ORDER, getCategoryInfo } from "@/lib/categories";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import ArticleCard from "@/components/article/ArticleCard";
 import DepartmentSubscribeButton from "@/components/departments/DepartmentSubscribeButton";
+import ArticleFeedPagination from "@/components/sections/ArticleFeedPagination";
 import { cn } from "@/lib/cn";
 
 const FEED_FILTERS = [
@@ -22,19 +29,35 @@ const FEED_FILTERS = [
 type Props = {
   /** Omit for the "all articles" feed; pass a category slug for filtered views. */
   category?: string;
+  page?: number;
+  basePath: string;
 };
 
-export default async function ArticleFeedSection({ category }: Props) {
-  const articles = category
-    ? rankLatest(await getArticlesByCategory(category), LATEST_FEED_LIMIT)
-    : await getLatestArticles(LATEST_FEED_LIMIT);
+export default async function ArticleFeedSection({
+  category,
+  page = 1,
+  basePath,
+}: Props) {
+  const feed = category
+    ? await getArticlesByCategoryPage(category, page, ARTICLE_FEED_PAGE_SIZE)
+    : await getLatestArticlesPage(page, ARTICLE_FEED_PAGE_SIZE);
 
-  const meta   = category ? getCategoryInfo(category) : null;
+  if (page > 1 && feed.totalPages > 0 && page > feed.totalPages) {
+    redirect(listingPageHref(basePath, feed.totalPages));
+  }
+  if (page > 1 && feed.totalPages === 0) {
+    redirect(basePath);
+  }
+
+  const safePage = clampListingPage(page, feed.totalPages || 1);
+  const articles = feed.items;
+
+  const meta = category ? getCategoryInfo(category) : null;
   const accent = meta?.color ?? "#2f6dff";
-  const title  = meta?.label ?? "Najnowsze";
-
-  const featured = category && articles.length > 0 ? articles[0] : null;
-  const rest = category && articles.length > 0 ? articles.slice(1) : articles;
+  const title = meta?.label ?? "Najnowsze";
+  const showFeatured = Boolean(category && safePage === 1 && articles.length > 0);
+  const featured = showFeatured ? articles[0] : null;
+  const rest = showFeatured ? articles.slice(1) : articles;
 
   return (
     <>
@@ -98,8 +121,14 @@ export default async function ArticleFeedSection({ category }: Props) {
                   style={{ background: accent }}
                 />
                 <span className="text-[12px] font-medium text-text-secondary">
-                  {articles.length}{" "}
-                  {articles.length === 1 ? "artykuł" : "artykułów"}
+                  {feed.total}{" "}
+                  {feed.total === 1 ? "artykuł" : "artykułów"}
+                  {feed.totalPages > 1 ? (
+                    <span className="text-text-muted">
+                      {" "}
+                      · strona {safePage}/{feed.totalPages}
+                    </span>
+                  ) : null}
                 </span>
               </div>
             </div>
@@ -118,7 +147,7 @@ export default async function ArticleFeedSection({ category }: Props) {
                     "mb-3 mt-1 flex shrink-0 items-center rounded-lg px-3.5 py-2 text-[12.5px] font-semibold transition-all duration-300",
                     isActive
                       ? "text-white"
-                      : "text-text-secondary hover:bg-glass-hover hover:text-text-primary"
+                      : "text-text-secondary hover:bg-glass-hover hover:text-text-primary",
                   )}
                   style={
                     isActive
@@ -151,24 +180,31 @@ export default async function ArticleFeedSection({ category }: Props) {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-5 lg:grid-cols-3 lg:gap-6">
-            {category && featured ? (
-              <>
-                <ArticleCard
-                  article={featured}
-                  featured
-                  className="lg:col-span-2"
-                />
-                {rest.map((article) => (
+          <>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-5 lg:grid-cols-3 lg:gap-6">
+              {showFeatured && featured ? (
+                <>
+                  <ArticleCard
+                    article={featured}
+                    featured
+                    className="lg:col-span-2"
+                  />
+                  {rest.map((article) => (
+                    <ArticleCard key={article.id} article={article} />
+                  ))}
+                </>
+              ) : (
+                articles.map((article) => (
                   <ArticleCard key={article.id} article={article} />
-                ))}
-              </>
-            ) : (
-              articles.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+            <ArticleFeedPagination
+              basePath={basePath}
+              page={safePage}
+              totalPages={feed.totalPages}
+            />
+          </>
         )}
       </div>
     </>

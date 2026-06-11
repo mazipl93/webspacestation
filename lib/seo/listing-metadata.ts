@@ -13,17 +13,21 @@ export function buildListingPageMetadata({
   title,
   description,
   path,
+  page = 1,
 }: {
   title: string;
   description: string;
   path: `/${string}`;
+  page?: number;
 }): Metadata {
-  const canonical = `${getSiteUrl()}${path}`;
+  const pagePath = page > 1 ? `${path}?strona=${page}` : path;
+  const canonical = `${getSiteUrl()}${pagePath}`;
   const ogImage = getDefaultOgImageUrl();
-  const pageTitle = formatPageTitle(title);
+  const displayTitle = page > 1 ? `${title} — strona ${page}` : title;
+  const pageTitle = formatPageTitle(displayTitle);
 
   return {
-    title,
+    title: displayTitle,
     description,
     alternates: { canonical },
     openGraph: {

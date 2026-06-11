@@ -183,6 +183,31 @@ export type PublishedReadOptions = {
   tickSchedule?: boolean;
 };
 
+export type PaginatedArticleList = {
+  items: ArticleListItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+
+const EMPTY_PAGINATED: PaginatedArticleList = {
+  items: [],
+  page: 1,
+  pageSize: 40,
+  total: 0,
+  totalPages: 0,
+};
+
+function paginateMeta(
+  page: number,
+  pageSize: number,
+  total: number,
+): Pick<PaginatedArticleList, "page" | "pageSize" | "total" | "totalPages"> {
+  const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
+  return { page, pageSize, total, totalPages };
+}
+
 export type CategoryRecord = Prisma.CategoryGetPayload<{
   select: {
     id: true;
@@ -432,16 +457,10 @@ async function queryArticlesByCategoryFromDb(
   categorySlug: string,
   limit?: number,
 ): Promise<ArticleListItem[]> {
-  const slugs = categorySlugsForDepartmentFeed(categorySlug);
+  const where = categoryFeedWhere(categorySlug);
   try {
     const rows = await prisma.article.findMany({
-      where: {
-        ...PUBLISHED_ARTICLE_WHERE,
-        category:
-          slugs.length === 1
-            ? { slug: slugs[0] }
-            : { slug: { in: slugs } },
-      },
+      where,
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
       ...(limit != null ? { take: limit } : {}),
       select: articleListSelect,
@@ -455,6 +474,124 @@ async function queryArticlesByCategoryFromDb(
     console.error("[getArticlesByCategory]", error);
     return [];
   }
+}
+
+function categoryFeedWhere(categorySlug: string): Prisma.ArticleWhereInput {
+  const slugs = categorySlugsForDepartmentFeed(categorySlug);
+  return {
+    ...PUBLISHED_ARTICLE_WHERE,
+    category:
+      slugs.length === 1
+        ? { slug: slugs[0] }
+        : { slug: { in: slugs } },
+  };
+}
+
+async function queryPublishedArticlesPageFromDb(
+  page: number,
+  pageSize: number,
+): Promise<PaginatedArticleList> {
+  try {
+    const skip = (page - 1) * pageSize;
+    const [rows, total] = await Promise.all([
+      prisma.article.findMany({
+        where: PUBLISHED_ARTICLE_WHERE,
+        orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+        skip,
+        take: pageSize,
+        select: articleListSelect,
+      }),
+      prisma.article.count({ where: PUBLISHED_ARTICLE_WHERE }),
+    ]);
+    traceArticleFetchPublic({
+      scope: `published-page-${page}`,
+      count: rows.length,
+    });
+    return { items: rows, ...paginateMeta(page, pageSize, total) };
+  } catch (error) {
+    console.error("[getPublishedArticlesPage]", error);
+    return { ...EMPTY_PAGINATED, page, pageSize };
+  }
+}
+
+async function queryArticlesByCategoryPageFromDb(
+  categorySlug: string,
+  page: number,
+  pageSize: number,
+): Promise<PaginatedArticleList> {
+  const where = categoryFeedWhere(categorySlug);
+  try {
+    const skip = (page - 1) * pageSize;
+    const [rows, total] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+        skip,
+        take: pageSize,
+        select: articleListSelect,
+      }),
+      prisma.article.count({ where }),
+    ]);
+    traceArticleFetchPublic({
+      scope: `category-${categorySlug}-page-${page}`,
+      count: rows.length,
+    });
+    return { items: rows, ...paginateMeta(page, pageSize, total) };
+  } catch (error) {
+    console.error("[getArticlesByCategoryPage]", error);
+    return { ...EMPTY_PAGINATED, page, pageSize };
+  }
+}
+
+/** Paginated published feed — newest first (HTML archive / SEO crawl path). */
+export async function getPublishedArticlesPage(
+  page: number,
+  pageSize: number,
+  options: PublishedReadOptions = {},
+): Promise<PaginatedArticleList> {
+  const safePage = Math.max(1, page);
+  const tickSchedule = options.tickSchedule !== false;
+  const tick = tickSchedule ? await maybeTickScheduledPublish() : null;
+  const useLiveQuery =
+    process.env.NODE_ENV === "development" ||
+    (tick != null && tick.published > 0);
+  if (useLiveQuery) {
+    return queryPublishedArticlesPageFromDb(safePage, pageSize);
+  }
+  return unstable_cache(
+    () => queryPublishedArticlesPageFromDb(safePage, pageSize),
+    ["published-articles-page", String(safePage), String(pageSize), "v1"],
+    { tags: [ARTICLES_TAG] },
+  )();
+}
+
+/** Paginated category feed — newest first. */
+export async function getArticlesByCategoryPage(
+  categorySlug: string,
+  page: number,
+  pageSize: number,
+  options: PublishedReadOptions = {},
+): Promise<PaginatedArticleList> {
+  const safePage = Math.max(1, page);
+  const tickSchedule = options.tickSchedule !== false;
+  const tick = tickSchedule ? await maybeTickScheduledPublish() : null;
+  const useLiveQuery =
+    process.env.NODE_ENV === "development" ||
+    (tick != null && tick.published > 0);
+  if (useLiveQuery) {
+    return queryArticlesByCategoryPageFromDb(categorySlug, safePage, pageSize);
+  }
+  return unstable_cache(
+    () => queryArticlesByCategoryPageFromDb(categorySlug, safePage, pageSize),
+    [
+      "category-articles-page",
+      categorySlug,
+      String(safePage),
+      String(pageSize),
+      "v1",
+    ],
+    { tags: [ARTICLES_TAG, categoryTag(categorySlug)] },
+  )();
 }
 
 /** Published articles within a category (by category slug), newest first. */
