@@ -4,10 +4,7 @@ import OpsLaunchFeedPaused from "@/components/discover/OpsLaunchFeedPaused";
 import OpsLaunchShowcase from "@/components/discover/OpsLaunchShowcase";
 import OpsQuickNav from "@/components/discover/OpsQuickNav";
 import { cn } from "@/lib/cn";
-import {
-  formatIssStats,
-  isOpsLaunchImminent,
-} from "@/lib/ops/ops-widget-utils";
+import { isOpsLaunchImminent } from "@/lib/ops/ops-widget-utils";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
 import { getHomepageOpsData } from "@/lib/ops/get-ops-data";
 import {
@@ -30,7 +27,6 @@ function HomepageOpsStripView({
   wssArticle: LaunchWssArticleLink | null;
 }) {
   const next = pickPrimaryLaunch(launches);
-  const issStats = formatIssStats(iss);
   const imminent = next ? isOpsLaunchImminent(next.net) : false;
   const upNext = next ? launches.find((l) => l.id !== next.id) : null;
 
@@ -64,12 +60,8 @@ function HomepageOpsStripView({
           )}
 
           <aside className="ops-widget-side">
-            <OpsIssShowcase
-              coords={issStats.coords}
-              altitude={issStats.altitude}
-              velocity={issStats.velocity}
-            />
-            <OpsQuickNav />
+            <OpsIssShowcase initialIss={iss} />
+            <OpsQuickNav exclude={["/mapa"]} />
           </aside>
         </div>
       </div>

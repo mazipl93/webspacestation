@@ -1,7 +1,7 @@
 import { getOpenAIKey } from "@/lib/rss/translate";
 
 /** Max startów z briefem AI na jeden run ops:refresh (koszt). */
-export const OPS_LAUNCH_BRIEFS_BATCH_LIMIT = 8;
+export const OPS_LAUNCH_BRIEFS_BATCH_LIMIT = 12;
 
 /** Generuj briefy tylko dla startów w tym horyzoncie (dni). */
 export const OPS_LAUNCH_BRIEFS_HORIZON_DAYS = 21;
@@ -31,8 +31,23 @@ export function getLaunchBriefsModel(): string {
   );
 }
 
+/** Model używany do briefów z web search (gpt-4o-search-preview lub override). */
+export function getWebSearchModel(): string {
+  return (
+    process.env.OPS_LAUNCH_BRIEFS_WEB_SEARCH_MODEL?.trim() ||
+    "gpt-4o-search-preview"
+  );
+}
+
 export function isLaunchBriefsEnabled(): boolean {
   const flag = process.env.OPS_LAUNCH_BRIEFS?.trim().toLowerCase();
   if (flag === "false" || flag === "0" || flag === "no") return false;
   return Boolean(getLaunchBriefsOpenAIKey());
+}
+
+/** Opt-out dla web search — domyślnie włączony gdy briefs są włączone. */
+export function isWebSearchBriefsEnabled(): boolean {
+  const flag = process.env.OPS_LAUNCH_BRIEFS_WEB_SEARCH?.trim().toLowerCase();
+  if (flag === "false" || flag === "0" || flag === "no") return false;
+  return isLaunchBriefsEnabled();
 }

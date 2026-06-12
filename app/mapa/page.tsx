@@ -33,6 +33,7 @@ export default async function MapaPage() {
           layout="stack"
           interactive
           mapClassName="ops-map-page-map"
+          followIss={!!ops.iss}
         />
       </div>
 

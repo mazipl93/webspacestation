@@ -1,11 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight, Satellite } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
+import { formatIssStats } from "@/lib/ops/ops-widget-utils";
+import type { OpsIssPosition } from "@/lib/ops/types";
 
 type Props = {
-  coords: string;
-  altitude: string | null;
-  velocity: string | null;
+  initialIss: OpsIssPosition | null;
   className?: string;
 };
 
@@ -42,12 +45,10 @@ function IssOrbitGraphic() {
   );
 }
 
-export default function OpsIssShowcase({
-  coords,
-  altitude,
-  velocity,
-  className,
-}: Props) {
+export default function OpsIssShowcase({ initialIss, className }: Props) {
+  const { iss } = useLiveIssTrack(initialIss);
+  const { coords, altitude, velocity } = formatIssStats(iss);
+
   return (
     <Link
       href="/mapa"
@@ -60,6 +61,10 @@ export default function OpsIssShowcase({
           <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-accent-cyan">
             <Satellite size={13} aria-hidden />
             ISS teraz
+            <span
+              aria-hidden
+              className="ml-0.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-accent-cyan"
+            />
           </p>
           <p className="ops-iss-showcase__coords">{coords}</p>
           {(altitude || velocity) && (

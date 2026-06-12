@@ -29,6 +29,7 @@ type Props = {
   showPinList?: boolean;
   interactive?: boolean;
   mapClassName?: string;
+  followIss?: boolean;
 };
 
 function OpsMapDetailSlot({
@@ -66,6 +67,7 @@ export default function OpsMissionMap({
   showPinList = true,
   interactive = false,
   mapClassName,
+  followIss = false,
 }: Props) {
   const [focusPinId, setFocusPinId] = useState<string | null>(null);
   const isSplit = layout === "split";
@@ -98,6 +100,7 @@ export default function OpsMissionMap({
       className={mapClassName}
       focusPinId={focusPinId}
       onPinSelect={handleSelectPin}
+      followIss={followIss}
     />
   );
 

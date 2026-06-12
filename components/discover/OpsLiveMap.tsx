@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import {
   Circle,
@@ -11,6 +11,7 @@ import {
   useMap,
 } from "react-leaflet";
 import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
+import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
 import { cn } from "@/lib/cn";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
 import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
@@ -26,33 +27,51 @@ type Props = {
   className?: string;
   focusPinId?: string | null;
   onPinSelect?: (pinId: string) => void;
+  followIss?: boolean;
 };
 
 function MapViewController({
   iss,
   pins,
   focusPinId,
+  followIss = false,
+  onUserMoved,
 }: {
   iss?: OpsIssPosition | null;
   pins: OpsMapPin[];
   focusPinId?: string | null;
+  followIss?: boolean;
+  onUserMoved?: () => void;
 }) {
   const map = useMap();
-  const didInitialFit = useRef(false);
+  const initDoneRef = useRef(false);
+
+  useEffect(() => {
+    if (!onUserMoved) return;
+    const stop = () => onUserMoved();
+    map.on("dragstart", stop);
+    return () => { map.off("dragstart", stop); };
+  }, [map, onUserMoved]);
 
   useEffect(() => {
     if (focusPinId) return;
-    if (didInitialFit.current) return;
-    if (iss) {
-      map.setView([iss.latitude, iss.longitude], 3, { animate: false });
-      didInitialFit.current = true;
+
+    if (!iss) {
+      if (!initDoneRef.current && pins.length > 0) {
+        const bounds = L.latLngBounds(pins.map((p) => [p.lat, p.lon] as [number, number]));
+        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 3 });
+        initDoneRef.current = true;
+      }
       return;
     }
-    if (pins.length === 0) return;
-    const bounds = L.latLngBounds(pins.map((p) => [p.lat, p.lon] as [number, number]));
-    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 3 });
-    didInitialFit.current = true;
-  }, [iss, pins, map, focusPinId]);
+
+    if (!initDoneRef.current) {
+      map.setView([iss.latitude, iss.longitude], 3, { animate: false });
+      initDoneRef.current = true;
+    } else if (followIss) {
+      map.panTo([iss.latitude, iss.longitude], { animate: true, duration: 2 });
+    }
+  }, [iss, pins, map, focusPinId, followIss]);
 
   return null;
 }
@@ -146,9 +165,31 @@ export default function OpsLiveMap({
   className,
   focusPinId = null,
   onPinSelect,
+  followIss = false,
 }: Props) {
+  const [isFollowing, setIsFollowing] = useState(followIss);
+  const { iss: liveIss, orbit: liveOrbit } = useLiveIssTrack(
+    iss ?? null,
+    issOrbit,
+  );
   const issPin = pins.find((p) => p.kind === "iss");
   const padPins = pins.filter((p) => p.kind === "pad");
+
+  const issLatLng = useMemo<[number, number] | null>(() => {
+    if (liveIss) return [liveIss.latitude, liveIss.longitude];
+    if (issPin) return [issPin.lat, issPin.lon];
+    return null;
+  }, [liveIss, issPin]);
+
+  /** Pin ISS z podmienioną pozycją live — focus / mapa trafiają tam, gdzie marker. */
+  const effectivePins = useMemo(() => {
+    if (!liveIss) return pins;
+    return pins.map((p) =>
+      p.kind === "iss"
+        ? { ...p, lat: liveIss.latitude, lon: liveIss.longitude }
+        : p,
+    );
+  }, [pins, liveIss]);
 
   const issIcon = useMemo(
     () => (issPin ? createIssIcon(focusPinId === issPin.id) : null),
@@ -163,10 +204,10 @@ export default function OpsLiveMap({
   }, [padPins, focusPinId]);
 
   const center = useMemo<[number, number]>(() => {
-    if (iss) return [iss.latitude, iss.longitude];
+    if (issLatLng) return issLatLng;
     if (pins[0]) return [pins[0].lat, pins[0].lon];
     return [20, 0];
-  }, [iss, pins]);
+  }, [issLatLng, pins]);
 
   const initialCenterRef = useRef<[number, number] | null>(null);
   if (initialCenterRef.current === null) {
@@ -174,14 +215,16 @@ export default function OpsLiveMap({
   }
 
   const visibilityRadiusM =
-    iss?.altitudeKm != null ? issVisibilityRadiusM(iss.altitudeKm) : undefined;
+    liveIss?.altitudeKm != null
+      ? issVisibilityRadiusM(liveIss.altitudeKm)
+      : undefined;
 
   const shellClass = opsMapShellClass(className);
   const useFixedShell =
     Boolean(className?.includes("ops-map-page-map")) ||
     Boolean(className?.includes("ops-map-embed"));
 
-  if (pins.length === 0 && !iss) {
+  if (pins.length === 0 && !liveIss) {
     return (
       <div
         className={cn(
@@ -220,10 +263,16 @@ export default function OpsLiveMap({
         <TileLayer attribution="" url={SATELLITE_TILE} />
         <TileLayer attribution="" url={LABELS_TILE} opacity={0.55} />
         <MapResizeFix />
-        <MapViewController iss={iss} pins={pins} focusPinId={focusPinId} />
-        <PinFocusController focusPinId={focusPinId} pins={pins} />
+        <MapViewController
+          iss={liveIss}
+          pins={effectivePins}
+          focusPinId={focusPinId}
+          followIss={isFollowing}
+          onUserMoved={followIss ? () => setIsFollowing(false) : undefined}
+        />
+        <PinFocusController focusPinId={focusPinId} pins={effectivePins} />
 
-        {issOrbit.map((segment, i) => (
+        {liveOrbit.map((segment, i) => (
           <Polyline
             key={`orbit-${i}`}
             positions={segment.map((p) => [p.lat, p.lon] as [number, number])}
@@ -236,9 +285,9 @@ export default function OpsLiveMap({
           />
         ))}
 
-        {iss && visibilityRadiusM != null && (
+        {issLatLng && visibilityRadiusM != null && (
           <Circle
-            center={[iss.latitude, iss.longitude]}
+            center={issLatLng}
             radius={visibilityRadiusM}
             pathOptions={{
               color: "#ef4444",
@@ -250,9 +299,9 @@ export default function OpsLiveMap({
           />
         )}
 
-        {issPin && issIcon && (
+        {issPin && issIcon && issLatLng && (
           <Marker
-            position={[issPin.lat, issPin.lon]}
+            position={issLatLng}
             icon={issIcon}
             eventHandlers={{
               click: () => onPinSelect?.(issPin.id),
@@ -272,12 +321,21 @@ export default function OpsLiveMap({
         ))}
       </MapContainer>
 
-      {iss && (
+      {liveIss && (
         <div className="pointer-events-none absolute right-2 top-2 z-[1000] hidden max-w-[168px] sm:block">
-          <OpsIssTelemetry iss={iss} className="px-2.5 py-2 text-[10px]" />
+          <OpsIssTelemetry iss={liveIss} className="px-2.5 py-2 text-[10px]" />
         </div>
       )}
 
+      {followIss && !isFollowing && liveIss && (
+        <button
+          onClick={() => setIsFollowing(true)}
+          className="absolute bottom-3 left-3 z-[1000] flex items-center gap-1.5 rounded-lg border border-accent-cyan/40 bg-[rgba(8,14,24,0.88)] px-3 py-1.5 text-[11px] font-semibold text-accent-cyan backdrop-blur-sm transition-colors hover:bg-[rgba(8,14,24,0.95)]"
+        >
+          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-accent-cyan" />
+          Śledź ISS
+        </button>
+      )}
     </div>
   );
 }

@@ -249,6 +249,29 @@ export async function getPublishedSitemapEntries(): Promise<SitemapArticleEntry[
   )();
 }
 
+async function queryPublishedTagsFromDb(): Promise<string[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: { ...PUBLISHED_ARTICLE_WHERE, NOT: { tags: { equals: [] } } },
+      select: { tags: true },
+    });
+    const all = rows.flatMap((r) => r.tags);
+    return [...new Set(all)].sort();
+  } catch (error) {
+    console.error("[getPublishedTags]", error);
+    return [];
+  }
+}
+
+/** Unique tags from all published articles — for sitemap /tag/* entries. */
+export async function getPublishedTags(): Promise<string[]> {
+  return unstable_cache(
+    queryPublishedTagsFromDb,
+    ["published-tags", "v1"],
+    { tags: [ARTICLES_TAG] },
+  )();
+}
+
 async function queryPublishedArticlesFromDb(): Promise<ArticleListItem[]> {
   try {
     const rows = await prisma.article.findMany({
@@ -593,6 +616,64 @@ export async function getArticlesByCategoryPage(
     { tags: [ARTICLES_TAG, categoryTag(categorySlug)] },
   )();
 }
+
+// ─── Tag feed ────────────────────────────────────────────────────────────────
+
+function tagFeedWhere(tag: string | string[]): Prisma.ArticleWhereInput {
+  const filter = Array.isArray(tag)
+    ? { hasSome: tag }
+    : { has: tag };
+  return {
+    ...PUBLISHED_ARTICLE_WHERE,
+    tags: filter,
+  };
+}
+
+async function queryArticlesByTagPageFromDb(
+  tag: string | string[],
+  page: number,
+  pageSize: number,
+): Promise<PaginatedArticleList> {
+  const where = tagFeedWhere(tag);
+  try {
+    const skip = (page - 1) * pageSize;
+    const [rows, total] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+        skip,
+        take: pageSize,
+        select: articleListSelect,
+      }),
+      prisma.article.count({ where }),
+    ]);
+    traceArticleFetchPublic({ scope: `tag-${tag}-page-${page}`, count: rows.length });
+    return { items: rows, ...paginateMeta(page, pageSize, total) };
+  } catch (error) {
+    console.error("[getArticlesByTagPage]", error);
+    return { ...EMPTY_PAGINATED, page, pageSize };
+  }
+}
+
+/** Paginated tag feed — newest first. Uses GIN index on articles.tags[]. */
+export async function getArticlesByTagPage(
+  tag: string | string[],
+  page: number,
+  pageSize: number,
+): Promise<PaginatedArticleList> {
+  const safePage = Math.max(1, page);
+  const cacheKey = Array.isArray(tag) ? tag.join("|") : tag;
+  if (process.env.NODE_ENV === "development") {
+    return queryArticlesByTagPageFromDb(tag, safePage, pageSize);
+  }
+  return unstable_cache(
+    () => queryArticlesByTagPageFromDb(tag, safePage, pageSize),
+    ["tag-articles-page", cacheKey, String(safePage), String(pageSize), "v1"],
+    { tags: [ARTICLES_TAG] },
+  )();
+}
+
+// ─── Category feed ───────────────────────────────────────────────────────────
 
 /** Published articles within a category (by category slug), newest first. */
 export async function getArticlesByCategory(

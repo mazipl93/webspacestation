@@ -9,6 +9,7 @@ import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import LaunchCard from "@/components/discover/LaunchCard";
 import { getCoreOpsData } from "@/lib/ops/get-ops-data";
 import { getLaunchWssArticleLinks, linkForLaunch } from "@/lib/ops/launch-article-bridge";
+import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
@@ -38,6 +39,7 @@ const DISCOVER_LINKS = [
 export default async function StartyPage() {
   const ops = await getCoreOpsData();
   const articleLinks = await getLaunchWssArticleLinks(ops.launches);
+  const primary = pickPrimaryLaunch(ops.launches);
 
   return (
     <DiscoverPageShell
@@ -58,7 +60,7 @@ export default async function StartyPage() {
             {ops.launches.length} pozycji · cache 5 min
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ops.launches.length === 0 ? (
             <div className="card-surface col-span-full rounded-xl border border-hairline p-6 sm:p-8">
               <p className="text-[13px] font-semibold text-text-primary">
@@ -69,14 +71,21 @@ export default async function StartyPage() {
               </p>
             </div>
           ) : (
-            ops.launches.map((launch) => (
-              <LaunchCard
-                key={launch.id}
-                launch={launch}
-                variant="featured"
-                wssArticle={linkForLaunch(launch.id, articleLinks)}
-              />
-            ))
+            ops.launches.map((launch) => {
+              const isHero = launch.id === primary?.id;
+              return (
+                <div
+                  key={launch.id}
+                  className={isHero ? "sm:col-span-2" : undefined}
+                >
+                  <LaunchCard
+                    launch={launch}
+                    variant="featured"
+                    wssArticle={linkForLaunch(launch.id, articleLinks)}
+                  />
+                </div>
+              );
+            })
           )}
         </div>
       </section>

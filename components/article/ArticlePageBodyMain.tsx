@@ -16,6 +16,7 @@ import {
   buildWovenBodySegments,
   type InternalLinkCandidate,
 } from "@/lib/article/weave-internal-links";
+import { injectHubAnchors } from "@/lib/article/hub-anchor-links";
 import { hasSourceAttribution, isRssArticle } from "@/lib/ui/article-kind";
 import { previewCatMeta } from "@/lib/ui/article-preview-meta";
 import { ARTICLE_PROSE_MAX, ARTICLE_SHELL } from "@/lib/ui/article-editorial-layout";
@@ -47,6 +48,9 @@ export default function ArticlePageBodyMain({
   const { lead, restBlocks } = splitArticleLeadAndBody(article, bodyBlocks);
   const wovenSegments = buildWovenBodySegments(restBlocks, weaveCandidates);
 
+  // Shared state for hub anchor injection — 1 link per hub per article
+  const usedHubHrefs = new Set<string>();
+
   const articleCard = (
       <article className="min-w-0 pt-1 sm:pt-2">
         <div className={ARTICLE_PROSE_MAX}>
@@ -59,7 +63,7 @@ export default function ArticlePageBodyMain({
                 borderColor: meta.color,
               }}
             >
-              {renderInlineMarkdown(lead)}
+              {renderInlineMarkdown(injectHubAnchors(lead, usedHubHrefs))}
             </p>
           ) : null}
 
@@ -70,7 +74,7 @@ export default function ArticlePageBodyMain({
                 className="mb-6 text-text-secondary"
                 style={{ fontSize: "var(--text-body)", lineHeight: 1.8 }}
               >
-                {renderInlineMarkdown(segment.text)}
+                {renderInlineMarkdown(injectHubAnchors(segment.text, usedHubHrefs))}
               </p>
             ) : segment.kind === "list" ? (
               <ArticleContentBlocks

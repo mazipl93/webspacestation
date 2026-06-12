@@ -11,9 +11,11 @@ const LINKS = [
 type Props = {
   className?: string;
   layout?: "row" | "grid";
+  exclude?: string[];
 };
 
-export default function OpsQuickNav({ className, layout = "grid" }: Props) {
+export default function OpsQuickNav({ className, layout = "grid", exclude }: Props) {
+  const links = exclude ? LINKS.filter((l) => !exclude.includes(l.href)) : LINKS;
   return (
     <nav
       className={cn(
@@ -23,7 +25,7 @@ export default function OpsQuickNav({ className, layout = "grid" }: Props) {
       )}
       aria-label="Skróty Odkrywaj"
     >
-      {LINKS.map(({ href, label, icon: Icon, color }) => (
+      {links.map(({ href, label, icon: Icon, color }) => (
         <Link key={href} href={href} className="ops-quick-nav__link">
           <span className="ops-quick-nav__icon" style={{ color }}>
             <Icon size={16} aria-hidden />

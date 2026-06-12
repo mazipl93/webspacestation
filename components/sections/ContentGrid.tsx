@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Suspense, type ReactNode } from "react";
-import { ChevronRight, Globe, Map, Rocket } from "lucide-react";
+import { type ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { CATEGORY_INFO, CATEGORY_SLUG_ORDER } from "@/lib/categories";
 import { HOMEPAGE_LAYOUT_V2, SITE_CONTAINER } from "@/lib/site-layout";
@@ -16,19 +16,9 @@ import DepartmentSectionHeader from "@/components/sections/DepartmentSectionHead
 import { HomeSectionMobileFeed } from "@/components/sections/HomeSectionArticleFeed";
 import {
   categorySectionTheme,
-  OPS_THEME,
   type SectionThemeConfig,
 } from "@/lib/home/homepage-section-themes";
-import LaunchCard from "@/components/discover/LaunchCard";
-import OpsCenterExplainer from "@/components/discover/OpsCenterExplainer";
-import OpsScheduleList from "@/components/discover/OpsScheduleList";
-import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
-import { getHomepageOpsData } from "@/lib/ops/get-ops-data";
-import { formatIssForReader } from "@/lib/ops/format-ops-display";
-import type { OpsSnapshot } from "@/lib/ops/types";
 
-/** Mobile — pionowa lista pod hero (kilka pozycji od razu widocznych). */
-const LATEST_MOBILE_LIST_LIMIT = 6;
 // ─── Category presentation ────────────────────────────────────────────────────
 
 const CATEGORY_LAYOUT: Record<
@@ -69,50 +59,6 @@ const CATEGORY_META = Object.fromEntries(
 
 const CATEGORY_ORDER = CATEGORY_SLUG_ORDER;
 
-function SectionHeader({
-  label,
-  accent = "#2f6dff",
-  href,
-  cta = "Zobacz wszystkie",
-  large = false,
-}: {
-  label: string;
-  accent?: string;
-  href?: string;
-  cta?: string;
-  large?: boolean;
-}) {
-  return (
-    <div className="mb-5 flex items-center justify-between">
-      <div className="flex items-center gap-2.5">
-        <span
-          className="h-4 w-[3px] shrink-0 rounded-full"
-          style={{ background: accent, boxShadow: `0 0 10px ${accent}66` }}
-        />
-        <h2
-          className={cn(
-            "font-bold uppercase tracking-[0.14em] text-text-secondary",
-            large ? "text-[15px] md:text-[14px]" : "text-[13px] md:text-[12px]"
-          )}
-        >
-          {label}
-        </h2>
-      </div>
-      {href && (
-        <a
-          href={href}
-          className="group flex min-h-[44px] items-center gap-1 text-[14px] font-medium text-text-tertiary transition-colors duration-300 hover:text-text-primary md:text-[13px]"
-        >
-          {cta}
-          <ChevronRight
-            size={14}
-            className="transition-transform duration-300 group-hover:translate-x-0.5"
-          />
-        </a>
-      )}
-    </div>
-  );
-}
 
 function CategorySplitLeadDesktop({
   meta,
@@ -384,201 +330,6 @@ function CategorySection({
   );
 }
 
-// ─── Dashboard widgets (demoted below editorial content) ───────────────────────
-
-function LiveMissionCenter({ ops }: { ops: OpsSnapshot }) {
-  const iss = formatIssForReader(ops.iss);
-  return (
-    <section className="card-surface flex flex-col gap-3 p-5">
-      <SectionHeader label="Stacja ISS" accent="#38bdf8" href="/mapa" cta="Mapa" />
-      {!ops.live ? (
-        <div>
-          <OpsPreviewBadge variant="stale" />
-        </div>
-      ) : null}
-      <div className="well flex-1 p-4">
-        <p className="text-[11px] leading-relaxed text-text-tertiary">
-          Międzynarodowa Stacja Kosmiczna krąży ~400 km nad Ziemią. Poniżej punkt na globie,
-          nad którym jest teraz.
-        </p>
-        <p className="mt-3 text-[20px] font-bold tracking-tight text-accent-cyan">{iss.coords}</p>
-        <Link
-          href="/mapa"
-          className="mt-4 inline-flex text-[11px] font-medium text-accent-cyan hover:text-accent-cyan/80"
-        >
-          Zobacz ISS na mapie →
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-function NadchodzaceStarty({ ops }: { ops: OpsSnapshot }) {
-  return (
-    <section className="homepage-ops-panel card-surface p-5">
-      <SectionHeader
-        label="Nadchodzące starty"
-        accent="#38bdf8"
-        href="/starty"
-      />
-      <p className="-mt-2 mb-4 text-[12px] leading-relaxed text-text-tertiary">
-        Kolejne rakiety w kosmos — kliknij kartę, aby zobaczyć pełny harmonogram.
-      </p>
-      <div className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        {ops.launches.slice(0, 4).map((launch) => (
-          <LaunchCard key={launch.id} launch={launch} href="/starty" />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function MapaStartow({ ops }: { ops: OpsSnapshot }) {
-  const iss = formatIssForReader(ops.iss);
-  const upcomingCount = ops.launches.length;
-  const padCount = ops.mapPins.filter((p) => p.kind === "pad").length;
-
-  return (
-    <section className="homepage-ops-panel card-surface overflow-hidden p-5">
-      <SectionHeader
-        label="Gdzie to się dzieje?"
-        accent="#a78bfa"
-        href="/mapa"
-        cta="Pełna mapa"
-      />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-        <div className="well relative flex min-h-[200px] flex-col justify-end overflow-hidden rounded-xl p-5 sm:min-h-[220px]">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 85% 70% at 72% 28%, rgba(56,189,248,0.22) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 18% 78%, rgba(167,139,250,0.18) 0%, transparent 50%), linear-gradient(145deg, rgba(8,12,20,0.4) 0%, rgba(5,7,9,0.85) 100%)",
-            }}
-          />
-          <Globe
-            aria-hidden
-            size={120}
-            strokeWidth={0.75}
-            className="pointer-events-none absolute -right-6 -top-4 text-accent-cyan/[0.12] sm:right-2 sm:top-0"
-          />
-          <p className="relative text-[13px] leading-relaxed text-text-secondary">
-            Satelitarna mapa Ziemi: orbita ISS, pozycja stacji na żywo i platformy startowe
-            nadchodzących rakiet — wszystko w jednym widoku.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div className="well grid gap-3 p-4 sm:grid-cols-2">
-            <div>
-              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-cyan">
-                <Map size={12} />
-                ISS teraz
-              </p>
-              <p className="mt-2 text-[18px] font-bold tracking-tight text-text-primary">
-                {iss.coords}
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-text-tertiary">
-                Punkt na globie bezpośrednio pod stacją.
-              </p>
-            </div>
-            <div>
-              <p
-                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em]"
-                style={{ color: "#a78bfa" }}
-              >
-                <Rocket size={12} />
-                Na mapie
-              </p>
-              <p className="mt-2 text-[18px] font-bold tracking-tight text-text-primary">
-                {upcomingCount > 0
-                  ? `${upcomingCount} ${upcomingCount === 1 ? "start" : upcomingCount < 5 ? "starty" : "startów"}`
-                  : "Brak zaplanowanych"}
-              </p>
-              <p className="mt-1 text-[11px] leading-relaxed text-text-tertiary">
-                {padCount > 0
-                  ? `${padCount} ${padCount === 1 ? "platforma" : padCount < 5 ? "platformy" : "platform"} startowych.`
-                  : "Platformy startowe pojawią się po odświeżeniu danych."}
-              </p>
-            </div>
-          </div>
-
-          <Link
-            href="/mapa"
-            className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border px-5 py-3 text-[13px] font-semibold text-text-primary transition-all duration-300 active:scale-[0.98]"
-            style={{
-              borderColor: "rgba(167,139,250,0.35)",
-              background: "rgba(167,139,250,0.1)",
-            }}
-          >
-            Zobacz mapę na żywo
-            <ChevronRight
-              size={16}
-              className="transition-transform duration-300 group-hover:translate-x-0.5"
-              style={{ color: "#a78bfa" }}
-            />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function TimelineWydarzen({ ops }: { ops: OpsSnapshot }) {
-  return (
-    <section className="card-surface p-5">
-      <SectionHeader label="Kolejne terminy" href="/kalendarz" cta="Cały kalendarz" />
-      <OpsScheduleList events={ops.calendar} limit={5} />
-    </section>
-  );
-}
-
-function DashboardWidgets({ ops }: { ops: OpsSnapshot }) {
-  return (
-    <section className="reveal">
-      <DepartmentSectionFrame
-        theme={OPS_THEME.theme}
-        accent={OPS_THEME.accent}
-        accentAlt={OPS_THEME.accentAlt}
-      >
-        <DepartmentSectionHeader config={OPS_THEME} />
-        <OpsCenterExplainer />
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
-          <NadchodzaceStarty ops={ops} />
-          <LiveMissionCenter ops={ops} />
-        </div>
-        <div className="mt-4">
-          <MapaStartow ops={ops} />
-        </div>
-        <div className="mt-4 max-w-xl">
-          <TimelineWydarzen ops={ops} />
-        </div>
-      </DepartmentSectionFrame>
-    </section>
-  );
-}
-
-function OpsDashboardSkeleton() {
-  return (
-    <div
-      className="homepage-ops-panel card-surface animate-pulse space-y-4 p-5"
-      aria-hidden
-    >
-      <div className="h-5 w-48 rounded bg-white/10" />
-      <div className="h-[180px] rounded-xl bg-white/5" />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="h-24 rounded-xl bg-white/5" />
-        <div className="h-24 rounded-xl bg-white/5" />
-      </div>
-    </div>
-  );
-}
-
-async function HomepageOpsDashboardLoader() {
-  const ops = await getHomepageOpsData();
-  return <DashboardWidgets ops={ops} />;
-}
-
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 type ContentGridProps = {
@@ -639,10 +390,6 @@ export default function ContentGrid({ homepage }: ContentGridProps) {
             />
           ))}
         </div>
-
-        <Suspense fallback={<OpsDashboardSkeleton />}>
-          <HomepageOpsDashboardLoader />
-        </Suspense>
       </div>
     </div>
   );

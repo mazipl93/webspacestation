@@ -146,6 +146,7 @@ model Article {
   @@index([source])
   @@index([contentOrigin])
   @@index([status, publishAt])
+  @@index([tags], type: Gin)
   @@map("articles")
 }
 

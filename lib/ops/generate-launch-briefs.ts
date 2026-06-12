@@ -3,6 +3,7 @@ import {
   OPS_LAUNCH_BRIEFS_HORIZON_DAYS,
   getLaunchBriefsModel,
   isLaunchBriefsEnabled,
+  isWebSearchBriefsEnabled,
   requireLaunchBriefsOpenAIKey,
 } from "@/lib/ops/launch-brief-config";
 import {
@@ -10,6 +11,8 @@ import {
   filterLaunchesForBriefGeneration,
   mergeLaunchBriefsFromPrevious,
 } from "@/lib/ops/launch-brief-merge";
+import { isInterestingLaunch } from "@/lib/ops/launch-brief-interesting";
+import { generateBriefWithWebSearch } from "@/lib/ops/launch-brief-web-search";
 import { polishTypography } from "@/lib/rss/translate";
 import type { OpsLaunch, OpsLaunchBrief } from "@/lib/ops/types";
 
@@ -135,15 +138,35 @@ export async function generateMissingLaunchBriefs(
   );
   if (pending.length === 0) return launches;
 
+  const webSearchEnabled = isWebSearchBriefsEnabled();
+  const interesting = webSearchEnabled ? pending.filter(isInterestingLaunch) : [];
+  const routine = webSearchEnabled
+    ? pending.filter((l) => !isInterestingLaunch(l))
+    : pending;
+
   const generated = new Map<string, OpsLaunchBrief>();
 
-  for (let i = 0; i < pending.length; i += OPENAI_ITEMS_PER_BATCH) {
-    const batch = pending.slice(i, i + OPENAI_ITEMS_PER_BATCH).map(toBriefInput);
+  // Web search dla ciekawych misji (NROL, Crew, Starship…) — po jednej
+  for (const launch of interesting) {
+    console.log(`[ops:briefs] web search → ${launch.mission}`);
+    const brief = await generateBriefWithWebSearch(launch);
+    if (brief) {
+      generated.set(launch.id, brief);
+    } else {
+      // fallback do zwykłego batcha gdy web search padnie
+      console.log(`[ops:briefs] web search fallback → ${launch.mission}`);
+      routine.push(launch);
+    }
+  }
+
+  // Batch dla rutynowych misji
+  for (let i = 0; i < routine.length; i += OPENAI_ITEMS_PER_BATCH) {
+    const batch = routine.slice(i, i + OPENAI_ITEMS_PER_BATCH).map(toBriefInput);
     try {
       const part = await generateBriefBatch(batch);
       for (const [id, brief] of part) generated.set(id, brief);
     } catch (error) {
-      console.error("[ops] launch brief batch failed", error);
+      console.error("[ops:briefs] batch failed:", error);
     }
   }
 

@@ -2,32 +2,32 @@
 
 ---
 
-## PROMPT NA NOWY CZAT (wklej użytkownikowi / agentowi)
+## PROMPT NA NOWY CZAT (wklej)
 
 ```
 Czytaj docs/WSS_GA4_LIKES_HANDOFF.md i kontynuuj WSS.
 
-Zasady dla Ciebie (agenta):
-1. Testujemy GA4 + lajki w OPOR (incognito, krok po kroku) aż user powie że jest pewny — nie przechodź do commita/produkcji bez potwierdzenia testów.
-2. Dawaj instrukcje „jak dla debila” — numerowane kroki, co dokładnie kliknąć w Chrome, co wpisać w filtrze Network, co powinno się pojawić / czego NIE powinno być.
-3. Po każdym teście: krótko „OK / nie OK” i co dalej.
-4. GA4 NIE w CMS — tylko public layout. Env: G-0DPDC1VHJY.
-5. Użytkownik na Windows/PowerShell — nie wklejać promptu PS C:\...>, tylko same komendy.
-6. Adblock/Brave często blokuje collect — jeśli brak collect, najpierw test w czystym Chrome incognito bez rozszerzeń.
+Lokalne testy GA4 + lajki OK (commit 68c2487 na main). Teraz: deploy prod.
 
-Pierwsza rzecz: poprowadź pełny test GA4 lokalnie (Tylko niezbędne → brak Google; Akceptuj → gtag + collect + Realtime), potem test lajków (2× incognito).
+Zrób po kolei:
+1. Vercel env NEXT_PUBLIC_GA_MEASUREMENT_ID=G-0DPDC1VHJY (Production + Preview)
+2. Deploy / poczekaj na build z main
+3. Test prod: incognito, adblock OFF → webspacestation.pl → Akceptuj → Network collect 204 + GA Realtime
+4. Test prod: lajki 2× incognito
+
+Instrukcje krok po kroku jak dla debila. Po każdym kroku OK/nie OK.
+Windows/PowerShell — same komendy, bez PS C:\...>.
+Nie commituj bez prośby usera.
 ```
 
 ---
 
 ## Git / deploy
 
-- **Ostatni push na `main`:** `b9ae981` — FB share-card auto-post + rozdzielenie podtytuł/zajawka w CMS.
-- **NIE na GitHubie (lokalnie, niecommitowane):**
-  - GA4 + banner RODO (`lib/analytics/`, `components/consent/`, `components/analytics/`)
-  - fix lajków (`hooks/useArticleLikes.ts`, usunięty `browser-liked-cache`)
-  - polityka prywatności (sekcja GA4)
-  - `.env` z `NEXT_PUBLIC_GA_MEASUREMENT_ID=G-0DPDC1VHJY` (**nie commitować**)
+- **Ostatni push na `main`:** `68c2487` — GA4 + RODO banner + fix lajków + polityka GA4.
+- **Lokalne testy:** OK (collect 204, Realtime, lajki 2× incognito). Adblock musi być wyłączony przy teście GA.
+- **Vercel prod:** env `NEXT_PUBLIC_GA_MEASUREMENT_ID=G-0DPDC1VHJY` — **jeszcze do ustawienia**.
+- `.env` lokalny z GA ID — **nie commitować**.
 
 ---
 
@@ -112,13 +112,13 @@ Stop-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess -Force; np
 
 ---
 
-## Kolejność po pełnych testach
+## Kolejność
 
-1. ✅ GA4 lokalnie (collect + Realtime) — **w toku**
+1. ✅ GA4 lokalnie
 2. ✅ Lajki 2× incognito
-3. Commit: likes + GA4 + polityka (bez `.env`)
-4. Vercel env `NEXT_PUBLIC_GA_MEASUREMENT_ID` + deploy prod
-5. Test prod Realtime + lajki prod
+3. ✅ Commit + push `68c2487`
+4. ⏳ Vercel env + deploy prod
+5. ⏳ Test prod Realtime + lajki
 
 ---
 

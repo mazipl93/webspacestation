@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getPublishedSitemapEntries } from "@/lib/server/articles";
+import { getPublishedSitemapEntries, getPublishedTags } from "@/lib/server/articles";
 import { SEO_SITEMAP_PATHS } from "@/lib/seo/public-routes";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -14,7 +14,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${base}${path === "/" ? "" : path}`,
     lastModified: now,
     changeFrequency: path === "/" ? "hourly" : "daily",
-    priority: path === "/" ? 1 : path === "/aktualnosci" ? 0.9 : 0.7,
+    priority:
+      path === "/" ? 1
+      : path === "/aktualnosci" ? 0.9
+      : ["/nasa", "/spacex", "/esa", "/jwst"].includes(path) ? 0.85
+      : 0.7,
   }));
 
   let articleEntries: MetadataRoute.Sitemap = [];
@@ -30,5 +34,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] failed to load articles", error);
   }
 
-  return [...staticEntries, ...articleEntries];
+  let tagEntries: MetadataRoute.Sitemap = [];
+  try {
+    const tags = await getPublishedTags();
+    tagEntries = tags.map((tag) => ({
+      url: `${base}/tag/${tag}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.error("[sitemap] failed to load tags", error);
+  }
+
+  return [...staticEntries, ...articleEntries, ...tagEntries];
 }

@@ -9,6 +9,7 @@ import {
   getPublishedWeekTopicSlides,
   getArticlesByCategory as dbGetArticlesByCategory,
   getArticlesByCategoryPage as dbGetArticlesByCategoryPage,
+  getArticlesByTagPage as dbGetArticlesByTagPage,
   getPublishedArticlesPage as dbGetPublishedArticlesPage,
   getRankedPublishedArticles,
   type ArticleListItem,
@@ -195,6 +196,16 @@ export async function getLatestArticlesPage(
   options: PublishedReadOptions = {},
 ): Promise<PaginatedNewsArticles> {
   const result = await dbGetPublishedArticlesPage(page, pageSize, options);
+  return mapPaginatedArticles(result);
+}
+
+/** Paginated tag feed — newest first. Pass array for OR (hub pages). */
+export async function getArticlesByTagPage(
+  tag: string | string[],
+  page: number,
+  pageSize = ARTICLE_FEED_PAGE_SIZE,
+): Promise<PaginatedNewsArticles> {
+  const result = await dbGetArticlesByTagPage(tag, page, pageSize);
   return mapPaginatedArticles(result);
 }
 
