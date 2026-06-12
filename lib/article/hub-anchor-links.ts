@@ -135,7 +135,7 @@ export function injectHubAnchors(
 ): string {
   if (!text) return text;
 
-  let parts = splitProtectedRanges(text);
+  const parts = splitProtectedRanges(text);
   let modified = false;
 
   for (const rule of rules) {
