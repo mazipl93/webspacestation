@@ -270,29 +270,45 @@ Kontynuacja WSS — Centrum operacyjne (repo: wss-nowa, branch main)
 
 **Reguła:** NIE uzywaj dlugich myslnikow (em dash `—`) w zadnych tresciach UI/hubów.
 
-### Planowane kolejne huby (SEO priority)
+### ✅ Topic huby (sesja 13.06 noc — część 2) — DONE
 
-Dodac analogicznie jak `/nasa` — kazdy nowy hub = ~20 min:
+Wszystkie 10 zaplanowanych hubów dodane i zdeployowane:
 
-| Hub | Slug | Tagi |
-|-----|------|------|
-| Teleskop Hubble'a | `/hubble` | `["Hubble"]` |
-| Czarne dziury | `/czarne-dziury` | `["czarna dziura", "czarne dziury", "supermasywne czarne dziury"]` |
-| Egzoplanety | `/egzoplanety` | `["egzoplanety", "exoplanets"]` |
-| Mars | `/mars` | `["Mars"]` |
-| Ksiezyc | `/ksiezyc` | `["Księżyc", "Moon"]` |
-| ISS | `/stacja-kosmiczna` | `["ISS", "Międzynarodowa Stacja Kosmiczna"]` |
-| Blue Origin | `/blue-origin` | `["Blue Origin"]` |
-| Starlink | `/starlink` | `["Starlink"]` |
-| Artemis | `/artemis` | `["Artemis", "Artemis III"]` |
-| Czarna materia | `/ciemna-materia` | `["ciemna materia"]` |
+| Hub | Slug | Accent |
+|-----|------|--------|
+| Teleskop Hubble'a | `/hubble` | `#a78bfa` |
+| Czarne dziury | `/czarne-dziury` | `#7c3aed` |
+| Egzoplanety | `/egzoplanety` | `#10b981` |
+| Mars | `/mars` | `#ef4444` |
+| Księżyc | `/ksiezyc` | `#94a3b8` |
+| Blue Origin | `/blue-origin` | `#1d6fa4` |
+| Starlink | `/starlink` | `#06b6d4` |
+| Program Artemis | `/artemis` | `#f59e0b` |
+| Ciemna materia | `/ciemna-materia` | `#6d28d9` |
+| ISS / Stacja kosmiczna | `/stacja-kosmiczna` | `#38bdf8` |
 
-**Uwaga:** tagi w DB maja niespojny format (mixed case, spacje). Przy dodawaniu nowych artykulow warto normalizowac (lowercase slug). Na razie nie blokuje.
+### ✅ Hub anchor text linking — DONE
+
+| Plik | Co robi |
+|------|---------|
+| `lib/article/hub-anchor-links.ts` | `HUB_LINK_RULES[]` — 14 reguł keyword→hub z polską fleksją (Księżycu, Marsa, czarną dziurą itp.); `injectHubAnchors(text, usedHrefs)` |
+| `components/article/ArticlePageBodyMain.tsx` | `usedHubHrefs = new Set()` przez cały artykuł; `injectHubAnchors()` przed `renderInlineMarkdown()` na leadzie i każdym paragrafie |
+
+**Jak działa:** tekst "NASA ogłosiła..." → `[NASA](/nasa) ogłosiła...` → `<a href="/nasa">NASA</a> ogłosiła...`
+**Reguły:** 1 link na hub na artykuł, nie linkuje w środku istniejących `[label](url)` / `**bold**` / URL, Unicode word boundary dla polskich znaków.
+
+**Commit:** `68cbc07` (fix lint) na `main` — prod deploy OK.
 
 ### Do zrobienia (kolejna sesja)
 
-- Dodac ~10 kolejnych hubów z listy powyzej
-- Auto-linking artykul → hub w `lib/article/weave-internal-links.ts` (NASA w tekscie → link do `/nasa`)
+**SEO / huby:**
+- Audit tagów — sprawdzić które huby mają 0 artykułów i dopasować tagi (np. `/hubble` może nie matchować bo artykuły mają inny tag)
+- Huby w nawigacji / footerze (widoczność)
+- Widget "Powiązane huby" na stronie artykułu (pod treścią)
+
+**Centrum operacyjne:**
+- Krok 10: Playbook FB przed startem (proces, nie kod)
+- `npm run ops:briefs` na prod (briefy przez nową ścieżkę web search)
 
 ---
 
