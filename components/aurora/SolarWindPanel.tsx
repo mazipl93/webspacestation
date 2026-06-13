@@ -25,6 +25,10 @@ type ChartPoint = {
   by: number | null;
 };
 
+const CHART_H = 120;
+const CHART_MARGIN = { top: 8, right: 28, left: 2, bottom: 4 };
+const X_AXIS_H = 14;
+
 export default function SolarWindPanel({ data }: SolarWindPanelProps) {
   const latest = data.at(-1);
   const bz = latest?.bz ?? 0;
@@ -97,18 +101,36 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
     }
   };
 
-  // Y-axis must always include 0 — otherwise ReferenceLine y=0 disappears when
-  // all Bz values are on one side of zero (common during northward IMF).
-  const yDomain = (() => {
+  // Separate domains: Bz centered on 0 (left axis), Bt magnitude (right axis).
+  const bzDomain = (() => {
     const vals = chartData
-      .flatMap((d) => [d.bz, d.bt])
+      .map((d) => d.bz)
       .filter((v): v is number => v != null && !Number.isNaN(v));
-    if (vals.length === 0) return [-5, 5] as [number, number];
-    const min = Math.min(...vals, 0);
-    const max = Math.max(...vals, 0);
-    const pad = Math.max(0.5, (max - min) * 0.1);
-    return [min - pad, max + pad] as [number, number];
+    if (vals.length === 0) return [-4, 4] as [number, number];
+    const absMax = Math.max(
+      Math.abs(Math.min(...vals, 0)),
+      Math.abs(Math.max(...vals, 0)),
+      1,
+    );
+    const pad = Math.max(0.5, absMax * 0.12);
+    return [-absMax - pad, absMax + pad] as [number, number];
   })();
+
+  const btDomain = (() => {
+    const vals = chartData
+      .map((d) => d.bt)
+      .filter((v): v is number => v != null && !Number.isNaN(v));
+    if (vals.length === 0) return [0, 8] as [number, number];
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const pad = Math.max(0.3, (max - min) * 0.15);
+    return [Math.max(0, min - pad), max + pad] as [number, number];
+  })();
+
+  // Pixel position of Bz=0 for HTML overlay (Recharts ReferenceLine is flaky in v3).
+  const [yMin, yMax] = bzDomain;
+  const plotH = CHART_H - CHART_MARGIN.top - CHART_MARGIN.bottom - X_AXIS_H;
+  const zeroLineTop = CHART_MARGIN.top + ((yMax - 0) / (yMax - yMin)) * plotH;
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 space-y-4">
@@ -211,13 +233,11 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
             </span>
           )}
         </div>
-        <ResponsiveContainer width="100%" height={110}>
-          <LineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 2 }}>
-            <CartesianGrid stroke="#1e293b" strokeDasharray="2 4" vertical={false} />
+        <div className="relative">
+          <ResponsiveContainer width="100%" height={CHART_H}>
+            <LineChart data={chartData} margin={CHART_MARGIN}>
+            <CartesianGrid stroke="#1e293b" strokeDasharray="2 4" vertical={false} yAxisId="bz" />
 
-            {/* In-transit zone: from Earth marker to right edge (latest L1 reading).
-                These measurements were taken by the spacecraft but have not yet
-                reached Earth. They will arrive in the next ~propagationDelayMin min. */}
             {earthKey && latestKey && (
               <ReferenceArea
                 x1={earthKey}
@@ -236,13 +256,28 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
               axisLine={false}
               interval="preserveStartEnd"
             />
+
+            {/* Left: Bz — symmetric around 0 */}
             <YAxis
-              domain={yDomain}
+              yAxisId="bz"
+              domain={bzDomain}
               tick={{ fontSize: 8, fill: "#64748b", fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
-              width={24}
+              width={26}
             />
+
+            {/* Right: Bt — always positive magnitude, own scale */}
+            <YAxis
+              yAxisId="bt"
+              orientation="right"
+              domain={btDomain}
+              tick={{ fontSize: 7, fill: "#60a5fa", fontFamily: "monospace" }}
+              tickLine={false}
+              axisLine={false}
+              width={22}
+            />
+
             <Tooltip
               contentStyle={{
                 background: "#0a0f1e",
@@ -256,7 +291,8 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
             />
 
             <Line
-              type="monotone"
+              yAxisId="bz"
+              type="linear"
               dataKey="bz"
               stroke={bzColor}
               strokeWidth={2}
@@ -266,7 +302,8 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
               name="Bz"
             />
             <Line
-              type="monotone"
+              yAxisId="bt"
+              type="linear"
               dataKey="bt"
               stroke="#60a5fa"
               strokeWidth={1}
@@ -277,16 +314,14 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
               strokeDasharray="4 2"
             />
 
-            {/* Bz = 0 baseline — after lines so it stays visible on top */}
             <ReferenceLine
+              yAxisId="bz"
               y={0}
-              stroke="#64748b"
-              strokeWidth={1.5}
-              strokeDasharray="4 3"
-              ifOverflow="extendDomain"
+              stroke="#e2e8f0"
+              strokeWidth={2}
+              strokeDasharray="6 4"
             />
 
-            {/* Earth marker — the measurement currently arriving at Earth */}
             {earthKey && (
               <ReferenceLine
                 x={earthKey}
@@ -304,6 +339,13 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
             )}
           </LineChart>
         </ResponsiveContainer>
+          {/* Guaranteed-visible Bz=0 — HTML overlay aligned to bz axis domain */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute z-10 left-[28px] right-[30px] border-t-2 border-dashed border-slate-200"
+            style={{ top: `${zeroLineTop}px` }}
+          />
+        </div>
 
         {/* Legend */}
         <div className="flex items-center gap-4 mt-1.5 flex-wrap">
@@ -314,6 +356,10 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
           <div className="flex items-center gap-1.5">
             <div className="w-5 border-t border-dashed border-sky-400" />
             <span className="text-[9px] text-slate-500 font-mono">Bt</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 border-t border-dashed border-slate-400" />
+            <span className="text-[9px] text-slate-500 font-mono">Bz = 0</span>
           </div>
           {earthKey && (
             <>
