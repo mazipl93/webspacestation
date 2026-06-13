@@ -50,6 +50,23 @@ function formatLocation(lat: number, lon: number): string {
   return `${latStr} ${lonStr}`;
 }
 
+/** NOAA moze zwracac ten sam numer AR wielokrotnie — zostaw najswiezszy wpis. */
+function dedupeRegions(regions: SolarRegion[]): SolarRegion[] {
+  const byRegion = new Map<string, SolarRegion>();
+  for (const r of regions) {
+    const id = String(r.region);
+    const existing = byRegion.get(id);
+    if (!existing || (r.last_date || "") >= (existing.last_date || "")) {
+      byRegion.set(id, r);
+    }
+  }
+  return [...byRegion.values()];
+}
+
+function regionRowKey(r: SolarRegion): string {
+  return `${r.region}-${r.latitude}-${r.longitude}-${r.last_date}`;
+}
+
 const SDO_THUMB = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIIC.jpg";
 const SDO_FULL = "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg";
 
@@ -57,7 +74,7 @@ export default function SunspotRegionsPanel({ regions }: SunspotRegionsPanelProp
   const [sdoView, setSdoView] = useState<"intensity" | "aia171">("intensity");
   const [imgError, setImgError] = useState(false);
 
-  const sorted = [...regions].sort((a, b) => {
+  const sorted = dedupeRegions(regions).sort((a, b) => {
     const tierOrder: MagTier[] = ["extreme", "high", "moderate", "low"];
     return tierOrder.indexOf(getMagTier(a.mag_class)) - tierOrder.indexOf(getMagTier(b.mag_class));
   });
@@ -72,8 +89,8 @@ export default function SunspotRegionsPanel({ regions }: SunspotRegionsPanelProp
       ? SDO_FULL
       : "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_0171.jpg";
 
-  const extremeCount = regions.filter((r) => getMagTier(r.mag_class) === "extreme").length;
-  const highCount = regions.filter((r) => getMagTier(r.mag_class) === "high").length;
+  const extremeCount = sorted.filter((r) => getMagTier(r.mag_class) === "extreme").length;
+  const highCount = sorted.filter((r) => getMagTier(r.mag_class) === "high").length;
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 overflow-hidden">
@@ -83,9 +100,9 @@ export default function SunspotRegionsPanel({ regions }: SunspotRegionsPanelProp
           <span className="text-xs font-bold tracking-widest text-slate-300 uppercase">
             Aktywne Regiony
           </span>
-          {regions.length > 0 && (
+          {sorted.length > 0 && (
             <span className="text-[10px] font-mono text-slate-500">
-              ({regions.length})
+              ({sorted.length})
             </span>
           )}
         </div>
@@ -177,7 +194,7 @@ export default function SunspotRegionsPanel({ regions }: SunspotRegionsPanelProp
                 const style = TIER_STYLES[tier];
                 return (
                   <tr
-                    key={r.region}
+                    key={regionRowKey(r)}
                     className={`border-b border-slate-800/30 transition-colors ${style.row}`}
                   >
                     <td className="px-3 py-1.5">

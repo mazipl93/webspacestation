@@ -18,6 +18,268 @@ export interface SolarWindData {
   bx: number;
 }
 
+/** L1 → Earth distance used for solar-wind propagation delay (km). */
+const L1_TO_EARTH_KM = 1_500_000;
+
+/** Fallback propagation delay when speed is temporarily unknown (~typical L1→Earth). */
+export const DEFAULT_PROPAGATION_DELAY_MIN = 45;
+
+/** Minimum valid solar-wind speed for delay calculation (km/s). */
+const MIN_VALID_SPEED_KMS = 100;
+
+/** Start of the current 3-hour UTC Kp window (00, 03, 06, …). */
+export function getUtc3hPeriodStart(date = new Date()): string {
+  const h = Math.floor(date.getUTCHours() / 3) * 3;
+  return `${date.toISOString().slice(0, 11)}${String(h).padStart(2, "0")}:00:00`;
+}
+
+/**
+ * Display Kp aligned with SWPC / SpaceWeatherLive semantics:
+ * max(official 3h Kp, running max estimated_kp in the current 3h UTC window).
+ */
+export function getDisplayKp(kp1m: KpData[], kp3Day: KpData[]): number {
+  const official = kp3Day.at(-1)?.kp ?? 0;
+  const periodStart = getUtc3hPeriodStart();
+  const inPeriod = kp1m.filter((p) => p.time >= periodStart);
+  const periodMax =
+    inPeriod.length > 0 ? Math.max(...inPeriod.map((p) => p.kp)) : 0;
+  return Math.max(official, periodMax);
+}
+
+/** Last non-zero solar-wind speed in the series (newest first). */
+export function getLastKnownSolarWindSpeed(data: SolarWindData[]): number | null {
+  for (let i = data.length - 1; i >= 0; i--) {
+    const s = data[i].speed;
+    if (s > MIN_VALID_SPEED_KMS) return s;
+  }
+  return null;
+}
+
+/**
+ * L1→Earth propagation delay in minutes.
+ * Uses fallback speed or ~45 min default when the latest minute lacks plasma data.
+ */
+export function getSolarWindPropagationDelayMin(
+  speedKmS: number,
+  fallbackSpeed?: number | null,
+): number {
+  const effective =
+    speedKmS > MIN_VALID_SPEED_KMS
+      ? speedKmS
+      : fallbackSpeed && fallbackSpeed > MIN_VALID_SPEED_KMS
+        ? fallbackSpeed
+        : 0;
+  if (effective > MIN_VALID_SPEED_KMS) {
+    return Math.round(L1_TO_EARTH_KM / effective / 60);
+  }
+  return DEFAULT_PROPAGATION_DELAY_MIN;
+}
+
+/** Earth-marker index/key helpers shared by chart + header. */
+export function getEarthSolarWindMarker(data: SolarWindData[]): {
+  delayMin: number;
+  earthIndex: number;
+  earthPoint: SolarWindData | null;
+} | null {
+  if (data.length === 0) return null;
+  const latest = data.at(-1)!;
+  const fallbackSpeed = getLastKnownSolarWindSpeed(data);
+  const delayMin = getSolarWindPropagationDelayMin(latest.speed, fallbackSpeed);
+  const earthIndex = Math.max(0, data.length - 1 - delayMin);
+  const earthPoint = data[earthIndex] ?? latest;
+  return { delayMin, earthIndex, earthPoint };
+}
+
+/** Solar-wind conditions currently arriving at Earth (L1 minus propagation delay). */
+export function getEarthSolarWindPoint(data: SolarWindData[]): SolarWindData | null {
+  if (data.length === 0) return null;
+  const window = data.slice(-360);
+  const latest = window.at(-1)!;
+  const fallbackSpeed = getLastKnownSolarWindSpeed(window);
+  const delayMin = getSolarWindPropagationDelayMin(latest.speed, fallbackSpeed);
+  const earthIndex = Math.max(0, window.length - 1 - delayMin);
+  const earth = window[earthIndex] ?? latest;
+  const l1Speed =
+    latest.speed > MIN_VALID_SPEED_KMS ? latest.speed : (fallbackSpeed ?? latest.speed);
+  // Mag and plasma can be offset by 1 min — keep L1 plasma for speed/density if earth row lacks it
+  return {
+    ...earth,
+    speed: earth.speed > MIN_VALID_SPEED_KMS ? earth.speed : l1Speed,
+    density: earth.density > 0 ? earth.density : latest.density,
+    temperature: earth.temperature > 0 ? earth.temperature : latest.temperature,
+  };
+}
+
+/** Minutes Bz has been continuously negative (5-min smoothing to reduce 1-min noise). */
+export function getNegativeBzDurationMin(data: SolarWindData[], atIndex?: number): number | null {
+  if (data.length === 0) return null;
+  const idx = atIndex ?? data.length - 1;
+  const earth = data[idx];
+  if (!earth || earth.bz >= 0) return null;
+
+  const smoothed = data.map((p, i, arr) => {
+    const slice = arr.slice(Math.max(0, i - 2), i + 1);
+    return slice.reduce((s, x) => s + x.bz, 0) / slice.length;
+  });
+
+  let minutes = 0;
+  for (let i = idx; i >= 0; i--) {
+    if (smoothed[i] >= 0) break;
+    minutes++;
+  }
+  return minutes > 0 ? minutes : null;
+}
+
+/**
+ * Y domain for Bz chart — golden middle between tight auto-scale and fixed ±20.
+ * Data occupies ~55–65% of axis height; minimum span prevents over-zoom when calm.
+ */
+export function getBzChartDomain(bzValues: number[]): [number, number] {
+  if (bzValues.length === 0) return [-6, 6];
+
+  const dataMin = Math.min(...bzValues);
+  const dataMax = Math.max(...bzValues);
+  const dataSpan = Math.max(dataMax - dataMin, 0.5);
+  const mid = (dataMax + dataMin) / 2;
+
+  // Share of axis used by data (rest = top/bottom margin)
+  const fillRatio = dataSpan > 35 ? 0.68 : dataSpan > 18 ? 0.6 : 0.55;
+
+  // Floor span — stops the line hugging top/bottom edges
+  const minDomainSpan =
+    dataSpan <= 4 ? 12 :
+    dataSpan <= 8 ? 14 :
+    dataSpan <= 16 ? 16 :
+    dataSpan * 1.3;
+
+  let domainSpan = Math.max(dataSpan / fillRatio, minDomainSpan);
+
+  // Calm: allow at most ~2.5× data span, but never below minDomainSpan
+  if (dataSpan < 14) {
+    domainSpan = Math.max(minDomainSpan, Math.min(domainSpan, dataSpan * 2.5));
+  }
+
+  let lo = mid - domainSpan / 2;
+  let hi = mid + domainSpan / 2;
+
+  // Keep Bz=0 visible when values oscillate around it
+  if (dataMin <= 2.5 && dataMax >= -2.5) {
+    const needLo = -2.5;
+    const needHi = 2.5;
+    if (lo > needLo) {
+      const shift = needLo - lo;
+      lo += shift;
+      hi += shift;
+    }
+    if (hi < needHi) {
+      const shift = needHi - hi;
+      lo -= shift;
+      hi -= shift;
+    }
+  }
+
+  // Hint at −5 nT band when data goes south, without over-tightening
+  if (dataMin < -4 && dataMin > -18 && lo > -8) {
+    lo = Math.min(lo, -7);
+    if (hi - lo < domainSpan) hi = lo + domainSpan;
+  }
+
+  // Round to clean ticks
+  const totalSpan = hi - lo;
+  if (totalSpan <= 18) {
+    lo = Math.floor(lo);
+    hi = Math.ceil(hi);
+    if (hi - lo < minDomainSpan) {
+      const m = (hi + lo) / 2;
+      const half = Math.ceil(minDomainSpan / 2);
+      lo = m - half;
+      hi = m + half;
+    }
+  } else if (totalSpan <= 45) {
+    lo = Math.floor(lo);
+    hi = Math.ceil(hi);
+  } else {
+    lo = Math.floor(lo / 5) * 5;
+    hi = Math.ceil(hi / 5) * 5;
+  }
+
+  return [lo, hi];
+}
+
+/** Y domain for speed / density / Bt mini-charts (same margin philosophy as Bz). */
+export function getMetricChartDomain(values: number[]): [number, number] {
+  const finite = values.filter((v) => Number.isFinite(v));
+  if (finite.length === 0) return [0, 1];
+
+  const dataMin = Math.min(...finite);
+  const dataMax = Math.max(...finite);
+  const dataSpan = Math.max(dataMax - dataMin, 0.01);
+  const mid = (dataMax + dataMin) / 2;
+  const fillRatio = dataSpan > 50 ? 0.65 : 0.55;
+
+  const minDomainSpan =
+    dataSpan <= 1 ? Math.max(dataSpan * 4, 0.5) :
+    dataSpan <= 5 ? Math.max(dataSpan * 2.5, 2) :
+    dataSpan <= 20 ? Math.max(dataSpan * 1.6, 6) :
+    dataSpan * 1.25;
+
+  let domainSpan = Math.max(dataSpan / fillRatio, minDomainSpan);
+  if (dataSpan < 30) {
+    domainSpan = Math.max(minDomainSpan, Math.min(domainSpan, dataSpan * 2.5));
+  }
+
+  let lo = mid - domainSpan / 2;
+  let hi = mid + domainSpan / 2;
+
+  const totalSpan = hi - lo;
+  if (totalSpan <= 5) {
+    lo = Math.floor(lo * 10) / 10;
+    hi = Math.ceil(hi * 10) / 10;
+  } else if (totalSpan <= 30) {
+    lo = Math.floor(lo * 2) / 2;
+    hi = Math.ceil(hi * 2) / 2;
+  } else {
+    lo = Math.floor(lo);
+    hi = Math.ceil(hi);
+  }
+
+  return [lo, hi];
+}
+
+export type BzZoneBand = { y1: number; y2: number; fill: string; opacity: number };
+
+/** Southward zone backgrounds that intersect the current Y domain. */
+export function getVisibleBzZones(domain: [number, number]): BzZoneBand[] {
+  const [lo] = domain;
+  const zones: BzZoneBand[] = [];
+  if (lo < 0) zones.push({ y1: -5, y2: 0, fill: "#ffdd00", opacity: 0.05 });
+  if (lo < -5) zones.push({ y1: -10, y2: -5, fill: "#ffaa00", opacity: 0.06 });
+  if (lo < -10) zones.push({ y1: Math.min(lo, -15), y2: -10, fill: "#ff6600", opacity: 0.07 });
+  return zones.filter((z) => z.y1 < z.y2);
+}
+
+/** Reference lines (−5/−10/−15 nT) visible within domain. */
+export function getVisibleBzThresholds(domain: [number, number]): number[] {
+  const [lo, hi] = domain;
+  return [-5, -10, -15].filter((t) => t >= lo && t <= hi);
+}
+
+/** Bz trend at Earth: more southward vs ~N minutes ago. */
+export function getEarthBzTrend(
+  data: SolarWindData[],
+  minutesAgo = 30,
+): "south" | "north" | "flat" | null {
+  const marker = getEarthSolarWindMarker(data);
+  if (!marker) return null;
+  const nowBz = marker.earthPoint?.bz;
+  const agoIdx = Math.max(0, marker.earthIndex - minutesAgo);
+  const agoBz = data[agoIdx]?.bz;
+  if (nowBz == null || agoBz == null) return null;
+  const delta = nowBz - agoBz;
+  if (Math.abs(delta) < 0.4) return "flat";
+  return delta < 0 ? "south" : "north";
+}
+
 export interface GeomagneticIndex {
   time_tag: string;
   value: number;
@@ -374,12 +636,25 @@ export function calculateObservingScore(params: {
   cloudCover: number;
   isDark: boolean;
   moonIllumination: number;
+  bz?: number;
+  bt?: number;
+  speed?: number;
 }): number {
-  const { kp, cloudCover, isDark, moonIllumination } = params;
+  const { kp, cloudCover, isDark, moonIllumination, bz = 0, bt = 0, speed = 0 } = params;
   if (!isDark) return 0;
-  const kpScore = Math.min(kp / 9, 1) * 4;
-  const cloudScore = (1 - cloudCover / 100) * 3;
-  const moonScore = (1 - moonIllumination / 100) * 2;
-  const darknessBonus = isDark ? 1 : 0;
-  return Math.round(Math.min(10, kpScore + cloudScore + moonScore + darknessBonus));
+
+  const kpScore = Math.min(kp / 9, 1) * 2.5;
+  const cloudScore = (1 - cloudCover / 100) * 2.5;
+  const moonScore = (1 - moonIllumination / 100) * 1.5;
+
+  // IMF coupling: southward Bz + sufficient Bt and speed
+  let imfScore = 0;
+  if (bz < 0) {
+    const bzFactor = Math.min(Math.abs(bz) / 15, 1);
+    const btFactor = bt > 0 ? Math.min(bt / 15, 1) : 0.5;
+    const speedFactor = speed > 0 ? Math.min(speed / 600, 1) : 0.3;
+    imfScore = bzFactor * btFactor * speedFactor * 2.5;
+  }
+
+  return Math.round(Math.min(10, kpScore + cloudScore + moonScore + imfScore));
 }

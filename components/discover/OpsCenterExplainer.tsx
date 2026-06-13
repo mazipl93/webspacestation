@@ -1,25 +1,32 @@
 import Link from "next/link";
-import { Map, Rocket, Satellite } from "lucide-react";
+import { Map, Rocket, Satellite, Sparkles } from "lucide-react";
 
 const ITEMS = [
   {
     icon: Rocket,
-    title: "Starty rakiet",
-    text: "Kiedy i skąd wystartuje następna rakieta z odliczeniem na żywo.",
+    title: "Starty rakiet na żywo",
+    text: "Harmonogram startów z odliczaniem do rakiety w czasie rzeczywistym.",
     href: "/starty",
     color: "#38bdf8",
   },
   {
     icon: Satellite,
-    title: "Stacja ISS",
-    text: "Gdzie nad Ziemią leci ISS w tej chwili, aktualizacja co kilka minut.",
+    title: "ISS tracker na żywo",
+    text: "Gdzie nad Ziemią leci Międzynarodowa Stacja Kosmiczna — pozycja i orbita.",
     href: "/mapa",
     color: "#38bdf8",
   },
   {
+    icon: Sparkles,
+    title: "Terminal zorzy polarnej",
+    text: "Indeks Kp, prognoza zorzy i mapa widoczności aurora na żywo.",
+    href: "/zorza",
+    color: "#44ff88",
+  },
+  {
     icon: Map,
-    title: "Mapa ISS i startów",
-    text: "Orbita stacji i miejsca planowanych startów na globie.",
+    title: "Mapa startów i ISS",
+    text: "Orbita stacji i platformy startowe nadchodzących misji na globie.",
     href: "/mapa",
     color: "#a78bfa",
   },
@@ -27,7 +34,7 @@ const ITEMS = [
 
 export default function OpsCenterExplainer() {
   return (
-    <div className="mb-5 grid gap-3 sm:grid-cols-3">
+    <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {ITEMS.map(({ icon: Icon, title, text, href, color }) => (
         <Link
           key={title}

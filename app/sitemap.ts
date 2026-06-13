@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublishedSitemapEntries, getPublishedTags } from "@/lib/server/articles";
+import { INTERACTIVE_TOOLS } from "@/lib/seo/interactive-tools";
 import { SEO_SITEMAP_PATHS } from "@/lib/seo/public-routes";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -10,15 +11,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
   const now = new Date();
 
+  const toolPriorityByPath = Object.fromEntries(
+    Object.values(INTERACTIVE_TOOLS).map((t) => [t.path, t.sitemapPriority]),
+  ) as Record<string, number>;
+  const toolFrequencyByPath = Object.fromEntries(
+    Object.values(INTERACTIVE_TOOLS).map((t) => [t.path, t.sitemapChangeFrequency]),
+  ) as Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]>;
+
   const staticEntries: MetadataRoute.Sitemap = SEO_SITEMAP_PATHS.map((path) => ({
     url: `${base}${path === "/" ? "" : path}`,
     lastModified: now,
-    changeFrequency: path === "/" ? "hourly" : "daily",
+    changeFrequency:
+      toolFrequencyByPath[path]
+      ?? (path === "/" ? "hourly" : "daily"),
     priority:
-      path === "/" ? 1
+      toolPriorityByPath[path]
+      ?? (path === "/" ? 1
       : path === "/aktualnosci" ? 0.9
       : ["/nasa", "/spacex", "/esa", "/jwst"].includes(path) ? 0.85
-      : 0.7,
+      : 0.7),
   }));
 
   let articleEntries: MetadataRoute.Sitemap = [];

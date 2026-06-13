@@ -1,8 +1,11 @@
 import { Suspense } from "react";
+import OpsAuroraShowcase from "@/components/discover/OpsAuroraShowcase";
 import OpsIssShowcase from "@/components/discover/OpsIssShowcase";
 import OpsLaunchFeedPaused from "@/components/discover/OpsLaunchFeedPaused";
 import OpsLaunchShowcase from "@/components/discover/OpsLaunchShowcase";
 import OpsQuickNav from "@/components/discover/OpsQuickNav";
+import { getHomepageAuroraSnapshot } from "@/lib/aurora/homepage-snapshot";
+import type { AuroraHomepageSnapshot } from "@/lib/aurora/homepage-snapshot";
 import { cn } from "@/lib/cn";
 import { isOpsLaunchImminent } from "@/lib/ops/ops-widget-utils";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
@@ -19,12 +22,14 @@ function HomepageOpsStripView({
   iss,
   live,
   wssArticle,
+  aurora,
 }: {
   launches: Awaited<ReturnType<typeof getHomepageOpsData>>["launches"];
   recentLaunches: Awaited<ReturnType<typeof getHomepageOpsData>>["recentLaunches"];
   iss: Awaited<ReturnType<typeof getHomepageOpsData>>["iss"];
   live: boolean;
   wssArticle: LaunchWssArticleLink | null;
+  aurora: AuroraHomepageSnapshot | null;
 }) {
   const next = pickPrimaryLaunch(launches);
   const imminent = next ? isOpsLaunchImminent(next.net) : false;
@@ -50,20 +55,27 @@ function HomepageOpsStripView({
         </header>
 
         <div className="ops-widget-grid">
-          {next ? (
-            <OpsLaunchShowcase
-              launch={next}
-              live={live}
-              imminent={imminent}
-              upcomingCount={Math.max(0, launches.length - 1)}
-              upNext={upNext ?? null}
-              recentCompleted={recentLaunches[0] ?? null}
-              wssArticle={wssArticle}
-              hideLiveBadge
+          <div className="ops-widget-main">
+            {next ? (
+              <OpsLaunchShowcase
+                launch={next}
+                live={live}
+                imminent={imminent}
+                upcomingCount={Math.max(0, launches.length - 1)}
+                upNext={upNext ?? null}
+                recentCompleted={recentLaunches[0] ?? null}
+                wssArticle={wssArticle}
+                hideLiveBadge
+              />
+            ) : (
+              <OpsLaunchFeedPaused />
+            )}
+
+            <OpsAuroraShowcase
+              initialSnapshot={aurora}
+              className="ops-aurora-showcase--slot"
             />
-          ) : (
-            <OpsLaunchFeedPaused />
-          )}
+          </div>
 
           <aside className="ops-widget-side">
             <OpsIssShowcase initialIss={iss} />
@@ -84,7 +96,10 @@ export function HomepageOpsStripSkeleton() {
 }
 
 async function HomepageOpsStripLoader() {
-  const ops = await getHomepageOpsData();
+  const [ops, aurora] = await Promise.all([
+    getHomepageOpsData(),
+    getHomepageAuroraSnapshot(),
+  ]);
   const hasLaunches = ops.launches.length > 0;
   const hasIss = ops.iss != null;
   if (!hasLaunches && !hasIss) return null;
@@ -101,6 +116,7 @@ async function HomepageOpsStripLoader() {
       iss={ops.iss}
       live={ops.live}
       wssArticle={next ? linkForLaunch(next.id, articleLinks) : null}
+      aurora={aurora}
     />
   );
 }

@@ -29,10 +29,10 @@ const FOOTER_NAV = {
     { label: "Blue Origin", href: "/blue-origin" },
   ],
   Odkrywaj: [
-    { label: "Terminal zorzy polarnej", href: "/zorza" },
-    { label: "Starty rakiet", href: "/starty" },
+    { label: "ISS tracker na żywo", href: "/mapa" },
+    { label: "Terminal zorzy polarnej (Kp)", href: "/zorza" },
+    { label: "Starty rakiet na żywo", href: "/starty" },
     { label: "Harmonogram startów", href: "/kalendarz" },
-    { label: "Mapa startów i ISS", href: "/mapa" },
     { label: "Galeria zdjęć", href: "/galeria" },
     { label: "Wideo", href: "/wideo" },
     { label: "Subskrypcje RSS", href: "/rss" },

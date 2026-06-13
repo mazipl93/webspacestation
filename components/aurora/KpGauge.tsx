@@ -1,14 +1,23 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { getKpColor, getKpLabel } from "@/lib/aurora/api";
 
 interface KpGaugeProps {
   kp: number;
   size?: number;
+  /** Inner status label under the value (e.g. „Aktywna”) */
+  showLabel?: boolean;
+  showStormBadge?: boolean;
 }
 
-export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
+export default function KpGauge({
+  kp,
+  size = 180,
+  showLabel = true,
+  showStormBadge = true,
+}: KpGaugeProps) {
+  const gradId = useId().replace(/:/g, "");
   const color = getKpColor(kp);
   const label = getKpLabel(kp);
   const isStormy = kp >= 5;
@@ -18,6 +27,24 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
   const cy = size / 2 + 10;
   const r = size * 0.38;
   const strokeWidth = size * 0.07;
+
+  const viewBox = useMemo(() => {
+    const tickR = r + strokeWidth * 1.3;
+    const tickFont = size * 0.065;
+    const xMin = cx - tickR - size * 0.02;
+    const xMax = cx + tickR + size * 0.02;
+    const yMin = cy - tickR - tickFont;
+    const yMax = showLabel
+      ? cy + size * 0.12 + size * 0.08
+      : cy + size * 0.05;
+    const pad = size * 0.05;
+    return {
+      x: xMin - pad,
+      y: yMin - pad,
+      w: xMax - xMin + pad * 2,
+      h: yMax - yMin + pad * 2,
+    };
+  }, [cx, cy, r, strokeWidth, size, showLabel]);
 
   // Arc from -π to 0 (bottom semicircle is hidden), we use 0..9 mapped to 0..π arc
   const startAngle = Math.PI;
@@ -63,9 +90,10 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
   return (
     <div className="flex flex-col items-center w-full">
       <svg
-        viewBox={`0 0 ${size} ${size * 0.62}`}
-        style={{ width: "100%", maxWidth: size, height: "auto" }}
+        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
+        style={{ width: "100%", maxWidth: size, height: "auto", display: "block" }}
         className={isStormy ? "animate-pulse-slow" : ""}
+        overflow="visible"
       >
         {/* Background arc */}
         <path
@@ -77,7 +105,7 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
         />
         {/* Gradient colored arc */}
         <defs>
-          <linearGradient id="kp-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id={`kp-grad-${gradId}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#00ddff" />
             <stop offset="40%" stopColor="#44ff88" />
             <stop offset="60%" stopColor="#ffdd00" />
@@ -88,7 +116,7 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
         <path
           d={describeArc(startAngle, endAngle)}
           fill="none"
-          stroke="url(#kp-grad)"
+          stroke={`url(#kp-grad-${gradId})`}
           strokeWidth={strokeWidth * 0.3}
           strokeLinecap="round"
           opacity={0.3}
@@ -146,6 +174,7 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
         >
           {kp.toFixed(1)}
         </text>
+        {showLabel && (
         <text
           x={cx}
           y={cy + size * 0.12}
@@ -157,8 +186,9 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
         >
           {label}
         </text>
+        )}
       </svg>
-      {isStormy && (
+      {isStormy && showStormBadge && (
         <div
           className="mt-1 px-3 py-0.5 rounded text-xs font-bold tracking-widest animate-pulse"
           style={{ color, border: `1px solid ${color}`, textShadow: `0 0 8px ${color}` }}

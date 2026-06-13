@@ -121,7 +121,19 @@ export default function OpsLaunchShowcase({
             </p>
             <p className="ops-launch-showcase__site">{launch.site}</p>
             {launch.brief ? (
-              <LaunchBriefBlock brief={launch.brief} compact className="mt-2.5 hidden sm:block" />
+              <>
+                <LaunchBriefBlock
+                  brief={launch.brief}
+                  compact
+                  overlay
+                  className="mt-2 sm:hidden"
+                />
+                <LaunchBriefBlock
+                  brief={launch.brief}
+                  compact
+                  className="mt-2.5 hidden sm:block"
+                />
+              </>
             ) : null}
           </div>
 
@@ -155,10 +167,6 @@ export default function OpsLaunchShowcase({
             className="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
           />
         </Link>
-
-        {launch.brief ? (
-          <LaunchBriefBlock brief={launch.brief} compact className="mt-2 sm:hidden" />
-        ) : null}
 
         {wssArticle ? (
           <LaunchWssArticleLink article={wssArticle} compact className="mt-2" />

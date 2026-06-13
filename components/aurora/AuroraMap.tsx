@@ -6,6 +6,8 @@ interface AuroraMapProps {
   kp: number;
   userLat: number;
   userLon: number;
+  dataReady?: boolean;
+  compact?: boolean;
 }
 
 // Approximate aurora oval latitude for each Kp level (geomagnetic latitude)
@@ -18,18 +20,40 @@ function getOvalLat(kp: number): number {
   return KP_OVAL_LAT[k] ?? 60;
 }
 
-export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
+type LeafletContainer = HTMLDivElement & { _leaflet_id?: number };
+
+function clearLeafletContainer(el: LeafletContainer | null) {
+  if (!el) return;
+  delete el._leaflet_id;
+  el.replaceChildren();
+}
+
+export default function AuroraMap({ kp, userLat, userLon, dataReady = true, compact = false }: AuroraMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<ReturnType<typeof import("leaflet")["map"]> | null>(null);
   const ovalLayerRef = useRef<unknown>(null);
   const [mapReady, setMapReady] = useState(false);
+  const lastKpRef = useRef(kp);
+
+  const effectiveKp =
+    Number.isFinite(kp) && kp >= 0 && (dataReady || kp > 0)
+      ? kp
+      : lastKpRef.current;
+
+  if (Number.isFinite(kp) && kp >= 0 && dataReady) {
+    lastKpRef.current = kp;
+  }
 
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    const container = mapRef.current;
+    if (!container) return;
 
-    let L: typeof import("leaflet");
+    let cancelled = false;
+
     import("leaflet").then((leaflet) => {
-      L = leaflet.default;
+      if (cancelled || !mapRef.current || mapInstanceRef.current) return;
+
+      const L = leaflet.default;
 
       // Fix default marker icons
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,16 +64,15 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
         shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       });
 
-      if (!mapRef.current) return;
+      clearLeafletContainer(mapRef.current as LeafletContainer);
 
-      const map = L.map(mapRef.current, {
+      const map = L.map(mapRef.current!, {
         center: [60, 0],
         zoom: 2,
         zoomControl: true,
         attributionControl: false,
       });
 
-      // Dark tile layer
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
         {
@@ -64,10 +87,13 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
     });
 
     return () => {
+      cancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      clearLeafletContainer(mapRef.current as LeafletContainer | null);
+      setMapReady(false);
     };
   }, []);
 
@@ -75,12 +101,17 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
   useEffect(() => {
     if (!mapReady || !mapInstanceRef.current) return;
 
+    let cancelled = false;
+
     import("leaflet").then((leaflet) => {
+      if (cancelled || !mapInstanceRef.current) return;
       const L = leaflet.default;
       const map = mapInstanceRef.current!;
+      const displayKp = effectiveKp;
 
       if (ovalLayerRef.current) {
         map.removeLayer(ovalLayerRef.current as Parameters<typeof map.removeLayer>[0]);
+        ovalLayerRef.current = null;
       }
 
       const layerGroup = L.layerGroup();
@@ -96,7 +127,7 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
 
       ovalDefs.forEach(({ level, label, color }) => {
         const ovalLat = getOvalLat(level);
-        const isActive = kp >= level;
+        const isActive = displayKp >= level;
         const lineColor = isActive ? color : "#2d3f55";
         const lineOpacity = isActive ? 0.85 : 0.4;
         const lineWeight = isActive ? 2.5 : 1;
@@ -193,12 +224,20 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
       }
 
       layerGroup.addTo(map);
-      ovalLayerRef.current = layerGroup;
+      if (!cancelled) ovalLayerRef.current = layerGroup;
     });
-  }, [mapReady, kp, userLat, userLon]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mapReady, effectiveKp, userLat, userLon]);
 
   return (
-    <div className="relative rounded-lg border border-slate-800 overflow-hidden h-52 sm:h-64 lg:h-80">
+    <div
+      className={`relative overflow-hidden ${
+        compact ? "h-44 sm:h-48 rounded-none border-0" : "h-52 sm:h-64 lg:h-80 rounded-lg border border-slate-800"
+      }`}
+    >
       <div ref={mapRef} style={{ width: "100%", height: "100%", background: "#0a0f1e" }} />
       {!mapReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-900 text-slate-500 text-sm font-mono">

@@ -9,6 +9,9 @@ interface AuxPanelProps {
   weather: WeatherData;
   lat: number;
   lon: number;
+  bz?: number;
+  bt?: number;
+  speed?: number;
 }
 
 function getScoreColor(score: number): string {
@@ -36,7 +39,7 @@ function isDarkNow(sunrise: string, sunset: string): boolean {
   return nowMins < riseMins || nowMins > setMins;
 }
 
-export default function AuxPanel({ kp, weather, lat, lon }: AuxPanelProps) {
+export default function AuxPanel({ kp, weather, lat, lon, bz = 0, bt = 0, speed = 0 }: AuxPanelProps) {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -52,6 +55,9 @@ export default function AuxPanel({ kp, weather, lat, lon }: AuxPanelProps) {
     cloudCover: weather.cloudCover,
     isDark: dark,
     moonIllumination: moon.illumination,
+    bz,
+    bt,
+    speed,
   });
 
   const scoreColor = getScoreColor(score);

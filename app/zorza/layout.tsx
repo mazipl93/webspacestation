@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { getInteractiveTool } from "@/lib/seo/interactive-tools";
+import { buildToolPageMetadata } from "@/lib/seo/tool-metadata";
+import { buildInteractiveToolJsonLd } from "@/lib/seo/json-ld";
 
-export const metadata: Metadata = {
-  title: "Terminal Zorzy Polarnej — Live Space Weather",
-  description:
-    "Zaawansowany terminal monitorowania zorzy polarnej: indeksy geomagnetyczne, wiatr słoneczny, prognoza Kp, mapa widoczności — dane NOAA w czasie rzeczywistym.",
-};
+const TOOL = getInteractiveTool("aurora-terminal");
+
+export const metadata: Metadata = buildToolPageMetadata(TOOL);
 
 export default function AuroraLayout({
   children,
@@ -13,7 +15,13 @@ export default function AuroraLayout({
 }) {
   return (
     <div className="aurora-root" style={{ fontFamily: "var(--font-geist-mono, monospace)" }}>
-      {/* Leaflet CSS loaded via CDN for the map component */}
+      <JsonLd
+        data={buildInteractiveToolJsonLd(TOOL, [
+          { name: "Strona główna", path: "/" },
+          { name: "Odkrywaj", path: "/starty" },
+          { name: TOOL.headline, path: TOOL.path },
+        ])}
+      />
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"

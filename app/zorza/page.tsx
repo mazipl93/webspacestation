@@ -1,8 +1,8 @@
-import AuroraTerminal from "@/components/aurora/AuroraTerminal";
+import ZorzaClient from "./ZorzaClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default function ZorzaPage() {
-  return <AuroraTerminal />;
+  return <ZorzaClient />;
 }

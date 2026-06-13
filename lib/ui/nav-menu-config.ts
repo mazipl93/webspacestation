@@ -119,18 +119,25 @@ export const NAV_HUB_LINKS: NavMenuLink[] = [
 
 export const NAV_MORE_LINKS: NavMenuLink[] = [
   {
+    label: "ISS tracker na żywo",
+    href: "/mapa",
+    accentKey: "mapa",
+    description: "Pozycja Międzynarodowej Stacji Kosmicznej na mapie",
+    icon: Map,
+  },
+  {
     label: "Terminal zorzy polarnej",
     href: "/zorza",
     accentKey: "zorza",
-    description: "Kp, wiatr słoneczny i prognoza NOAA na żywo",
+    description: "Indeks Kp, prognoza zorzy i dane NOAA na żywo",
     icon: Sparkles,
     newTab: true,
   },
   {
-    label: "Starty rakiet",
+    label: "Starty rakiet na żywo",
     href: "/starty",
     accentKey: "starty",
-    description: "Odliczenia i harmonogram Launch Library",
+    description: "Harmonogram startów i odliczanie na żywo",
     icon: Rocket,
   },
   {
@@ -151,15 +158,8 @@ export const NAV_MORE_LINKS: NavMenuLink[] = [
     label: "Harmonogram startów",
     href: "/kalendarz",
     accentKey: "kalendarz",
-    description: "Terminy NET z Launch Library",
+    description: "Terminy NET nadchodzących misji",
     icon: Calendar,
-  },
-  {
-    label: "Mapa startów i ISS",
-    href: "/mapa",
-    accentKey: "mapa",
-    description: "ISS na orbicie i platformy startowe",
-    icon: Map,
   },
 ];
 

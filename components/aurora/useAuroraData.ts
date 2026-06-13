@@ -11,6 +11,18 @@ import type {
   SolarFlare,
   SolarRegion,
 } from "@/lib/aurora/api";
+import { parseRtswSolarWind } from "@/lib/aurora/rtsw";
+
+export interface AuroraFetchDiag {
+  key: string;
+  url: string;
+  status: number | "error";
+  ms: number;
+  length: number;
+  dataRows: number;
+  sample: string;
+  error?: string;
+}
 
 export interface AuroraState {
   kpCurrent: KpData[];     // 1-minute Kp, last 120 points
@@ -28,6 +40,8 @@ export interface AuroraState {
   lastUpdate: Date | null;
   loading: boolean;
   errors: Partial<Record<string, string>>;
+  /** Populated only in development — per-endpoint fetch diagnostics */
+  diagnostics: AuroraFetchDiag[];
 }
 
 const initialState: AuroraState = {
@@ -46,7 +60,126 @@ const initialState: AuroraState = {
   lastUpdate: null,
   loading: true,
   errors: {},
+  diagnostics: [],
 };
+
+function isAuroraDebug(): boolean {
+  if (process.env.NODE_ENV === "development") return true;
+  if (typeof window === "undefined") return false;
+  return (
+    new URLSearchParams(window.location.search).has("aurora-debug") ||
+    window.localStorage.getItem("aurora-debug") === "1"
+  );
+}
+
+function samplePayload(data: unknown): string {
+  if (Array.isArray(data)) {
+    const dataRows = Math.max(0, data.length - (Array.isArray(data[0]) ? 1 : 0));
+    const row = data.length > 1 ? data[1] : data[0];
+    return JSON.stringify({ arrayLen: data.length, dataRows, sample: row }).slice(0, 160);
+  }
+  return JSON.stringify(data).slice(0, 160);
+}
+
+function countDataRows(data: unknown): number {
+  if (!Array.isArray(data)) return 0;
+  if (data.length === 0) return 0;
+  if (Array.isArray(data[0])) return Math.max(0, data.length - 1);
+  return data.length;
+}
+
+const FETCH_TIMEOUT_MS = 10_000;
+const RETRY_BACKOFF_MS = 600;
+
+async function fetchWithRetry<T>(
+  url: string,
+  fallback: T,
+  signal?: AbortSignal,
+): Promise<T> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (signal?.aborted) return fallback;
+    try {
+      const res = await fetch(url, {
+        cache: "no-store",
+        signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (res.ok) return (await res.json()) as T;
+    } catch (err) {
+      if (signal?.aborted) return fallback;
+      if (attempt === 1) break;
+    }
+    await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
+  }
+  return fallback;
+}
+
+async function diagFetch<T>(
+  key: string,
+  url: string,
+  fallback: T,
+  signal?: AbortSignal,
+): Promise<{ data: T; diag: AuroraFetchDiag | null }> {
+  const t0 = performance.now();
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      signal: signal ?? AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    const ms = Math.round(performance.now() - t0);
+    if (!res.ok) {
+      const diag: AuroraFetchDiag = {
+        key,
+        url,
+        status: res.status,
+        ms,
+        length: 0,
+        dataRows: 0,
+        sample: `HTTP ${res.status}`,
+        error: `HTTP ${res.status}`,
+      };
+      console.warn("[aurora-diag]", diag);
+      return { data: fallback, diag };
+    }
+    const data = (await res.json()) as T;
+    const length = Array.isArray(data) ? data.length : 0;
+    const dataRows = countDataRows(data);
+    const diag: AuroraFetchDiag = {
+      key,
+      url,
+      status: res.status,
+      ms,
+      length,
+      dataRows,
+      sample: samplePayload(data),
+      ...(dataRows === 0 && length > 0 ? { error: "empty payload (header only?)" } : {}),
+    };
+    const level = diag.error ? "warn" : "log";
+    console[level]("[aurora-diag]", diag);
+    return { data, diag };
+  } catch (err) {
+    const ms = Math.round(performance.now() - t0);
+    const message = err instanceof Error ? err.message : String(err);
+    if (signal?.aborted || message.includes("abort")) {
+      return { data: fallback, diag: null };
+    }
+    const diag: AuroraFetchDiag = {
+      key,
+      url,
+      status: "error",
+      ms,
+      length: 0,
+      dataRows: 0,
+      sample: message,
+      error: message,
+    };
+    console.warn("[aurora-diag]", diag);
+    return { data: fallback, diag };
+  }
+}
+
+async function safeFetch<T>(url: string, fallback: T, signal?: AbortSignal): Promise<T> {
+  return fetchWithRetry(url, fallback, signal);
+}
 
 // ──────────────────────────────────────────────
 // NOAA API known real formats (verified):
@@ -60,12 +193,13 @@ const initialState: AuroraState = {
 // products/noaa-planetary-k-index-forecast.json
 //   → [{time_tag:"2026-06-13T00:00:00", kp:3.33, observed:"estimated", noaa_scale:null}, ...]
 //
-// products/solar-wind/mag-2-hour.json
-//   → [["time_tag","bx_gsm","by_gsm","bz_gsm","lon_gsm","lat_gsm","bt"], ["2026-06-12 22:48:00.000","2.03",...]...]
-//
-// products/solar-wind/plasma-2-hour.json
-//   → [["time_tag","density","speed","temperature"], ["2026-06-12 22:48:00.000","3.5","450","80000"], ...]
-//
+// products/solar-wind/mag-2-hour.json  — DEPRECATED (Apr 2026), header-only
+// products/solar-wind/plasma-2-hour.json — DEPRECATED (Apr 2026), header-only
+// Replacement (SCN 26-21):
+// json/rtsw/rtsw_mag_1m.json
+//   → [{time_tag, active, source, bx_gsm, by_gsm, bz_gsm, bt, ...}, ...]
+// json/rtsw/rtsw_wind_1m.json
+//   → [{time_tag, active, source, proton_density, proton_speed, proton_temperature, ...}, ...]
 // products/alerts.json
 //   → [{product_id:"...", issue_datetime:"...", message:"..."}, ...]
 //
@@ -79,19 +213,6 @@ const initialState: AuroraState = {
 //   → [{obsdate:"2026-05-01",ssn:120,...}, ...]
 // ──────────────────────────────────────────────
 
-async function safeFetch<T>(url: string, fallback: T): Promise<T> {
-  try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!res.ok) return fallback;
-    return (await res.json()) as T;
-  } catch {
-    return fallback;
-  }
-}
-
 // Normalize space-separated time "2026-06-12 22:48:00.000" → ISO string
 function normTime(t: string | undefined | null): string {
   if (!t) return "";
@@ -99,9 +220,24 @@ function normTime(t: string | undefined | null): string {
   return t.replace(" ", "T").replace(".000", "") + "Z";
 }
 
-type MagRow = [string, string, string, string, string, string, string];
-type PlasmaRow = [string, string, string, string];
 type XrayRow = [string, string, string];
+
+type RtswMagItem = {
+  time_tag: string;
+  active: boolean;
+  bx_gsm: number;
+  by_gsm: number;
+  bz_gsm: number;
+  bt: number;
+};
+
+type RtswWindItem = {
+  time_tag: string;
+  active: boolean;
+  proton_density: number;
+  proton_speed: number;
+  proton_temperature: number;
+};
 
 // Kp 3-day (objects)
 type Kp3DayItem = { time_tag: string; Kp: number; a_running: number; station_count: number };
@@ -137,24 +273,83 @@ type SolarRegionItem = {
 export function useAuroraData() {
   const [state, setState] = useState<AuroraState>(initialState);
   const mountedRef = useRef(true);
+  const fetchGenerationRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchAll = useCallback(async () => {
-    const [kp1m, kp3d, kpFc, swMag, swPlasma, dstRaw, alerts, xray, flares, ssn, solarRegionsRaw] =
-      await Promise.all([
-        safeFetch<Kp1mItem[]>("https://services.swpc.noaa.gov/json/planetary_k_index_1m.json", []),
-        safeFetch<Kp3DayItem[]>("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json", []),
-        safeFetch<KpFcItem[]>("https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json", []),
-        safeFetch<MagRow[]>("https://services.swpc.noaa.gov/products/solar-wind/mag-2-hour.json", []),
-        safeFetch<PlasmaRow[]>("https://services.swpc.noaa.gov/products/solar-wind/plasma-2-hour.json", []),
-        safeFetch<DstItem[]>("https://services.swpc.noaa.gov/json/geospace/geospace_dst_7_day.json", []),
-        safeFetch<AlertItem[]>("https://services.swpc.noaa.gov/products/alerts.json", []),
-        safeFetch<XrayRow[]>("https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json", []),
-        safeFetch<FlareItem[]>("https://services.swpc.noaa.gov/json/goes/primary/solar-flares-latest.json", []),
-        safeFetch<SsnItem[]>("https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json", []),
-        safeFetch<SolarRegionItem[]>("https://services.swpc.noaa.gov/json/solar_regions.json", []),
-      ]);
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const generation = ++fetchGenerationRef.current;
+    const { signal } = controller;
 
-    if (!mountedRef.current) return;
+    const endpoints = [
+      { key: "kp1m", url: "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json" },
+      { key: "kp3d", url: "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json" },
+      { key: "kpFc", url: "https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json" },
+      { key: "swMag", url: "https://services.swpc.noaa.gov/json/rtsw/rtsw_mag_1m.json" },
+      { key: "swPlasma", url: "https://services.swpc.noaa.gov/json/rtsw/rtsw_wind_1m.json" },
+      { key: "dst", url: "https://services.swpc.noaa.gov/json/geospace/geospace_dst_7_day.json" },
+      { key: "alerts", url: "https://services.swpc.noaa.gov/products/alerts.json" },
+      { key: "xray", url: "https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json" },
+      { key: "flares", url: "https://services.swpc.noaa.gov/json/goes/primary/solar-flares-latest.json" },
+      { key: "ssn", url: "https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json" },
+      { key: "regions", url: "https://services.swpc.noaa.gov/json/solar_regions.json" },
+    ] as const;
+
+    const debug = isAuroraDebug();
+    const results = await Promise.all(
+      endpoints.map(async ({ key, url }) => {
+        if (debug) {
+          const r = await diagFetch<unknown>(key, url, [], signal);
+          if (r.diag === null) return { data: r.data, diag: null };
+          return r;
+        }
+        const data = await safeFetch<unknown>(url, [], signal);
+        return { data, diag: null };
+      }),
+    );
+
+    if (generation !== fetchGenerationRef.current || !mountedRef.current || signal.aborted) {
+      return;
+    }
+
+    const diagByKey = Object.fromEntries(
+      results.map((r, i) => [endpoints[i].key, r.diag]),
+    ) as Record<(typeof endpoints)[number]["key"], AuroraFetchDiag | null>;
+
+    const diagnostics = results
+      .map((r) => r.diag)
+      .filter((d): d is AuroraFetchDiag => d !== null);
+
+    const kp1m = results[0].data as Kp1mItem[];
+    const kp3d = results[1].data as Kp3DayItem[];
+    const kpFc = results[2].data as KpFcItem[];
+    const swMag = results[3].data as RtswMagItem[];
+    const swPlasma = results[4].data as RtswWindItem[];
+    const dstRaw = results[5].data as DstItem[];
+    const alerts = results[6].data as AlertItem[];
+    const xray = results[7].data as XrayRow[];
+    const flares = results[8].data as FlareItem[];
+    const ssn = results[9].data as SsnItem[];
+    const solarRegionsRaw = results[10].data as SolarRegionItem[];
+
+    const fetchErrors: Partial<Record<string, string>> = {};
+    for (const d of diagnostics) {
+      if (d.error) fetchErrors[d.key] = d.error;
+    }
+
+    if (debug) {
+      const parsedCounts = {
+        kpCurrent: kp1m.length,
+        kp3Day: kp3d.length,
+        solarWindMagRows: swMag.filter((r) => r.active).length,
+        solarWindPlasmaRows: swPlasma.filter((r) => r.active).length,
+        dst: dstRaw.length,
+        regions: solarRegionsRaw.length,
+      };
+      console.log("[aurora-diag] parsed counts", parsedCounts, "endpoint diags", diagByKey);
+    }
 
     // ── Kp 1-minute (current gauge + 24h chart)
     const kpCurrentParsed: KpData[] = kp1m.slice(-120).map((r) => ({
@@ -177,27 +372,8 @@ export function useAuroraData() {
       observed: r.observed ?? "forecast",
     }));
 
-    // ── Solar wind mag (array of arrays, row[0]=header)
-    const plasmaMap = new Map<string, PlasmaRow>();
-    for (const row of swPlasma.slice(1)) {
-      if (typeof row[0] === "string") plasmaMap.set(row[0].slice(0, 16), row);
-    }
-    const solarWindParsed: SolarWindData[] = swMag.slice(1).map((row) => {
-      const key = typeof row[0] === "string" ? row[0].slice(0, 16) : "";
-      const p = plasmaMap.get(key);
-      return {
-        time_tag: normTime(row[0]),
-        bx: parseFloat(row[1]) || 0,
-        by: parseFloat(row[2]) || 0,
-        bz: parseFloat(row[3]) || 0,
-        bt: parseFloat(row[6]) || 0,
-        speed: p ? parseFloat(p[2]) || 0 : 0,
-        density: p ? parseFloat(p[1]) || 0 : 0,
-        temperature: p ? parseFloat(p[3]) || 0 : 0,
-      };
-    });
-
-    // ── DST from geospace_dst_7_day (objects: {time_tag, dst})
+    // ── Solar wind (RTSW 1-min, active spacecraft only — SCN 26-21)
+    const solarWindParsed = parseRtswSolarWind(swMag, swPlasma);
     const dstParsed: GeomagneticIndex[] = dstRaw.map((r) => ({
       time_tag: r.time_tag,
       value: r.dst ?? 0,
@@ -254,23 +430,41 @@ export function useAuroraData() {
       last_date: r.last_date ?? "",
     }));
 
-    setState({
-      kpCurrent: kpCurrentParsed,
-      kp3Day: kp3DayParsed,
-      kpForecast: kpForecastParsed,
-      solarWind: solarWindParsed,
-      dst: dstParsed,
-      ae: aeParsed,
-      symh: symhParsed,
-      alerts: alertsParsed,
-      xrayFlux: xrayParsed,
-      solarFlares: flaresParsed,
-      sunspotNumber: ssnValue,
-      solarRegions: solarRegionsParsed,
-      lastUpdate: new Date(),
-      loading: false,
-      errors: {},
+    setState((prev) => {
+      const mergedErrors = { ...prev.errors };
+      for (const d of diagnostics) {
+        if (d.error) mergedErrors[d.key] = d.error;
+        else delete mergedErrors[d.key];
+      }
+
+      return {
+        kpCurrent: kpCurrentParsed.length > 0 ? kpCurrentParsed : prev.kpCurrent,
+        kp3Day: kp3DayParsed.length > 0 ? kp3DayParsed : prev.kp3Day,
+        kpForecast: kpForecastParsed.length > 0 ? kpForecastParsed : prev.kpForecast,
+        solarWind: solarWindParsed.length > 0 ? solarWindParsed : prev.solarWind,
+        dst: dstParsed.length > 0 ? dstParsed : prev.dst,
+        ae: aeParsed,
+        symh: symhParsed.length > 0 ? symhParsed : prev.symh,
+        alerts: alertsParsed.length > 0 ? alertsParsed : prev.alerts,
+        xrayFlux: xrayParsed.length > 0 ? xrayParsed : prev.xrayFlux,
+        solarFlares: flaresParsed.length > 0 ? flaresParsed : prev.solarFlares,
+        sunspotNumber: ssnValue ?? prev.sunspotNumber,
+        solarRegions: solarRegionsParsed.length > 0 ? solarRegionsParsed : prev.solarRegions,
+        lastUpdate: new Date(),
+        loading: false,
+        errors: mergedErrors,
+        diagnostics: debug ? diagnostics : prev.diagnostics,
+      };
     });
+
+    if (debug && (solarWindParsed.length === 0 || Object.keys(fetchErrors).length > 0)) {
+      console.warn("[aurora-diag] empty or partial state after fetch", {
+        solarWindPoints: solarWindParsed.length,
+        fetchErrors,
+        swMagActive: swMag.filter((r) => r.active).length,
+        swPlasmaActive: swPlasma.filter((r) => r.active).length,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -282,6 +476,7 @@ export function useAuroraData() {
 
     return () => {
       mountedRef.current = false;
+      abortRef.current?.abort();
       clearInterval(interval);
     };
   }, [fetchAll]);

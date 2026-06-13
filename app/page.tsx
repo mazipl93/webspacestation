@@ -18,6 +18,22 @@ import { SITE_HOME_TITLE } from "@/lib/seo/site-title";
 
 export const metadata: Metadata = {
   title: { absolute: SITE_HOME_TITLE },
+  description:
+    "Aktualności kosmiczne, ISS tracker na żywo, terminal zorzy polarnej (indeks Kp) i harmonogram startów rakiet — Web Space Station.",
+  keywords: [
+    "aktualności kosmiczne",
+    "kosmos",
+    "astronomia",
+    "ISS tracker",
+    "śledzenie ISS",
+    "zorza polarna",
+    "indeks Kp",
+    "starty rakiet",
+    "harmonogram startów",
+    "misje kosmiczne",
+    "NASA",
+    "SpaceX",
+  ],
   alternates: { canonical: getSiteUrl() },
   openGraph: {
     url: getSiteUrl(),
