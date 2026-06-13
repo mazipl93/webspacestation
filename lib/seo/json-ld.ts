@@ -193,7 +193,7 @@ export function buildInteractiveToolJsonLd(
   tool: InteractiveToolSeo,
   breadcrumb: BreadcrumbItem[],
 ) {
-  const blocks = [
+  const blocks: Record<string, unknown>[] = [
     buildWebApplicationJsonLd(tool),
     buildBreadcrumbJsonLd(breadcrumb),
   ];
