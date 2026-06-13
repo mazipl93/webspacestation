@@ -1,8 +1,17 @@
 # WSS — OG / SEO: plan follow-up (krok po kroku)
 
 **Utworzono:** 13 czerwca 2026  
-**Powiązane z sesją:** implementacja per-page Open Graph + JSON-LD (czerwiec 2026). **Krok 0:** commit + push 13.06.2026.  
+**Ostatnia aktualizacja planu:** 13 czerwca 2026 (po hotfixach OG).  
+**Prod HEAD:** `aeb4ed5` (`main`)  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
+
+### Commity OG (kolejność)
+
+| SHA | Opis |
+|---|---|
+| `0f612ff` | feat(seo): per-page OG `/og/[pageId]`, CollectionPage JSON-LD |
+| `fbac186` | fix: glass panel, `public/og/home-cover.jpg` (unikalne tło homepage) |
+| `aeb4ed5` | fix: stała szerokość tekstu (Satori flex bug), `nodejs` + `og-load-background.ts` |
 
 ---
 
@@ -23,8 +32,9 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 
 | Element | Opis |
 |---|---|
-| **Endpoint OG** | `GET /og/[pageId]` → `app/og/[pageId]/route.tsx` (edge, `revalidate: 86400`) |
-| **Generator** | `lib/seo/og-image-response.tsx` — zdjęcie tła + floating glass panel (Satori-safe, bez CSS gradient) |
+| **Endpoint OG** | `GET /og/[pageId]` → `app/og/[pageId]/route.tsx` (**nodejs**, `revalidate: 86400`) |
+| **Loader tła** | `lib/seo/og-load-background.ts` — data URL z pliku `/public` (edge nie ładował JPG z URL) |
+| **Generator** | `lib/seo/og-image-response.tsx` — foto + glass card, **stała szerokość 1104px** (Satori-safe) |
 | **Rejestr stron** | `lib/seo/page-og-registry.ts` — 27 wpisów: headline, subtitle, alt, keywords, accent, backgroundImage/gradient |
 | **Metadata narzędzi** | `lib/seo/tool-metadata.ts` → `getPageOgImageForPath()` zamiast `getDefaultOgImageUrl()` |
 | **Metadata listingów** | `lib/seo/listing-metadata.ts` → OG + auto-keywords z rejestru |
@@ -34,22 +44,30 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 | **Fallback globalny** | `app/opengraph-image.tsx` + `getDefaultOgImageUrl()` — gdy brak wpisu w rejestrze |
 | **Artykuły** | Bez zmian — `openGraph.images` z `coverImage` w `app/aktualnosci/[slug]/page.tsx` |
 
-**Zdjęcia tła używane w OG (z `/public`):**
-- **`/` (home)** → `public/og/home-cover.jpg` (unikalna scena: Ziemia, ISS, rakieta, zorza — **nie** to samo co `/zorza`)
+**Zdjęcia tła (z `/public`):**
+- **`/` (home)** → `public/og/home-cover.jpg` (Ziemia, ISS, rakieta, zorza · **≠** `/zorza`)
+- **`/mapa`** → `public/og/home-cover.jpg` (tymczasowo; `iss.png` psuł layout OG)
 - `/zorza` → `public/images/ops-pads/aurora.jpg`
-- `/mapa`, `/iss`, `/stacja-kosmiczna` → `iss.png`
+- `/iss`, `/stacja-kosmiczna` → `iss.png`
 - `/starty`, `/aktualnosci`, `/misje` → `cape-slc-40.png`
 - `/kalendarz` → `vandenberg-slc-4e.png`
 - `/astronomia` → `aurora.jpg`
-- Działy/huby bez foto → ciemne tło + akcent (glass panel)
+- Huby bez foto → ciemne tło + glass panel
 
-**Hotfix 13.06.2026 (po Krok 0):** Satori nie renderuje `radial-gradient` (szary prostokąt). Naprawiono renderer + dedykowany asset homepage.
+**Znane pułapki Satori (nie regresować):**
+- ❌ `radial-gradient` w CSS → szary prostokąt
+- ❌ `flex: 1` w karcie tekstu → opis **pionowo słowo po słowie**
+- ❌ edge runtime + fetch URL tła → homepage bez zdjęcia (ciche fail)
+- ✅ `backgroundColor` + data URL + explicit `width` na tekście
+
+**Hotfixy 13.06.2026:** renderer, home-cover, node loader, szerokość karty.
 
 **Co NIE jest gotowe:**
 - Strona **`/rozrywka`** — wpis w `OG_PAGE_REGISTRY`, brak `app/rozrywka/page.tsx`, brak w `SEO_SITEMAP_PATHS`
 - **Live Kp na obrazku OG** `/zorza` — tylko statyczny tekst na karcie
 - **Pre-generowane PNG** w `public/og/` dla pozostałych tras — tylko `home-cover.jpg` na razie
-- **Weryfikacja produkcyjna** crawlerów (Facebook/Twitter) — **Krok 1, następny czat**
+- **Dedykowane tło `/mapa`** (osobne od home) — opcjonalny follow-up po Krok 2
+- **Weryfikacja crawlerów** — **Krok 1, START tutaj w nowym czacie**
 - **GSC / monitoring CTR** — nie skonfigurowane
 
 ---
@@ -123,7 +141,13 @@ curl.exe -sI "http://localhost:3000/og/zorza"
 2. [opengraph.xyz](https://www.opengraph.xyz/) — wizualna kontrola tytułu, opisu, obrazu.
 3. Opcjonalnie: [Twitter/X Card Validator](https://cards-dev.twitter.com/validator) (jeśli dostępne dla konta).
 
-**Kryterium DONE:** Debugger pokazuje obraz z `/og/zorza` (aurora + overlay WSS), nie generic gradient z `/opengraph-image`.
+**Kryterium DONE:** Debugger pokazuje `/og/home` ze sceną kosmiczną + czytelny subtitle w **1–2 liniach** (nie pionowo). `/og/zorza` = aurora.
+
+**Weryfikacja wizualna przed scrape (user):**
+- https://webspacestation.pl/og/home
+- https://webspacestation.pl/og/mapa
+- https://webspacestation.pl/og/zorza  
+Hard refresh / incognito. CDN cache OG: `max-age=31536000` — po fixie może trzymać stary PNG do re-scrape.
 
 **Notatka dla agenta:** Nie implementuj kodu w tym kroku — tylko checklista weryfikacji + wpisz datę scrape w sekcji „Log wdrożeń” na końcu pliku.
 
@@ -265,9 +289,10 @@ curl.exe -sI "https://webspacestation.pl/og/zorza"
 
 ---
 
-### Krok 7 — Dev/staging: poprawne tła w OG (`NEXT_PUBLIC_SITE_URL`)
+### Krok 7 — Dev/staging: poprawne tła w OG
 
-- [ ] **Status:** oczekuje
+- [x] **Status:** częściowo done · nodejs czyta z `/public` lokalnie i na Vercel
+- [ ] **Opcjonalnie:** `.env.example` + test preview URL
 
 **Cel:** Na preview/staging obrazy OG z tłem foto (`aurora.jpg`) muszą się ładować w generatorze `@vercel/og`.
 
@@ -342,10 +367,10 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ Krok 1:** Re-scrape Facebook Debugger (`/`, `/zorza`, `/mapa`, `/starty`) po deploy hotfixu OG.  
-Potem **Krok 2:** strona `/rozrywka`.
+**→ Krok 1:** Facebook Sharing Debugger → Scrape Again: `/`, `/zorza`, `/mapa`, `/starty`.  
+**→ Krok 2:** strona `/rozrywka` (listing + sitemap + nav).
 
-Po deploy sprawdź wizualnie: `https://webspacestation.pl/og/home` (Ziemia + ISS + rakieta, glass panel z tekstem).
+User musi najpierw potwierdzić wizualnie `/og/home` i `/og/mapa` (tekst + zdjęcie). Jeśli OK → „Krok 1 OK”.
 
 ---
 
@@ -355,19 +380,19 @@ Skopiuj do nowej sesji:
 
 ```
 Projekt: Web Space Station (WSS), Next.js 15, prod https://webspacestation.pl
-Repo: mazipl93/webspacestation
+Repo: mazipl93/webspacestation, branch main, HEAD aeb4ed5
 
-Przeczytaj i wykonaj WYŁĄCZNIE następny nieodhaczony krok z:
-docs/WSS_OG_SEO_FOLLOWUP_PLAN.md
+Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 1).
 
-Reguły:
-- Jeden krok na sesję, raport, STOP na OK usera
-- Nie commituj bez explicit OK
-- Bez długich myślników (—) w copy
-- Architektura treści: docs/WSS_CONTENT_ARCHITECTURE.md
-- OG baseline: lib/seo/page-og-registry.ts, endpoint /og/[pageId]
+Kontekst OG (nie psuj):
+- Endpoint: /og/[pageId] (nodejs, lib/seo/og-load-background.ts)
+- Home tło: public/og/home-cover.jpg (≠ zorza aurora.jpg)
+- Satori: bez flex:1 na tekście, bez radial-gradient CSS
 
-Po zakończeniu kroku: zaktualizuj checkbox w planie i podaj co user ma przetestować.
+Reguły: jeden krok/sesję, STOP na OK usera, commit tylko po explicit OK, bez — w copy.
+Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
+
+Po kroku: odhacz checkbox w planie, podaj testy dla usera.
 ```
 
 ---
@@ -376,8 +401,9 @@ Po zakończeniu kroku: zaktualizuj checkbox w planie i podaj co user ma przetest
 
 | Data | Krok | Kto OK | Uwagi |
 |---|---|---|---|
-| 2026-06-13 | 0 — deploy OG | user | commit + push main |
-| | 1 — Facebook scrape | | |
+| 2026-06-13 | 0 — deploy OG | user | `0f612ff` |
+| 2026-06-13 | hotfix OG wizual | user | `fbac186`, `aeb4ed5` |
+| | 1 — Facebook scrape | | **NEXT** |
 | | 2 — /rozrywka | | |
 | | 3 — rich preview | | |
 | | 4 — live Kp OG | | |
@@ -398,8 +424,10 @@ Po zakończeniu kroku: zaktualizuj checkbox w planie i podaj co user ma przetest
 
 ```
 lib/seo/page-og-registry.ts    # rejestr OG + keywords
-lib/seo/og-image-response.tsx  # generator PNG
-app/og/[pageId]/route.tsx      # endpoint
+lib/seo/og-image-response.tsx  # generator PNG (stała szerokość karty!)
+lib/seo/og-load-background.ts  # data URL z /public
+app/og/[pageId]/route.tsx      # endpoint (runtime: nodejs)
+public/og/home-cover.jpg       # tło homepage (+ /mapa tymczasowo)
 lib/seo/tool-metadata.ts       # metadata narzędzi live
 lib/seo/listing-metadata.ts    # metadata działów/hubów
 lib/seo/json-ld.ts             # CollectionPage, WebApplication, FAQ
