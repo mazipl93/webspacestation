@@ -1,8 +1,8 @@
 # WSS — OG / SEO: plan follow-up (krok po kroku)
 
 **Utworzono:** 13 czerwca 2026  
-**Ostatnia aktualizacja planu:** 13 czerwca 2026 (po hotfixach OG).  
-**Prod HEAD:** `aeb4ed5` (`main`)  
+**Ostatnia aktualizacja planu:** 13 czerwca 2026 (po HQ OG WebP, hotfix 500, FB OK).  
+**Prod HEAD:** `b8f7be4` (`main`)  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -32,9 +32,10 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 
 | Element | Opis |
 |---|---|
-| **Endpoint OG** | `GET /og/[pageId]` → `app/og/[pageId]/route.tsx` (**nodejs**, `revalidate: 86400`) |
-| **Loader tła** | `lib/seo/og-load-background.ts` — data URL z pliku `/public` (edge nie ładował JPG z URL) |
-| **Generator** | `lib/seo/og-image-response.tsx` — foto + glass card, **stała szerokość 1104px** (Satori-safe) |
+| **Endpoint OG** | `GET /og/[pageId]` → `app/og/[pageId]/route.tsx` (**nodejs**, `revalidate: 86400`, **WebP** domyślnie, JPEG via `Accept`) |
+| **Generator HQ** | `lib/seo/og-image-sharp.ts` — foto/gradient @ 2× sharp → overlay Satori @ 2× → downscale → WebP near-lossless |
+| **Overlay tekst** | `lib/seo/og-overlay-satori.tsx` — panel + napisy (Satori); **wymaga** `import React` |
+| **Loader tła (legacy)** | `lib/seo/og-load-background.ts` — używany tylko przez stary `og-image-response.tsx` (fallback) |
 | **Rejestr stron** | `lib/seo/page-og-registry.ts` — 27 wpisów: headline, subtitle, alt, keywords, accent, backgroundImage/gradient |
 | **Metadata narzędzi** | `lib/seo/tool-metadata.ts` → `getPageOgImageForPath()` zamiast `getDefaultOgImageUrl()` |
 | **Metadata listingów** | `lib/seo/listing-metadata.ts` → OG + auto-keywords z rejestru |
@@ -60,10 +61,11 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 - ❌ edge runtime + fetch URL tła → homepage bez zdjęcia (ciche fail)
 - ✅ `backgroundColor` + data URL + explicit `width` na tekście
 
-**Hotfixy 13.06.2026:** renderer, home-cover, node loader, szerokość karty.
+**Homepage OG:** `og:image` → `https://webspacestation.pl/og/home` (meta w `app/page.tsx`). ❌ **Nie ma** trasy `/home` — debugger zawsze na **`/`**.
+
+**Copy SEO:** `og:title` bez długich myślników — `sanitizeSeoTitle()` w `lib/seo/site-title.ts`, separator ` · `.
 
 **Co NIE jest gotowe:**
-- Strona **`/rozrywka`** — wpis w `OG_PAGE_REGISTRY`, brak `app/rozrywka/page.tsx`, brak w `SEO_SITEMAP_PATHS`
 - **Live Kp na obrazku OG** `/zorza` — tylko statyczny tekst na karcie
 - **Pre-generowane PNG** w `public/og/` dla pozostałych tras — tylko `home-cover.jpg` na razie
 - **Dedykowane tło `/mapa`** (osobne od home) — opcjonalny follow-up po Krok 2
@@ -125,7 +127,7 @@ curl.exe -sI "http://localhost:3000/og/zorza"
 
 ### Krok 1 — Re-scrape social crawlerów (post-deploy)
 
-- [ ] **Status:** oczekuje · **Zależy od:** Krok 0
+- [x] **Status:** done 2026-06-13 · **Zależy od:** Krok 0
 
 **Cel:** Wymusić odświeżenie cache Facebooka/X/LinkedIn po wdrożeniu nowych URL obrazów `/og/*`.
 
@@ -153,11 +155,13 @@ Hard refresh / incognito. CDN cache OG: `max-age=31536000` — po fixie może tr
 
 ---
 
-### Krok 2 — Strona działu `/rozrywka` (listing + sitemap + nav)
+### Krok 2 — ~~Strona działu `/rozrywka`~~ (ANULOWANY)
 
-- [ ] **Status:** oczekuje
+- [x] **Status:** anulowany 13.06.2026 — dział Rozrywka zlikwidowany (DB + kod prod). Pozostałości w repo wyczyszczone; redirect `/rozrywka` → `/technologie`.
 
-**Cel:** Dokończyć brakujący dział **Rozrywka** — sci-fi, filmy, gry **z kosmosem** (nie ogólny gaming).
+**Następny krok planu:** **Krok 3** (rich preview Messenger/Discord).
+
+~~**Cel:** Dokończyć brakujący dział **Rozrywka**~~
 
 **Dlaczego (E/F):** OG i rejestr gotowe (`id: rozrywka`), ale route nie istnieje → 404, brak w sitemap, artykuły `categorySlug: rozrywka` w DB bez strony docelowej.
 
@@ -189,7 +193,7 @@ Hard refresh / incognito. CDN cache OG: `max-age=31536000` — po fixie może tr
 
 ### Krok 3 — Walidacja rich preview (Messenger / Discord / iMessage)
 
-- [ ] **Status:** oczekuje · **Zależy od:** Krok 0, 1
+- [x] **Status:** done 2026-06-13 · **Zależy od:** Krok 0, 1
 
 **Cel:** Potwierdzić korzyść **D: rich preview** w messengera (duży obraz + opis).
 
@@ -367,10 +371,9 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ Krok 1:** Facebook Sharing Debugger → Scrape Again: `/`, `/zorza`, `/mapa`, `/starty`.  
-**→ Krok 2:** strona `/rozrywka` (listing + sitemap + nav).
+**→ Krok 4:** dynamiczny OG `/zorza` z live indeksem Kp (reuse `app/api/aurora/snapshot`).
 
-User musi najpierw potwierdzić wizualnie `/og/home` i `/og/mapa` (tekst + zdjęcie). Jeśli OK → „Krok 1 OK”.
+**Poza planem (repo lokalne, nie na prod):** cleanup likwidacji `/rozrywka` (editorial, `next.config`, seed) — osobny commit gdy user każe.
 
 ---
 
@@ -380,16 +383,18 @@ Skopiuj do nowej sesji:
 
 ```
 Projekt: Web Space Station (WSS), Next.js 15, prod https://webspacestation.pl
-Repo: mazipl93/webspacestation, branch main, HEAD aeb4ed5
+Repo: mazipl93/webspacestation, branch main, HEAD b8f7be4
 
-Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 1).
+Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 4).
 
 Kontekst OG (nie psuj):
-- Endpoint: /og/[pageId] (nodejs, lib/seo/og-load-background.ts)
+- Endpoint: /og/[pageId] (nodejs) → WebP/JPEG, lib/seo/og-image-sharp.ts + og-overlay-satori.tsx
+- Render 2× (2400×1260) → downscale 1200×630; composite sharp w osobnych krokach (nie łańcuch composite+resize+webp)
+- Home: og:image /og/home · strona / (NIE /home)
 - Home tło: public/og/home-cover.jpg (≠ zorza aurora.jpg)
-- Satori: bez flex:1 na tekście, bez radial-gradient CSS
+- og:title: bez — · tylko · (sanitizeSeoTitle)
 
-Reguły: jeden krok/sesję, STOP na OK usera, commit tylko po explicit OK, bez — w copy.
+Reguły: jeden krok/sesję, STOP na OK usera, commit tylko po explicit OK.
 Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 
 Po kroku: odhacz checkbox w planie, podaj testy dla usera.
@@ -403,10 +408,12 @@ Po kroku: odhacz checkbox w planie, podaj testy dla usera.
 |---|---|---|---|
 | 2026-06-13 | 0 — deploy OG | user | `0f612ff` |
 | 2026-06-13 | hotfix OG wizual | user | `fbac186`, `aeb4ed5` |
-| | 1 — Facebook scrape | | **NEXT** |
-| | 2 — /rozrywka | | |
-| | 3 — rich preview | | |
-| | 4 — live Kp OG | | |
+| 2026-06-13 | 1 — Facebook scrape | user | Sharing Debugger + re-scrape |
+| 2026-06-13 | 2 — /rozrywka | — | anulowany, redirect → /technologie |
+| 2026-06-13 | 3 — rich preview | user | FB post + debugger `/` OK |
+| 2026-06-13 | extra — jakość OG | user | `e92d7d4` JPEG sharp, `805b3d8` 2× WebP Satori, `b8f7be4` hotfix 500 |
+| 2026-06-13 | extra — og:title | user | `0042519` bez em dash (` · `) |
+| | 4 — live Kp OG | | **NEXT** |
 | | 5 — static PNG | | |
 | | 6 — GSC baseline | | |
 | | 7 — dev OG URL | | |
@@ -424,9 +431,11 @@ Po kroku: odhacz checkbox w planie, podaj testy dla usera.
 
 ```
 lib/seo/page-og-registry.ts    # rejestr OG + keywords
-lib/seo/og-image-response.tsx  # generator PNG (stała szerokość karty!)
-lib/seo/og-load-background.ts  # data URL z /public
-app/og/[pageId]/route.tsx      # endpoint (runtime: nodejs)
+lib/seo/og-image-sharp.ts       # HQ pipeline 2× → WebP/JPEG
+lib/seo/og-overlay-satori.tsx   # panel tekstowy Satori (import React!)
+lib/seo/og-image-response.tsx   # legacy Satori full-frame (fallback)
+lib/seo/og-load-background.ts   # legacy loader (og-image-response)
+app/og/[pageId]/route.tsx       # endpoint (runtime: nodejs)
 public/og/home-cover.jpg       # tło homepage (+ /mapa tymczasowo)
 lib/seo/tool-metadata.ts       # metadata narzędzi live
 lib/seo/listing-metadata.ts    # metadata działów/hubów
