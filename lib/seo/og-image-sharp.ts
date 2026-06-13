@@ -47,33 +47,33 @@ function buildGradientBackgroundSvg(
 </svg>`;
 }
 
-async function loadPhotoBackgroundPng(relativePath: string, width: number, height: number): Promise<Buffer> {
-  const rel = relativePath.replace(/^\//, "");
+async function openPhotoPipeline(
+  entry: OgPageEntry,
+  width: number,
+  height: number,
+): Promise<sharp.Sharp> {
+  const rel = entry.backgroundImage!.replace(/^\//, "");
   const filePath = path.join(process.cwd(), "public", rel);
   const meta = await sharp(filePath, { failOn: "none" }).metadata();
   const needsUpscale = (meta.width ?? 0) < width || (meta.height ?? 0) < height;
+  const position = entry.backgroundPosition ?? "centre";
 
   let pipeline = sharp(filePath, { failOn: "none" })
     .rotate()
     .resize(width, height, {
       fit: "cover",
-      position: "centre",
+      position,
       kernel: sharp.kernel.lanczos3,
-    });
+    })
+    .toColourspace("srgb");
 
-  if (!needsUpscale) {
-    pipeline = pipeline.sharpen({ sigma: 0.35, m1: 0.5, m2: 0.2 });
+  if (needsUpscale) {
+    pipeline = pipeline.sharpen({ sigma: 0.7, m1: 0.85, m2: 0.35 });
+  } else {
+    pipeline = pipeline.sharpen({ sigma: 0.4, m1: 0.55, m2: 0.22 });
   }
 
-  return pipeline.toColourspace("srgb").png({ compressionLevel: 6 }).toBuffer();
-}
-
-async function buildBaseLayerPng(entry: OgPageEntry, width: number, height: number): Promise<Buffer> {
-  if (entry.backgroundImage) {
-    return loadPhotoBackgroundPng(entry.backgroundImage, width, height);
-  }
-  const svg = buildGradientBackgroundSvg(entry, width, height);
-  return sharp(Buffer.from(svg)).png().toBuffer();
+  return pipeline;
 }
 
 function encodeOutput(image: sharp.Sharp, format: OgImageFormat): Promise<Buffer> {
@@ -83,13 +83,15 @@ function encodeOutput(image: sharp.Sharp, format: OgImageFormat): Promise<Buffer
         quality: 98,
         mozjpeg: true,
         chromaSubsampling: "4:4:4",
+        trellisQuantisation: true,
+        overshootDeringing: true,
       })
       .toBuffer();
   }
 
   return image
     .webp({
-      quality: 96,
+      quality: 92,
       effort: 6,
       smartSubsample: false,
       nearLossless: true,
@@ -103,35 +105,44 @@ async function normalizeOverlayPng(
   height: number,
 ): Promise<Buffer> {
   return sharp(overlay)
-    .resize(width, height, { fit: "fill" })
+    .resize(width, height, { fit: "fill", kernel: sharp.kernel.lanczos3 })
     .ensureAlpha()
-    .png()
+    .png({ compressionLevel: 6 })
     .toBuffer();
 }
 
+export type BuildOgImageOptions = {
+  subtitleOverride?: string;
+};
+
 /**
- * HQ OG: foto/gradient @ 2× → Satori overlay @ 2× → downscale Lanczos → WebP/JPEG.
- * Tekst z Satori, zdjęcie z sharp (bez podwójnej rasterizacji Satori na foto).
+ * HQ OG: foto/gradient @ 2× → Satori overlay @ 2× → downscale Lanczos → jeden encode JPEG/WebP.
  */
 export async function buildOgImage(
   entry: OgPageEntry,
-  format: OgImageFormat = "webp",
+  format: OgImageFormat = "jpeg",
+  options: BuildOgImageOptions = {},
 ): Promise<Buffer> {
   const { width: renderW, height: renderH } = ogRenderDimensions();
   const hasPhoto = Boolean(entry.backgroundImage);
 
-  const [basePng, overlayRaw] = await Promise.all([
-    buildBaseLayerPng(entry, renderW, renderH),
-    renderOgOverlayPng(entry, {
-      width: renderW,
-      height: renderH,
-      hasPhoto,
-    }),
-  ]);
-
+  const overlayRaw = await renderOgOverlayPng(entry, {
+    width: renderW,
+    height: renderH,
+    hasPhoto,
+    subtitleOverride: options.subtitleOverride,
+  });
   const overlayPng = await normalizeOverlayPng(overlayRaw, renderW, renderH);
 
-  const mergedPng = await sharp(basePng)
+  const baseBuffer = entry.backgroundImage
+    ? await (await openPhotoPipeline(entry, renderW, renderH))
+        .png({ compressionLevel: 6 })
+        .toBuffer()
+    : await sharp(Buffer.from(buildGradientBackgroundSvg(entry, renderW, renderH)))
+        .png()
+        .toBuffer();
+
+  const mergedPng = await sharp(baseBuffer)
     .composite([{ input: overlayPng, top: 0, left: 0 }])
     .png()
     .toBuffer();

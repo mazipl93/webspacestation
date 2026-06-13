@@ -20,6 +20,8 @@ export type OgPageEntry = {
   accent?: string;
   /** Photo background from /public (optional). */
   backgroundImage?: string;
+  /** sharp resize position when cropping photo (default centre). */
+  backgroundPosition?: "centre" | "bottom" | "top" | "attention";
   /** CSS gradient fallback when no photo. */
   gradient?: string;
   /** Polish SEO keywords for listing/tool pages. */
@@ -56,7 +58,8 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Indeks Kp · prognoza NOAA · space weather",
     alt: "Zorza polarna na żywo, indeks geomagnetyczny Kp i prognoza aurora borealis",
     accent: "#34d399",
-    backgroundImage: "/images/ops-pads/aurora.jpg",
+    backgroundImage: "/og/zorza-cover.jpg",
+    backgroundPosition: "centre",
     keywords: [
       "zorza polarna",
       "zorza polarna dziś",

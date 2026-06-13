@@ -1,6 +1,8 @@
 import React from "react";
 import { ImageResponse } from "next/og";
+import type { Font } from "next/dist/compiled/@vercel/og/satori";
 import type { OgPageEntry } from "@/lib/seo/page-og-registry";
+import { loadOgOverlayFonts } from "@/lib/seo/og-overlay-fonts";
 import {
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_WIDTH,
@@ -11,6 +13,8 @@ type OverlayOptions = {
   height: number;
   /** Photo behind — only tints + card. No photo — card only (bg from sharp SVG). */
   hasPhoto: boolean;
+  /** Nadpisuje entry.subtitle (np. live Kp na /zorza). */
+  subtitleOverride?: string;
 };
 
 function scale(value: number, ratio: number): number {
@@ -20,11 +24,13 @@ function scale(value: number, ratio: number): number {
 /** Glass panel + tekst w Satori (ostre fonty); tło przez sharp. */
 export function buildOgOverlayResponse(
   entry: OgPageEntry,
-  { width, height, hasPhoto }: OverlayOptions,
+  { width, height, hasPhoto, subtitleOverride }: OverlayOptions,
+  fonts: Font[],
 ): ImageResponse {
   const ratio = width / DEFAULT_OG_IMAGE_WIDTH;
   const accent = entry.accent ?? "#38bdf8";
   const cardWidth = scale(1104, ratio);
+  const subtitle = subtitleOverride ?? entry.subtitle;
 
   return new ImageResponse(
     (
@@ -35,7 +41,7 @@ export function buildOgOverlayResponse(
           height,
           position: "relative",
           backgroundColor: "rgba(0,0,0,0)",
-          fontFamily: "system-ui, sans-serif",
+          fontFamily: "Inter",
         }}
       >
         {hasPhoto ? (
@@ -57,7 +63,7 @@ export function buildOgOverlayResponse(
                 left: 0,
                 width,
                 height,
-                backgroundColor: "rgba(6,8,16,0.22)",
+                backgroundColor: "rgba(6,8,16,0.08)",
               }}
             />
             <div
@@ -66,8 +72,8 @@ export function buildOgOverlayResponse(
                 bottom: 0,
                 left: 0,
                 width,
-                height: scale(340, ratio),
-                backgroundColor: "rgba(6,8,16,0.55)",
+                height: scale(280, ratio),
+                backgroundColor: "rgba(6,8,16,0.42)",
               }}
             />
           </div>
@@ -82,9 +88,9 @@ export function buildOgOverlayResponse(
             display: "flex",
             flexDirection: "column",
             padding: `${scale(28, ratio)}px ${scale(36, ratio)}px ${scale(32, ratio)}px ${scale(32, ratio)}px`,
-            backgroundColor: "rgba(8, 12, 22, 0.92)",
+            backgroundColor: "rgba(8, 12, 22, 0.84)",
             borderRadius: scale(14, ratio),
-            border: `${Math.max(1, scale(1, ratio))}px solid rgba(255, 255, 255, 0.14)`,
+            border: `${Math.max(1, scale(1, ratio))}px solid rgba(255, 255, 255, 0.16)`,
             borderLeft: `${scale(5, ratio)}px solid ${accent}`,
           }}
         >
@@ -103,7 +109,7 @@ export function buildOgOverlayResponse(
           <div
             style={{
               fontSize: scale(46, ratio),
-              fontWeight: 700,
+              fontWeight: 800,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",
               color: "#ffffff",
@@ -117,12 +123,12 @@ export function buildOgOverlayResponse(
               fontSize: scale(22, ratio),
               fontWeight: 400,
               lineHeight: 1.35,
-              color: "#d8e2ed",
+              color: "#e8eef4",
               marginTop: scale(12, ratio),
               width: cardWidth - scale(72, ratio),
             }}
           >
-            {entry.subtitle}
+            {subtitle}
           </div>
         </div>
       </div>
@@ -130,6 +136,7 @@ export function buildOgOverlayResponse(
     {
       width,
       height,
+      fonts,
     },
   );
 }
@@ -138,7 +145,8 @@ export async function renderOgOverlayPng(
   entry: OgPageEntry,
   options: OverlayOptions,
 ): Promise<Buffer> {
-  const response = buildOgOverlayResponse(entry, options);
+  const fonts = await loadOgOverlayFonts();
+  const response = buildOgOverlayResponse(entry, options, fonts);
   return Buffer.from(await response.arrayBuffer());
 }
 

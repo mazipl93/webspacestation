@@ -1,8 +1,8 @@
 # WSS — OG / SEO: plan follow-up (krok po kroku)
 
 **Utworzono:** 13 czerwca 2026  
-**Ostatnia aktualizacja planu:** 13 czerwca 2026 (po HQ OG WebP, hotfix 500, FB OK).  
-**Prod HEAD:** `b8f7be4` (`main`)  
+**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 4: live Kp OG /zorza + HQ cover).  
+**Prod HEAD:** _(po push: commit Krok 4)_ · `main`  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -48,7 +48,7 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 **Zdjęcia tła (z `/public`):**
 - **`/` (home)** → `public/og/home-cover.jpg` (Ziemia, ISS, rakieta, zorza · **≠** `/zorza`)
 - **`/mapa`** → `public/og/home-cover.jpg` (tymczasowo; `iss.png` psuł layout OG)
-- `/zorza` → `public/images/ops-pads/aurora.jpg`
+- `/zorza` → `public/og/zorza-cover.jpg` (2400×1260 HQ; live Kp w subtitle)
 - `/iss`, `/stacja-kosmiczna` → `iss.png`
 - `/starty`, `/aktualnosci`, `/misje` → `cape-slc-40.png`
 - `/kalendarz` → `vandenberg-slc-4e.png`
@@ -66,8 +66,7 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 **Copy SEO:** `og:title` bez długich myślników — `sanitizeSeoTitle()` w `lib/seo/site-title.ts`, separator ` · `.
 
 **Co NIE jest gotowe:**
-- **Live Kp na obrazku OG** `/zorza` — tylko statyczny tekst na karcie
-- **Pre-generowane PNG** w `public/og/` dla pozostałych tras — tylko `home-cover.jpg` na razie
+- **Pre-generowane PNG** w `public/og/` dla pozostałych tras — tylko `home-cover.jpg` + `zorza-cover.jpg`
 - **Dedykowane tło `/mapa`** (osobne od home) — opcjonalny follow-up po Krok 2
 - **Weryfikacja crawlerów** — **Krok 1, START tutaj w nowym czacie**
 - **GSC / monitoring CTR** — nie skonfigurowane
@@ -216,9 +215,9 @@ Hard refresh / incognito. CDN cache OG: `max-age=31536000` — po fixie może tr
 
 ### Krok 4 — Dynamiczny OG `/zorza` z live indeksem Kp (hybryda C+)
 
-- [ ] **Status:** oczekuje · **Zależy od:** Krok 0
+- [x] **Status:** done 2026-06-13 · **Zależy od:** Krok 0 · user OK „może być”
 
-**Cel:** Na karcie OG `/og/zorza` pokazać **aktualny Kp** (np. „Kp 4.3 · szansa na zorzę”) z danych NOAA, na tle `aurora.jpg`.
+**Cel:** Na karcie OG `/og/zorza` pokazać **aktualny Kp** w copy zrozumiałym dla człowieka (np. „Dziś w Polsce bez zorzy · indeks Kp 2,7”) z danych NOAA, na tle HQ `zorza-cover.jpg`.
 
 **Dlaczego (F):** Unikalny, „żywy” preview zwiększa CTR przy zapytaniach „zorza polarna dziś”, „indeks Kp” — użytkownik widzi wartość przed kliknięciem.
 
@@ -371,9 +370,9 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ Krok 4:** dynamiczny OG `/zorza` z live indeksem Kp (reuse `app/api/aurora/snapshot`).
+**→ Krok 5:** opcjonalne statyczne PNG w `public/og/` (backup edge OG).
 
-**Poza planem (repo lokalne, nie na prod):** cleanup likwidacji `/rozrywka` (editorial, `next.config`, seed) — osobny commit gdy user każe.
+**Po deploy Krok 4:** Facebook Debugger → Scrape Again dla `https://webspacestation.pl/zorza`.
 
 ---
 
@@ -385,13 +384,14 @@ Skopiuj do nowej sesji:
 Projekt: Web Space Station (WSS), Next.js 15, prod https://webspacestation.pl
 Repo: mazipl93/webspacestation, branch main, HEAD b8f7be4
 
-Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 4).
+Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 5, opcjonalny).
 
 Kontekst OG (nie psuj):
-- Endpoint: /og/[pageId] (nodejs) → WebP/JPEG, lib/seo/og-image-sharp.ts + og-overlay-satori.tsx
-- Render 2× (2400×1260) → downscale 1200×630; composite sharp w osobnych krokach (nie łańcuch composite+resize+webp)
+- Endpoint: /og/[pageId] (nodejs) → JPEG domyślnie (FB), WebP via Accept
+- Render 2× (2400×1260) → downscale 1200×630; composite sharp w osobnych krokach
+- /zorza: live Kp via lib/seo/og-zorza-kp-line.ts + homepage-snapshot, cache 5 min
+- /zorza tło: public/og/zorza-cover.jpg · Inter fonts w og-overlay-satori.tsx
 - Home: og:image /og/home · strona / (NIE /home)
-- Home tło: public/og/home-cover.jpg (≠ zorza aurora.jpg)
 - og:title: bez — · tylko · (sanitizeSeoTitle)
 
 Reguły: jeden krok/sesję, STOP na OK usera, commit tylko po explicit OK.
@@ -413,8 +413,8 @@ Po kroku: odhacz checkbox w planie, podaj testy dla usera.
 | 2026-06-13 | 3 — rich preview | user | FB post + debugger `/` OK |
 | 2026-06-13 | extra — jakość OG | user | `e92d7d4` JPEG sharp, `805b3d8` 2× WebP Satori, `b8f7be4` hotfix 500 |
 | 2026-06-13 | extra — og:title | user | `0042519` bez em dash (` · `) |
-| | 4 — live Kp OG | | **NEXT** |
-| | 5 — static PNG | | |
+| 2026-06-13 | 4 — live Kp OG | user | live subtitle + HQ zorza-cover, Inter, JPEG default |
+| | 5 — static PNG | | **NEXT (opcjonalny)** |
 | | 6 — GSC baseline | | |
 | | 7 — dev OG URL | | |
 | | 8 — keywords audit | | |
@@ -436,6 +436,9 @@ lib/seo/og-overlay-satori.tsx   # panel tekstowy Satori (import React!)
 lib/seo/og-image-response.tsx   # legacy Satori full-frame (fallback)
 lib/seo/og-load-background.ts   # legacy loader (og-image-response)
 app/og/[pageId]/route.tsx       # endpoint (runtime: nodejs)
+lib/seo/og-zorza-kp-line.ts     # live Kp subtitle /zorza
+lib/seo/og-overlay-fonts.ts     # Inter 400/600/800 dla Satori
+public/og/zorza-cover.jpg       # HQ tło OG zorza (2400×1260)
 public/og/home-cover.jpg       # tło homepage (+ /mapa tymczasowo)
 lib/seo/tool-metadata.ts       # metadata narzędzi live
 lib/seo/listing-metadata.ts    # metadata działów/hubów
