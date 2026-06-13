@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublishedSitemapEntries, getPublishedTags } from "@/lib/server/articles";
+import { RSS_ALL_FEEDS } from "@/lib/rss-feeds";
 import { INTERACTIVE_TOOLS } from "@/lib/seo/interactive-tools";
 import { SEO_SITEMAP_PATHS } from "@/lib/seo/public-routes";
 import { getSiteUrl } from "@/lib/site-url";
@@ -32,6 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       : 0.7),
   }));
 
+  const feedEntries: MetadataRoute.Sitemap = RSS_ALL_FEEDS.map((feed) => ({
+    url: `${base}${feed.path}`,
+    lastModified: now,
+    changeFrequency: "hourly" as const,
+    priority: feed.path === "/feed.xml" ? 0.75 : 0.55,
+  }));
+
   let articleEntries: MetadataRoute.Sitemap = [];
   try {
     const articles = await getPublishedSitemapEntries();
@@ -58,5 +66,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] failed to load tags", error);
   }
 
-  return [...staticEntries, ...articleEntries, ...tagEntries];
+  return [...staticEntries, ...feedEntries, ...articleEntries, ...tagEntries];
 }

@@ -36,7 +36,6 @@
     "week-topic:reset-new-glenn": "tsx scripts/reset-week-topic-new-glenn.ts",
     "editorial:seed-test": "tsx scripts/seed-editorial-test-articles.ts",
     "editorial:fix-covers": "tsx scripts/fix-editorial-covers.ts",
-    "rozrywka:migrate": "tsx scripts/migrate-gaming-to-rozrywka.ts",
     "content-arch:migrate": "tsx scripts/migrate-content-architecture.ts",
     "category:migrate-nauka": "tsx scripts/migrate-nauka-category.ts",
     "editorial:strip-bold": "tsx scripts/strip-editorial-sources.ts",
@@ -47,7 +46,9 @@
     "ops:briefs": "tsx scripts/ops-generate-briefs.ts",
     "scores:recalculate": "tsx scripts/recalculate-scores.ts",
     "publish:scheduled": "tsx scripts/publish-scheduled.ts",
-    "publish:scheduled:watch": "tsx scripts/publish-scheduled-watch.ts"
+    "publish:scheduled:watch": "tsx scripts/publish-scheduled-watch.ts",
+    "gsc:priority-urls": "tsx scripts/gsc-priority-urls.ts",
+    "gsc:ping-sitemap": "tsx scripts/gsc-priority-urls.ts --ping"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

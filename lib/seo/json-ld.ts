@@ -1,11 +1,22 @@
 import { getCategoryInfo } from "@/lib/categories";
 import type { InteractiveToolSeo } from "@/lib/seo/interactive-tools";
-import { getPageOgImageUrl, pathToOgPageId } from "@/lib/seo/page-og-registry";
+import {
+  getPageOgImageUrl,
+  pathToOgPageId,
+} from "@/lib/seo/page-og-registry";
 import { getSiteUrl } from "@/lib/site-url";
 import type { NewsArticle } from "@/types";
 
 const ORG_NAME = "Web Space Station";
 const ORG_LOGO_PATH = "/favicon-96.png";
+
+const ORG_SAME_AS = [
+  "https://discord.gg/wss",
+  "https://youtube.com/@webspacestation",
+  "https://x.com/webspacestation",
+  "https://instagram.com/webspacestation",
+  "https://facebook.com/webspacestation",
+] as const;
 
 function absoluteUrl(path: string): string {
   const base = getSiteUrl();
@@ -40,12 +51,16 @@ export function buildSiteJsonLd() {
         "Najważniejsze wydarzenia z kosmosu, astronomii i technologii kosmicznych. ISS tracker, terminal zorzy polarnej i harmonogram startów rakiet na żywo.",
       inLanguage: "pl-PL",
       publisher: { "@id": `${siteUrl}/#organization` },
-      hasPart: liveTools.map((tool) => ({
-        "@type": "WebApplication",
-        name: tool.name,
-        url: `${siteUrl}${tool.path}`,
-        applicationCategory: "ScienceApplication",
-      })),
+      hasPart: liveTools.map((tool) => {
+        const ogPageId = pathToOgPageId(tool.path);
+        return {
+          "@type": "WebApplication",
+          name: tool.name,
+          url: `${siteUrl}${tool.path}`,
+          applicationCategory: "ScienceApplication",
+          ...(ogPageId ? { image: getPageOgImageUrl(ogPageId) } : {}),
+        };
+      }),
       potentialAction: {
         "@type": "SearchAction",
         target: {
@@ -65,6 +80,7 @@ export function buildSiteJsonLd() {
         "@type": "ImageObject",
         url: logoUrl,
       },
+      sameAs: [...ORG_SAME_AS],
     },
   ];
 }

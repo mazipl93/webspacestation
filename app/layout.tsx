@@ -20,6 +20,7 @@ import {
   SITE_TITLE_SEP,
   formatPageTitle,
 } from "@/lib/seo/site-title";
+import { RSS_ALL_FEEDS } from "@/lib/rss-feeds";
 import "./globals.css";
 import { HERO_IMAGE_PRECONNECT_ORIGINS } from "@/lib/home/hero-lcp";
 
@@ -100,9 +101,10 @@ export const metadata: Metadata = {
   },
   alternates: {
     types: {
-      "application/rss+xml": [
-        { url: "/feed.xml", title: formatPageTitle("Wszystkie aktualności (RSS)") },
-      ],
+      "application/rss+xml": RSS_ALL_FEEDS.map((feed) => ({
+        url: feed.path,
+        title: formatPageTitle(`${feed.title} (RSS)`),
+      })),
     },
   },
 };

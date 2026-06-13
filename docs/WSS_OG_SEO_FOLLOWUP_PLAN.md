@@ -1,8 +1,8 @@
 # WSS — OG / SEO: plan follow-up (krok po kroku)
 
 **Utworzono:** 13 czerwca 2026  
-**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 4: live Kp OG /zorza + HQ cover).  
-**Prod HEAD:** _(po push: commit Krok 4)_ · `main`  
+**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 6: GSC pakiet + RSS w sitemap).  
+**Prod HEAD:** _(po push tej sesji — Krok 6)_ · `main`  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -265,30 +265,24 @@ curl.exe -sI "https://webspacestation.pl/og/zorza"
 
 ### Krok 6 — Google Search Console: monitoring intencji SEO
 
-- [ ] **Status:** oczekuje · **Zależy od:** Krok 0, ~2–4 tyg. indeksacji
+- [x] **Status:** done 2026-06-13 (pakiet GSC w repo) · **Zależy od:** Krok 0, ~2–4 tyg. indeksacji
 
 **Cel:** Mierzyć czy opisy/keywords pod konkretne zapytania (**D: SEO**) dają efekt.
 
-**Dlaczego (F):** Bez GSC nie wiadomo czy „zorza polarna dziś” czy „ISS tracker” rosną.
+**Wdrożone w repo:**
+- `lib/seo/gsc-priority.ts` — tier 1/2/3 URL + mapowanie fraz
+- `scripts/gsc-priority-urls.ts` — checklista GSC, feedy, baseline do wklejenia
+- `npm run gsc:priority-urls` · `npm run gsc:ping-sitemap` (Google + Bing ping)
+- `app/sitemap.ts` — feedy RSS (`/feed.xml`, `/feed/{dział}`) w sitemap
+- `app/layout.tsx` — wszystkie kanały RSS w `<link rel="alternate">`
+- `lib/seo/json-ld.ts` — `sameAs` Organization + `image` w WebSite.hasPart
 
-**Zapytania do śledzenia (raport Performance → Search results):**
-
-| Zapytanie | Strona docelowa |
-|---|---|
-| zorza polarna dziś | `/zorza` |
-| indeks kp | `/zorza` |
-| iss tracker | `/mapa` |
-| gdzie jest iss | `/mapa` |
-| harmonogram startów spacex | `/starty`, `/kalendarz` |
-| aktualności kosmiczne | `/`, `/aktualnosci` |
-
-**Co zrobić:**
-1. Upewnij się, że property GSC = `webspacestation.pl` (verification w `app/layout.tsx` → `GOOGLE_SITE_VERIFICATION`)
-2. Po deploy: **URL Inspection** → Request indexing dla `/zorza`, `/mapa`, `/starty`
-3. Za 2–4 tyg.: export CTR i pozycji dla fraz powyżej
-4. Wpisz baseline w „Log wdrożeń” na końcu tego pliku
-
-**Kryterium DONE:** Baseline zapisany; user ma dostęp do raportu (agent nie potrzebuje credentials — user wkleja liczby lub OK „mam w GSC”).
+**Ręcznie (user w GSC):**
+1. Property `webspacestation.pl` · Vercel: `GOOGLE_SITE_VERIFICATION` (jeśli brak meta)
+2. Sitemaps → `https://webspacestation.pl/sitemap.xml` → Submit
+3. `npm run gsc:priority-urls -- --tier=1` → URL Inspection → Request indexing
+4. Po deploy: `npm run gsc:ping-sitemap`
+5. Za 2–4 tyg.: Performance → frazy z tabeli poniżej → wpisz w Log
 
 ---
 
@@ -370,9 +364,9 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ Krok 5:** opcjonalne statyczne PNG w `public/og/` (backup edge OG).
+**→ Krok 7:** dev OG URL (opcjonalny smoke test lokalny).
 
-**Po deploy Krok 4:** Facebook Debugger → Scrape Again dla `https://webspacestation.pl/zorza`.
+**Po deploy Krok 6:** `npm run gsc:ping-sitemap` + GSC tier-1 indexing.
 
 ---
 
@@ -382,22 +376,17 @@ Skopiuj do nowej sesji:
 
 ```
 Projekt: Web Space Station (WSS), Next.js 15, prod https://webspacestation.pl
-Repo: mazipl93/webspacestation, branch main, HEAD b8f7be4
+Repo: mazipl93/webspacestation, branch main
 
-Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 5, opcjonalny).
+Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 7, opcjonalny).
 
-Kontekst OG (nie psuj):
-- Endpoint: /og/[pageId] (nodejs) → JPEG domyślnie (FB), WebP via Accept
-- Render 2× (2400×1260) → downscale 1200×630; composite sharp w osobnych krokach
-- /zorza: live Kp via lib/seo/og-zorza-kp-line.ts + homepage-snapshot, cache 5 min
-- /zorza tło: public/og/zorza-cover.jpg · Inter fonts w og-overlay-satori.tsx
-- Home: og:image /og/home · strona / (NIE /home)
-- og:title: bez — · tylko · (sanitizeSeoTitle)
+Kontekst OG + GSC:
+- /og/[pageId] → JPEG domyślnie (FB), live Kp na /zorza (og-zorza-kp-line.ts)
+- Sitemap: strony + /feed.xml + /feed/{dział} · npm run gsc:priority-urls
+- GSC: user ma property · po deploy ping + tier-1 indexing
 
 Reguły: jeden krok/sesję, STOP na OK usera, commit tylko po explicit OK.
 Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
-
-Po kroku: odhacz checkbox w planie, podaj testy dla usera.
 ```
 
 ---
@@ -413,10 +402,10 @@ Po kroku: odhacz checkbox w planie, podaj testy dla usera.
 | 2026-06-13 | 3 — rich preview | user | FB post + debugger `/` OK |
 | 2026-06-13 | extra — jakość OG | user | `e92d7d4` JPEG sharp, `805b3d8` 2× WebP Satori, `b8f7be4` hotfix 500 |
 | 2026-06-13 | extra — og:title | user | `0042519` bez em dash (` · `) |
-| 2026-06-13 | 4 — live Kp OG | user | live subtitle + HQ zorza-cover, Inter, JPEG default |
-| | 5 — static PNG | | **NEXT (opcjonalny)** |
-| | 6 — GSC baseline | | |
-| | 7 — dev OG URL | | |
+| 2026-06-13 | 4 — live Kp OG | user | commit 41605ae |
+| 2026-06-13 | 6 — GSC pakiet | user | sitemap RSS, gsc-priority-urls, JSON-LD sameAs |
+| | 5 — static PNG | | opcjonalny, pominięty |
+| | 7 — dev OG URL | | **NEXT (opcjonalny)** |
 | | 8 — keywords audit | | |
 | | 9 — A/B tytułów | | |
 
@@ -444,7 +433,8 @@ lib/seo/tool-metadata.ts       # metadata narzędzi live
 lib/seo/listing-metadata.ts    # metadata działów/hubów
 lib/seo/json-ld.ts             # CollectionPage, WebApplication, FAQ
 lib/seo/public-routes.ts       # SEO_SITEMAP_PATHS
-lib/seo/interactive-tools.ts   # copy /zorza, /mapa, /starty, /kalendarz
+lib/seo/gsc-priority.ts        # tier URL + frazy GSC
+scripts/gsc-priority-urls.ts   # npm run gsc:priority-urls
 app/aktualnosci/[slug]/page.tsx # wzorzec OG artykułu (coverImage)
 docs/WSS_CONTENT_ARCHITECTURE.md
 ```
