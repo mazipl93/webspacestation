@@ -82,7 +82,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
   return (
     <AuroraPanel
       title="Wiatr sloneczny"
-      subtitle="DSCOVR · L1 · liczby = teraz na satelicie · linia Ziemia = opoznienie propagacji"
+      subtitle="DSCOVR · NOAA SWPC"
       action={windowControl}
     >
       <div className="space-y-3">
@@ -90,8 +90,6 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
           data={data}
           windowMin={windowMin}
           height={220}
-          earthLabel
-          showPropagationNote
         />
 
         <SolarWindChartRow
@@ -109,7 +107,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
         />
 
         <div className="flex gap-2 text-[9px] font-mono px-1">
-          <span className="text-slate-500">By @ DSCOVR:</span>
+          <span className="text-slate-500">By:</span>
           <span className="text-violet-400 font-bold">
             {l1By >= 0 ? "+" : ""}{l1By.toFixed(1)} nT
           </span>
@@ -149,20 +147,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
 
         {temp > 0 && (
           <div className="text-[9px] text-slate-600 font-mono text-center">
-            Temperatura plazmy @ DSCOVR: {(temp / 1000).toFixed(0)} kK · {l1Timestamp}
-          </div>
-        )}
-
-        {marker && (
-          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-800/80">
-            <div className="flex items-center gap-1.5">
-              <div className="w-5 border-t-2 border-dashed border-amber-400" />
-              <span className="text-[9px] text-amber-400 font-mono">Ziemia teraz</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm" style={{ background: "#fbbf2415", border: "1px solid #fbbf2440" }} />
-              <span className="text-[9px] text-amber-400/60 font-mono">w tranzycie L1→Ziemia</span>
-            </div>
+            Temperatura plazmy: {(temp / 1000).toFixed(0)} kK · {l1Timestamp}
           </div>
         )}
       </div>

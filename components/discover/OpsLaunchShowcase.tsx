@@ -103,7 +103,7 @@ export default function OpsLaunchShowcase({
         )}
 
         <div className="ops-launch-showcase__body">
-          <div className="min-w-0 flex-1">
+          <div className="ops-launch-showcase__copy min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
               <p className="ops-launch-showcase__provider" style={{ color: accent }}>
                 {launch.provider}
@@ -119,7 +119,7 @@ export default function OpsLaunchShowcase({
                 <span className="text-white/50"> · NET ±{launch.netPrecisionLabel.toLowerCase()}</span>
               ) : null}
             </p>
-            <p className="ops-launch-showcase__site">{launch.site}</p>
+            <p className="ops-launch-showcase__site hidden min-[480px]:block">{launch.site}</p>
             {launch.brief ? (
               <>
                 <LaunchBriefBlock

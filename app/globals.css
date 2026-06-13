@@ -619,6 +619,12 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+@media (max-width: 479px) {
+  .ops-launch-showcase__media {
+    min-height: 272px;
+  }
+}
+
 @media (min-width: 640px) {
   .ops-launch-showcase__media {
     min-height: 200px;
@@ -709,6 +715,61 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;
+  max-width: calc(100% - 1.7rem);
+}
+
+.ops-launch-showcase__copy {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 479px) {
+  .ops-launch-showcase__body {
+    inset-inline: 0.65rem;
+    bottom: 0.65rem;
+    gap: 0.55rem;
+    max-width: calc(100% - 1.3rem);
+  }
+
+  .ops-launch-showcase__site {
+    display: none;
+  }
+
+  .ops-launch-showcase__mission {
+    font-size: 1rem;
+  }
+
+  .ops-launch-showcase__meta {
+    font-size: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+  }
+
+  .ops-launch-showcase__countdown-wrap {
+    align-self: center;
+    width: min(100%, 15.5rem);
+    padding: 0.5rem 0.65rem 0.55rem;
+    text-align: center;
+  }
+
+  .ops-launch-showcase__countdown-label {
+    text-align: center;
+  }
+
+  .ops-launch-showcase__countdown-wrap .ops-countdown-hero {
+    align-items: center;
+  }
+
+  .ops-launch-showcase__countdown-wrap .ops-countdown-hero__blocks {
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 @media (min-width: 480px) {
@@ -717,6 +778,23 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
     align-items: flex-end;
     justify-content: space-between;
     gap: 0.85rem;
+  }
+
+  .ops-launch-showcase__countdown-wrap {
+    width: auto;
+    align-self: flex-end;
+  }
+
+  .ops-launch-showcase__countdown-label {
+    text-align: left;
+  }
+
+  .ops-launch-showcase__countdown-wrap .ops-countdown-hero {
+    align-items: stretch;
+  }
+
+  .ops-launch-showcase__countdown-wrap .ops-countdown-hero__blocks {
+    justify-content: flex-start;
   }
 }
 
@@ -777,6 +855,7 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
+  text-align: center;
 }
 
 .ops-launch-showcase__footer {
@@ -826,6 +905,7 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
 .ops-countdown-hero__blocks {
   display: flex;
   gap: 0.35rem;
+  justify-content: center;
 }
 
 .ops-countdown-hero__cell {
@@ -2118,4 +2198,138 @@ html[data-portal-theme] .ops-map-pin-detail__facts-list li {
 .aurora-root .leaflet-bar {
   border: 1px solid #334155 !important;
   box-shadow: none !important;
+}
+
+/* Aurora map — płynniejszy touch, bez „zawieszania” przy scrollu strony */
+.aurora-map-shell {
+  overflow: hidden;
+  isolation: isolate;
+}
+.aurora-map-canvas {
+  z-index: 0;
+}
+.aurora-root .leaflet-container {
+  font-family: var(--font-geist-mono, "Courier New", monospace);
+}
+.aurora-root .leaflet-pane,
+.aurora-root .leaflet-top,
+.aurora-root .leaflet-bottom {
+  z-index: 1;
+}
+
+/* Mobile bottom nav — tylko < lg; ikony Lucide */
+.aurora-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .aurora-mobile-nav {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1100;
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.5rem 0.65rem 0.65rem;
+    border-top: 1px solid rgb(30 41 59 / 0.9);
+    background: linear-gradient(180deg, rgb(6 8 16 / 0.92) 0%, rgb(4 6 12 / 0.98) 100%);
+    backdrop-filter: blur(14px);
+  }
+}
+
+.aurora-mobile-nav__btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 3.75rem;
+  padding: 0.55rem 0.35rem 0.45rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(51 65 85 / 0.55);
+  background: rgb(10 15 30 / 0.55);
+  font-family: var(--font-geist-mono, "Courier New", monospace);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aurora-mobile-nav__btn:active {
+  transform: scale(0.97);
+}
+
+.aurora-mobile-nav__icon {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgb(51 65 85 / 0.5);
+  background: rgb(8 12 24 / 0.75);
+  color: rgb(100 116 139);
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.aurora-mobile-nav__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(148 163 184);
+}
+
+/* Akcenty zakładek — stonowany neon na ikonach */
+.aurora-mobile-nav__btn--wind .aurora-mobile-nav__icon {
+  color: rgb(56 189 248 / 0.85);
+}
+.aurora-mobile-nav__btn--kp .aurora-mobile-nav__icon {
+  color: rgb(74 222 128 / 0.85);
+}
+.aurora-mobile-nav__btn--solar .aurora-mobile-nav__icon {
+  color: rgb(251 191 36 / 0.85);
+}
+
+.aurora-mobile-nav__btn--wind.is-active .aurora-mobile-nav__icon {
+  color: rgb(103 232 249);
+  border-color: rgb(34 211 238 / 0.55);
+  background: rgb(34 211 238 / 0.12);
+  box-shadow: 0 0 14px rgb(34 211 238 / 0.28);
+}
+.aurora-mobile-nav__btn--kp.is-active .aurora-mobile-nav__icon {
+  color: rgb(110 255 170);
+  border-color: rgb(68 255 136 / 0.55);
+  background: rgb(68 255 136 / 0.12);
+  box-shadow: 0 0 14px rgb(68 255 136 / 0.28);
+}
+.aurora-mobile-nav__btn--solar.is-active .aurora-mobile-nav__icon {
+  color: rgb(253 224 71);
+  border-color: rgb(251 191 36 / 0.55);
+  background: rgb(251 191 36 / 0.12);
+  box-shadow: 0 0 14px rgb(251 191 36 / 0.28);
+}
+
+.aurora-mobile-nav__btn--wind.is-active {
+  border-color: rgb(34 211 238 / 0.65);
+  background: rgb(34 211 238 / 0.1);
+  box-shadow: 0 0 18px rgb(34 211 238 / 0.22), inset 0 0 12px rgb(34 211 238 / 0.06);
+}
+.aurora-mobile-nav__btn--kp.is-active {
+  border-color: rgb(68 255 136 / 0.65);
+  background: rgb(68 255 136 / 0.1);
+  box-shadow: 0 0 18px rgb(68 255 136 / 0.22), inset 0 0 12px rgb(68 255 136 / 0.06);
+}
+.aurora-mobile-nav__btn--solar.is-active {
+  border-color: rgb(251 191 36 / 0.65);
+  background: rgb(251 191 36 / 0.1);
+  box-shadow: 0 0 18px rgb(251 191 36 / 0.22), inset 0 0 12px rgb(251 191 36 / 0.06);
+}
+
+.aurora-mobile-nav__btn--wind.is-active .aurora-mobile-nav__label {
+  color: rgb(103 232 249);
+}
+.aurora-mobile-nav__btn--kp.is-active .aurora-mobile-nav__label {
+  color: rgb(110 255 170);
+}
+.aurora-mobile-nav__btn--solar.is-active .aurora-mobile-nav__label {
+  color: rgb(253 224 71);
 }

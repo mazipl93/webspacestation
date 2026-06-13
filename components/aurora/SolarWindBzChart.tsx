@@ -28,8 +28,6 @@ type Props = {
   data: SolarWindData[];
   windowMin?: WindTimeWindow;
   height?: number;
-  earthLabel?: boolean;
-  showPropagationNote?: boolean;
   showWindowControl?: boolean;
   variant?: "full" | "teaser";
   className?: string;
@@ -39,8 +37,6 @@ export default function SolarWindBzChart({
   data,
   windowMin: windowMinProp,
   height = 220,
-  earthLabel = true,
-  showPropagationNote = false,
   showWindowControl = false,
   variant = "full",
   className,
@@ -95,16 +91,6 @@ export default function SolarWindBzChart({
         </div>
       )}
 
-      {showPropagationNote && marker && (
-        <p className="mb-2 text-[10px] text-slate-500 font-mono leading-relaxed rounded-md bg-amber-950/10 border border-amber-900/25 px-3 py-2">
-          Opoznienie L1→Ziemia ok.{" "}
-          <span className="text-amber-400 font-bold">{marker.delayMin} min</span>
-          {marker.earthUtc && (
-            <span className="text-slate-600"> · linia Ziemia = pomiar {marker.earthUtc}</span>
-          )}
-        </p>
-      )}
-
       {!isTeaser && (
         <div className="text-[9px] text-slate-500 font-mono uppercase tracking-widest">
           Pole magnetyczne IMF
@@ -121,7 +107,6 @@ export default function SolarWindBzChart({
         chartData={chartData}
         domain={yDomain}
         marker={marker}
-        earthLabel={isTeaser ? false : earthLabel}
         l1Timestamp={l1Timestamp}
         decimals={1}
         height={isTeaser ? 56 : height}

@@ -215,11 +215,8 @@ export function SolarWindChartRow({
         <span className="text-[7px] text-slate-500 font-mono mt-0.5">{unit}</span>
         {!compact && (
           <>
-            <span className="text-[7px] text-sky-400/80 font-mono mt-1.5 uppercase tracking-wide">
-              DSCOVR · L1
-            </span>
             {l1Timestamp && (
-              <span className="text-[7px] text-slate-600 font-mono mt-0.5 leading-tight">{l1Timestamp}</span>
+              <span className="text-[7px] text-slate-600 font-mono mt-1.5 leading-tight">{l1Timestamp}</span>
             )}
             {sublabel && (
               <span className="text-[7px] font-mono mt-0.5 leading-tight" style={{ color }}>

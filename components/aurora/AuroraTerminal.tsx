@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Gauge, Sun, Wind, type LucideIcon } from "lucide-react";
 import { useAuroraData } from "./useAuroraData";
 import { useUserLocation, useWeather } from "./useLocation";
 import KpGauge from "./KpGauge";
@@ -43,6 +43,12 @@ function Spinner() {
 
 type Tab = "live" | "geo" | "solar";
 
+const MOBILE_NAV: { id: Tab; Icon: LucideIcon; label: string; tone: "wind" | "kp" | "solar" }[] = [
+  { id: "live", Icon: Wind, label: "Wiatr", tone: "wind" },
+  { id: "geo", Icon: Gauge, label: "Kp", tone: "kp" },
+  { id: "solar", Icon: Sun, label: "Słońce", tone: "solar" },
+];
+
 export default function AuroraTerminal() {
   const { state, refetch } = useAuroraData();
   const location = useUserLocation();
@@ -50,6 +56,17 @@ export default function AuroraTerminal() {
   const { toasts, addToast, dismiss } = useToasts();
   const prevKpRef = useRef<number>(0);
   const [activeTab, setActiveTab] = useState<Tab>("live");
+  const [isWide, setIsWide] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsWide(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const mapVisible = isWide || activeTab === "geo";
 
   useEffect(() => {
     const currentKp = getDisplayKp(state.kpCurrent, state.kp3Day);
@@ -155,7 +172,7 @@ export default function AuroraTerminal() {
         </button>
       </header>
 
-      <main className="max-w-screen-2xl mx-auto px-2 sm:px-3 lg:px-4 py-2 sm:py-3 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
+      <main className="max-w-screen-2xl mx-auto px-2 sm:px-3 lg:px-4 py-2 sm:py-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
         {state.loading ? (
           <Spinner />
         ) : (
@@ -199,6 +216,7 @@ export default function AuroraTerminal() {
                       userLon={location.lon}
                       dataReady={!state.loading && state.solarWind.length > 0}
                       compact
+                      isVisible={mapVisible}
                     />
                   </div>
                 </AuroraPanel>
@@ -250,23 +268,7 @@ export default function AuroraTerminal() {
         )}
       </main>
 
-      {process.env.NODE_ENV === "development" && state.diagnostics.length > 0 && (
-        <details className="max-w-screen-2xl mx-auto px-4 pb-4 text-[10px] font-mono text-slate-500">
-          <summary className="cursor-pointer hover:text-slate-300">
-            Aurora debug ({state.diagnostics.filter((d) => d.error).length} issues)
-          </summary>
-          <pre className="mt-2 overflow-x-auto rounded border border-slate-800 bg-slate-950/80 p-2 whitespace-pre-wrap">
-            {state.diagnostics
-              .map(
-                (d) =>
-                  `${d.key} ${d.status} ${d.ms}ms rows=${d.dataRows}/${d.length} ${d.error ?? "ok"}\n  ${d.sample}`,
-              )
-              .join("\n\n")}
-          </pre>
-        </details>
-      )}
-
-      <footer className="border-t border-slate-800/50 px-4 py-3 text-[9px] text-slate-600 font-mono text-center pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-3">
+      <footer className="border-t border-slate-800/50 px-4 py-3 text-[9px] text-slate-600 font-mono text-center pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-3">
         NOAA SWPC · Open-Meteo · odswiezanie co 60s ·{" "}
         <Link href="/" className="text-slate-500 transition-colors hover:text-[#44ff88]">
           Web Space Station
@@ -281,33 +283,29 @@ export default function AuroraTerminal() {
         </Link>
       </footer>
 
-      {/* Mobile bottom nav — duplikat zakladek dla kciuka */}
+      {/* Mobile bottom nav */}
       <nav
-        className="lg:hidden fixed inset-x-0 bottom-0 z-[1100] flex border-t border-slate-800 bg-[#060810]/98 backdrop-blur-md"
+        className="aurora-mobile-nav lg:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-        aria-label="Nawigacja"
+        aria-label="Nawigacja zakładek"
       >
-        {(
-          [
-            { id: "live" as Tab, icon: "◈", label: "Wiatr" },
-            { id: "geo" as Tab, icon: "◎", label: "Kp" },
-            { id: "solar" as Tab, icon: "☀", label: "Slonce" },
-          ] as const
-        ).map(({ id, icon, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setActiveTab(id)}
-            className={`flex-1 flex flex-col items-center py-2.5 gap-0.5 text-[10px] font-mono border-t-2 transition-colors ${
-              activeTab === id
-                ? "text-sky-400 border-sky-500"
-                : "text-slate-500 border-transparent"
-            }`}
-          >
-            <span className="text-base leading-none">{icon}</span>
-            {label}
-          </button>
-        ))}
+        {MOBILE_NAV.map(({ id, Icon, label, tone }) => {
+          const isActive = activeTab === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveTab(id)}
+              className={`aurora-mobile-nav__btn aurora-mobile-nav__btn--${tone}${isActive ? " is-active" : ""}`}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <span className="aurora-mobile-nav__icon" aria-hidden>
+                <Icon size={20} strokeWidth={1.75} />
+              </span>
+              <span className="aurora-mobile-nav__label">{label}</span>
+            </button>
+          );
+        })}
       </nav>
     </div>
   );
