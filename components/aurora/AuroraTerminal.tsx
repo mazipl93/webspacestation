@@ -19,6 +19,9 @@ import {
   getDisplayKp,
   getEarthSolarWindPoint,
 } from "@/lib/aurora/api";
+import { getInteractiveTool } from "@/lib/seo/interactive-tools";
+
+const AURORA_TOOL = getInteractiveTool("aurora-terminal");
 
 const AuroraMap = dynamic(() => import("./AuroraMap"), {
   ssr: false,
@@ -154,8 +157,8 @@ export default function AuroraTerminal() {
             <span className="hidden sm:inline">Strona główna</span>
           </Link>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-bold tracking-widest text-slate-100 uppercase">
-              Zorza polarna na żywo
+            <h1 className="text-sm sm:text-base font-bold tracking-tight text-slate-100">
+              {AURORA_TOOL.headline}
             </h1>
             <p className="text-[9px] text-slate-600 font-mono mt-0.5">
               Aurora Terminal · indeks Kp · NOAA SWPC · odswiezono {lastUpdateStr}

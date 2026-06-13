@@ -3,7 +3,10 @@
  */
 import fs from "fs";
 import path from "path";
-import { stripEditorialBoldMarkdown } from "../lib/editorial/rozrywka";
+
+function stripEditorialBoldMarkdown(raw: string): string {
+  return raw.replace(/\*\*([^*]+)\*\*/g, "$1");
+}
 
 const dir = path.join(process.cwd(), "lib", "editorial");
 const files = fs

@@ -86,7 +86,7 @@ export function ToolSeoContent({ tool, className }: SeoContentProps) {
         id={`${tool.id}-seo`}
         className="text-[15px] font-bold text-text-primary"
       >
-        {tool.headline} — jak korzystać
+        {tool.headline} · jak korzystać
       </h2>
       <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-text-secondary">
         {tool.longDescription}

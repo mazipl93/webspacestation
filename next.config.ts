@@ -47,6 +47,16 @@ const nextConfig: NextConfig = {
         destination: "/nauka",
         permanent: true,
       },
+      {
+        source: "/rozrywka",
+        destination: "/technologie",
+        permanent: true,
+      },
+      {
+        source: "/rozrywka/:path*",
+        destination: "/technologie",
+        permanent: true,
+      },
     ];
   },
   images: {

@@ -1,5 +1,5 @@
 /**
- * Tylko okładki redakcyjnych artykułów (21 slugów) — minimalny load na pool DB.
+ * Tylko okładki redakcyjnych artykułów — minimalny load na pool DB.
  *
  *   npx tsx scripts/fix-editorial-covers.ts
  */
@@ -8,10 +8,6 @@ import { PrismaClient } from "@prisma/client";
 import { ALL_EDITORIAL_JUNE_2026 } from "../lib/editorial/editorial-june-2026-all";
 import { isEditorialCoverSlug } from "../lib/editorial/resolve-editorial-cover";
 import { editorialCoverForSlug } from "../lib/editorial/nasa-cover";
-import {
-  isRozrywkaArticleSlug,
-  rozrywkaCoverForSlug,
-} from "../lib/editorial/rozrywka";
 
 config();
 
@@ -27,11 +23,9 @@ async function main() {
     const result = await prisma.article.updateMany({
       where: { slug: draft.slug },
       data: {
-        coverImage: isRozrywkaArticleSlug(draft.slug)
-          ? (rozrywkaCoverForSlug(draft.slug) ?? draft.coverImage)
-          : isEditorialCoverSlug(draft.slug)
-            ? editorialCoverForSlug(draft.slug)
-            : draft.coverImage,
+        coverImage: isEditorialCoverSlug(draft.slug)
+          ? editorialCoverForSlug(draft.slug)
+          : draft.coverImage,
         coverImageCredit: draft.coverImageCredit,
       },
     });

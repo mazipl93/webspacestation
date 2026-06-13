@@ -13,7 +13,7 @@ export type EditorialDraft = {
   excerpt: string;
   content: string;
   contextNote: string;
-  categorySlug: "misje" | "astronomia" | "technologie" | "rozrywka";
+  categorySlug: "misje" | "astronomia" | "technologie";
   tags: string[];
   coverImage: string;
   coverImageCredit: string;

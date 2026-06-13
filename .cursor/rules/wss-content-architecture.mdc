@@ -14,7 +14,7 @@ alwaysApply: true
 
 ## Działy (kolejność menu)
 
-Misje → Astronomia → **Nauka** → Technologie → ISS → Ziemia z kosmosu → Rozrywka
+Misje → Astronomia → **Nauka** → Technologie → ISS → Ziemia z kosmosu
 
 | Slug | Rola |
 |------|------|
@@ -24,18 +24,17 @@ Misje → Astronomia → **Nauka** → Technologie → ISS → Ziemia z kosmosu 
 | `technologie` | tech kosmiczny + AI w nauce (ex-`ai`). ❌ ogólne IT |
 | `iss` | załogi, EVA, życie na stacji |
 | `ziemia-z-kosmosu` | Discover — satelity, pogoda, klimat z orbity |
-| `rozrywka` | sci-fi, gry/filmy **z kosmosem/sci-fi**. ❌ gaming off-topic |
 
 ## Zabronione / stare nazwy
 
-❌ `popularnonaukowe` · ❌ `wyjasniamy` · ❌ slug `wiedza` (etykieta usera = **Nauka**, slug = **`nauka`**) · ❌ dział `ai` · ❌ dział „Newsy”
+❌ `popularnonaukowe` · ❌ `wyjasniamy` · ❌ slug `wiedza` (etykieta usera = **Nauka**, slug = **`nauka`**) · ❌ dział `ai` · ❌ dział „Newsy" · ❌ **`rozrywka`** (likwidacja 06/2026)
 
-Redirecty: `/popularnonaukowe`, `/wyjasniamy`, `/wiedza` → `/nauka`
+Redirecty: `/popularnonaukowe`, `/wyjasniamy`, `/wiedza` → `/nauka` · `/rozrywka` → `/technologie`
 
 ## Homepage
 
 - Hero: 2× news + Nauka + Astronomia/Nauka
-- Sekcje działów: misje, astronomia, iss, ziemia-z-kosmosu, technologie, rozrywka
+- Sekcje działów: misje, astronomia, iss, ziemia-z-kosmosu, technologie
 - **Polecane z Nauki** — tylko `nauka`, evergreen
 - **Pusta sekcja = ukryta** — bez fallbacku z innych kategorii
 - `weekTopic` = klaster **newsów** („W centrum uwagi”), nie Nauka
@@ -46,7 +45,7 @@ Redirecty: `/popularnonaukowe`, `/wyjasniamy`, `/wiedza` → `/nauka`
 
 ## Koryguj usera gdy
 
-- wraca do „Wyjaśniamy” / „Popularnonaukowe”
+- wraca do „Wyjaśniamy” / „Popularnonaukowe” / **Rozrywka**
 - chce news w Nauce lub edukację w Misjach zamiast w Nauce
-- miesza gaming z Rozrywką bez sci-fi/kosmosu
+- proponuje off-topic gaming bez kosmosu/sci-fi w Technologiach
 - proponuje push/prod/publish bez explicit OK (osobna reguła usera)

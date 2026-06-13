@@ -17,10 +17,6 @@ import {
 import { ALL_EDITORIAL_JUNE_2026 } from "../lib/editorial/editorial-june-2026-all";
 import { isEditorialCoverSlug } from "../lib/editorial/resolve-editorial-cover";
 import { editorialCoverForSlug } from "../lib/editorial/nasa-cover";
-import {
-  isRozrywkaArticleSlug,
-  rozrywkaCoverForSlug,
-} from "../lib/editorial/rozrywka";
 
 config();
 
@@ -73,11 +69,9 @@ function draftToData(
     excerpt: draft.excerpt,
     content: draft.content,
     contextNote: draft.contextNote,
-    coverImage: isRozrywkaArticleSlug(draft.slug)
-      ? (rozrywkaCoverForSlug(draft.slug) ?? draft.coverImage)
-      : isEditorialCoverSlug(draft.slug)
-        ? editorialCoverForSlug(draft.slug)
-        : draft.coverImage,
+    coverImage: isEditorialCoverSlug(draft.slug)
+      ? editorialCoverForSlug(draft.slug)
+      : draft.coverImage,
     coverImageCredit: draft.coverImageCredit,
     authorByline: "Redakcja WSS",
     categoryId,

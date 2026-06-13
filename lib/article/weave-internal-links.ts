@@ -313,7 +313,7 @@ function maybeSwapArchivePick<T extends InternalLinkCandidate & RelatableArticle
 
 /**
  * Best articles to weave into body copy — same department first, then fallback
- * tiers (Astronomia/Misje for Nauka). Never Rozrywka in science departments.
+ * tiers (Astronomia/Misje for Nauka). Off-topic gaming excluded from science departments.
  */
 export function pickWeaveInternalLinkCandidates<
   T extends InternalLinkCandidate & RelatableArticle,

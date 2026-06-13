@@ -186,7 +186,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
       "jak działa kosmos",
       "fizyka kosmosu",
       "astronomia dla każdego",
-      "popularnonaukowe kosmos",
+      "kosmos od podstaw",
     ],
   },
   technologie: {

@@ -1,8 +1,8 @@
 # WSS — OG / SEO: plan follow-up (krok po kroku)
 
 **Utworzono:** 13 czerwca 2026  
-**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 6: GSC pakiet + RSS w sitemap).  
-**Prod HEAD:** `a69d372` (`main`)  
+**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 8 deploy · GSC tier-2 3/6 · handoff reszta tier-2).  
+**Prod HEAD:** po deploy tej sesji — sprawdź `git log -1` na `main`  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -307,17 +307,17 @@ curl.exe -sI "https://webspacestation.pl/og/zorza"
 
 ### Krok 8 — Audyt keywords: brak over-optimization
 
-- [ ] **Status:** oczekuje
+- [x] **Status:** done 2026-06-13 · user OK „dzialaj”
 
 **Cel:** Upewnić się, że keywords z rejestru **nie powielają** keyword stuffing w H1/body.
 
 **Dlaczego (E):** `keywords` meta + opisy + JSON-LD — ryzyko nadmiaru fraz.
 
 **Checklist (agent readonly):**
-- [ ] H1 na `/zorza` = `Terminal zorzy polarnej` (z `interactive-tools.ts`), nie „Zorza polarna dziś indeks Kp…”
-- [ ] H1 `/mapa` = headline narzędzia, nie lista fraz
-- [ ] `/nauka` — tylko evergreeny w feedzie (reguła architektury)
-- [ ] `keywords` tylko w `<meta name="keywords">`, nie w widocznym tekście strony
+- [x] H1 na `/zorza` = `Terminal zorzy polarnej` (z `interactive-tools.ts`), nie „Zorza polarna dziś indeks Kp…”
+- [x] H1 `/mapa` = headline narzędzia, nie lista fraz
+- [x] `/nauka` — tylko evergreeny w feedzie (reguła architektury)
+- [x] `keywords` tylko w `<meta name="keywords">`, nie w widocznym tekście strony
 
 **Pliki:** `lib/seo/page-og-registry.ts`, `components/discover/DiscoverPageShell.tsx`, `ArticleFeedSection.tsx`
 
@@ -364,9 +364,39 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ Krok 7:** dev OG URL (opcjonalny smoke test lokalny).
+**→ GSC tier-2 dokończyć jutro:** `/technologie`, `/iss`, `/ziemia-z-kosmosu` (limit dzienny GSC 13.06.2026).
 
-**Po deploy Krok 6:** `npm run gsc:ping-sitemap` + GSC tier-1 indexing.
+**→ Krok 9:** A/B tytułów OG (opcjonalny) · albo **Krok 7** (dev OG URL) · **Krok 5** (static PNG).
+
+**GSC tier-1 Request indexing:** **DONE** 13.06.2026 (user OK na `/aktualnosci`).
+
+**GSC tier-2 Request indexing:** **3/6 DONE** 13.06.2026 · limit po `/nauka`, `/technologie` odrzucone.
+
+### GSC tier-1 — status (13.06.2026)
+
+| URL | Status przed | Prośba o indeksowanie |
+|---|---|---|
+| `https://webspacestation.pl` | w indeksie | ✅ przesłano |
+| `https://webspacestation.pl/mapa` | wykryta, niezindeksowana | ✅ przesłano |
+| `https://webspacestation.pl/zorza` | w indeksie | ✅ przesłano |
+| `https://webspacestation.pl/starty` | wykryta, niezindeksowana | ✅ przesłano |
+| `https://webspacestation.pl/kalendarz` | wykryta, niezindeksowana | ✅ przesłano |
+| `https://webspacestation.pl/aktualnosci` | wykryta, niezindeksowana | ✅ przesłano (ostatnia w sesji) |
+
+**Weryfikacja property:** `public/google64d13b3cded8c481.html` · commit `578416e` · prod 200 OK.
+
+**Automatyzacja GSC (browser):** po kliknięciu „Poproś o zindeksowanie” czekaj **~25–35 s** na modal „Przesłano prośbę o zindeksowanie”. URL „Google nieznany” = live test ~60–90 s. **Limit dzienny** ~10–12 URL/dzień (tier-1 + tier-2 razem).
+
+### GSC tier-2 — status (13.06.2026)
+
+| URL | Status przed | Prośba o indeksowanie |
+|---|---|---|
+| `https://webspacestation.pl/misje` | Google nieznany | ✅ przesłano |
+| `https://webspacestation.pl/astronomia` | wykryta, niezindeksowana | ✅ przesłano |
+| `https://webspacestation.pl/nauka` | Google nieznany | ✅ przesłano |
+| `https://webspacestation.pl/technologie` | wykryta, niezindeksowana | ❌ limit dzienny |
+| `https://webspacestation.pl/iss` | — | ⏳ jutro |
+| `https://webspacestation.pl/ziemia-z-kosmosu` | — | ⏳ jutro |
 
 ---
 
@@ -375,17 +405,26 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 Skopiuj do nowej sesji:
 
 ```
-Projekt: Web Space Station (WSS), Next.js 15, prod https://webspacestation.pl
-Repo: mazipl93/webspacestation, branch main, HEAD a69d372
+Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation, HEAD <sprawdź git log -1>
 
-Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 7, opcjonalny).
+Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md · wykonaj WYŁĄCZNIE: **GSC tier-2 reszta** (3 URL).
 
-Kontekst OG + GSC:
-- /og/[pageId] → JPEG domyślnie (FB), live Kp na /zorza (og-zorza-kp-line.ts)
-- Sitemap: strony + /feed.xml + /feed/{dział} · npm run gsc:priority-urls
-- GSC: user ma property · po deploy ping + tier-1 indexing
+Done (nie powtarzaj):
+- Krok 0–4, 6, 8 · Krok 5 pominięty
+- GSC verify: google64d13b3cded8c481.html
+- GSC tier-1: /, /mapa, /zorza, /starty, /kalendarz, /aktualnosci — ✅
+- GSC tier-2 częściowo: /misje, /astronomia, /nauka — ✅ (limit dzienny 13.06)
 
-Reguły: jeden krok/sesję, STOP na OK usera, commit tylko po explicit OK.
+Następne (Inspekcja URL → Poproś o zindeksowanie, GSC otwarte w przeglądarce):
+1. https://webspacestation.pl/technologie
+2. https://webspacestation.pl/iss
+3. https://webspacestation.pl/ziemia-z-kosmosu
+
+Czekaj 25–35 s po sukcesie; „Google nieznany” = live test ~60–90 s.
+
+Opcjonalnie po tier-2 done: tier-3 (`npm run gsc:priority-urls -- --tier=3`) · osobna sesja.
+
+Reguły: jeden krok/sesję, STOP na OK, commit tylko po explicit OK.
 Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 ```
 
@@ -404,9 +443,14 @@ Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 | 2026-06-13 | extra — og:title | user | `0042519` bez em dash (` · `) |
 | 2026-06-13 | 4 — live Kp OG | user | commit 41605ae |
 | 2026-06-13 | 6 — GSC pakiet | user | a69d372 · RSS w sitemap, gsc:priority-urls |
+| 2026-06-13 | GSC verify HTML | user | 578416e · google64d13b3cded8c481.html |
+| 2026-06-13 | GSC tier-1 indexing | user | 6 URL · Inspekcja → Poproś o zindeksowanie |
+| 2026-06-13 | GSC tier-2 indexing | user | 3/6 · limit po nauka (technologie odrzucone) |
 | | 5 — static PNG | | opcjonalny, pominięty |
-| | 7 — dev OG URL | | **NEXT (opcjonalny)** |
-| | 8 — keywords audit | | |
+| | 7 — dev OG URL | | opcjonalny |
+| 2026-06-13 | 8 — keywords audit | user | H1 /zorza · meta nauka · deploy main |
+| | GSC tier-2 reszta | | **NEXT** · /technologie, /iss, /ziemia-z-kosmosu |
+| | 9 — A/B tytułów | | opcjonalny po tier-2 |
 | | 9 — A/B tytułów | | |
 
 **GSC baseline (wklej po Krok 6):**

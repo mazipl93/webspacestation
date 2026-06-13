@@ -59,7 +59,6 @@ Daje: świeżość (Discover) + codzienny ruch + bazę SEO na lata.
 | 3 | **Technologie** | `technologie` | 60% news · 20% analizy · 20% evergreen | Rakiety, teleskopy, satelity, Starlink, **AI w nauce**, robotyka, napędy | Copilot, Apple, ogólne IT bez kosmosu |
 | 4 | **ISS** | `iss` | 70% news · 30% evergreen | Załogi, EVA, eksperymenty, życie na stacji | — |
 | 5 | **Ziemia z kosmosu** | `ziemia-z-kosmosu` | 80% news · 20% evergreen | Satelity, huragany, pożary, zorze, klimat z orbity | — |
-| 6 | **Rozrywka** | `rozrywka` | news · recenzje · rankingi | Sci-fi, gry, filmy, seriale, książki **związane z nauką/sci-fi** | Gaming niezwiązany z kosmosem/sci-fi |
 
 ### Scalone / usunięte slugi
 
@@ -69,6 +68,7 @@ Daje: świeżość (Discover) + codzienny ruch + bazę SEO na lata.
 | `popularnonaukowe` | → **`nauka`**. Redirect |
 | `wyjasniamy` | **Błąd — nie używać.** → `nauka`. Redirect |
 | `wiedza` | Nazwa koncepcyjna usera; **slug w repo: `nauka`** |
+| `rozrywka` | **Likwidacja 06/2026** — off-topic gaming. `/rozrywka` → `/technologie` |
 
 ---
 
@@ -99,7 +99,7 @@ Przykłady (żyją 5+ lat):
 3. Mocny artykuł z **Nauki** (evergreen)  
 4. Mocny artykuł z **Astronomii** lub **Nauki**
 
-Nie: rozrywka, czyste gaming newsy.
+Nie: off-topic gaming, czyste gaming newsy.
 
 ### Sekcje (kolejność)
 
@@ -107,7 +107,7 @@ Nie: rozrywka, czyste gaming newsy.
 2. **W centrum uwagi** (`weekTopic`) — klaster **bieżących newsów** przy gorącym wątku; nie evergreeny  
 3. **Popularne** — engagement  
 4. **Polecane z Nauki** — evergreeny z `nauka` (widoczne także bez artykułów — placeholder)  
-5. **Misje** → **Astronomia** → **ISS** → **Ziemia z kosmosu** → **Technologie** → **Rozrywka**  
+5. **Misje** → **Astronomia** → **ISS** → **Ziemia z kosmosu** → **Technologie**  
 6. **Centrum operacyjne** — starty, ISS, mapa
 
 **Zasada techniczna:** sekcja działu pokazuje **tylko artykuły z tego slugu**. Pusty dział = brak sekcji. **Nigdy** fallback z całego serwisu (bug z Gothiciem pod złym nagłówkiem).
@@ -146,7 +146,7 @@ Nie: rozrywka, czyste gaming newsy.
 2. **Koryguj usera**, gdy:
    - chce news w Nauce lub evergreen w Misjach (zamiast w Nauce)
    - proponuje `wyjasniamy`, `popularnonaukowe`, slug `wiedza`
-   - chce gaming bez sci-fi/kosmosu w Rozrywce
+   - chce off-topic gaming w Technologiach (bez kosmosu/sci-fi)
    - myli dział tematyczny z typem treści
 3. Przypominaj proporcje **65–75 news / 15–20 analiz / 10–15 evergreen** miesięcznie
 4. Nie przywracaj działu `ai` ani „Newsy”

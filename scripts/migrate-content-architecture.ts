@@ -60,13 +60,6 @@ const TARGET_CATEGORIES = [
     orderIndex: 5,
     description: "Obserwacja Ziemi i pogoda kosmiczna.",
   },
-  {
-    slug: "rozrywka",
-    name: "Rozrywka",
-    colorTheme: "#f472b6",
-    orderIndex: 6,
-    description: "Gry, filmy i kultura sci-fi w kosmosie.",
-  },
 ] as const;
 
 async function main() {
