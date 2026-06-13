@@ -24,7 +24,7 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 | Element | Opis |
 |---|---|
 | **Endpoint OG** | `GET /og/[pageId]` → `app/og/[pageId]/route.tsx` (edge, `revalidate: 86400`) |
-| **Generator** | `lib/seo/og-image-response.tsx` — tło foto + gradient overlay + tekst „Web Space Station” |
+| **Generator** | `lib/seo/og-image-response.tsx` — zdjęcie tła + floating glass panel (Satori-safe, bez CSS gradient) |
 | **Rejestr stron** | `lib/seo/page-og-registry.ts` — 27 wpisów: headline, subtitle, alt, keywords, accent, backgroundImage/gradient |
 | **Metadata narzędzi** | `lib/seo/tool-metadata.ts` → `getPageOgImageForPath()` zamiast `getDefaultOgImageUrl()` |
 | **Metadata listingów** | `lib/seo/listing-metadata.ts` → OG + auto-keywords z rejestru |
@@ -35,17 +35,21 @@ Sesja OG/SEO wdrożyła **hybrydę C**: dynamiczne karty PNG 1200×630 przez `@v
 | **Artykuły** | Bez zmian — `openGraph.images` z `coverImage` w `app/aktualnosci/[slug]/page.tsx` |
 
 **Zdjęcia tła używane w OG (z `/public`):**
+- **`/` (home)** → `public/og/home-cover.jpg` (unikalna scena: Ziemia, ISS, rakieta, zorza — **nie** to samo co `/zorza`)
 - `/zorza` → `public/images/ops-pads/aurora.jpg`
 - `/mapa`, `/iss`, `/stacja-kosmiczna` → `iss.png`
-- `/starty` → `cape-slc-40.png`
+- `/starty`, `/aktualnosci`, `/misje` → `cape-slc-40.png`
 - `/kalendarz` → `vandenberg-slc-4e.png`
-- Działy/huby → gradienty w kolorze akcentu (bez foto)
+- `/astronomia` → `aurora.jpg`
+- Działy/huby bez foto → ciemne tło + akcent (glass panel)
+
+**Hotfix 13.06.2026 (po Krok 0):** Satori nie renderuje `radial-gradient` (szary prostokąt). Naprawiono renderer + dedykowany asset homepage.
 
 **Co NIE jest gotowe:**
 - Strona **`/rozrywka`** — wpis w `OG_PAGE_REGISTRY`, brak `app/rozrywka/page.tsx`, brak w `SEO_SITEMAP_PATHS`
 - **Live Kp na obrazku OG** `/zorza` — tylko statyczny tekst na karcie
-- **Pre-generowane PNG** w `public/og/` — brak
-- **Weryfikacja produkcyjna** crawlerów (Facebook/Twitter) — do zrobienia po deploy
+- **Pre-generowane PNG** w `public/og/` dla pozostałych tras — tylko `home-cover.jpg` na razie
+- **Weryfikacja produkcyjna** crawlerów (Facebook/Twitter) — **Krok 1, następny czat**
 - **GSC / monitoring CTR** — nie skonfigurowane
 
 ---
@@ -333,6 +337,15 @@ curl.exe -sI "https://webspacestation.pl/og/zorza"
 | `/aktualnosci/[slug]` | `article.image` | Okładka artykułu (bez zmian) |
 
 Pełne copy: `lib/seo/page-og-registry.ts`
+
+---
+
+## NASTĘPNY KROK (dla nowego czatu)
+
+**→ Krok 1:** Re-scrape Facebook Debugger (`/`, `/zorza`, `/mapa`, `/starty`) po deploy hotfixu OG.  
+Potem **Krok 2:** strona `/rozrywka`.
+
+Po deploy sprawdź wizualnie: `https://webspacestation.pl/og/home` (Ziemia + ISS + rakieta, glass panel z tekstem).
 
 ---
 

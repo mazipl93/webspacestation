@@ -11,13 +11,13 @@ function absoluteAsset(path: string): string {
   return path.startsWith("http") ? path : `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** Shared 1200×630 OG card: photo background + branded overlay. */
+/**
+ * Satori (@vercel/og): bez radial-gradient w CSS.
+ * Elegancki floating glass panel na zdjęciu tła.
+ */
 export function buildOgImageResponse(entry: OgPageEntry): ImageResponse {
   const bg = entry.backgroundImage ? absoluteAsset(entry.backgroundImage) : null;
   const accent = entry.accent ?? "#38bdf8";
-  const gradient =
-    entry.gradient ??
-    `radial-gradient(ellipse 70% 50% at 50% 20%, ${accent}44 0%, transparent 60%), linear-gradient(160deg, #060810 0%, #0a1320 100%)`;
 
   return new ImageResponse(
     (
@@ -28,9 +28,10 @@ export function buildOgImageResponse(entry: OgPageEntry): ImageResponse {
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
+          alignItems: "flex-start",
           position: "relative",
+          backgroundColor: "#060810",
           fontFamily: "system-ui, sans-serif",
-          color: "#f0f4f8",
         }}
       >
         {bg ? (
@@ -38,66 +39,133 @@ export function buildOgImageResponse(entry: OgPageEntry): ImageResponse {
           <img
             src={bg}
             alt=""
+            width={1200}
+            height={630}
             style={{
               position: "absolute",
-              inset: 0,
+              top: 0,
+              left: 0,
               width: "100%",
               height: "100%",
               objectFit: "cover",
             }}
           />
-        ) : null}
+        ) : (
+          <>
+            <div
+              style={{
+                position: "absolute",
+                top: -80,
+                right: -60,
+                width: 480,
+                height: 480,
+                borderRadius: 240,
+                backgroundColor: accent,
+                opacity: 0.14,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: 80,
+                left: -80,
+                width: 420,
+                height: 420,
+                borderRadius: 210,
+                backgroundColor: accent,
+                opacity: 0.08,
+              }}
+            />
+          </>
+        )}
+
+        {/* Lekkie vignette */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            background: bg
-              ? "linear-gradient(to top, rgba(6,8,16,0.92) 0%, rgba(6,8,16,0.55) 45%, rgba(6,8,16,0.25) 100%)"
-              : gradient,
+            backgroundColor: bg ? "rgba(6,8,16,0.28)" : "rgba(6,8,16,0.2)",
           }}
         />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "55%",
+            backgroundColor: "rgba(6,8,16,0.5)",
+          }}
+        />
+
+        {/* Floating glass card */}
         <div
           style={{
             position: "relative",
             zIndex: 1,
             display: "flex",
-            flexDirection: "column",
-            padding: "56px 72px",
+            flexDirection: "row",
+            margin: "0 48px 44px",
+            maxWidth: 1104,
           }}
         >
+          {/* Accent bar */}
           <div
             style={{
-              fontSize: 20,
-              fontWeight: 700,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              color: accent,
-              marginBottom: 16,
+              width: 4,
+              flexShrink: 0,
+              borderRadius: 4,
+              backgroundColor: accent,
+              marginRight: 0,
             }}
-          >
-            Web Space Station
-          </div>
+          />
           <div
             style={{
-              fontSize: 54,
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: "-0.02em",
-              maxWidth: 980,
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              padding: "32px 40px",
+              backgroundColor: "rgba(8, 12, 22, 0.82)",
+              borderRadius: "0 14px 14px 0",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderLeft: "none",
             }}
           >
-            {entry.headline}
-          </div>
-          <div
-            style={{
-              fontSize: 24,
-              lineHeight: 1.4,
-              color: "#94a3b8",
-              marginTop: 20,
-              maxWidth: 860,
-            }}
-          >
-            {entry.subtitle}
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                color: accent,
+                marginBottom: 12,
+              }}
+            >
+              Web Space Station
+            </div>
+            <div
+              style={{
+                fontSize: 48,
+                fontWeight: 700,
+                lineHeight: 1.12,
+                letterSpacing: "-0.025em",
+                color: "#ffffff",
+                maxWidth: 920,
+              }}
+            >
+              {entry.headline}
+            </div>
+            <div
+              style={{
+                fontSize: 21,
+                lineHeight: 1.45,
+                color: "#b8c5d6",
+                marginTop: 14,
+                maxWidth: 880,
+              }}
+            >
+              {entry.subtitle}
+            </div>
           </div>
         </div>
       </div>

@@ -34,8 +34,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "ISS tracker · zorza polarna · starty rakiet · Centrum operacyjne",
     alt: "Web Space Station, portal o kosmosie z ISS trackerem, terminalem zorzy i harmonogramem startów",
     accent: "#38bdf8",
-    gradient:
-      "radial-gradient(ellipse 80% 60% at 75% 15%, rgba(56,189,248,0.28) 0%, transparent 55%), radial-gradient(ellipse 55% 45% at 12% 88%, rgba(47,109,255,0.24) 0%, transparent 50%), linear-gradient(145deg, #060810 0%, #0a1320 48%, #060810 100%)",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "aktualności kosmiczne",
       "newsy kosmos",
@@ -126,8 +125,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Newsy · misje · astronomia · technologie",
     alt: "Aktualności kosmiczne, najnowsze wiadomości ze świata kosmosu i astronomii",
     accent: "#2f6dff",
-    gradient:
-      "radial-gradient(ellipse 70% 50% at 50% 20%, rgba(47,109,255,0.35) 0%, transparent 60%), linear-gradient(160deg, #060810 0%, #0a1320 100%)",
+    backgroundImage: "/images/ops-pads/cape-slc-40.png",
     keywords: [
       "aktualności kosmiczne",
       "newsy kosmos",
@@ -143,8 +141,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Starty · eksploracja · programy NASA i SpaceX",
     alt: "Misje kosmiczne, artykuły o startach rakiet i programach kosmicznych",
     accent: "#2f6dff",
-    gradient:
-      "radial-gradient(ellipse at 50% 92%, rgba(255,130,30,0.55) 0%, transparent 42%), linear-gradient(180deg, #060c16 0%, #0a1320 52%, #07090c 100%)",
+    backgroundImage: "/images/ops-pads/cape-slc-40.png",
     keywords: [
       "misje kosmiczne",
       "programy kosmiczne",
@@ -161,8 +158,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Teleskopy · galaktyki · egzoplanety · odkrycia",
     alt: "Astronomia, odkrycia astronomiczne, teleskopy kosmiczne i tajemnice wszechświata",
     accent: "#a855f7",
-    gradient:
-      "radial-gradient(ellipse at 56% 46%, rgba(168,20,240,0.46) 0%, transparent 56%), linear-gradient(135deg, #05070f 0%, #0b0514 100%)",
+    backgroundImage: "/images/ops-pads/aurora.jpg",
     keywords: [
       "astronomia",
       "odkrycia astronomiczne",
