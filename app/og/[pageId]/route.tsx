@@ -21,15 +21,20 @@ export async function GET(request: Request, context: RouteContext) {
     return new Response("Not found", { status: 404 });
   }
 
-  const format = resolveFormat(request);
-  const image = await buildOgImage(entry, format);
-  const contentType = format === "jpeg" ? "image/jpeg" : "image/webp";
+  try {
+    const format = resolveFormat(request);
+    const image = await buildOgImage(entry, format);
+    const contentType = format === "jpeg" ? "image/jpeg" : "image/webp";
 
-  return new Response(new Uint8Array(image), {
-    headers: {
-      "Content-Type": contentType,
-      "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
-      Vary: "Accept",
-    },
-  });
+    return new Response(new Uint8Array(image), {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+        Vary: "Accept",
+      },
+    });
+  } catch (error) {
+    console.error("[og]", pageId, error);
+    return new Response("OG render failed", { status: 500 });
+  }
 }

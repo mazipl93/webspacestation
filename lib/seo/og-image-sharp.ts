@@ -97,6 +97,18 @@ function encodeOutput(image: sharp.Sharp, format: OgImageFormat): Promise<Buffer
     .toBuffer();
 }
 
+async function normalizeOverlayPng(
+  overlay: Buffer,
+  width: number,
+  height: number,
+): Promise<Buffer> {
+  return sharp(overlay)
+    .resize(width, height, { fit: "fill" })
+    .ensureAlpha()
+    .png()
+    .toBuffer();
+}
+
 /**
  * HQ OG: foto/gradient @ 2× → Satori overlay @ 2× → downscale Lanczos → WebP/JPEG.
  * Tekst z Satori, zdjęcie z sharp (bez podwójnej rasterizacji Satori na foto).
@@ -108,7 +120,7 @@ export async function buildOgImage(
   const { width: renderW, height: renderH } = ogRenderDimensions();
   const hasPhoto = Boolean(entry.backgroundImage);
 
-  const [basePng, overlayPng] = await Promise.all([
+  const [basePng, overlayRaw] = await Promise.all([
     buildBaseLayerPng(entry, renderW, renderH),
     renderOgOverlayPng(entry, {
       width: renderW,
@@ -117,10 +129,15 @@ export async function buildOgImage(
     }),
   ]);
 
+  const overlayPng = await normalizeOverlayPng(overlayRaw, renderW, renderH);
+
+  const mergedPng = await sharp(basePng)
+    .composite([{ input: overlayPng, top: 0, left: 0 }])
+    .png()
+    .toBuffer();
+
   return encodeOutput(
-    sharp(basePng)
-      .composite([{ input: overlayPng, top: 0, left: 0 }])
-      .resize(W, H, { kernel: sharp.kernel.lanczos3 }),
+    sharp(mergedPng).resize(W, H, { kernel: sharp.kernel.lanczos3 }),
     format,
   );
 }

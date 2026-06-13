@@ -1,3 +1,4 @@
+import React from "react";
 import { ImageResponse } from "next/og";
 import type { OgPageEntry } from "@/lib/seo/page-og-registry";
 import {
@@ -33,16 +34,29 @@ export function buildOgOverlayResponse(
           width,
           height,
           position: "relative",
-          backgroundColor: "transparent",
+          backgroundColor: "rgba(0,0,0,0)",
           fontFamily: "system-ui, sans-serif",
         }}
       >
         {hasPhoto ? (
-          <>
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width,
+              height,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <div
               style={{
                 position: "absolute",
-                inset: 0,
+                top: 0,
+                left: 0,
+                width,
+                height,
                 backgroundColor: "rgba(6,8,16,0.22)",
               }}
             />
@@ -56,7 +70,7 @@ export function buildOgOverlayResponse(
                 backgroundColor: "rgba(6,8,16,0.55)",
               }}
             />
-          </>
+          </div>
         ) : null}
 
         <div
@@ -72,7 +86,6 @@ export function buildOgOverlayResponse(
             borderRadius: scale(14, ratio),
             border: `${Math.max(1, scale(1, ratio))}px solid rgba(255, 255, 255, 0.14)`,
             borderLeft: `${scale(5, ratio)}px solid ${accent}`,
-            boxShadow: "0 12px 40px rgba(0, 0, 0, 0.45)",
           }}
         >
           <div
