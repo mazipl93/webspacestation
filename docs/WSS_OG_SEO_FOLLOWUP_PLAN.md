@@ -2,7 +2,7 @@
 
 **Utworzono:** 13 czerwca 2026  
 **Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 8 deploy · GSC tier-2 3/6 · handoff reszta tier-2).  
-**Prod HEAD:** po deploy tej sesji — sprawdź `git log -1` na `main`  
+**Prod HEAD:** `74bc482` (`main`) — `fix(seo): Krok 8 keywords audit and GSC tier-2 handoff`  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -405,7 +405,7 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 Skopiuj do nowej sesji:
 
 ```
-Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation, HEAD <sprawdź git log -1>
+Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation, HEAD 74bc482
 
 Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md · wykonaj WYŁĄCZNIE: **GSC tier-2 reszta** (3 URL).
 
