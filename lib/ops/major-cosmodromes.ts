@@ -113,6 +113,8 @@ export const MAJOR_COSMODROMES: MajorCosmodrome[] = [
         "Kompleks SpaceX nad Zatoką Meksykańską z halą montażową Starship, wieżą startową i poligonem testowym Super Heavy. To tutaj SpaceX rozwija w pełni wielokrotnego użytku system na Księżyc i Marsa.",
       imageUrl:
         "https://upload.wikimedia.org/wikipedia/commons/d/d5/USA_-_Texas_-_Boca_Chica_-_Starbase_(51288496140).jpg",
+      imageFit: "cover",
+      imageFocus: "center 58%",
       imageCredit: "Alexander Hatley · CC BY · Wikimedia Commons",
       facts: [
         "Jedyny port pod pełną integrację Starship i Super Heavy w jednym miejscu.",
@@ -133,6 +135,8 @@ export const MAJOR_COSMODROMES: MajorCosmodrome[] = [
         "Kosmodrom na wybrzeżu Wirginii obsługujący Antares, Electron Rocket Lab i misje NASA Wallops Flight Facility. Ważny węzeł zaopatrzenia stacji kosmicznej na wschodnim wybrzeżu USA.",
       imageUrl:
         "https://upload.wikimedia.org/wikipedia/commons/0/05/Mid-Atlantic_Regional_Spaceport_-_aerial_photo.jpg",
+      imageFit: "cover",
+      imageFocus: "center 52%",
       imageCredit: "NASA Wallops · Wikimedia Commons",
       facts: [
         "Stąd regularnie startują statki zaopatrzeniowe Cygnus na ISS.",
@@ -153,6 +157,7 @@ export const MAJOR_COSMODROMES: MajorCosmodrome[] = [
         "Historyczna rampa Gagarina (Site 1) w stepie Kazachstanu. Stąd w 1961 roku wyleciał Jurij Gagarin, a dziś startują rakiety Sojuz z załogami i ładunkami na ISS.",
       imageUrl:
         "https://upload.wikimedia.org/wikipedia/commons/5/51/Baikonur_Cosmodrome_Soyuz_launch_pad.jpg",
+      imageFit: "contain",
       imageCredit: "NASA / Bill Ingalls · Wikimedia Commons",
       facts: [
         "Najstarszy czynny port orbitalny świata, działający od lat 50.",
@@ -173,6 +178,8 @@ export const MAJOR_COSMODROMES: MajorCosmodrome[] = [
         "Wojskowy kosmodrom w północnej Rosji, zoptymalizowany pod orbity polarne i słoneczno-synchroniczne. Stąd startują Sojuz-2 oraz rosyjskie satelity rozpoznawcze i nawigacyjne.",
       imageUrl:
         "https://upload.wikimedia.org/wikipedia/commons/b/b7/Plesetsk_Cosmodrome_2017.jpg",
+      imageFit: "cover",
+      imageFocus: "center 48%",
       imageCredit: "Ministerstwo Obrony RF · Wikimedia Commons",
       facts: [
         "Położenie na północy ułatwia wynoszenie ładunków na orbity polarne.",

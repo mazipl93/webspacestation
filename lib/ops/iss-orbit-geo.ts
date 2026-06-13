@@ -68,6 +68,53 @@ export function splitOrbitAtDateline(points: OrbitPoint[]): OrbitSegment[] {
   return segments;
 }
 
+/** Odrzuca segmenty z „cięciem” przez mapę (typowy flash przy dateline). */
+export function filterRenderableOrbitSegments(
+  segments: OrbitSegment[],
+): OrbitSegment[] {
+  const out: OrbitSegment[] = [];
+
+  for (const seg of segments) {
+    if (seg.length < 2) continue;
+
+    let reject = false;
+    for (let i = 1; i < seg.length; i++) {
+      const prev = seg[i - 1]!;
+      const next = seg[i]!;
+      const dLon = Math.abs(next.lon - prev.lon);
+      const dLat = Math.abs(next.lat - prev.lat);
+      if (dLon > 90 && dLat < 10) {
+        reject = true;
+        break;
+      }
+    }
+
+    if (!reject) out.push(seg);
+  }
+
+  return out;
+}
+
+/** Segmenty gotowe do Leaflet — wyrównanie względem ISS, retnij dateline, odfiltruj artefakty. */
+export function prepareOrbitSegmentsForLeaflet(
+  segments: OrbitSegment[],
+  refLon: number,
+): OrbitSegment[] {
+  if (segments.length === 0) return [];
+
+  const resplit = segments.flatMap((seg) => {
+    const aligned = alignTrackToReference(seg, refLon);
+    const wrapped = aligned.map((p) => ({
+      lat: p.lat,
+      lon: unwrapLongitude(p.lon),
+    }));
+    const parts = splitOrbitAtDateline(wrapped);
+    return parts.length > 0 ? parts : aligned.length > 1 ? [aligned] : [];
+  });
+
+  return filterRenderableOrbitSegments(resplit);
+}
+
 export function finalizeOrbitSegments(
   points: OrbitPoint[],
   refLon: number,

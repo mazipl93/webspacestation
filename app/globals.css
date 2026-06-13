@@ -1774,6 +1774,10 @@ html[data-portal-theme] .site-cosmos-grain {
 }
 
 /* ── Leaflet: mapa operacyjna ISS + wyrzutnie ─────────────────────────── */
+.ops-live-map {
+  isolation: isolate;
+  z-index: 0;
+}
 .ops-live-map .leaflet-container {
   background: #0a1018;
   font-family: inherit;
@@ -1955,6 +1959,155 @@ html[data-portal-theme] .ops-map-pin-detail__facts-list li {
   }
   to {
     opacity: 1;
+  }
+}
+/* Okienko na mapie — nie rozpycha layoutu strony */
+.ops-map-pin-overlay {
+  max-height: min(52dvh, 340px);
+  filter: drop-shadow(0 10px 36px rgba(0, 0, 0, 0.65));
+}
+.ops-map-pin-detail--overlay {
+  display: flex;
+  flex-direction: column;
+  max-height: min(52dvh, 340px);
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  background: #0c1220;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 16px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__grid {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__media {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 132px;
+  padding: 5px 8px;
+  overflow: hidden;
+  border-right: none;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+  background: #070b14;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__img-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 55%, #070b14 100%);
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__img--cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  border-radius: 0;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__img--contain {
+  position: relative;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__copy {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 11px 13px 13px;
+  background: #111827;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding-right: 1.75rem;
+  color: #f8fafc;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__caption {
+  color: #7dd3fc;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__facts {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+.ops-map-pin-detail--overlay .ops-map-pin-detail__facts-label,
+.ops-map-pin-detail--overlay .ops-map-pin-detail__facts-list li {
+  color: #94a3b8;
+}
+html[data-portal-theme] .ops-map-pin-detail--overlay {
+  background: #0c1220 !important;
+  border: 1px solid rgba(56, 189, 248, 0.32) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 16px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__copy {
+  background: #111827 !important;
+}
+html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__title {
+  color: #f8fafc;
+}
+html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
+  color: #cbd5e1;
+}
+@media (min-width: 768px) {
+  .ops-map-pin-overlay {
+    max-height: min(68%, 420px);
+  }
+  .ops-map-pin-detail--overlay {
+    max-height: min(68%, 420px);
+  }
+  .ops-map-pin-detail--overlay .ops-map-pin-detail__media {
+    height: 148px;
+    padding: 6px 10px;
+  }
+  .ops-map-pin-detail--overlay .ops-map-pin-detail__title {
+    font-size: 13px;
+  }
+  .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ops-map-pin-overlay {
+    animation: ops-map-overlay-in 0.2s ease-out;
+  }
+}
+@keyframes ops-map-overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 /* /mapa — zawsze w szerokości kontenera (bez poziomego scrolla na mobile) */

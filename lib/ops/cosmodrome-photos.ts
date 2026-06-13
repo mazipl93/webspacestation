@@ -41,6 +41,12 @@ export type CosmodromeSpotlight = {
 
   imageCredit: string;
 
+  /** cover = wypełnienie kadru (lokalne PNG); contain = całe zdjęcie (Wikimedia). */
+  imageFit?: "cover" | "contain";
+
+  /** Kadrowanie, np. „center bottom” — gdy cover ucina ważny fragment. */
+  imageFocus?: string;
+
   facts: string[];
 
 };
@@ -543,6 +549,10 @@ const SITES: SiteRule[] = [
 
         "https://upload.wikimedia.org/wikipedia/commons/d/d5/USA_-_Texas_-_Boca_Chica_-_Starbase_(51288496140).jpg",
 
+      imageFit: "cover",
+
+      imageFocus: "center 58%",
+
       imageCredit: "Alexander Hatley · CC BY · Wikimedia Commons",
 
       facts: [
@@ -604,6 +614,8 @@ const SITES: SiteRule[] = [
       imageUrl:
 
         "https://upload.wikimedia.org/wikipedia/commons/5/51/Baikonur_Cosmodrome_Soyuz_launch_pad.jpg",
+
+      imageFit: "contain",
 
       imageCredit: "NASA / Bill Ingalls · Wikimedia Commons",
 
@@ -824,6 +836,10 @@ const SITES: SiteRule[] = [
 
         "https://upload.wikimedia.org/wikipedia/commons/0/05/Mid-Atlantic_Regional_Spaceport_-_aerial_photo.jpg",
 
+      imageFit: "cover",
+
+      imageFocus: "center 52%",
+
       imageCredit: "NASA Wallops · Wikimedia Commons",
 
       facts: [
@@ -951,6 +967,10 @@ const SITES: SiteRule[] = [
       imageUrl:
 
         "https://upload.wikimedia.org/wikipedia/commons/b/b7/Plesetsk_Cosmodrome_2017.jpg",
+
+      imageFit: "cover",
+
+      imageFocus: "center 48%",
 
       imageCredit: "Ministerstwo Obrony RF · Wikimedia Commons",
 

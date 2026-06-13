@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import OpsMapPinDetail from "@/components/discover/OpsMapPinDetail";
 import OpsPinList from "@/components/discover/OpsPinList";
 import { cn } from "@/lib/cn";
 import { captionForMapPin } from "@/lib/ops/map-pin-caption";
@@ -32,32 +31,6 @@ type Props = {
   followIss?: boolean;
 };
 
-function OpsMapDetailSlot({
-  focusPinId,
-  focusedPin,
-  iss,
-  onClose,
-}: {
-  focusPinId: string | null;
-  focusedPin: OpsMapPin | undefined;
-  iss?: OpsIssPosition | null;
-  onClose: () => void;
-}) {
-  if (!focusPinId || !focusedPin) return null;
-
-  return (
-    <div className="ops-map-detail-slot min-w-0 w-full" aria-live="polite">
-      <OpsMapPinDetail
-        key={focusPinId}
-        pinId={focusPinId}
-        spotlight={resolveMapPinSpotlight(focusedPin)}
-        caption={captionForMapPin(focusedPin, iss)}
-        onClose={onClose}
-      />
-    </div>
-  );
-}
-
 export default function OpsMissionMap({
   pins,
   iss,
@@ -78,17 +51,17 @@ export default function OpsMissionMap({
 
   const focusedPin = useMemo(
     () => (focusPinId ? pins.find((p) => p.id === focusPinId) : undefined),
-    [focusPinId, pins]
+    [focusPinId, pins],
   );
 
-  const detailSlot = (
-    <OpsMapDetailSlot
-      focusPinId={focusPinId}
-      focusedPin={focusedPin}
-      iss={iss}
-      onClose={() => setFocusPinId(null)}
-    />
-  );
+  const pinDetail = useMemo(() => {
+    if (!focusPinId || !focusedPin) return null;
+    return {
+      pinId: focusPinId,
+      spotlight: resolveMapPinSpotlight(focusedPin),
+      caption: captionForMapPin(focusedPin, iss),
+    };
+  }, [focusPinId, focusedPin, iss]);
 
   const mapBlock = (
     <OpsLiveMap
@@ -100,6 +73,8 @@ export default function OpsMissionMap({
       className={mapClassName}
       focusPinId={focusPinId}
       onPinSelect={handleSelectPin}
+      pinDetail={pinDetail}
+      onPinDetailClose={() => setFocusPinId(null)}
       followIss={followIss}
     />
   );
@@ -120,7 +95,7 @@ export default function OpsMissionMap({
         <div
           className={cn(
             "grid min-w-0 w-full gap-3 sm:gap-4",
-            "lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] lg:items-start"
+            "lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] lg:items-start",
           )}
         >
           <div className="min-w-0 w-full shrink-0">{mapBlock}</div>
@@ -130,7 +105,6 @@ export default function OpsMissionMap({
             </div>
           ) : null}
         </div>
-        {detailSlot}
       </div>
     );
   }
@@ -139,7 +113,6 @@ export default function OpsMissionMap({
     <div className="flex min-w-0 w-full max-w-full flex-col gap-3 overflow-hidden sm:gap-4">
       {mapBlock}
       {pinList}
-      {detailSlot}
     </div>
   );
 }

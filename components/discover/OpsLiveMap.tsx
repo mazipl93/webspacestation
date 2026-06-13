@@ -10,17 +10,19 @@ import {
   TileLayer,
   useMap,
 } from "react-leaflet";
+import OpsMapPinDetail from "@/components/discover/OpsMapPinDetail";
+import type { MapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
 import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
-import { alignTrackToReference } from "@/lib/ops/iss-orbit-geo";
+import { prepareOrbitSegmentsForLeaflet } from "@/lib/ops/iss-orbit-geo";
 import { cn } from "@/lib/cn";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
 import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import "leaflet/dist/leaflet.css";
 
-/** Leaflet 1.9 — worldCopyJump zapobiega „hakom” przy ±180° (typy @types/leaflet bez tego pola). */
-const ORBIT_LINE_OPTS = { worldCopyJump: true } as L.PolylineOptions;
+/** Bez worldCopyJump — przy poprawnie pociętych segmentach unika poziomego flasha przy ładowaniu. */
+const ORBIT_LINE_OPTS = {} as L.PolylineOptions;
 
 type Props = {
   pins: OpsMapPin[];
@@ -31,6 +33,12 @@ type Props = {
   className?: string;
   focusPinId?: string | null;
   onPinSelect?: (pinId: string) => void;
+  pinDetail?: {
+    pinId: string;
+    spotlight: MapPinSpotlight;
+    caption?: string;
+  } | null;
+  onPinDetailClose?: () => void;
   followIss?: boolean;
 };
 
@@ -131,6 +139,58 @@ function PinFocusController({
   return null;
 }
 
+/** Na mobile przesuwa mapę, żeby pinezka nie chowała się pod dolnym okienkiem. */
+function OverlayPanAdjust({
+  focusPinId,
+  overlayOpen,
+}: {
+  focusPinId?: string | null;
+  overlayOpen: boolean;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!focusPinId || !overlayOpen) return;
+    const narrow =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 767px)").matches;
+    if (!narrow) return;
+
+    const t = window.setTimeout(() => {
+      map.panBy([0, 110], { animate: true });
+    }, 120);
+    return () => window.clearTimeout(t);
+  }, [focusPinId, overlayOpen, map]);
+
+  return null;
+}
+
+function MapOrbitReadyGate({ onReady }: { onReady: () => void }) {
+  const map = useMap();
+
+  useEffect(() => {
+    let done = false;
+    const mark = () => {
+      if (done) return;
+      done = true;
+      onReady();
+    };
+
+    map.whenReady(() => {
+      requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+        requestAnimationFrame(mark);
+      });
+    });
+
+    return () => {
+      done = true;
+    };
+  }, [map, onReady]);
+
+  return null;
+}
+
 function createIssIcon(active: boolean) {
   const ring = active
     ? "box-shadow:0 0 0 3px rgba(56,189,248,0.9), 0 0 20px rgba(56,189,248,0.85);"
@@ -191,9 +251,13 @@ export default function OpsLiveMap({
   className,
   focusPinId = null,
   onPinSelect,
+  pinDetail = null,
+  onPinDetailClose,
   followIss = false,
 }: Props) {
+  const overlayOpen = Boolean(pinDetail);
   const [isFollowing, setIsFollowing] = useState(followIss);
+  const [orbitReady, setOrbitReady] = useState(false);
   const { iss: liveIss, orbitPast, orbitFuture } = useLiveIssTrack(
     iss ?? null,
     issOrbit,
@@ -203,17 +267,19 @@ export default function OpsLiveMap({
   const displayPast = useMemo(
     () =>
       refLon == null
-        ? orbitPast
-        : orbitPast.map((seg) => alignTrackToReference(seg, refLon)),
+        ? []
+        : prepareOrbitSegmentsForLeaflet(orbitPast, refLon),
     [orbitPast, refLon],
   );
   const displayFuture = useMemo(
     () =>
       refLon == null
-        ? orbitFuture
-        : orbitFuture.map((seg) => alignTrackToReference(seg, refLon)),
+        ? []
+        : prepareOrbitSegmentsForLeaflet(orbitFuture, refLon),
     [orbitFuture, refLon],
   );
+  const showOrbit =
+    orbitReady && refLon != null && (displayPast.length > 0 || displayFuture.length > 0);
   const issPin = pins.find((p) => p.kind === "iss");
   const cosmodromePins = pins.filter((p) => p.kind === "cosmodrome");
   const extraPadPins = pins.filter((p) => p.kind === "pad");
@@ -266,6 +332,15 @@ export default function OpsLiveMap({
       ? issVisibilityRadiusM(liveIss.altitudeKm)
       : undefined;
 
+  useEffect(() => {
+    if (!overlayOpen || !onPinDetailClose) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onPinDetailClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [overlayOpen, onPinDetailClose]);
+
   const shellClass = opsMapShellClass(className);
   const useFixedShell =
     Boolean(className?.includes("ops-map-page-map")) ||
@@ -310,6 +385,7 @@ export default function OpsLiveMap({
         <TileLayer attribution="" url={SATELLITE_TILE} />
         <TileLayer attribution="" url={LABELS_TILE} opacity={0.55} />
         <MapResizeFix />
+        <MapOrbitReadyGate onReady={() => setOrbitReady(true)} />
         <MapViewController
           iss={liveIss}
           pins={effectivePins}
@@ -318,8 +394,12 @@ export default function OpsLiveMap({
           onUserMoved={followIss ? () => setIsFollowing(false) : undefined}
         />
         <PinFocusController focusPinId={focusPinId} pins={effectivePins} />
+        {overlayOpen ? (
+          <OverlayPanAdjust focusPinId={focusPinId} overlayOpen={overlayOpen} />
+        ) : null}
 
-        {displayPast.map((segment, i) => (
+        {showOrbit
+          ? displayPast.map((segment, i) => (
           <Polyline
             key={`orbit-past-${i}`}
             positions={segment.map((p) => [p.lat, p.lon] as [number, number])}
@@ -332,9 +412,11 @@ export default function OpsLiveMap({
               lineJoin: "round",
             }}
           />
-        ))}
+        ))
+          : null}
 
-        {displayFuture.map((segment, i) => (
+        {showOrbit
+          ? displayFuture.map((segment, i) => (
           <Polyline
             key={`orbit-future-${i}`}
             positions={segment.map((p) => [p.lat, p.lon] as [number, number])}
@@ -348,7 +430,8 @@ export default function OpsLiveMap({
               dashArray: "6 8",
             }}
           />
-        ))}
+        ))
+          : null}
 
         {issLatLng && visibilityRadiusM != null && (
           <Circle
@@ -403,7 +486,7 @@ export default function OpsLiveMap({
         </div>
       )}
 
-      {followIss && !isFollowing && liveIss && (
+      {followIss && !isFollowing && liveIss && !overlayOpen && (
         <button
           onClick={() => setIsFollowing(true)}
           className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-lg border border-accent-cyan/40 bg-[rgba(8,14,24,0.88)] px-3 py-1.5 text-[11px] font-semibold text-accent-cyan backdrop-blur-sm transition-colors hover:bg-[rgba(8,14,24,0.95)]"
@@ -412,6 +495,32 @@ export default function OpsLiveMap({
           Śledź ISS
         </button>
       )}
+
+      {pinDetail && onPinDetailClose ? (
+        <>
+          <button
+            type="button"
+            className="ops-map-pin-overlay-backdrop absolute inset-0 z-10 bg-black/30 md:pointer-events-none md:bg-transparent"
+            aria-label="Zamknij okienko"
+            onClick={onPinDetailClose}
+          />
+          <div
+            className="ops-map-pin-overlay pointer-events-auto absolute inset-x-2 bottom-2 z-20 md:inset-x-auto md:bottom-3 md:left-3 md:right-auto md:w-[min(100%,380px)]"
+            role="dialog"
+            aria-modal="true"
+            aria-live="polite"
+          >
+            <OpsMapPinDetail
+              key={pinDetail.pinId}
+              pinId={pinDetail.pinId}
+              spotlight={pinDetail.spotlight}
+              caption={pinDetail.caption}
+              variant="overlay"
+              onClose={onPinDetailClose}
+            />
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

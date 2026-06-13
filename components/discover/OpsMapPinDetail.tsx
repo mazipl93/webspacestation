@@ -2,6 +2,8 @@
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/cn";
+import { resolveSpotlightImageDisplay } from "@/lib/ops/spotlight-image-display";
 import type { MapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 
 const FALLBACK_IMAGE =
@@ -11,6 +13,7 @@ type Props = {
   pinId: string;
   spotlight: MapPinSpotlight;
   caption?: string;
+  variant?: "panel" | "overlay";
   onClose: () => void;
 };
 
@@ -18,8 +21,10 @@ export default function OpsMapPinDetail({
   pinId,
   spotlight,
   caption,
+  variant = "panel",
   onClose,
 }: Props) {
+  const isOverlay = variant === "overlay";
   const [imgSrc, setImgSrc] = useState(spotlight.imageUrl);
   const [imgReady, setImgReady] = useState(false);
 
@@ -28,16 +33,28 @@ export default function OpsMapPinDetail({
     setImgReady(false);
   }, [pinId, spotlight.imageUrl]);
 
+  const imageDisplay = resolveSpotlightImageDisplay(spotlight, imgSrc);
+
   return (
     <section
-      className="ops-map-pin-detail card-surface relative overflow-hidden rounded-xl border border-hairline-faint"
+      className={cn(
+        "ops-map-pin-detail relative overflow-hidden",
+        isOverlay
+          ? "ops-map-pin-detail--overlay"
+          : "card-surface rounded-xl border border-hairline-faint",
+      )}
       aria-label={spotlight.title}
       data-pin-id={pinId}
     >
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white shadow-sm hover:bg-black/80"
+        className={cn(
+          "absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full border text-white shadow-md transition-colors",
+          isOverlay
+            ? "border-white/25 bg-[#0a1018] hover:bg-[#141c2e]"
+            : "border-white/20 bg-black/60 hover:bg-black/80",
+        )}
         aria-label="Zamknij"
       >
         <X size={14} />
@@ -56,9 +73,13 @@ export default function OpsMapPinDetail({
             key={`${pinId}-${imgSrc}`}
             src={imgSrc}
             alt=""
-            className={`ops-map-pin-detail__img transition-opacity duration-150 ${
-              imgReady ? "opacity-100" : "opacity-0"
-            }`}
+            className={cn(
+              "ops-map-pin-detail__img transition-opacity duration-150",
+              isOverlay &&
+                `ops-map-pin-detail__img--${imageDisplay.fit}`,
+              imgReady ? "opacity-100" : "opacity-0",
+            )}
+            style={{ objectPosition: imageDisplay.focus }}
             decoding="async"
             onLoad={() => setImgReady(true)}
             onError={() => {
