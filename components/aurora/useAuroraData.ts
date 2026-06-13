@@ -9,6 +9,7 @@ import type {
   KpForecast,
   XrayFlux,
   SolarFlare,
+  SolarRegion,
 } from "@/lib/aurora/api";
 
 export interface AuroraState {
@@ -23,6 +24,7 @@ export interface AuroraState {
   xrayFlux: XrayFlux[];
   solarFlares: SolarFlare[];
   sunspotNumber: number | null;
+  solarRegions: SolarRegion[];
   lastUpdate: Date | null;
   loading: boolean;
   errors: Partial<Record<string, string>>;
@@ -40,6 +42,7 @@ const initialState: AuroraState = {
   xrayFlux: [],
   solarFlares: [],
   sunspotNumber: null,
+  solarRegions: [],
   lastUpdate: null,
   loading: true,
   errors: {},
@@ -119,12 +122,24 @@ type SsnItem = { obsdate: string; ssn: number };
 // DST 1-hour realtime + 7-day history
 type DstItem = { time_tag: string; dst: number };
 
+// Solar regions
+type SolarRegionItem = {
+  region: number | string;
+  latitude: number;
+  longitude: number;
+  mag_class: string;
+  num_spots: number;
+  area: number;
+  first_date: string;
+  last_date: string;
+};
+
 export function useAuroraData() {
   const [state, setState] = useState<AuroraState>(initialState);
   const mountedRef = useRef(true);
 
   const fetchAll = useCallback(async () => {
-    const [kp1m, kp3d, kpFc, swMag, swPlasma, dstRaw, alerts, xray, flares, ssn] =
+    const [kp1m, kp3d, kpFc, swMag, swPlasma, dstRaw, alerts, xray, flares, ssn, solarRegionsRaw] =
       await Promise.all([
         safeFetch<Kp1mItem[]>("https://services.swpc.noaa.gov/json/planetary_k_index_1m.json", []),
         safeFetch<Kp3DayItem[]>("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json", []),
@@ -136,6 +151,7 @@ export function useAuroraData() {
         safeFetch<XrayRow[]>("https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json", []),
         safeFetch<FlareItem[]>("https://services.swpc.noaa.gov/json/goes/primary/solar-flares-latest.json", []),
         safeFetch<SsnItem[]>("https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json", []),
+        safeFetch<SolarRegionItem[]>("https://services.swpc.noaa.gov/json/solar_regions.json", []),
       ]);
 
     if (!mountedRef.current) return;
@@ -226,6 +242,18 @@ export function useAuroraData() {
     // ── Sunspot number
     const ssnValue = ssn.length > 0 ? ssn[ssn.length - 1].ssn : null;
 
+    // ── Solar active regions
+    const solarRegionsParsed: SolarRegion[] = solarRegionsRaw.map((r) => ({
+      region: String(r.region),
+      latitude: r.latitude ?? 0,
+      longitude: r.longitude ?? 0,
+      mag_class: r.mag_class ?? "unknown",
+      num_spots: r.num_spots ?? 0,
+      area: r.area ?? 0,
+      first_date: r.first_date ?? "",
+      last_date: r.last_date ?? "",
+    }));
+
     setState({
       kpCurrent: kpCurrentParsed,
       kp3Day: kp3DayParsed,
@@ -238,6 +266,7 @@ export function useAuroraData() {
       xrayFlux: xrayParsed,
       solarFlares: flaresParsed,
       sunspotNumber: ssnValue,
+      solarRegions: solarRegionsParsed,
       lastUpdate: new Date(),
       loading: false,
       errors: {},

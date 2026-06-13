@@ -114,18 +114,18 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
 
       {/* Bz — main highlight */}
       <div
-        className="rounded-lg p-4 border-2 text-center"
+        className="rounded-lg p-3 border-2 text-center"
         style={{
           borderColor: bzColor,
           background: `${bzColor}11`,
           boxShadow: bzNegative ? `0 0 20px ${bzColor}44` : "none",
         }}
       >
-        <div className="text-xs text-slate-400 font-mono tracking-widest mb-1">
+        <div className="text-[10px] text-slate-400 font-mono tracking-widest mb-1">
           IMF Bz {bzNegative ? "UJEMNA (korzystna!)" : "Dodatnia"}
         </div>
         <div
-          className={`text-5xl font-bold font-mono ${bzNegative && bz < -5 ? "animate-pulse" : ""}`}
+          className={`text-3xl sm:text-4xl font-bold font-mono ${bzNegative && bz < -5 ? "animate-pulse" : ""}`}
           style={{
             color: bzColor,
             textShadow: `0 0 20px ${bzColor}`,
@@ -133,7 +133,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
         >
           {bz >= 0 ? "+" : ""}
           {bz.toFixed(1)}
-          <span className="text-xl ml-1">nT</span>
+          <span className="text-base sm:text-lg ml-1">nT</span>
         </div>
         {bzNegative && (
           <div className="mt-1 text-xs font-bold tracking-widest" style={{ color: bzColor }}>
@@ -146,40 +146,40 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
       </div>
 
       {/* Other IMF */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
           <div className="text-[10px] text-slate-500 font-mono">Bt calkowite</div>
-          <div className="text-xl font-bold font-mono text-sky-400">
+          <div className="text-lg font-bold font-mono text-sky-400">
             {bt.toFixed(1)} <span className="text-xs">nT</span>
           </div>
         </div>
         <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
           <div className="text-[10px] text-slate-500 font-mono">By</div>
-          <div className="text-xl font-bold font-mono text-violet-400">
+          <div className="text-lg font-bold font-mono text-violet-400">
             {by >= 0 ? "+" : ""}{by.toFixed(1)} <span className="text-xs">nT</span>
           </div>
         </div>
       </div>
 
       {/* Solar wind params */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
-          <div className="text-[10px] text-slate-500 font-mono">Predkosc</div>
-          <div className="text-base font-bold font-mono text-emerald-400">
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="rounded border border-slate-700 bg-slate-800/40 p-1.5 text-center">
+          <div className="text-[9px] text-slate-500 font-mono">Predkosc</div>
+          <div className="text-sm font-bold font-mono text-emerald-400">
             {speed > 0 ? speed.toFixed(0) : "—"}
           </div>
           <div className="text-[9px] text-slate-600">km/s</div>
         </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
-          <div className="text-[10px] text-slate-500 font-mono">Gestosc</div>
-          <div className="text-base font-bold font-mono text-amber-400">
+        <div className="rounded border border-slate-700 bg-slate-800/40 p-1.5 text-center">
+          <div className="text-[9px] text-slate-500 font-mono">Gestosc</div>
+          <div className="text-sm font-bold font-mono text-amber-400">
             {density > 0 ? density.toFixed(1) : "—"}
           </div>
           <div className="text-[9px] text-slate-600">p/cm3</div>
         </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
-          <div className="text-[10px] text-slate-500 font-mono">Temp.</div>
-          <div className="text-base font-bold font-mono text-rose-400">
+        <div className="rounded border border-slate-700 bg-slate-800/40 p-1.5 text-center">
+          <div className="text-[9px] text-slate-500 font-mono">Temp.</div>
+          <div className="text-sm font-bold font-mono text-rose-400">
             {temp > 0 ? (temp / 1000).toFixed(0) + "k" : "—"}
           </div>
           <div className="text-[9px] text-slate-600">K</div>

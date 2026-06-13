@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Rocket } from "lucide-react";
+import { ArrowRight, Rocket, Sparkles } from "lucide-react";
 
 // Cinematic full-bleed hero photograph (Earth from orbit). The base gradient
 // below it doubles as a graceful fallback if the image ever fails to load.
@@ -216,6 +216,15 @@ export default function Hero() {
             >
               Starty rakiet
               <Rocket size={14} className="text-accent-cyan" />
+            </Link>
+            <Link
+              href="/zorza"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-[#44ff8844] bg-[#44ff8810] px-5 py-3 text-[13.5px] font-semibold text-[#a7f3c0] backdrop-blur-sm transition-all duration-300 hover:border-[#44ff8866] hover:bg-[#44ff8818] active:scale-[0.97]"
+            >
+              Terminal zorzy polarnej
+              <Sparkles size={14} className="text-[#44ff88]" />
             </Link>
           </div>
 

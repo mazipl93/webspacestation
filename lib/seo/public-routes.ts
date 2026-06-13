@@ -32,6 +32,7 @@ export const SEO_SITEMAP_PATHS = [
   "/mapa",
   "/galeria",
   "/wideo",
+  "/zorza",
 ] as const;
 
 /** Utility — poza sitemap. */

@@ -29,6 +29,7 @@ const FOOTER_NAV = {
     { label: "Blue Origin", href: "/blue-origin" },
   ],
   Odkrywaj: [
+    { label: "Terminal zorzy polarnej", href: "/zorza" },
     { label: "Starty rakiet", href: "/starty" },
     { label: "Harmonogram startów", href: "/kalendarz" },
     { label: "Mapa startów i ISS", href: "/mapa" },
@@ -121,7 +122,7 @@ export default function Footer() {
                               <Link
                                 href={link.href}
                                 className="inline-flex min-h-[32px] items-center text-[13px] text-text-secondary transition-colors hover:text-accent-cyan"
-                                {...(link.href.startsWith("http")
+                                {...(link.href.startsWith("http") || link.href === "/zorza"
                                   ? {
                                       target: "_blank",
                                       rel: "noopener noreferrer",

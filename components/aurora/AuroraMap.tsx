@@ -79,69 +79,95 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
       const L = leaflet.default;
       const map = mapInstanceRef.current!;
 
-      // Remove old layers
       if (ovalLayerRef.current) {
         map.removeLayer(ovalLayerRef.current as Parameters<typeof map.removeLayer>[0]);
       }
 
       const layerGroup = L.layerGroup();
 
-      // Draw aurora ovals for different Kp levels
-      const levelsToShow = [3, 5, 7, 9];
-      levelsToShow.forEach((level) => {
-        const lat = getOvalLat(level);
+      // ── Aurora ovals as latitude polylines (Mercator-safe)
+      // L.circle centered at pole breaks in Mercator — use polyline at the oval latitude instead.
+      const ovalDefs = [
+        { level: 3, label: "Kp≥3", color: "#44ff88" },
+        { level: 5, label: "Kp≥5 G1", color: "#ffdd00" },
+        { level: 7, label: "Kp≥7 G3", color: "#ff6600" },
+        { level: 9, label: "Kp≥9 G5", color: "#ff2222" },
+      ] as const;
+
+      ovalDefs.forEach(({ level, label, color }) => {
+        const ovalLat = getOvalLat(level);
         const isActive = kp >= level;
-        const col = kp >= 7 ? "#ff4444" : kp >= 5 ? "#ff8800" : kp >= 3 ? "#44ff88" : "#00aaff";
-        const activeCol = level <= Math.round(kp) ? col : "#334155";
+        const lineColor = isActive ? color : "#2d3f55";
+        const lineOpacity = isActive ? 0.85 : 0.4;
+        const lineWeight = isActive ? 2.5 : 1;
+        const dash = isActive ? undefined : "6 4";
 
-        // North pole oval
-        for (const poleLat of [lat, -lat]) {
-          const circle = L.circle([poleLat > 0 ? 90 : -90, 0], {
-            radius: (90 - Math.abs(poleLat)) * 111320,
-            color: activeCol,
-            weight: isActive && level <= Math.round(kp) ? 2 : 1,
-            opacity: isActive && level <= Math.round(kp) ? 0.8 : 0.25,
-            fillColor: activeCol,
-            fillOpacity: isActive && level <= Math.round(kp) ? 0.08 : 0.02,
-            dashArray: level <= Math.round(kp) ? undefined : "4 6",
-          });
-          layerGroup.addLayer(circle);
+        // Draw oval in Northern hemisphere
+        const northPoints: [number, number][] = Array.from({ length: 73 }, (_, i) => [ovalLat, -180 + i * 5]);
+        L.polyline(northPoints, {
+          color: lineColor,
+          weight: lineWeight,
+          opacity: lineOpacity,
+          dashArray: dash,
+        }).addTo(layerGroup);
 
-          if (level === 5 && isActive) {
-            L.circle([poleLat > 0 ? 90 : -90, 0], {
-              radius: (90 - Math.abs(poleLat)) * 111320 * 0.9,
-              color: activeCol,
-              weight: 0,
-              fillColor: activeCol,
-              fillOpacity: 0.06,
-            }).addTo(layerGroup);
-          }
+        // Southern hemisphere mirror
+        const southPoints: [number, number][] = northPoints.map(([, lon]) => [-ovalLat, lon]);
+        L.polyline(southPoints, {
+          color: lineColor,
+          weight: lineWeight,
+          opacity: lineOpacity * 0.6,
+          dashArray: "4 6",
+        }).addTo(layerGroup);
+
+        // Active glow fill between oval and 70°N (aurora band)
+        if (isActive) {
+          const fillPts: [number, number][] = [
+            ...Array.from({ length: 73 }, (_, i) => [ovalLat, -180 + i * 5] as [number, number]),
+            ...Array.from({ length: 73 }, (_, i) => [Math.min(85, ovalLat + 8), 180 - i * 5] as [number, number]),
+          ];
+          L.polygon(fillPts, {
+            color: "transparent",
+            fillColor: color,
+            fillOpacity: 0.06,
+          }).addTo(layerGroup);
         }
+
+        // Label at right edge
+        L.marker([ovalLat, 175], {
+          icon: L.divIcon({
+            html: `<span style="color:${lineColor};font-family:monospace;font-size:9px;white-space:nowrap;text-shadow:0 1px 3px #000,0 0 6px #000;opacity:${lineOpacity}">${label}</span>`,
+            className: "",
+            iconSize: [60, 12],
+            iconAnchor: [0, 6],
+          }),
+        }).addTo(layerGroup);
       });
 
-      // User location marker
+      // ── User location marker
+      const minKp = Math.max(1, 10 - Math.abs(userLat) / 9);
       const userIcon = L.divIcon({
         html: `<div style="
-          width: 16px; height: 16px; border-radius: 50%;
-          background: #60a5fa; border: 3px solid #fff;
-          box-shadow: 0 0 12px #60a5fa;
+          width: 14px; height: 14px; border-radius: 50%;
+          background: #60a5fa; border: 2.5px solid #fff;
+          box-shadow: 0 0 10px #60a5fa, 0 0 20px #60a5fa44;
         "></div>`,
         className: "",
-        iconSize: [16, 16],
-        iconAnchor: [8, 8],
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
       });
       L.marker([userLat, userLon], { icon: userIcon })
         .bindPopup(
-          `<div style="background:#0a0f1e;color:#e2e8f0;border:1px solid #334155;border-radius:4px;padding:6px 10px;font-family:monospace;font-size:11px">
-            📍 Twoja lokalizacja<br>
-            ${userLat.toFixed(2)}°N ${userLon.toFixed(2)}°E<br>
-            Wymagane Kp: ${Math.max(1, 10 - Math.abs(userLat) / 9).toFixed(0)}
+          `<div style="background:#0a0f1e;color:#e2e8f0;border:1px solid #334155;border-radius:4px;padding:6px 10px;font-family:monospace;font-size:11px;line-height:1.6">
+            Twoja lokalizacja<br>
+            ${userLat.toFixed(2)}&deg;N ${userLon.toFixed(2)}&deg;E<br>
+            Zorza widoczna od Kp&nbsp;<strong style="color:#ffdd00">${minKp.toFixed(0)}</strong>
           </div>`,
           { className: "aurora-popup" }
         )
         .addTo(layerGroup);
 
-      // Terminator (simplified day/night line)
+      // ── Terminator (day/night boundary)
       const now = new Date();
       const dayOfYear = Math.floor(
         (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
@@ -150,38 +176,21 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
       const utcHour = now.getUTCHours() + now.getUTCMinutes() / 60;
       const sunLon = -15 * (utcHour - 12);
       const terminatorPoints: [number, number][] = [];
-      for (let lon = -180; lon <= 180; lon += 5) {
+      for (let lon = -180; lon <= 180; lon += 3) {
         const relLon = lon - sunLon;
         const relLonRad = (relLon * Math.PI) / 180;
         const decRad = (sunDeclination * Math.PI) / 180;
-        const lat = (Math.atan(-Math.cos(relLonRad) / Math.tan(decRad)) * 180) / Math.PI;
-        terminatorPoints.push([lat, lon]);
+        const latVal = (Math.atan(-Math.cos(relLonRad) / Math.tan(decRad)) * 180) / Math.PI;
+        if (isFinite(latVal)) terminatorPoints.push([latVal, lon]);
       }
       if (terminatorPoints.length > 2) {
         L.polyline(terminatorPoints, {
           color: "#fbbf24",
           weight: 1,
-          opacity: 0.35,
-          dashArray: "3 5",
+          opacity: 0.3,
+          dashArray: "3 6",
         }).addTo(layerGroup);
       }
-
-      // Kp scale legend
-      const kpLines = [
-        { kp: 3, label: "Kp3", lat: getOvalLat(3) },
-        { kp: 5, label: "Kp5 G1", lat: getOvalLat(5) },
-        { kp: 7, label: "Kp7 G3", lat: getOvalLat(7) },
-      ];
-      kpLines.forEach(({ kp: k, label, lat }) => {
-        const col = getKpColorSimple(k);
-        L.marker([lat, 170], {
-          icon: L.divIcon({
-            html: `<span style="color:${col};font-family:monospace;font-size:9px;white-space:nowrap;text-shadow:0 0 4px #000">${label}</span>`,
-            className: "",
-            iconSize: [50, 12],
-          }),
-        }).addTo(layerGroup);
-      });
 
       layerGroup.addTo(map);
       ovalLayerRef.current = layerGroup;
@@ -189,7 +198,7 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
   }, [mapReady, kp, userLat, userLon]);
 
   return (
-    <div className="relative rounded-lg border border-slate-800 overflow-hidden" style={{ height: 320 }}>
+    <div className="relative rounded-lg border border-slate-800 overflow-hidden h-52 sm:h-64 lg:h-80">
       <div ref={mapRef} style={{ width: "100%", height: "100%", background: "#0a0f1e" }} />
       {!mapReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-900 text-slate-500 text-sm font-mono">
@@ -203,9 +212,3 @@ export default function AuroraMap({ kp, userLat, userLon }: AuroraMapProps) {
   );
 }
 
-function getKpColorSimple(kp: number): string {
-  if (kp >= 7) return "#ff4444";
-  if (kp >= 5) return "#ff8800";
-  if (kp >= 3) return "#44ff88";
-  return "#00aaff";
-}

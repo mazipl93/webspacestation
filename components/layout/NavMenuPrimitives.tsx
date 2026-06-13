@@ -161,6 +161,7 @@ export function NavMenuItem({
       href={link.href}
       role="menuitem"
       onClick={onSelect}
+      {...(link.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={cn(
         "nav-menu-item-enter group flex gap-3 rounded-xl border border-transparent px-2.5 transition-all duration-200",
         compact ? "py-2.5" : "py-3",
@@ -187,6 +188,11 @@ export function NavMenuItem({
           <span className="truncate text-[13px] font-semibold text-text-primary transition-colors group-hover:text-accent-cyan">
             {link.label}
           </span>
+          {link.newTab ? (
+            <span className="shrink-0 text-[10px] text-text-muted" aria-hidden>
+              ↗
+            </span>
+          ) : null}
         </span>
         {link.description && !compact ? (
           <span className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-text-muted">
@@ -251,6 +257,7 @@ export function NavMobileAccordion({
                   <Link
                     href={link.href}
                     onClick={onNavigate}
+                    {...(link.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     className={cn(
                       "nav-menu-item-enter flex min-h-[48px] items-center gap-3 rounded-xl px-2.5 py-2 transition-colors duration-200",
                       active
@@ -272,6 +279,11 @@ export function NavMobileAccordion({
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] font-semibold leading-snug">
                         {link.label}
+                        {link.newTab ? (
+                          <span className="ml-1 text-[11px] text-text-muted" aria-hidden>
+                            ↗
+                          </span>
+                        ) : null}
                       </span>
                     </span>
                     {active ? (

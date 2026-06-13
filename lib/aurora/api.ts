@@ -50,6 +50,17 @@ export interface SolarFlare {
   activeRegionNum: number | null;
 }
 
+export interface SolarRegion {
+  region: string;
+  latitude: number;
+  longitude: number;
+  mag_class: string;
+  num_spots: number;
+  area: number;
+  first_date: string;
+  last_date: string;
+}
+
 export interface SpaceWeatherData {
   kpCurrent: KpData[];
   kp24h: KpData[];

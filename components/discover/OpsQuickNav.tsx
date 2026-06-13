@@ -1,11 +1,18 @@
 import Link from "next/link";
-import { Calendar, Map, Rocket } from "lucide-react";
+import { Calendar, Map, Rocket, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const LINKS = [
   { href: "/starty", label: "Starty", icon: Rocket, color: "#38bdf8" },
   { href: "/kalendarz", label: "Terminy", icon: Calendar, color: "#2f6dff" },
   { href: "/mapa", label: "Mapa", icon: Map, color: "#a78bfa" },
+  {
+    href: "/zorza",
+    label: "Zorza",
+    icon: Sparkles,
+    color: "#44ff88",
+    newTab: true,
+  },
 ] as const;
 
 type Props = {
@@ -25,14 +32,34 @@ export default function OpsQuickNav({ className, layout = "grid", exclude }: Pro
       )}
       aria-label="Skróty Odkrywaj"
     >
-      {links.map(({ href, label, icon: Icon, color }) => (
-        <Link key={href} href={href} className="ops-quick-nav__link">
-          <span className="ops-quick-nav__icon" style={{ color }}>
-            <Icon size={16} aria-hidden />
-          </span>
-          <span>{label}</span>
-        </Link>
-      ))}
+      {links.map(({ href, label, icon: Icon, color, ...rest }) => {
+        const newTab = "newTab" in rest && rest.newTab;
+        const className = "ops-quick-nav__link";
+        const content = (
+          <>
+            <span className="ops-quick-nav__icon" style={{ color }}>
+              <Icon size={16} aria-hidden />
+            </span>
+            <span>{label}</span>
+          </>
+        );
+
+        return newTab ? (
+          <Link
+            key={href}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={className}
+          >
+            {content}
+          </Link>
+        ) : (
+          <Link key={href} href={href} className={className}>
+            {content}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

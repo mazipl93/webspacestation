@@ -10,6 +10,7 @@ import {
   Orbit,
   Play,
   Rocket,
+  Sparkles,
   Telescope,
 } from "lucide-react";
 import { CATEGORY_INFO, getCategoryInfo } from "@/lib/categories";
@@ -21,6 +22,8 @@ export type NavMenuLink = {
   accentKey?: string;
   description?: string;
   icon?: LucideIcon;
+  /** Otwórz w nowej karcie (np. pełnoekranowy terminal /zorza) */
+  newTab?: boolean;
 };
 
 /** Primary nav — SEO order: Misje → Astronomia → Popularnonaukowe → Technologie */
@@ -116,6 +119,14 @@ export const NAV_HUB_LINKS: NavMenuLink[] = [
 
 export const NAV_MORE_LINKS: NavMenuLink[] = [
   {
+    label: "Terminal zorzy polarnej",
+    href: "/zorza",
+    accentKey: "zorza",
+    description: "Kp, wiatr słoneczny i prognoza NOAA na żywo",
+    icon: Sparkles,
+    newTab: true,
+  },
+  {
     label: "Starty rakiet",
     href: "/starty",
     accentKey: "starty",
@@ -159,6 +170,7 @@ export function navLinkAccent(link: NavMenuLink): string {
     return getCategoryInfo(link.accentKey).color;
   }
   if (link.href === "/aktualnosci") return "#2f6dff";
+  if (link.accentKey === "zorza" || link.href === "/zorza") return "#44ff88";
   return MORE_ACCENT;
 }
 

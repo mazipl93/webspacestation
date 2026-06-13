@@ -61,11 +61,10 @@ export default function KpGauge({ kp, size = 180 }: KpGaugeProps) {
   const needleY = cy + needleLen * Math.sin(needleAngle);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full">
       <svg
-        width={size}
-        height={size * 0.62}
         viewBox={`0 0 ${size} ${size * 0.62}`}
+        style={{ width: "100%", maxWidth: size, height: "auto" }}
         className={isStormy ? "animate-pulse-slow" : ""}
       >
         {/* Background arc */}

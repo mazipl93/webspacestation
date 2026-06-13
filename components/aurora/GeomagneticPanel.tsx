@@ -88,14 +88,13 @@ function IndexChart({ data, color, label, referenceY, domain, height = 80 }: Ind
 interface GeomagneticPanelProps {
   kp3Day: KpData[];
   dst: GeomagneticIndex[];
-  ae: GeomagneticIndex[];
   symh: GeomagneticIndex[];
+  ae?: GeomagneticIndex[];
 }
 
 export default function GeomagneticPanel({
   kp3Day,
   dst,
-  ae,
   symh,
 }: GeomagneticPanelProps) {
   const kpChart = kp3Day.map((d) => ({ time: d.time, value: d.kp }));
@@ -168,27 +167,6 @@ export default function GeomagneticPanel({
         />
       </div>
 
-      {/* AE */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs font-bold tracking-widest text-slate-300 uppercase">AE index</span>
-          <span className="text-sm font-mono font-bold" style={{ color: "#fbbf24" }}>
-            {ae.length > 0 ? `${ae.at(-1)?.value?.toFixed(0)} nT` : "—"}
-          </span>
-        </div>
-        {ae.length > 0 ? (
-          <IndexChart
-            data={ae.map((d) => ({ time: d.time_tag, value: d.value }))}
-            color="#fbbf24"
-            label="AE [nT]"
-            height={60}
-          />
-        ) : (
-          <div className="text-[10px] text-slate-600 font-mono py-2 text-center">
-            Dane niedostepne w publicznym API NOAA
-          </div>
-        )}
-      </div>
     </div>
   );
 }

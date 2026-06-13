@@ -10,13 +10,14 @@ import SolarWindPanel from "./SolarWindPanel";
 import ForecastPanel from "./ForecastPanel";
 import SolarDataPanel from "./SolarDataPanel";
 import AuxPanel from "./AuxPanel";
+import SunspotRegionsPanel from "./SunspotRegionsPanel";
 import { ToastContainer, useToasts } from "./ToastSystem";
 import { getKpColor } from "@/lib/aurora/api";
 
 const AuroraMap = dynamic(() => import("./AuroraMap"), {
   ssr: false,
   loading: () => (
-    <div className="rounded-lg border border-slate-800 flex items-center justify-center text-slate-500 text-sm font-mono" style={{ height: 320 }}>
+    <div className="rounded-lg border border-slate-800 flex items-center justify-center text-slate-500 text-sm font-mono h-52 sm:h-64 lg:h-80">
       Ładowanie mapy…
     </div>
   ),
@@ -111,21 +112,21 @@ export default function AuroraTerminal() {
 
       {/* ── HEADER ── */}
       <header
-        className="sticky top-0 z-50 border-b border-slate-800/80 px-4 py-2"
+        className="sticky top-0 z-50 border-b border-slate-800/80 px-3 sm:px-4 py-2"
         style={{ background: "rgba(6,8,16,0.95)", backdropFilter: "blur(12px)" }}
       >
-        <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+        <div className="max-w-screen-2xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div
-              className="w-2 h-2 rounded-full"
+              className="w-2 h-2 rounded-full shrink-0"
               style={{
                 background: kpColor,
                 boxShadow: `0 0 8px ${kpColor}`,
                 animation: isStormy ? "pulse-slow 1s ease-in-out infinite" : "none",
               }}
             />
-            <span className="font-bold text-sm tracking-widest text-slate-100 uppercase">
+            <span className="font-bold text-xs sm:text-sm tracking-widest text-slate-100 uppercase whitespace-nowrap">
               Aurora Terminal
             </span>
             <span className="text-[10px] text-slate-600 hidden sm:inline">
@@ -134,74 +135,58 @@ export default function AuroraTerminal() {
           </div>
 
           {/* Status bar */}
-          <div className="flex items-center gap-4 text-[10px] font-mono flex-wrap">
-            <span>
-              <span className="text-slate-500">Kp:</span>{" "}
+          <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs font-mono min-w-0 overflow-hidden">
+            <span className="shrink-0">
+              <span className="text-slate-500">Kp </span>
               <span className="font-bold" style={{ color: kpColor }}>
                 {currentKp.toFixed(1)}
               </span>
             </span>
-            <span>
-              <span className="text-slate-500">Bz:</span>{" "}
+            <span className="shrink-0">
+              <span className="text-slate-500">Bz </span>
               <span
                 className="font-bold"
                 style={{ color: bz < 0 ? "#ff6600" : "#44ff88" }}
               >
-                {bz >= 0 ? "+" : ""}{bz.toFixed(1)} nT
+                {bz >= 0 ? "+" : ""}{bz.toFixed(1)}
               </span>
             </span>
-            <span>
-              <span className="text-slate-500">Wind:</span>{" "}
+            <span className="hidden sm:inline shrink-0">
+              <span className="text-slate-500">Wind </span>
               <span className="text-slate-300">
                 {latestWind?.speed.toFixed(0) ?? "—"} km/s
               </span>
             </span>
             {isStormy && (
               <span
-                className="px-2 py-0.5 rounded text-[9px] font-bold tracking-widest animate-pulse"
+                className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-widest animate-pulse shrink-0"
                 style={{
                   color: kpColor,
                   border: `1px solid ${kpColor}`,
                   background: `${kpColor}22`,
                 }}
               >
-                ⚡ STORM G{Math.min(5, Math.max(1, Math.floor(currentKp - 4)))}
+                G{Math.min(5, Math.max(1, Math.floor(currentKp - 4)))}
               </span>
             )}
-            <span className="text-slate-600 hidden md:inline">
-              Aktualizacja: {lastUpdateStr}
+            <span className="text-slate-600 hidden lg:inline shrink-0">
+              {lastUpdateStr}
             </span>
           </div>
 
           {/* Refresh */}
           <button
             onClick={refetch}
-            className="text-[10px] font-mono text-slate-500 hover:text-slate-300 border border-slate-700 hover:border-slate-500 px-2 py-1 rounded transition-colors"
+            className="text-[10px] font-mono text-slate-500 hover:text-slate-300 border border-slate-700 hover:border-slate-500 px-2 py-1 rounded transition-colors shrink-0"
+            aria-label="Odśwież dane"
           >
-            ↻ Odśwież
+            ↻ <span className="hidden sm:inline">Odśwież</span>
           </button>
         </div>
       </header>
 
-      {/* ── MOBILE TABS ── */}
-      <div className="lg:hidden flex border-b border-slate-800 text-[11px] font-mono">
-        {(["main", "charts", "solar"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2 capitalize transition-colors ${
-              activeTab === tab
-                ? "text-sky-400 border-b-2 border-sky-500"
-                : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            {tab === "main" ? "Główny" : tab === "charts" ? "Wykresy" : "Słońce"}
-          </button>
-        ))}
-      </div>
-
       {/* ── MAIN LAYOUT ── */}
-      <main className="max-w-screen-2xl mx-auto p-3 lg:p-4">
+      <main className="max-w-screen-2xl mx-auto p-2 sm:p-3 lg:p-4 pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] lg:pb-4">
         {state.loading ? (
           <div className="flex items-center justify-center h-64">
             <Spinner />
@@ -214,16 +199,18 @@ export default function AuroraTerminal() {
               className={`space-y-4 ${activeTab !== "main" ? "hidden lg:block" : ""}`}
             >
               {/* Kp Gauge */}
-              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 flex flex-col items-center">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 sm:p-4 flex flex-col items-center">
                 <div className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mb-2">
                   Planetarny Indeks Kp
                 </div>
-                <KpGauge kp={currentKp} size={220} />
+                <div className="w-full max-w-[200px] sm:max-w-none">
+                  <KpGauge kp={currentKp} size={220} />
+                </div>
 
                 {/* Mini stats */}
-                <div className="mt-3 w-full grid grid-cols-2 gap-2 text-[10px] font-mono">
+                <div className="mt-2 w-full grid grid-cols-2 gap-2 text-[11px] font-mono">
                   <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
-                    <div className="text-slate-500">Hp30</div>
+                    <div className="text-slate-500 text-[10px]">Hp30</div>
                     <div className="font-bold text-sky-300">
                       {state.kpCurrent.slice(-30).reduce((a, b) => a + b.kp, 0) / 30 > 0
                         ? (state.kpCurrent.slice(-30).reduce((a, b) => a + b.kp, 0) / 30).toFixed(1)
@@ -231,7 +218,7 @@ export default function AuroraTerminal() {
                     </div>
                   </div>
                   <div className="rounded border border-slate-700 bg-slate-800/40 p-2 text-center">
-                    <div className="text-slate-500">Hp60</div>
+                    <div className="text-slate-500 text-[10px]">Hp60</div>
                     <div className="font-bold text-violet-300">
                       {state.kpCurrent.slice(-60).reduce((a, b) => a + b.kp, 0) / 60 > 0
                         ? (state.kpCurrent.slice(-60).reduce((a, b) => a + b.kp, 0) / 60).toFixed(1)
@@ -263,7 +250,6 @@ export default function AuroraTerminal() {
                 <GeomagneticPanel
                   kp3Day={state.kp3Day}
                   dst={state.dst}
-                  ae={state.ae}
                   symh={state.symh}
                 />
               </div>
@@ -275,7 +261,6 @@ export default function AuroraTerminal() {
                 <GeomagneticPanel
                   kp3Day={state.kp3Day}
                   dst={state.dst}
-                  ae={state.ae}
                   symh={state.symh}
                 />
               </section>
@@ -284,6 +269,7 @@ export default function AuroraTerminal() {
             {/* Solar tab on mobile */}
             {activeTab === "solar" && (
               <section className="lg:hidden space-y-4">
+                <SunspotRegionsPanel regions={state.solarRegions} />
                 <SolarDataPanel
                   xrayFlux={state.xrayFlux}
                   solarFlares={state.solarFlares}
@@ -304,6 +290,7 @@ export default function AuroraTerminal() {
 
             {/* ── RIGHT SIDEBAR ── */}
             <aside className="hidden lg:flex flex-col gap-4">
+              <SunspotRegionsPanel regions={state.solarRegions} />
               <SolarDataPanel
                 xrayFlux={state.xrayFlux}
                 solarFlares={state.solarFlares}
@@ -323,23 +310,52 @@ export default function AuroraTerminal() {
           </div>
         )}
 
-        {/* ── BOTTOM CHARTS ROW (desktop only) ── */}
-        <div className="hidden lg:block mt-4">
-          <GeomagneticPanel
-            kp3Day={state.kp3Day}
-            dst={state.dst}
-            ae={state.ae}
-            symh={state.symh}
-          />
-        </div>
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-slate-800/50 px-4 py-3 text-[9px] text-slate-600 font-mono text-center">
+      <footer className="border-t border-slate-800/50 px-4 py-3 text-[9px] text-slate-600 font-mono text-center pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] lg:pb-3">
         Źródła danych: NOAA Space Weather Prediction Center (SWPC) · Open-Meteo Weather API ·
         Dane Kp, Solar Wind, X-ray: services.swpc.noaa.gov · Odświeżanie co 60s ·
         © Web Space Station
       </footer>
+
+      {/* ── MOBILE BOTTOM NAV (viewport-fixed, above map & content) ── */}
+      <nav
+        className="lg:hidden fixed inset-x-0 bottom-0 z-[1100] flex border-t border-slate-700 text-xs font-mono shadow-[0_-4px_24px_rgba(0,0,0,0.55)]"
+        style={{
+          background: "#060810",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+        aria-label="Nawigacja terminala"
+      >
+        {(["main", "charts", "solar"] as const).map((tab) => {
+          const icons: Record<string, string> = {
+            main: "◎",
+            charts: "≋",
+            solar: "☀",
+          };
+          const labels: Record<string, string> = {
+            main: "Kp / Wiatr",
+            charts: "Wykresy",
+            solar: "Słońce",
+          };
+          const active = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-colors border-t-2 ${
+                active
+                  ? "text-sky-400 border-sky-500"
+                  : "text-slate-500 border-transparent hover:text-slate-300"
+              }`}
+            >
+              <span className="text-base leading-none">{icons[tab]}</span>
+              <span className="text-[10px]">{labels[tab]}</span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
