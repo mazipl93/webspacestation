@@ -9,7 +9,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const metadata: Metadata = {
   title: "Harmonogram startów",
   description:
-    "Terminarz nadchodzących startów rakiet z Launch Library 2 — rzeczywiste daty NET, nie plan redakcyjny.",
+    "Terminarz nadchodzących startów rakiet z datami i odliczeniami na żywo.",
   alternates: { canonical: `${getSiteUrl()}/kalendarz` },
 };
 
@@ -22,7 +22,7 @@ export default async function KalendarzPage() {
     <DiscoverPageShell
       overline="Odkrywaj"
       title="Harmonogram startów"
-      description="Terminy nadchodzących startów rakiet z Launch Library (NET, UTC). Każdy wpis to konkretna rakieta i platforma startowa — bez wymyślonych misji redakcyjnych."
+      description="Terminy nadchodzących startów rakiet z odliczeniami i datami NET."
       accent="#2f6dff"
     >
       <OpsTimeline events={ops.calendar} variant="page" />

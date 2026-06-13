@@ -41,7 +41,6 @@ export const HOMEPAGE_V2_CATEGORY_SLUGS = [
   "iss",
   "ziemia-z-kosmosu",
   "technologie",
-  "rozrywka",
 ] as const;
 
 /** Popularne v2 — 4 kolumny na pełną szerokość shellu. */

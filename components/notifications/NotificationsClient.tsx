@@ -160,7 +160,7 @@ export default function NotificationsClient() {
         <div className="rounded-2xl border border-dashed border-hairline bg-glass/40 px-6 py-12 text-center">
           <p className="mx-auto max-w-[420px] text-[14px] leading-relaxed text-text-muted">
             {subscribedDepartments.length === 0
-              ? "Dodaj działy do ulubionych — na stronie każdego działu lub w profilu — aby dostawać powiadomienia o nowych artykułach. Starty rakiet zawsze trafiają do dzwonka po zalogowaniu."
+              ? "Dodaj działy do ulubionych (na stronie każdego działu lub w profilu), aby dostawać powiadomienia o nowych artykułach. Starty rakiet zawsze trafiają do dzwonka po zalogowaniu."
               : "Lista wyczyszczona lub brak alertów. Tu pojawią się starty z najbliższych 7 dni oraz nowe artykuły z obserwowanych działów."}
           </p>
           <Link

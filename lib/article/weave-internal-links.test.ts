@@ -176,31 +176,20 @@ describe("pickWeaveInternalLinkCandidates", () => {
     assert.ok(archive > recent);
   });
 
-  it("nauka article never weaves rozrywka even with tag overlap", () => {
+  it("nauka article picks same-category articles over other departments", () => {
     const source = {
       id: "proznia",
       slug: "dlaczego-w-kosmosie-jest-proznia",
       title: "Dlaczego w kosmosie jest próżnia",
       excerpt: "Fizyka próżni kosmicznej",
       category: "nauka" as const,
-      tags: ["kosmos", "fizyka", "proznia", "stellaris"],
+      tags: ["kosmos", "fizyka", "proznia"],
       publishedAt: "2026-06-05T10:00:00.000Z",
       createdAt: "2026-06-05T10:00:00.000Z",
       score: 7,
     };
     const pool = [
       source,
-      {
-        id: "stellaris",
-        slug: "stellaris-update-2026",
-        title: "Stellaris — wielka aktualizacja",
-        excerpt: "Gra 4X",
-        category: "rozrywka" as const,
-        tags: ["stellaris", "kosmos", "gra"],
-        publishedAt: "2026-06-04T10:00:00.000Z",
-        createdAt: "2026-06-04T10:00:00.000Z",
-        score: 9,
-      },
       {
         id: "grawitacja",
         slug: "jak-dziala-grawitacja",
@@ -237,10 +226,6 @@ describe("pickWeaveInternalLinkCandidates", () => {
     ];
     const picked = pickWeaveInternalLinkCandidates(source, pool, 4);
     assert.ok(picked.length > 0);
-    assert.ok(
-      picked.every((a) => a.category !== "rozrywka"),
-      `expected no rozrywka, got: ${picked.map((a) => a.slug).join(", ")}`
-    );
     assert.equal(picked[0]?.category, "nauka");
   });
 

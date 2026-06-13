@@ -24,7 +24,7 @@ export default function OpsPinList({
   if (ordered.length === 0) {
     return (
       <p className="text-[12px] text-text-tertiary">
-        Brak punktów do wyświetlenia — odśwież za chwilę.
+        Brak punktów do wyświetlenia. Odśwież za chwilę.
       </p>
     );
   }

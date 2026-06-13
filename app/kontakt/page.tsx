@@ -15,7 +15,7 @@ export default function ContactPage() {
     <LegalPageShell title="Kontakt">
       <p>
         Masz pytanie, zgłoszenie techniczne lub wniosek dotyczący danych osobowych?
-        Napisz do nas — odpowiadamy w miarę możliwości w dni robocze.
+        Napisz do nas. Odpowiadamy w miarę możliwości w dni robocze.
       </p>
 
       <div className="rounded-xl border border-hairline bg-glass px-5 py-4">
@@ -35,7 +35,7 @@ export default function ContactPage() {
       </h2>
       <ul className="space-y-2">
         <li>
-          Społeczność — linki w stopce serwisu (Discord, YouTube, X i inne).
+          Społeczność: linki w stopce serwisu (Discord, YouTube, X i inne).
         </li>
       </ul>
 

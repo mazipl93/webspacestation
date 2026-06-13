@@ -8,7 +8,6 @@ export const SEO_SITEMAP_PATHS = [
   "/technologie",
   "/iss",
   "/ziemia-z-kosmosu",
-  "/rozrywka",
   // Brand/agency hubs
   "/nasa",
   "/spacex",

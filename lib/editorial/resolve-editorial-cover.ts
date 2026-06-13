@@ -1,10 +1,6 @@
 import { EDITORIAL_COVER_NASA_ID } from "./editorial-cover-ids";
 import { editorialCoverForSlug } from "./nasa-cover";
 import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
-import {
-  isRozrywkaArticleSlug,
-  rozrywkaCoverForSlug,
-} from "./rozrywka";
 
 /**
  * Hosty / ścieżki, które faktycznie psują Next image optimizer
@@ -25,7 +21,7 @@ export function isEditorialCoverSlug(slug: string | undefined): slug is string {
 
 /**
  * NASA okładka tylko gdy brak coverImage w DB.
- * Jawna okładka z CMS/DB zawsze wygrywa (nawet hosts „broken” dla optimizera).
+ * Jawna okładka z CMS/DB zawsze wygrywa (nawet hosts „broken" dla optimizera).
  */
 export function resolveEditorialCoverImage(
   slug: string | undefined,
@@ -33,10 +29,6 @@ export function resolveEditorialCoverImage(
 ): string | null {
   const fromDb = normalizeCoverImageUrl(dbCover);
   if (fromDb) return fromDb;
-
-  if (isRozrywkaArticleSlug(slug)) {
-    return rozrywkaCoverForSlug(slug) ?? null;
-  }
 
   if (isEditorialCoverSlug(slug)) {
     return editorialCoverForSlug(slug);

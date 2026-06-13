@@ -6,8 +6,7 @@ export type NewsCategory =
   | "nauka"
   | "technologie"
   | "iss"
-  | "ziemia-z-kosmosu"
-  | "rozrywka";
+  | "ziemia-z-kosmosu";
 
 export interface NewsArticle {
   id: string;

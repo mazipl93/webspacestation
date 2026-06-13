@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+Age: 201
+Cache-Control: public, max-age=0, must-revalidate
+Content-Length: 345346
+Content-Type: text/html; charset=utf-8
+Date: Mon, 08 Jun 2026 18:00:42 GMT
+Etag: "hdoiez2qo17d78"
+Server: Vercel
+Strict-Transport-Security: max-age=63072000
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+X-Matched-Path: /aktualnosci
+X-Nextjs-Prerender: 1
+X-Nextjs-Stale-Time: 300
+X-Powered-By: Next.js
+X-Vercel-Cache: STALE
+X-Vercel-Id: arn1::iad1::lpzm7-1780941843783-8531d410e652
+

@@ -13,7 +13,20 @@ const FOOTER_NAV = {
     { label: "Technologie kosmiczne", href: "/technologie" },
     { label: "ISS i załogi", href: "/iss" },
     { label: "Ziemia z kosmosu", href: "/ziemia-z-kosmosu" },
-    { label: "Rozrywka", href: "/rozrywka" },
+  ],
+  Tematy: [
+    { label: "NASA", href: "/nasa" },
+    { label: "SpaceX", href: "/spacex" },
+    { label: "ESA", href: "/esa" },
+    { label: "James Webb (JWST)", href: "/jwst" },
+    { label: "Program Artemis", href: "/artemis" },
+    { label: "Mars", href: "/mars" },
+    { label: "Księżyc", href: "/ksiezyc" },
+    { label: "Stacja kosmiczna", href: "/stacja-kosmiczna" },
+    { label: "Czarne dziury", href: "/czarne-dziury" },
+    { label: "Egzoplanety", href: "/egzoplanety" },
+    { label: "Starlink", href: "/starlink" },
+    { label: "Blue Origin", href: "/blue-origin" },
   ],
   Odkrywaj: [
     { label: "Starty rakiet", href: "/starty" },
@@ -85,14 +98,14 @@ export default function Footer() {
                 </Link>
                 <p className="mt-4 text-[13px] leading-relaxed text-text-secondary">
                   Polski portal o kosmosie, astronomii i technologiach
-                  kosmicznych — newsy, misje i odkrycia.
+                  kosmicznych. Newsy, misje i odkrycia.
                 </p>
               </div>
 
               {/* Mapa linków — zwarte kolumny */}
               <div className="px-6 py-8 sm:px-8">
                 <nav aria-label="Nawigacja w stopce">
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 sm:gap-x-8">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 sm:gap-x-8">
                     {Object.entries(FOOTER_NAV).map(([title, links]) => (
                       <div key={title}>
                         <h4 className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-text-tertiary">

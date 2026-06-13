@@ -47,12 +47,6 @@ export const CATEGORY_INFO: Record<CategorySlug, CategoryInfo> = {
     href: "/ziemia-z-kosmosu",
     description: "Ziemia z orbity — pogoda, klimat i zjawiska naturalne.",
   },
-  rozrywka: {
-    label: "Rozrywka",
-    color: "#f472b6",
-    href: "/rozrywka",
-    description: "Sci-fi, gry, filmy i seriale o kosmosie.",
-  },
 };
 
 const FALLBACK: CategoryInfo = {
@@ -86,9 +80,6 @@ export const CATEGORY_FALLBACK_BG: Record<string, string> = {
   "ziemia-z-kosmosu": `
     radial-gradient(circle at 66% 44%, rgba(40,108,225,0.58) 0%, rgba(14,52,150,0.28) 32%, transparent 56%),
     linear-gradient(135deg, #04101f 0%, #061224 100%)`,
-  rozrywka: `
-    radial-gradient(ellipse at 55% 40%, rgba(244,114,182,0.42) 0%, transparent 52%),
-    linear-gradient(145deg, #120810 0%, #0a0610 100%)`,
 };
 
 export function categoryFallbackBg(slug: string): string {
@@ -179,8 +170,7 @@ export function sortCategoriesForEditor<
 export const CATEGORY_EDITOR_HINTS: Partial<Record<CategorySlug, string>> = {
   nauka:
     "Tylko evergreeny i przewodniki (fizyka, chemia, kosmos od podstaw). Bez newsów z 24h.",
-  misje: "Newsy i analizy misji — nie wrzucaj tu „Jak działa rakieta?” (to Nauka).",
-  rozrywka: "Sci-fi, gry i filmy z kosmosem — nie ogólny gaming off-topic.",
+  misje: "Newsy i analizy misji - nie wrzucaj tu 'Jak dziala rakieta?' (to Nauka).",
 };
 
 /** Menu / feed order — docs/WSS_CONTENT_ARCHITECTURE.md */
@@ -191,15 +181,13 @@ export const CATEGORY_SLUG_ORDER: readonly CategorySlug[] = [
   "technologie",
   "iss",
   "ziemia-z-kosmosu",
-  "rozrywka",
 ] as const;
 
-/** Homepage department rows (bez Nauki — ma osobną sekcję „Polecane z Nauki”). */
+/** Homepage department rows (bez Nauki — ma osobną sekcję „Polecane z Nauki"). */
 export const HOMEPAGE_DEPARTMENT_SLUGS: readonly CategorySlug[] = [
   "misje",
   "astronomia",
   "iss",
   "ziemia-z-kosmosu",
   "technologie",
-  "rozrywka",
 ] as const;

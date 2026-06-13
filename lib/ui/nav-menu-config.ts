@@ -3,7 +3,6 @@ import {
   BookOpen,
   Calendar,
   Cpu,
-  Gamepad2,
   Globe2,
   ImageIcon,
   Map,
@@ -63,7 +62,7 @@ export const NAV_PRIMARY_LINKS: NavMenuLink[] = [
   },
 ];
 
-/** Secondary categories — ISS, Ziemia, Rozrywka */
+/** Secondary categories — ISS, Ziemia z kosmosu */
 export const NAV_CATEGORY_LINKS: NavMenuLink[] = [
   {
     label: CATEGORY_INFO.iss.label,
@@ -79,12 +78,39 @@ export const NAV_CATEGORY_LINKS: NavMenuLink[] = [
     description: CATEGORY_INFO["ziemia-z-kosmosu"].description,
     icon: Globe2,
   },
+];
+
+/** Key topic hubs — shown in nav "Kategorie" dropdown and mobile categories */
+export const NAV_HUB_LINKS: NavMenuLink[] = [
   {
-    label: CATEGORY_INFO.rozrywka.label,
-    href: "/rozrywka",
-    accentKey: "rozrywka",
-    description: CATEGORY_INFO.rozrywka.description,
-    icon: Gamepad2,
+    label: "NASA",
+    href: "/nasa",
+    description: "Misje, programy i odkrycia NASA",
+    icon: Rocket,
+  },
+  {
+    label: "SpaceX",
+    href: "/spacex",
+    description: "Starship, Falcon 9 i Dragon",
+    icon: Rocket,
+  },
+  {
+    label: "James Webb (JWST)",
+    href: "/jwst",
+    description: "Obserwacje najdalszego Wszechswiata",
+    icon: Telescope,
+  },
+  {
+    label: "Mars",
+    href: "/mars",
+    description: "Laziki, misje i plany kolonizacji",
+    icon: Globe2,
+  },
+  {
+    label: "Księżyc",
+    href: "/ksiezyc",
+    description: "Artemis, misje lunarne i zasoby",
+    icon: Globe2,
   },
 ];
 
@@ -140,11 +166,13 @@ export function navLinkAccent(link: NavMenuLink): string {
 export const NAV_ALL_PUBLIC_LINKS: NavMenuLink[] = [
   ...NAV_PRIMARY_LINKS,
   ...NAV_CATEGORY_LINKS,
+  ...NAV_HUB_LINKS,
   ...NAV_MORE_LINKS,
 ];
 
 export const NAV_MOBILE_SECTIONS = [
   { id: "primary", label: "Artykuły", links: NAV_PRIMARY_LINKS, defaultOpen: true },
   { id: "categories", label: "Więcej działów", links: NAV_CATEGORY_LINKS, defaultOpen: false },
+  { id: "hubs", label: "Przewodniki", links: NAV_HUB_LINKS, defaultOpen: false },
   { id: "more", label: "Odkrywaj", links: NAV_MORE_LINKS, defaultOpen: false },
 ] as const;

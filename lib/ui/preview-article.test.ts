@@ -195,7 +195,7 @@ describe("resolveImage (editorial cover from DB)", () => {
     assert.ok(url?.includes("images-assets.nasa.gov"));
   });
 
-  it("uses DB cover for rozrywka slug when set in CMS", () => {
+  it("uses DB cover when coverImage is set in CMS", () => {
     assert.equal(
       resolveImage({
         coverImage: "https://cdn.example/state-of-play.jpg",

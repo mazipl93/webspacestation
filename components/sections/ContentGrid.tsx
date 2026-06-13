@@ -34,7 +34,6 @@ const CATEGORY_LAYOUT: Record<
   technologie: { variant: "hero-strip" },
   iss: { variant: "accent-bar" },
   "ziemia-z-kosmosu": { variant: "banner" },
-  rozrywka: { variant: "minimal" },
 };
 
 const CATEGORY_META = Object.fromEntries(

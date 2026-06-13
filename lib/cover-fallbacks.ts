@@ -27,12 +27,6 @@ const NASA_POOL: Record<string, string[]> = {
     nasaCoverUrl("PIA25501"),
   ],
   iss: [nasaCoverUrl("PIA25501"), nasaCoverUrl("PIA19807")],
-  rozrywka: [
-    nasaCoverUrl("carina_nebula"),
-    nasaCoverUrl("PIA24801"),
-    nasaCoverUrl("PIA04921"),
-    nasaCoverUrl("PIA23646"),
-  ],
 };
 
 const DEFAULT_POOL = [

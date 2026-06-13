@@ -1,0 +1,15 @@
+HTTP/1.1 404 Not Found
+Age: 0
+Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+Content-Type: text/html; charset=utf-8
+Date: Mon, 08 Jun 2026 18:04:57 GMT
+Link: </_next/static/media/0b78ff376f6b9734-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/723e11e5093b8e80.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/a33a3f3323a75998-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/bd9b9909c3a641ff-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/css/1d472304440d03b3.css>; rel=preload; as="style", </_next/static/css/314e40b55835c041.css>; rel=preload; as="style"
+Server: Vercel
+Strict-Transport-Security: max-age=63072000
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+X-Matched-Path: /aktualnosci/[slug]
+X-Powered-By: Next.js
+X-Vercel-Cache: MISS
+X-Vercel-Id: arn1::iad1::7jfs7-1780941895763-fed54f7cc1dd
+Transfer-Encoding: chunked
+

@@ -20,7 +20,7 @@ export default async function WideoPage() {
     <DiscoverPageShell
       overline="Odkrywaj"
       title="Wideo"
-      description="Archiwum wideo NASA (Image and Video Library) — materiały o startach, stacji orbitalnej i misjach."
+      description="Archiwum wideo NASA: materiały o startach, stacji orbitalnej i misjach."
       accent="#f472b6"
     >
       <VideoGrid items={ops.videos} />

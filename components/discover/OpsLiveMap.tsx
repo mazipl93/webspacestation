@@ -235,7 +235,7 @@ export default function OpsLiveMap({
         style={useFixedShell ? undefined : { height }}
       >
         <p className="max-w-[32ch] text-[13px] leading-relaxed text-text-tertiary">
-          Mapa za chwilę — czekamy na pozycję ISS i współrzędne platform startowych.
+          Mapa za chwilę. Czekamy na pozycję ISS i współrzędne platform startowych.
         </p>
       </div>
     );

@@ -20,7 +20,7 @@ export default function OpsTimeline({
   if (sorted.length === 0) {
     return (
       <p className="text-[13px] text-text-tertiary">
-        Brak zaplanowanych startów w feedzie Launch Library.
+        Brak zaplanowanych startów w harmonogramie.
       </p>
     );
   }
@@ -33,13 +33,6 @@ export default function OpsTimeline({
           : undefined
       }
     >
-      {!isPage && (
-        <p className="mb-3 text-[12px] leading-relaxed text-text-tertiary">
-          Każdy punkt to{" "}
-          <strong className="font-semibold text-text-secondary">rzeczywisty termin startu</strong>{" "}
-          (NET) z Launch Library — nie plan redakcyjny ani spekulacja.
-        </p>
-      )}
       <div
         className={cn(
           "flex items-start gap-6",

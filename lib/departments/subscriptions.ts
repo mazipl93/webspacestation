@@ -9,7 +9,6 @@ export const SUBSCRIBABLE_DEPARTMENT_SLUGS = [
   "technologie",
   "iss",
   "ziemia-z-kosmosu",
-  "rozrywka",
 ] as const satisfies readonly NewsCategory[];
 
 export type SubscribableDepartmentSlug =

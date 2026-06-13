@@ -10,7 +10,7 @@ export default function GalleryGrid({ items }: Props) {
   if (items.length === 0) {
     return (
       <p className="text-[14px] text-text-secondary">
-        Galeria tymczasowo niedostępna — sprawdź{" "}
+        Galeria tymczasowo niedostępna. Sprawdź{" "}
         <Link href="/astronomia" className="text-accent-cyan hover:underline">
           Astronomię
         </Link>

@@ -26,6 +26,7 @@ type Props = {
   wssArticle?: WssArticleLink | null;
   href?: string;
   className?: string;
+  hideLiveBadge?: boolean;
 };
 
 function countdownCaption(phase: OpsLaunch["phase"]): string {
@@ -44,6 +45,7 @@ export default function OpsLaunchShowcase({
   wssArticle,
   href = "/starty",
   className,
+  hideLiveBadge = false,
 }: Props) {
   const accent = providerAccent(launch.hue);
   const showImminent =
@@ -77,30 +79,39 @@ export default function OpsLaunchShowcase({
           style={{ background: `radial-gradient(circle at 80% 20%, ${accent}55 0%, transparent 55%)` }}
         />
 
-        <div className="ops-launch-showcase__top">
-          <div className="flex flex-wrap items-center gap-2">
-            {live ? (
-              <span className="ops-launch-showcase__live">
-                <span className="live-dot shrink-0" aria-hidden />
-                Na żywo
-              </span>
-            ) : (
-              <OpsPreviewBadge variant="stale" />
+        {(!hideLiveBadge || showImminent) && (
+          <div className="ops-launch-showcase__top">
+            {!hideLiveBadge && (
+              <div className="flex flex-wrap items-center gap-2">
+                {live ? (
+                  <span className="ops-launch-showcase__live">
+                    <span className="live-dot shrink-0" aria-hidden />
+                    Na żywo
+                  </span>
+                ) : (
+                  <OpsPreviewBadge variant="stale" />
+                )}
+                {launch.statusLabel ? (
+                  <span className="ops-launch-showcase__status">{launch.statusLabel}</span>
+                ) : null}
+              </div>
             )}
-            {launch.statusLabel ? (
-              <span className="ops-launch-showcase__status">{launch.statusLabel}</span>
+            {showImminent ? (
+              <span className="ops-launch-showcase__imminent">Start w ciągu 24 h</span>
             ) : null}
           </div>
-          {showImminent ? (
-            <span className="ops-launch-showcase__imminent">Start w ciągu 24 h</span>
-          ) : null}
-        </div>
+        )}
 
         <div className="ops-launch-showcase__body">
           <div className="min-w-0 flex-1">
-            <p className="ops-launch-showcase__provider" style={{ color: accent }}>
-              {launch.provider}
-            </p>
+            <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+              <p className="ops-launch-showcase__provider" style={{ color: accent }}>
+                {launch.provider}
+              </p>
+              {hideLiveBadge && launch.statusLabel ? (
+                <span className="ops-launch-showcase__status">{launch.statusLabel}</span>
+              ) : null}
+            </div>
             <p className="ops-launch-showcase__mission">{launch.mission}</p>
             <p className="ops-launch-showcase__meta">
               {[launch.rocketName, launch.windowLabel].filter(Boolean).join(" · ")}

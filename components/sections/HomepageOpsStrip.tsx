@@ -40,8 +40,13 @@ function HomepageOpsStripView({
     >
       <div className="ops-widget-shell">
         <header className="ops-widget-shell__header">
-          <span className="ops-widget-shell__kicker">Na żywo z kosmosu</span>
           <span className="ops-widget-shell__title">Centrum operacyjne</span>
+          {live && (
+            <span className="ops-widget-shell__live-pill">
+              <span className="live-dot shrink-0" aria-hidden />
+              Na żywo
+            </span>
+          )}
         </header>
 
         <div className="ops-widget-grid">
@@ -54,6 +59,7 @@ function HomepageOpsStripView({
               upNext={upNext ?? null}
               recentCompleted={recentLaunches[0] ?? null}
               wssArticle={wssArticle}
+              hideLiveBadge
             />
           ) : (
             <OpsLaunchFeedPaused />

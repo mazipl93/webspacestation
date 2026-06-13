@@ -13,7 +13,7 @@ const HUB: HubConfig = {
   description:
     "Artykuły o Teleskopie Hubble'a na Web Space Station: odkrycia, obserwacje, naprawa i historia legendarnego teleskopu NASA i ESA.",
   accent: "#a78bfa",
-  tags: ["Hubble"],
+  tags: ["Hubble", "Teleskop Hubble'a", "Kosmiczny Teleskop Hubble'a", "HST"],
   intro: [
     "Kosmiczny Teleskop Hubble'a to jeden z najważniejszych instrumentów naukowych w historii astronomii. Wyniesiony na orbitę w 1990 roku przez NASA i ESA, teleskop krąży na wysokości około 550 kilometrów nad Ziemią i rejestruje obrazy kosmosu z pominięciem zakłóceń atmosferycznych. Przez ponad trzy dekady dostarczył danych do tysięcy publikacji naukowych i zrewolucjonizował nasze rozumienie wszechświata.",
     "Hubble przyczynił się do wyznaczenia stałej Hubble'a, potwierdzenia istnienia czarnych dziur w centrach galaktyk oraz odkrycia, że ekspansja wszechświata przyspiesza. Jego ikonikcze zdjęcia: Filary Stworzenia, głębokie pola Hubble'a czy mgławica Orła, stały się symbolami naukowej eksploracji kosmosu i trafiły do masowej kultury popularnej.",

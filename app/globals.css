@@ -335,9 +335,10 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
 
 .ops-widget-shell__header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35rem 0.65rem;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 0.75rem;
   padding-inline: 0.1rem;
 }
@@ -352,14 +353,32 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #ff453a;
+  flex-shrink: 0;
 }
 
 .ops-widget-shell__title {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-text-secondary, #a0a8bc);
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+.ops-widget-shell__live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 69, 58, 0.35);
+  background: rgba(255, 69, 58, 0.12);
+  padding: 0.18rem 0.55rem;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 100, 90, 1);
+  flex-shrink: 0;
 }
 
 .ops-widget-grid {
@@ -701,18 +720,18 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
 
 .ops-launch-showcase__meta,
 .ops-launch-showcase__site {
-  margin-top: 0.25rem;
+  margin-top: 0.22rem;
   font-size: 11px;
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.72);
-}
-
-.ops-launch-showcase__site {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.55);
+}
+
+.ops-launch-showcase__site {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .ops-launch-showcase__countdown-wrap {

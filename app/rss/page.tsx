@@ -55,7 +55,7 @@ export default function RssIndexPage() {
               Jak subskrybować?
             </h2>
             <ol className="list-decimal space-y-2 pl-5 text-[14px] leading-relaxed text-text-secondary">
-              <li>Wybierz kanał — cały portal albo jeden dział (np. Misje).</li>
+              <li>Wybierz kanał: cały portal albo jeden dział (np. Misje).</li>
               <li>Skopiuj link subskrypcji i wklej go w czytniku jako „Dodaj subskrypcję”.</li>
               <li>Nowe artykuły pojawią się automatycznie w Twojej liście.</li>
             </ol>

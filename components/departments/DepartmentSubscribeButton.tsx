@@ -49,7 +49,7 @@ export default function DepartmentSubscribeButton({
         )}
       >
         <Bell size={16} style={{ color: accent }} />
-        Zaloguj się — powiadomienia z działu
+        Zaloguj się po powiadomienia z działu
       </Link>
     );
   }
@@ -91,14 +91,14 @@ export default function DepartmentSubscribeButton({
           <>
             <span className="text-text-primary">{meta.label}</span>
             <span className="mt-0.5 block text-[11px] font-medium text-text-muted">
-              W ulubionych — kliknij, aby usunąć
+              W ulubionych. Kliknij, aby usunąć
             </span>
           </>
         ) : (
           <>
             Dodaj
             <span className="mt-0.5 block text-[11px] font-medium text-text-muted">
-              {meta.label} — alerty o nowych artykułach
+              {meta.label}: alerty o nowych artykułach
             </span>
           </>
         )}

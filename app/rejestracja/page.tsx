@@ -52,7 +52,7 @@ export default async function RejestracjaPage({ searchParams }: Props) {
               Załóż konto
             </h1>
             <p className="mt-1.5 text-[13.5px] text-text-secondary">
-              Dołącz do społeczności Web Space Station — to darmowe.
+              Dołącz do społeczności Web Space Station. To darmowe.
             </p>
           </div>
 

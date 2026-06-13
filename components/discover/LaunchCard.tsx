@@ -118,7 +118,7 @@ export default function LaunchCard({ launch, variant = "compact", href, wssArtic
               rel="noopener noreferrer"
               className="mt-2 inline-block text-[10px] font-medium text-accent-cyan hover:underline"
             >
-              Szczegóły w Launch Library →
+              Szczegoly misji
             </a>
           )}
           {wssArticle ? (

@@ -4,7 +4,6 @@ export type HomepageSectionTheme =
   | "popular"
   | "nauka"
   | "technologie"
-  | "rozrywka"
   | "astronomia"
   | "misje"
   | "ziemia-z-kosmosu"
@@ -52,7 +51,6 @@ export function categorySectionTheme(
     technologie: "technologie",
     iss: "iss",
     "ziemia-z-kosmosu": "ziemia-z-kosmosu",
-    rozrywka: "rozrywka",
   };
 
   const accentAlt: Partial<Record<string, string>> = {
@@ -62,7 +60,6 @@ export function categorySectionTheme(
     technologie: "#2f6dff",
     iss: "#ff9500",
     "ziemia-z-kosmosu": "#4ade80",
-    rozrywka: "#fb7185",
   };
 
   return {

@@ -31,6 +31,7 @@ import {
   NAV_MOBILE_SECTIONS,
   NAV_MORE_LINKS,
   NAV_PRIMARY_LINKS,
+  NAV_HUB_LINKS,
   navLinkAccent,
 } from "@/lib/ui/nav-menu-config";
 import {
@@ -75,6 +76,7 @@ export default function Navbar() {
   const [mobileShown, setMobileShown] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({
     categories: false,
+    hubs: false,
     more: false,
   });
   const mobileCloseTimer = useRef<number | null>(null);
@@ -317,7 +319,10 @@ export default function Navbar() {
                   setMoreOpen(false);
                 }}
                 onClose={() => setCategoriesOpen(false)}
-                active={NAV_CATEGORY_LINKS.some((l) => isActive(l.href))}
+                active={
+                  NAV_CATEGORY_LINKS.some((l) => isActive(l.href)) ||
+                  NAV_HUB_LINKS.some((l) => isActive(l.href))
+                }
                 panelWidth="w-[min(100vw-2rem,19rem)]"
               >
                 <NavMenuSectionLabel>Działy tematyczne</NavMenuSectionLabel>
@@ -326,6 +331,15 @@ export default function Navbar() {
                     key={link.href}
                     link={link}
                     index={i}
+                    onSelect={() => setCategoriesOpen(false)}
+                  />
+                ))}
+                <NavMenuSectionLabel>Przewodniki</NavMenuSectionLabel>
+                {NAV_HUB_LINKS.map((link, i) => (
+                  <NavMenuItem
+                    key={link.href}
+                    link={link}
+                    index={NAV_CATEGORY_LINKS.length + i}
                     onSelect={() => setCategoriesOpen(false)}
                   />
                 ))}

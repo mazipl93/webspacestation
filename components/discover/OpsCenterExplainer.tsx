@@ -5,14 +5,14 @@ const ITEMS = [
   {
     icon: Rocket,
     title: "Starty rakiet",
-    text: "Kiedy i skąd wystartuje następna rakieta — dane z Launch Library.",
+    text: "Kiedy i skąd wystartuje następna rakieta z odliczeniem na żywo.",
     href: "/starty",
     color: "#38bdf8",
   },
   {
     icon: Satellite,
     title: "Stacja ISS",
-    text: "Gdzie nad Ziemią leci ISS w tej chwili — aktualizacja co kilka minut.",
+    text: "Gdzie nad Ziemią leci ISS w tej chwili, aktualizacja co kilka minut.",
     href: "/mapa",
     color: "#38bdf8",
   },

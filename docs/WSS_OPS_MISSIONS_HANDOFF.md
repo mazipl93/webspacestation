@@ -299,16 +299,65 @@ Wszystkie 10 zaplanowanych hubów dodane i zdeployowane:
 
 **Commit:** `68cbc07` (fix lint) na `main` — prod deploy OK.
 
-### Do zrobienia (kolejna sesja)
+### Sesja 13.06.2026 (noc, czesc 3) — co zrobiono
 
-**SEO / huby:**
-- Audit tagów — sprawdzić które huby mają 0 artykułów i dopasować tagi (np. `/hubble` może nie matchować bo artykuły mają inny tag)
-- Huby w nawigacji / footerze (widoczność)
-- Widget "Powiązane huby" na stronie artykułu (pod treścią)
+**1. Audit tagow — DONE**
+- Sprawdzono wszystkie 14 hubow vs rzeczywiste tagi w DB
+- Jedyny problem: `/hubble` = 0 artykulow (tag "Hubble" nie istnieje w DB)
+- Fix: rozszerzono `tags` w `app/hubble/page.tsx` o polskie warianty: `["Hubble", "Teleskop Hubble'a", "Kosmiczny Teleskop Hubble'a", "HST"]`
+- Pozostale huby OK: NASA (12), ESA (6), SpaceX (4), JWST (4), Artemis (4), Blue Origin+New Glenn (~6), Ksiezyc (3), ISS (~3), czarne dziury (~5), egzoplanety (2), Mars (2), Starlink (1), ciemna materia (1)
+
+**2. Widget "Powiazane huby" — DONE**
+- `lib/article/related-hubs.ts` (NOWY) — `HubRef` type + `HUB_MATCH_RULES[]` + `getRelatedHubs(articleTags, max)` — zwraca do 3 hubow matchujacych tagi artyku­lu
+- `components/article/RelatedHubsWidget.tsx` (NOWY) — kafelki 1/3 kol, accent kolor tytulu, tagline, chevron on hover
+- `app/aktualnosci/[slug]/page.tsx` — `<RelatedHubsWidget tags={article.tags ?? []} />` miedzy ReturnBand a ReadNextSection
+- Widget ukryty gdy 0 matchow
+
+**3. Huby w nawigacji i footerze — DONE**
+- `components/layout/Footer.tsx` — nowa kolumna "Tematy" z 12 hubami (NASA, SpaceX, ESA, JWST, Artemis, Mars, Ksiezyc, Stacja kosmiczna, Czarne dziury, Egzoplanety, Starlink, Blue Origin); grid rozszerzony do `sm:grid-cols-4`
+- `lib/ui/nav-menu-config.ts` — `NAV_HUB_LINKS[]` (5 kluczowych hubow: NASA, SpaceX, JWST, Mars, Ksiezyc) + dodane do `NAV_MOBILE_SECTIONS` jako sekcja "Przewodniki" + do `NAV_ALL_PUBLIC_LINKS`
+- `components/layout/Navbar.tsx` — dropdown "Kategorie" ma nowa sekcje "Przewodniki" z `NAV_HUB_LINKS`; mobile: nowy accordion "Przewodniki" (id: "hubs")
+
+### Do zrobienia (kolejna sesja)
 
 **Centrum operacyjne:**
 - Krok 10: Playbook FB przed startem (proces, nie kod)
-- `npm run ops:briefs` na prod (briefy przez nową ścieżkę web search)
+- `npm run ops:briefs` na prod (briefy przez nowa sciezke web search)
+
+**SEO / huby:**
+- Dodac artykuly z tagiem "Hubble" / "Teleskop Hubble'a" — hub `/hubble` ma 0 artykulow
+- Rozwazyc: Teleskop Hubble'a + Spitzer jako osobny evergreen w dziale Nauka
+
+### Sesja 13.06.2026 (noc, czesc 4) — Likwidacja dzialu Rozrywka — DONE
+
+Podjeta decyzja: Rozrywka zaburzala topical authority portalu (gaming bez sci-fi/kosmosu).
+
+**DB (prod, juz usuniete):**
+- 8 artykulow usunieto (Gothic, EVE Frontier, Star Citizen, Stellaris, X4, Star Fox, No Man's Sky, PlayStation SoP)
+- Kategoria `rozrywka` usunieta z tabeli `categories`
+
+**Kod — zmiany we wszystkich plikach produkcyjnych:**
+- `app/rozrywka/page.tsx` — usuniety
+- `lib/editorial/rozrywka.ts` — usuniety
+- `types/index.ts` — usuniete `| "rozrywka"` z `NewsCategory`
+- `lib/categories.ts` — usuniete z CATEGORY_INFO, CATEGORY_FALLBACK_BG, EDITOR_HINTS, SLUG_ORDER, HOMEPAGE_DEPARTMENT_SLUGS
+- `lib/departments/subscriptions.ts` — usuniete z SUBSCRIBABLE_DEPARTMENT_SLUGS
+- `lib/ui/nav-menu-config.ts` — usuniete z NAV_CATEGORY_LINKS, import Gamepad2
+- `components/layout/Footer.tsx` — usuniete z sekcji Nawigacja
+- `lib/seo/public-routes.ts` — usuniete `/rozrywka` z sitemapki
+- `lib/cover-fallbacks.ts` — usuniety pool okładek rozrywki
+- `lib/home/homepage-section-themes.ts` — usuniete z HomepageSectionTheme + themeMap
+- `lib/site-layout.ts` — usuniete z HOMEPAGE_V2_CATEGORY_SLUGS
+- `components/sections/ContentGrid.tsx` — usuniete z SECTION_LAYOUTS
+- `app/aktualnosci/[slug]/page.tsx` — usuniete z CATEGORY_META + CATEGORY_FALLBACK
+- `lib/ui/article-preview-meta.ts` — usuniete z PREVIEW_CATEGORY_META + PREVIEW_CATEGORY_FALLBACK
+- `lib/article/weave-category-rules.ts` — usuniete reguly deny/fallback dla rozrywki
+- `lib/editorial/resolve-editorial-cover.ts` — usuniety import + logika rozrywka
+- 3 pliki testow — zaktualizowane
+
+**Nic niezcommitowane — user pushuje sam.**
+
+**Aktywne dzialy po likwidacji:** Misje, Astronomia, Nauka, Technologie, ISS, Ziemia z kosmosu
 
 ---
 

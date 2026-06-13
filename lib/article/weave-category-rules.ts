@@ -1,7 +1,7 @@
 import type { NewsCategory } from "@/types";
 
 /**
- * Weave (in-body „polecamy lekturę”) — reguły per dział.
+ * Weave (in-body „polecamy lekturę") — reguły per dział.
  * Fundament: docs/WSS_CONTENT_ARCHITECTURE.md
  *
  * Zasada: linki w treści artykułu — wyłącznie ten sam dział (hub SEO).
@@ -9,14 +9,7 @@ import type { NewsCategory } from "@/types";
  */
 export const WEAVE_DENIED_TARGETS: Partial<
   Record<NewsCategory, readonly NewsCategory[]>
-> = {
-  nauka: ["rozrywka"],
-  misje: ["rozrywka"],
-  astronomia: ["rozrywka"],
-  technologie: ["rozrywka"],
-  iss: ["rozrywka"],
-  "ziemia-z-kosmosu": ["rozrywka"],
-};
+> = {};
 
 /**
  * Kolejność fallbacku gdy brak artykułów w tym samym dziale
@@ -37,7 +30,6 @@ export const WEAVE_FALLBACK_ORDER: Partial<
     "technologie",
     "nauka",
   ],
-  rozrywka: ["rozrywka", "technologie", "nauka", "astronomia"],
 };
 
 /** Warstwy wyboru: [ten sam dział], potem każdy fallback osobno. */

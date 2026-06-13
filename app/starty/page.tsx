@@ -15,7 +15,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const metadata: Metadata = {
   title: "Starty rakiet",
   description:
-    "Harmonogram nadchodzących startów rakiet — dane Launch Library 2, odliczenia na żywo.",
+    "Harmonogram nadchodzących startów rakiet z odliczeniami na żywo.",
   alternates: { canonical: `${getSiteUrl()}/starty` },
 };
 
@@ -25,7 +25,7 @@ const DISCOVER_LINKS = [
   {
     href: "/kalendarz",
     label: "Harmonogram startów",
-    description: "Terminy NET z Launch Library",
+    description: "Terminy startów i odliczenia na żywo",
     icon: Calendar,
   },
   {
@@ -45,7 +45,7 @@ export default async function StartyPage() {
     <DiscoverPageShell
       overline="Odkrywaj"
       title="Starty rakiet"
-      description="Nadchodzące starty z Launch Library 2 — operator, okno NET (UTC) i odliczenie aktualizowane co sekundę w przeglądarce."
+      description="Harmonogram nadchodzących startów rakiet z odliczeniami na żywo."
       accent="#38bdf8"
     >
       <section aria-labelledby="launches-heading">
@@ -56,9 +56,6 @@ export default async function StartyPage() {
           >
             Nadchodzące starty
           </h2>
-          <p className="text-[11px] text-text-muted">
-            {ops.launches.length} pozycji · cache 5 min
-          </p>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ops.launches.length === 0 ? (

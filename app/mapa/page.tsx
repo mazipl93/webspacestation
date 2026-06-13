@@ -9,7 +9,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export const metadata: Metadata = {
   title: "Mapa startów i ISS",
   description:
-    "Gdzie dziś leci Międzynarodowa Stacja Kosmiczna i skąd startują nadchodzące rakiety — mapa Ziemi z danymi Launch Library i trackera ISS.",
+    "Gdzie dziś leci Międzynarodowa Stacja Kosmiczna i skąd startują nadchodzące rakiety - mapa Ziemi z pozycją ISS i platformami startowymi.",
   alternates: { canonical: `${getSiteUrl()}/mapa` },
 };
 
@@ -22,7 +22,7 @@ export default async function MapaPage() {
     <DiscoverPageShell
       overline="Odkrywaj"
       title="Mapa startów i ISS"
-      description="Satelitarna mapa Ziemi: orbita ISS (czerwona linia), pozycja stacji na żywo i platformy startowe nadchodzących rakiet — współrzędne z Launch Library i trackera ISS."
+      description="Orbita ISS i pozycja stacji na żywo oraz platformy startowe nadchodzących rakiet."
       accent="#a78bfa"
     >
       <div className="ops-mapa-page min-w-0 w-full max-w-full overflow-hidden">

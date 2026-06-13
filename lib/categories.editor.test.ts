@@ -37,8 +37,7 @@ describe("prepareCategoriesForEditor", () => {
       { id: "4", slug: "astronomia", name: "Astronomia", orderIndex: 1 },
       { id: "5", slug: "technologie", name: "Technologie", orderIndex: 3 },
       { id: "6", slug: "ziemia-z-kosmosu", name: "Ziemia", orderIndex: 5 },
-      { id: "7", slug: "rozrywka", name: "Rozrywka", orderIndex: 6 },
-      { id: "8", slug: "ai", name: "AI", orderIndex: 99 },
+      { id: "7", slug: "ai", name: "AI", orderIndex: 99 },
     ] as const);
 
     assert.deepEqual(
@@ -50,7 +49,6 @@ describe("prepareCategoriesForEditor", () => {
         "technologie",
         "iss",
         "ziemia-z-kosmosu",
-        "rozrywka",
       ]
     );
     assert.equal(rows.find((r) => r.slug === "nauka")?.name, "Nauka");

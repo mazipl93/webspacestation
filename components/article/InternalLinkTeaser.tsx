@@ -44,7 +44,7 @@ export default function InternalLinkTeaser({
       {hint ? (
         <>
           {" "}
-          <span className="text-text-muted">— {hint}</span>
+          <span className="text-text-muted">{hint}</span>
         </>
       ) : null}
       .

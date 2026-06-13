@@ -11,7 +11,7 @@ export default function VideoGrid({ items }: Props) {
   if (items.length === 0) {
     return (
       <p className="text-[14px] text-text-secondary">
-        Brak materiałów wideo z NASA — spróbuj później.
+        Brak materiałów wideo. Spróbuj później.
       </p>
     );
   }
