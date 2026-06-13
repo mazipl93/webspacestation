@@ -13,7 +13,7 @@ import { getPageOgImageForPath } from "@/lib/seo/site-og";
 import { SITE_HOME_TITLE } from "@/lib/seo/site-title";
 
 const HOME_DESCRIPTION =
-  "Aktualności kosmiczne, ISS tracker na żywo, terminal zorzy polarnej (indeks Kp) i harmonogram startów rakiet. Web Space Station.";
+  "Portal informacyjny o kosmosie: wiadomości, analizy i wiedza o misjach, astronomii i nauce. ISS, zorza polarna i starty rakiet na żywo.";
 const homeOg = getPageOgImageForPath("/");
 
 export const metadata: Metadata = {

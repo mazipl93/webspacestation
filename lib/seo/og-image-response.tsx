@@ -26,6 +26,7 @@ export function buildOgImageResponse(
     (
       <div
         style={{
+          display: "flex",
           width: DEFAULT_OG_IMAGE_WIDTH,
           height: DEFAULT_OG_IMAGE_HEIGHT,
           position: "relative",

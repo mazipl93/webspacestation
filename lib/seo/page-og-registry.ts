@@ -30,9 +30,10 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
   home: {
     id: "home",
     path: "/",
-    headline: "Aktualności kosmiczne na żywo",
-    subtitle: "ISS tracker · zorza polarna · starty rakiet · Centrum operacyjne",
-    alt: "Web Space Station, portal o kosmosie z ISS trackerem, terminalem zorzy i harmonogramem startów",
+    headline: "Portal informacyjny o kosmosie",
+    subtitle:
+      "Wiadomości, analizy i wiedza · misje · astronomia · nauka · narzędzia na żywo",
+    alt: "Web Space Station, portal informacyjny o kosmosie: aktualności, artykuły i narzędzia live",
     accent: "#38bdf8",
     backgroundImage: "/og/home-cover.jpg",
     keywords: [
