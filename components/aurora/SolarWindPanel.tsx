@@ -97,6 +97,19 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
     }
   };
 
+  // Y-axis must always include 0 — otherwise ReferenceLine y=0 disappears when
+  // all Bz values are on one side of zero (common during northward IMF).
+  const yDomain = (() => {
+    const vals = chartData
+      .flatMap((d) => [d.bz, d.bt])
+      .filter((v): v is number => v != null && !Number.isNaN(v));
+    if (vals.length === 0) return [-5, 5] as [number, number];
+    const min = Math.min(...vals, 0);
+    const max = Math.max(...vals, 0);
+    const pad = Math.max(0.5, (max - min) * 0.1);
+    return [min - pad, max + pad] as [number, number];
+  })();
+
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 space-y-4">
       {/* Header */}
@@ -224,6 +237,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
               interval="preserveStartEnd"
             />
             <YAxis
+              domain={yDomain}
               tick={{ fontSize: 8, fill: "#64748b", fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
@@ -240,26 +254,6 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
               }}
               labelFormatter={(t: unknown) => fmt(String(t ?? ""))}
             />
-
-            {/* Bz = 0 baseline */}
-            <ReferenceLine y={0} stroke="#334155" strokeWidth={1.5} />
-
-            {/* Earth marker — the measurement currently arriving at Earth */}
-            {earthKey && (
-              <ReferenceLine
-                x={earthKey}
-                stroke="#fbbf24"
-                strokeWidth={2}
-                strokeDasharray="5 3"
-                label={{
-                  value: earthUTC ? `Ziemia ${earthUTC}` : "Ziemia",
-                  position: "insideTopLeft",
-                  fill: "#fbbf24",
-                  fontSize: 8,
-                  fontFamily: "monospace",
-                }}
-              />
-            )}
 
             <Line
               type="monotone"
@@ -282,6 +276,32 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
               name="Bt"
               strokeDasharray="4 2"
             />
+
+            {/* Bz = 0 baseline — after lines so it stays visible on top */}
+            <ReferenceLine
+              y={0}
+              stroke="#64748b"
+              strokeWidth={1.5}
+              strokeDasharray="4 3"
+              ifOverflow="extendDomain"
+            />
+
+            {/* Earth marker — the measurement currently arriving at Earth */}
+            {earthKey && (
+              <ReferenceLine
+                x={earthKey}
+                stroke="#fbbf24"
+                strokeWidth={2}
+                strokeDasharray="5 3"
+                label={{
+                  value: earthUTC ? `Ziemia ${earthUTC}` : "Ziemia",
+                  position: "insideTopLeft",
+                  fill: "#fbbf24",
+                  fontSize: 8,
+                  fontFamily: "monospace",
+                }}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
 
