@@ -17,6 +17,7 @@ import Navbar from "@/components/layout/Navbar";
 import { buildArticleJsonLd } from "@/lib/seo/json-ld";
 import { SEO_NOINDEX } from "@/lib/seo/metadata";
 import { getSiteUrl } from "@/lib/site-url";
+import { sanitizeSeoTitle } from "@/lib/seo/site-title";
 import Footer from "@/components/layout/Footer";
 import StickyArticleBar from "@/components/article/StickyArticleBar";
 import ArticleInteractions from "@/components/article/ArticleInteractions";
@@ -102,13 +103,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const article = resolved.article;
   const canonical = `${getSiteUrl()}/aktualnosci/${article.slug}`;
+  const ogTitle = sanitizeSeoTitle(article.title);
   return {
-    title: article.title,
+    title: ogTitle,
     description: article.excerpt,
     alternates: { canonical },
     openGraph: {
       url: canonical,
-      title: article.title,
+      title: ogTitle,
       description: article.excerpt,
       images: [{ url: article.image, width: 1280, height: 720 }],
       type: "article",
@@ -116,7 +118,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: article.title,
+      title: ogTitle,
       description: article.excerpt,
       images: [article.image],
     },

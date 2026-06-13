@@ -4,9 +4,17 @@ export const SITE_TITLE_SEP = " · ";
 export const SITE_NAME = "Web Space Station";
 export const SITE_SHORT_NAME = "WSS";
 
+/** Em/en dash → środkowa kropka (reguła copy SEO / OG). */
+export function sanitizeSeoTitle(text: string): string {
+  return text
+    .replace(/\s*[—–]\s*/g, SITE_TITLE_SEP)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Podstrona · serwis (np. „Misje · Web Space Station”). */
 export function formatPageTitle(page: string, site = SITE_NAME): string {
-  return `${page}${SITE_TITLE_SEP}${site}`;
+  return `${sanitizeSeoTitle(page)}${SITE_TITLE_SEP}${site}`;
 }
 
 /** Serwis · podtytuł (np. homepage / default w layout). */

@@ -36,7 +36,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const page = parseListingPage((await searchParams).strona);
   const label = formatTagLabel(slug);
   return buildListingPageMetadata({
-    title: `#${label} — artykuły`,
+    title: `#${label} · artykuły`,
     description: `Artykuły i newsy kosmiczne oznaczone tagiem "${label}" w serwisie Web Space Station.`,
     path: `/tag/${slug}`,
     page,

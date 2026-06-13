@@ -53,7 +53,7 @@ export async function buildHubMetadata(
 ): Promise<Metadata> {
   const page = parseListingPage((await searchParams).strona);
   return buildListingPageMetadata({
-    title: `${config.title} — misje, starty i odkrycia`,
+    title: `${config.title} · misje, starty i odkrycia`,
     description: config.description,
     path: `/${config.slug}`,
     page,

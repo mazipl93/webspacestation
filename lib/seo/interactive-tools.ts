@@ -28,8 +28,8 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
   "iss-tracker": {
     id: "iss-tracker",
     path: "/mapa",
-    title: "ISS tracker na żywo — gdzie jest stacja kosmiczna",
-    headline: "ISS tracker na żywo — mapa pozycji stacji i startów",
+    title: "ISS tracker na żywo · gdzie jest stacja kosmiczna",
+    headline: "ISS tracker na żywo · mapa pozycji stacji i startów",
     description:
       "Śledź Międzynarodową Stację Kosmiczną na żywo: pozycja ISS na mapie, orbita, prędkość, wysokość i platformy startowe nadchodzących rakiet.",
     longDescription:
@@ -72,15 +72,15 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       },
     ],
     relatedToolIds: ["rocket-launches", "aurora-terminal", "launch-calendar"],
-    ogImageAlt: "ISS tracker na żywo — mapa pozycji Międzynarodowej Stacji Kosmicznej",
+    ogImageAlt: "ISS tracker na żywo · mapa pozycji Międzynarodowej Stacji Kosmicznej",
     sitemapPriority: 0.95,
     sitemapChangeFrequency: "hourly",
   },
   "aurora-terminal": {
     id: "aurora-terminal",
     path: "/zorza",
-    title: "Zorza polarna na żywo — indeks Kp i prognoza",
-    headline: "Terminal zorzy polarnej — space weather na żywo",
+    title: "Zorza polarna na żywo · indeks Kp i prognoza",
+    headline: "Terminal zorzy polarnej · space weather na żywo",
     description:
       "Monitoruj zorzę polarną na żywo: indeks geomagnetyczny Kp, wiatr słoneczny Bz, prognoza burz i mapa widoczności zorzy w Polsce i na świecie — dane NOAA.",
     longDescription:
@@ -125,14 +125,14 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       },
     ],
     relatedToolIds: ["iss-tracker", "rocket-launches"],
-    ogImageAlt: "Terminal zorzy polarnej — indeks Kp i prognoza aurora na żywo",
+    ogImageAlt: "Terminal zorzy polarnej · indeks Kp i prognoza aurora na żywo",
     sitemapPriority: 0.95,
     sitemapChangeFrequency: "hourly",
   },
   "rocket-launches": {
     id: "rocket-launches",
     path: "/starty",
-    title: "Starty rakiet — harmonogram i odliczanie na żywo",
+    title: "Starty rakiet · harmonogram i odliczanie na żywo",
     headline: "Starty rakiet na żywo",
     description:
       "Harmonogram nadchodzących startów rakiet: SpaceX, NASA, ESA i inne — daty NET, okna startowe, odliczanie na żywo i kontekst każdej misji.",
@@ -175,14 +175,14 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       },
     ],
     relatedToolIds: ["iss-tracker", "launch-calendar", "aurora-terminal"],
-    ogImageAlt: "Starty rakiet — harmonogram i odliczanie na żywo",
+    ogImageAlt: "Starty rakiet · harmonogram i odliczanie na żywo",
     sitemapPriority: 0.92,
     sitemapChangeFrequency: "hourly",
   },
   "launch-calendar": {
     id: "launch-calendar",
     path: "/kalendarz",
-    title: "Harmonogram startów rakiet — terminy i odliczanie",
+    title: "Harmonogram startów rakiet · terminy i odliczanie",
     headline: "Harmonogram startów rakiet",
     description:
       "Kalendarz startów rakiet z terminami NET, oknami startowymi i odliczaniem — przejrzysta oś czasu nadchodzących misji kosmicznych.",
@@ -210,7 +210,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       },
     ],
     relatedToolIds: ["rocket-launches", "iss-tracker"],
-    ogImageAlt: "Harmonogram startów rakiet — kalendarz misji",
+    ogImageAlt: "Harmonogram startów rakiet · kalendarz misji",
     sitemapPriority: 0.9,
     sitemapChangeFrequency: "hourly",
   },

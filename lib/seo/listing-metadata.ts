@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getPageKeywords, resolvePageOgImage } from "@/lib/seo/page-og-registry";
 import { getSiteUrl } from "@/lib/site-url";
-import { formatPageTitle } from "@/lib/seo/site-title";
+import { formatPageTitle, sanitizeSeoTitle } from "@/lib/seo/site-title";
 
 /** Metadata for indexable listing pages (departments, /aktualnosci, hubs). */
 export function buildListingPageMetadata({
@@ -20,7 +20,10 @@ export function buildListingPageMetadata({
   const pagePath = page > 1 ? `${path}?strona=${page}` : path;
   const canonical = `${getSiteUrl()}${pagePath === "/" ? "" : pagePath}`;
   const og = resolvePageOgImage(path);
-  const displayTitle = page > 1 ? `${title} — strona ${page}` : title;
+  const displayTitle =
+    page > 1
+      ? `${sanitizeSeoTitle(title)} · strona ${page}`
+      : sanitizeSeoTitle(title);
   const pageTitle = formatPageTitle(displayTitle);
   const resolvedKeywords = keywords ?? getPageKeywords(path);
 
