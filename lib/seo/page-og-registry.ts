@@ -410,7 +410,7 @@ export function getOgPageByPath(path: string): OgPageEntry | undefined {
   return id ? OG_PAGE_REGISTRY[id] : undefined;
 }
 
-/** Absolute URL to dynamic OG image (1200×630 JPEG). */
+/** Absolute URL to dynamic OG image (1200×630 WebP/JPEG). */
 export function getPageOgImageUrl(pageId: string): string {
   return `${getSiteUrl()}/og/${pageId}`;
 }
