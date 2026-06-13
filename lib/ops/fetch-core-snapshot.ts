@@ -11,10 +11,22 @@ import { computeIssOrbitSegments } from "@/lib/ops/iss-orbit";
 import { fetchIssPosition } from "@/lib/ops/iss-tracker";
 import { fetchLaunchSchedule } from "@/lib/ops/launch-library";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
-import { fetchLaunchPadCoords } from "@/lib/ops/launch-pads";
 import { buildMapPins } from "@/lib/ops/map-geo";
 import type { OpsCorePayload } from "@/lib/ops/payloads";
+import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import { readStoredCore } from "@/lib/ops/snapshot-store";
+
+function refreshIssOnMapPins(
+  pins: OpsMapPin[],
+  iss: OpsIssPosition | null,
+): OpsMapPin[] {
+  if (!iss) return pins;
+  return pins.map((pin) =>
+    pin.kind === "iss"
+      ? { ...pin, lat: iss.latitude, lon: iss.longitude }
+      : pin,
+  );
+}
 
 /** Launch Library + ISS + pads — no NASA, no CMS articles. */
 export async function fetchCoreOpsSnapshot(
@@ -31,6 +43,10 @@ export async function fetchCoreOpsSnapshot(
       : (stored?.launches ?? []),
   );
 
+  let padCoords: Awaited<
+    ReturnType<typeof fetchLaunchSchedule>
+  >["padCoords"] = [];
+
   try {
     const schedule = await fetchLaunchSchedule(16, 4);
     launches = await applyLaunchBriefPipeline(schedule.upcoming, {
@@ -38,20 +54,26 @@ export async function fetchCoreOpsSnapshot(
       previousLaunches: previous,
     });
     recentLaunches = schedule.recent;
+    padCoords = schedule.padCoords;
     launchesLive = launches.length > 0 || recentLaunches.length > 0;
   } catch (error) {
-    console.error("[ops] Launch Library failed", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.warn("[ops] Launch Library pipeline failed:", msg);
   }
 
-  const [iss, issOrbit, pads] = await Promise.all([
+  const [iss, issOrbit] = await Promise.all([
     fetchIssPosition().catch(() => null),
     computeIssOrbitSegments().catch(
       () => [] as { lat: number; lon: number }[][],
     ),
-    fetchLaunchPadCoords(12).catch(() => []),
   ]);
 
-  const mapPins = buildMapPins(iss, pads);
+  const mapPins =
+    padCoords.length > 0
+      ? buildMapPins(iss, padCoords)
+      : stored?.mapPins?.length
+        ? refreshIssOnMapPins(stored.mapPins, iss)
+        : buildMapPins(iss, padCoords);
   const fetchedAt = new Date().toISOString();
 
   if (launches.length === 0) {

@@ -12,5 +12,11 @@ export function captionForMapPin(
     }
     return "Pozycja na żywo z trackera ISS";
   }
+  if (pin.scheduled) {
+    return pin.sublabel;
+  }
+  if (pin.kind === "cosmodrome") {
+    return "Brak startu w harmonogramie";
+  }
   return pin.sublabel;
 }

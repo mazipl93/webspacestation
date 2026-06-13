@@ -1,4 +1,5 @@
 import { OPS_TERMS } from "@/lib/ops/ops-terminology";
+import { resolvePadDisplayLabel, type PadResolveContext } from "@/lib/ops/pad-resolver";
 import type { OpsLaunch } from "@/lib/ops/types";
 
 const PROVIDER_PL: Record<string, string> = {
@@ -10,6 +11,8 @@ const PROVIDER_PL: Record<string, string> = {
   "United Launch Alliance": "ULA (USA)",
   Arianespace: "Arianespace (EU)",
   "Rocket Lab Ltd": "Rocket Lab",
+  "Isar Aerospace": "Isar Aerospace (Niemcy)",
+  "Isar Aerospace GmbH": "Isar Aerospace (Niemcy)",
   "Indian Space Research Organization": "ISRO (Indie)",
   Roscosmos: "Roscosmos (Rosja)",
 };
@@ -77,10 +80,18 @@ export function localizeSite(site: string): string {
   return `${parts[0]} · ${parts[parts.length - 1]}`;
 }
 
-export function localizePadLabel(name: string): string {
+export function localizePadLabel(
+  name: string,
+  provider?: string,
+  coords?: Pick<PadResolveContext, "lat" | "lon">,
+): string {
   const trimmed = name.trim();
   if (!trimmed) return OPS_TERMS.launchSiteFallback;
-  return localizeSite(trimmed);
+  const localized = localizeSite(trimmed);
+  return resolvePadDisplayLabel(
+    { label: trimmed, provider, ...coords },
+    localized,
+  );
 }
 
 export function localizeStatus(status: string): string {
@@ -93,7 +104,7 @@ export function localizeOpsLaunch(launch: OpsLaunch): OpsLaunch {
     ...launch,
     mission: localizeMission(launch.mission),
     provider: localizeProvider(launch.provider),
-    site: localizeSite(launch.site),
+    site: launch.site,
     statusLabel: localizeStatus(launch.statusLabel),
   };
 }

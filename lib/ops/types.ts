@@ -59,8 +59,14 @@ export type OpsMapPin = {
   color: string;
   lat: number;
   lon: number;
-  kind: "iss" | "pad";
-  /** Zdjęcie padu z Launch Library (map_image), jeśli dostępne */
+  kind: "iss" | "pad" | "cosmodrome";
+  /** Stały kosmodrom z rejestru WSS — spotlight po id. */
+  siteId?: string;
+  /** Nadchodzący start w harmonogramie Launch Library. */
+  scheduled?: boolean;
+  /** Oryginalna nazwa rampy z LL2 — dopasowanie spotlight. */
+  ll2Label?: string;
+  /** Zdjęcie padu z Launch Library (map_image) — nie używane w popupie. */
   imageUrl?: string;
 };
 

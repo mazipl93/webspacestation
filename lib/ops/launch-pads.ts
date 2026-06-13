@@ -1,12 +1,20 @@
 import { fetchExternal } from "@/lib/ops/fetch-external";
-import { providerHue } from "@/lib/ops/launch-library";
 
 const LL2_BASE =
   process.env.LAUNCH_LIBRARY_API_URL?.replace(/\/$/, "") ??
   "https://ll.thespacedevs.com/2.3.0";
 
+function ll2Headers(): HeadersInit {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const token = process.env.LAUNCH_LIBRARY_API_TOKEN?.trim();
+  if (token) {
+    headers.Authorization = `Token ${token}`;
+  }
+  return headers;
+}
+
 type Ll2Pad = {
-  id: number;
+  id?: number;
   name?: string;
   latitude?: number | string;
   longitude?: number | string;
@@ -14,7 +22,7 @@ type Ll2Pad = {
   location?: { name?: string };
 };
 
-type Ll2Launch = {
+export type Ll2LaunchPadSource = {
   id: string;
   pad?: Ll2Pad;
   launch_service_provider?: { name?: string };
@@ -35,30 +43,27 @@ function parseCoord(value: number | string | undefined): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-export async function fetchLaunchPadCoords(limit = 12): Promise<LaunchPadCoord[]> {
-  const params = new URLSearchParams({
-    limit: String(limit),
-    hide_recent_previous: "true",
-  });
-  const url = `${LL2_BASE}/launches/upcoming/?${params}`;
-  const res = await fetchExternal(url, {
-    headers: { Accept: "application/json" },
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) return [];
-
-  const data = (await res.json()) as { results?: Ll2Launch[] };
+/** Współrzędne ramp z już pobranej listy LL2 — bez dodatkowego requestu. */
+export function extractLaunchPadCoords(
+  launches: Ll2LaunchPadSource[],
+  limit = 24,
+): LaunchPadCoord[] {
   const out: LaunchPadCoord[] = [];
+  const seen = new Set<string>();
 
-  for (const launch of data.results ?? []) {
+  for (const launch of launches) {
+    if (out.length >= limit) break;
     const pad = launch.pad;
     if (!pad) continue;
     const lat = parseCoord(pad.latitude);
     const lon = parseCoord(pad.longitude);
     if (lat === null || lon === null) continue;
+    const key = `${lat.toFixed(2)}:${lon.toFixed(2)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     const provider = launch.launch_service_provider?.name ?? "Start";
     out.push({
-      id: `pad-${pad.id}-${launch.id}`,
+      id: `pad-${pad.id ?? launch.id}-${launch.id}`,
       lat,
       lon,
       label: pad.name ?? pad.location?.name ?? "Miejsce startu",
@@ -67,4 +72,21 @@ export async function fetchLaunchPadCoords(limit = 12): Promise<LaunchPadCoord[]
   }
 
   return out;
+}
+
+/** Osobny fetch — tylko gdy brak danych z fetchLaunchSchedule. */
+export async function fetchLaunchPadCoords(limit = 12): Promise<LaunchPadCoord[]> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    hide_recent_previous: "true",
+  });
+  const url = `${LL2_BASE}/launches/upcoming/?${params}`;
+  const res = await fetchExternal(url, {
+    headers: ll2Headers(),
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) return [];
+
+  const data = (await res.json()) as { results?: Ll2LaunchPadSource[] };
+  return extractLaunchPadCoords(data.results ?? [], limit);
 }

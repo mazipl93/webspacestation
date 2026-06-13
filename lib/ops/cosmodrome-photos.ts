@@ -8,7 +8,26 @@
 
  */
 
+import { buildPadHaystack } from "@/lib/ops/pad-resolver";
+
 const OPS_PAD_IMG = "/images/ops-pads";
+
+const WIKI = {
+  slc41:
+    "https://upload.wikimedia.org/wikipedia/commons/5/5c/Atlas_V_launch_complex_LC41.jpg",
+  vostochny:
+    "https://upload.wikimedia.org/wikipedia/commons/c/c3/Soyuz-2.1a_launch_vehicle_carrying_spacecraft_Mikhail_Lomonosov_at_the_launch_pad_at_Vostochny_Launch_Centre.jpg",
+  jiuquan:
+    "https://upload.wikimedia.org/wikipedia/commons/f/ff/Shenzhou-12_roll_out_01.png",
+  sriharikota:
+    "https://upload.wikimedia.org/wikipedia/commons/f/f3/PSLV_C-35_at_the_launch_pad.jpg",
+  kwajalein:
+    "https://upload.wikimedia.org/wikipedia/commons/1/17/Ronald_Reagan_Ballistic_Missile_Defense_Test_Site_at_Kwajalein_Atoll%2C_Republic_of_the_Marshall_Islands.jpg",
+  wenchang:
+    "https://upload.wikimedia.org/wikipedia/commons/3/3c/Wenchang_Space_Launch_Site_02.jpg",
+  andoya:
+    "https://upload.wikimedia.org/wikipedia/commons/6/6e/Black_Brant_IX_launching_from_Andoya.jpg",
+} as const;
 
 
 
@@ -65,11 +84,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "SLC-4E (Vandenberg, USA) – SpaceX",
+      title: "SLC-4E (Vandenberg, USA) · SpaceX",
 
       description:
 
-        "Jedna z najważniejszych wyrzutni SpaceX położona nad samym Pacyfikiem w Kalifornii. To stąd startują misje na orbity polarne i słoneczno-synchroniczne, wykorzystywane przez satelity obserwujące Ziemię. Kompleks działa od lat 60. i wcześniej obsługiwał rakiety Atlas oraz Titan.",
+        "Jedna z najważniejszych wyrzutni SpaceX położona nad Pacyfikiem w Kalifornii. Stąd startują misje na orbity polarne i słoneczno-synchroniczne, wykorzystywane przez satelity obserwujące Ziemię.",
 
       imageUrl: `${OPS_PAD_IMG}/vandenberg-slc-4e.png`,
 
@@ -77,11 +96,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Startujące stąd rakiety lecą nad oceanem, dzięki czemu nie przelatują nad gęsto zaludnionymi terenami.",
+        "Startujące stąd rakiety lecą nad oceanem, bez przelotu nad gęsto zaludnionymi terenami.",
 
-        "To jedyne miejsce, gdzie SpaceX regularnie wykonuje lądowania Falconów na zachodnim wybrzeżu USA.",
+        "To jedyne miejsce, gdzie SpaceX regularnie ląduje boostery Falcon 9 na zachodnim wybrzeżu USA.",
 
-        "W 1994 roku z tego kompleksu wystartowała sonda Clementine – jedyna misja księżycowa wystrzelona z Vandenberg.",
+        "Mgła i wiatr nad Pacyfikiem bywają trudniejsze niż warunki na Florydzie.",
 
       ],
 
@@ -91,11 +110,13 @@ const SITES: SiteRule[] = [
 
   {
 
-    test: (h) => /slc-40|platforma slc-40|launch complex 40/i.test(h) && !/slc-4e|slc-41/i.test(h),
+    test: (h) =>
+      /slc-40|platforma slc-40|launch complex 40|space launch complex 40/i.test(h) &&
+      !/slc-4e|slc-41/i.test(h),
 
     spotlight: {
 
-      title: "SLC-40 (Cape Canaveral, USA) – SpaceX",
+      title: "SLC-40 (Cape Canaveral, USA) · SpaceX",
 
       description:
 
@@ -129,7 +150,7 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Launch Area 96A (Jiuquan, Chiny) – LandSpace",
+      title: "Launch Area 96A (Jiuquan, Chiny) · LandSpace",
 
       description:
 
@@ -141,7 +162,7 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "To stąd wystartowała Zhuque-2 – pierwsza na świecie rakieta na ciekły metan, która osiągnęła orbitę.",
+        "Stąd wystartowała Zhuque-2, pierwsza na świecie rakieta na ciekły metan, która osiągnęła orbitę.",
 
         "Metan jest uznawany za paliwo przyszłości dla wielokrotnego użytku i misji międzyplanetarnych.",
 
@@ -163,7 +184,7 @@ const SITES: SiteRule[] = [
 
       description:
 
-        "Najważniejsza japońska platforma startowa znajdująca się na wyspie Tanegashima. To stąd startują nowoczesne rakiety H-IIA i H3.",
+        "Najważniejsza japońska platforma startowa na wyspie Tanegashima nad Oceanem Spokojnym. Stąd JAXA wynosi rakiety H-IIA, H-IIB i H3 z satelitami naukowymi i ładunkami na stację.",
 
       imageUrl: `${OPS_PAD_IMG}/tanegashima-yoshinobu-lp2.png`,
 
@@ -171,11 +192,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Tanegashima jest często nazywana „najpiękniejszym kosmodromem świata” ze względu na tropikalne położenie nad oceanem.",
+        "Tanegashima bywa nazywana „najpiękniejszym kosmodromem świata” ze względu na tropikalne położenie.",
 
-        "Japonia wysłała stąd sondy badające Księżyc, Marsa i asteroidy.",
+        "Japonia wysłała stąd sondy na Księżyc, Marsa i asteroidy.",
 
-        "Platforma znajduje się bliżej równika niż większość kosmodromów państw rozwiniętych, co pomaga oszczędzać paliwo.",
+        "Starty lecą wyłącznie nad ocean, bez przelotu nad gęstą zabudową.",
 
       ],
 
@@ -186,15 +207,50 @@ const SITES: SiteRule[] = [
   {
 
     test: (h) =>
-      /platforma lc-1\b|\blc-1\b|launch pad lc-1/i.test(h) && !/lc-10|lc-11|lc-101/i.test(h),
+      /platforma lc-1\b|\blc-1\b|launch pad lc-1|commercial lc-1/i.test(h) &&
+      /wenchang|hainan/i.test(h) &&
+      !/lc-101|lc-10|lc-11/i.test(h),
 
     spotlight: {
 
-      title: "LC-1 (Jiuquan, Chiny)",
+      title: "LC-1 (Wenchang, Chiny) · CASC",
 
       description:
 
-        "Jedna z głównych platform w Centrum Startowym Jiuquan w pustyni Gobi — historyczne starty programu załogowego i dziś misje komercyjne oraz naukowe.",
+        "Platforma startowa Long March 7 na wyspie Hainan. Obsługuje załadunki na orbitę niską i współpracuje z cięższą rampą LC-101 w tym samym kosmodromie.",
+
+      imageUrl: `${OPS_PAD_IMG}/wenchang-lc-101.png`,
+
+      imageCredit: "Materiał WSS",
+
+      facts: [
+
+        "Long March 7 wynosi moduły stacji Tiangong i satelity na orbitę niską.",
+
+        "Wenchang leży nad morzem, co ułatwia transport segmentów statkiem.",
+
+        "LC-101 obok obsługuje cięższe rakiety Long March 5.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) =>
+      /platforma lc-1\b|\blc-1\b|launch pad lc-1/i.test(h) &&
+      /jiuquan|gobi|shenzhou/i.test(h) &&
+      !/lc-10|lc-11|lc-101|wenchang|hainan|rocket lab|mahia|andoya|andøya|isar|wallops/i.test(h),
+
+    spotlight: {
+
+      title: "LC-1 (Jiuquan, Chiny) · CNSA",
+
+      description:
+
+        "Jedna z głównych platform w Centrum Startowym Jiuquan w pustyni Gobi. Historyczne starty programu załogowego Shenzhou, dziś także misje naukowe.",
 
       imageUrl: `${OPS_PAD_IMG}/jiuquan-launch-area-96a-landspace.png`,
 
@@ -220,11 +276,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "LC-101 (Wenchang, Chiny) – CASC",
+      title: "LC-101 (Wenchang, Chiny) · CASC",
 
       description:
 
-        "Najnowocześniejsza chińska platforma startowa na wyspie Hainan. Obsługuje rakiety Długi Marsz 5 i Długi Marsz 7.",
+        "Najnowocześniejsza chińska platforma startowa na wyspie Hainan nad Morzem Południowochińskim. Obsługuje ciężkie rakiety Długi Marsz 5 i 7 oraz moduły stacji Tiangong.",
 
       imageUrl: `${OPS_PAD_IMG}/wenchang-lc-101.png`,
 
@@ -232,11 +288,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "To obecnie główna brama Chin do misji księżycowych i planetarnych.",
+        "Główna brama Chin do misji księżycowych i planetarnych.",
 
-        "Kosmodrom znajduje się niemal nad morzem, dzięki czemu ogromne rakiety można transportować statkami.",
+        "Segmenty rakiet transportuje się statkami. Kosmodrom leży tuż przy morzu.",
 
-        "Właśnie stąd wystartowała pierwsza chińska misja pobrania próbek z Księżyca.",
+        "Stąd wystartowała pierwsza chińska misja pobrania próbek z Księżyca.",
 
       ],
 
@@ -247,10 +303,8 @@ const SITES: SiteRule[] = [
   {
 
     test: (h) =>
-
       /rocket lab/i.test(h) &&
-
-      /wallops|virginia|lc-2|lc 2|launch complex 2|launch area 0c|mars|mid-atlantic/i.test(h),
+      /lc-2|lc 2|launch complex 2|\(lc-2\)/i.test(h),
 
     spotlight: {
 
@@ -258,7 +312,7 @@ const SITES: SiteRule[] = [
 
       description:
 
-        "Amerykańska wyrzutnia Rocket Lab znajdująca się na wyspie Wallops w stanie Wirginia. Została zbudowana głównie dla rakiet Electron.",
+        "Amerykańska wyrzutnia Rocket Lab na wyspie Wallops w stanie Wirginia. Stąd startują rakiety Electron na wschodnim wybrzeżu USA, uzupełniając główny kosmodrom firmy w Mahia.",
 
       imageUrl: `${OPS_PAD_IMG}/rocket-lab-lc2-wallops.png`,
 
@@ -268,9 +322,172 @@ const SITES: SiteRule[] = [
 
         "To pierwsza prywatna orbitalna platforma startowa na wschodnim wybrzeżu USA.",
 
-        "Powstała jako uzupełnienie głównego kosmodromu Rocket Lab w Nowej Zelandii.",
+        "Powstała jako uzupełnienie Launch Complex 1 na półwyspie Mahia w Nowej Zelandii.",
 
-        "Dzięki dwóm kosmodromom firma może prowadzić starty praktycznie z obu półkul Ziemi.",
+        "Dzięki dwóm kosmodromom Rocket Lab może startować z obu półkul Ziemi.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) =>
+      /andoya|andøya|nordmela/i.test(h) ||
+      (/orbital launch pad/i.test(h) &&
+        /isar|spectrum|norway|nordland/i.test(h) &&
+        !/rocket lab|mahia|new zealand/i.test(h)),
+
+    spotlight: {
+
+      title: "Andøya Spaceport · Orbital Launch Pad (Norwegia)",
+
+      description:
+
+        "Pierwsza orbitalna rampa w kontynentalnej Europie, przy północnym wybrzeżu Norwegii. Stąd Isar Aerospace startuje rakietą Spectrum na orbity polarne i słoneczno-synchroniczne nad Oceanem Arktycznym.",
+
+      imageUrl: WIKI.andoya,
+
+      imageCredit: "NASA · Wikimedia Commons",
+
+      facts: [
+
+        "Launch Library nazywa tę rampę „Orbital Launch Pad”, bez numeru SLC.",
+
+        "Spectrum wykonuje starty na orbity polarne bez przelotu nad gęstą zabudową.",
+
+        "Andøya Space ma tradycję suborbitalnych startów od 1962 roku.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) =>
+      /rocket lab/i.test(h) &&
+      /mahia|launch complex 1|\blc-1\b|new zealand/i.test(h) &&
+      !/lc-10|lc-11|lc-101|lc-2|wallops|virginia|andoya|andøya|isar/i.test(h),
+
+    spotlight: {
+
+      title: "Rocket Lab Launch Complex 1 (Mahia, Nowa Zelandia)",
+
+      description:
+
+        "Główny kosmodrom Rocket Lab na półwyspie Mahia nad Pacyfikiem. Stąd startują rakiety Electron z małymi satelitami na niską orbitę okołoziemską.",
+
+      imageUrl:
+
+        "https://upload.wikimedia.org/wikipedia/commons/f/fe/Rocket_Lab_Launch_Complex_1.jpg",
+
+      imageCredit: "Grumpy Eye · CC BY-SA · Wikimedia Commons",
+
+      facts: [
+
+        "Electron wynosi CubeSaty i małe ładunki komercyjne.",
+
+        "Ścieżka startu nad oceanem zapewnia bezpieczny przelot bez przelotu nad lądem.",
+
+        "Rocket Lab LC-2 w Wallops uzupełnia ten port na półkuli północnej.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) => /haiyang/i.test(h) &&
+      /offshore|launch location|launch site|port/i.test(h),
+
+    spotlight: {
+
+      title: "Port morski Haiyang (Shandong, Chiny)",
+
+      description:
+
+        "Haiyang Oriental Aerospace Port to chiński hub startów morskich na wybrzeżu Morza Żółtego. Rakiety montuje się w porcie, a potem holuje na wyznaczone wody i startuje stamtąd z pokładu statku lub platformy.",
+
+      imageUrl: WIKI.wenchang,
+
+      imageCredit: "Shujianyang · CC BY-SA · Wikimedia Commons",
+
+      facts: [
+
+        "Stąd wyruszają misje CZ-11H, Jielong-3 i Ceres-1 w wersjach morskich.",
+
+        "Pierwszy chiński start z morza w 2019 roku otworzył regularne starty z Żółtego i Wschodniego Morza Chińskiego.",
+
+        "Port skraca łańcuch logistyczny: montaż, testy i załadunek odbywają się przy nabrzeżu, bez transportu lądowego na odległy kosmodrom.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) =>
+      /offshore launch platform|offshore launch location/i.test(h) &&
+      !/haiyang/i.test(h),
+
+    spotlight: {
+
+      title: "Pływająca platforma startowa (Chiny, morza wschodnie)",
+
+      description:
+
+        "Mobilna platforma lub statek startowy wykorzystywany przez Chiny do wynoszenia rakiet z morza. Pozwala wybrać szerokość geograficzną startu i unikać przelotów nad gęsto zaludnionymi regionami.",
+
+      imageUrl: WIKI.jiuquan,
+
+      imageCredit: "中国新闻网 · CC BY 4.0 · Wikimedia Commons",
+
+      facts: [
+
+        "CZ-11H startuje z pokładu po zimnym wystrzeleniu z pionowej rury, podobnie jak w wersji mobilnej lądowej.",
+
+        "Platformy bywają holowane w rejon Haiyang, Morza Żółtego lub Morza Południowochińskiego w zależności od orbity docelowej.",
+
+        "Starty morskie obsługują m.in. satelity Jilin-1, Shiyan i misje komercyjne Ceres-1S.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) =>
+      /kwajalein|reagan test site|omelek|marshall islands|rts\b/i.test(h),
+
+    spotlight: {
+
+      title: "Reagan Test Site (Kwajalein Atoll, Wyspy Marshalla)",
+
+      description:
+
+        "Ronald Reagan Ballistic Missile Defense Test Site to amerykański poligon rakietowy na atolach Kwajalein w Oceanii. Historycznie startowały stąd m.in. rakiety SpaceX Falcon 1 z wyspy Omelek, dziś obiekt służy testom obrony antyrakietowej i lotom suborbitalnym.",
+
+      imageUrl: WIKI.kwajalein,
+
+      imageCredit: "U.S. Army · Wikimedia Commons",
+
+      facts: [
+
+        "Kompleks obejmuje kilka wysp atolu Kwajalein, Wake i Aur na obszarze ponad 1,9 mln km² nad Pacyfikiem.",
+
+        "Omelek Island była jedyną rampą SpaceX Falcon 1 poza USA, zanim firma przeniosła się na Przylądek Canaveral.",
+
+        "Poligon testuje interceptory GMD i wspiera programy NASA oraz Space Force w warunkach oceanicznych.",
 
       ],
 
@@ -284,11 +501,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Launch Complex 39A — Kennedy Space Center",
+      title: "Launch Complex 39A (Kennedy Space Center, USA)",
 
       description:
 
-        "Historyczna rampa LC-39A — Apollo, Shuttle, dziś Falcon 9 / Falcon Heavy i Crew Dragon.",
+        "Historyczna rampa na Przylądku Canaveral, z której startowały Apollo i prom kosmiczne. Dziś SpaceX wynosi stąd Falcon 9, Falcon Heavy i załogowe Crew Dragon na orbitę i ISS.",
 
       imageUrl:
 
@@ -298,11 +515,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Widok z góry na samą rampę i infrastrukturę KSC.",
+        "SpaceX dzierżawi 39A od NASA od 2014 roku.",
 
-        "SpaceX dzierżawi 39A od NASA.",
+        "Stąd wyruszył Apollo 11 w drodze na Księżyc w 1969 roku.",
 
-        "Tu startował Apollo 11 w drodze na Księżyc.",
+        "Załogowe misje Crew Dragon na ISS startują stąd regularnie.",
 
       ],
 
@@ -320,7 +537,7 @@ const SITES: SiteRule[] = [
 
       description:
 
-        "Kompleks SpaceX nad Zatoką Meksykańską — hala montażowa Starship, wieża startowa i poligon testowy Super Heavy.",
+        "Kompleks SpaceX nad Zatoką Meksykańską z halą montażową Starship, wieżą startową i poligonem testowym Super Heavy. To tutaj SpaceX rozwija w pełni wielokrotnego użytku system na Księżyc i Marsa.",
 
       imageUrl:
 
@@ -330,11 +547,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Jedyny port pod pełną integrację Starship + Super Heavy w jednym miejscu.",
+        "Jedyny port pod pełną integrację Starship i Super Heavy w jednym miejscu.",
 
-        "Widoczny z plaż w South Padre Island — starty przyciągają tłumy.",
+        "Starty są widoczne z plaż South Padre Island i przyciągają tłumy obserwatorów.",
 
-        "Cel: załogowy Księżyc (Artemis) i docelowo Mars.",
+        "Starship ma obsłużyć załogowy Księżyc w programie Artemis i docelowo loty na Marsa.",
 
       ],
 
@@ -348,11 +565,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Vandenberg SFB — Space Launch Complex 4",
+      title: "SLC-4E (Vandenberg, USA) · SpaceX",
 
       description:
 
-        "Kalifornijska baza nad Pacyfikiem — orbity polarne i słoneczno-synchroniczne dla satelitów obserwacji Ziemi.",
+        "Jedna z najważniejszych wyrzutni SpaceX położona nad Pacyfikiem w Kalifornii. Stąd startują misje na orbity polarne i słoneczno-synchroniczne, wykorzystywane przez satelity obserwujące Ziemię.",
 
       imageUrl: `${OPS_PAD_IMG}/vandenberg-slc-4e.png`,
 
@@ -360,11 +577,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Stąd Falcon 9 wynosi satelity obserwacji Ziemi i misje wojskowe.",
+        "Startujące stąd rakiety lecą nad oceanem, bez przelotu nad gęsto zaludnionymi terenami.",
 
-        "Ścieżka nad oceanem — inna geometria niż na Florydzie.",
+        "To jedyne miejsce, gdzie SpaceX regularnie ląduje boostery Falcon 9 na zachodnim wybrzeżu USA.",
 
-        "Mgła i wiatr — pogoda bywa trudniejsza niż na Przylądku Canaveral.",
+        "Mgła i wiatr nad Pacyfikiem bywają trudniejsze niż warunki na Florydzie.",
 
       ],
 
@@ -378,11 +595,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Bajkonur — Gagarin’s Start (rampa Sojuz)",
+      title: "Bajkonur · Gagarin's Start (rampa Sojuz)",
 
       description:
 
-        "Historyczna rampa Gagarina (Site 1) — stąd w 1961 r. wyleciał Jurij Gagarin; dziś starty Sojuz na ISS.",
+        "Historyczna rampa Gagarina (Site 1) w stepie Kazachstanu. Stąd w 1961 roku wyleciał Jurij Gagarin, a dziś startują rakiety Sojuz z załogami i ładunkami na ISS.",
 
       imageUrl:
 
@@ -392,11 +609,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Najstarszy czynny port orbitalny świata — step Kazachstanu.",
+        "Najstarszy czynny port orbitalny świata, działający od lat 50.",
 
-        "Charakterystyczna „wieża” serwisowa wokół rakiety Sojuz.",
+        "Charakterystyczna ruchoma wieża serwisowa otacza rakietę Sojuz przed startem.",
 
-        "Leży na wynajmowanym przez Rosję terytorium Kazachstanu.",
+        "Kosmodrom leży na terytorium wynajmowanym przez Rosję od Kazachstanu.",
 
       ],
 
@@ -410,11 +627,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Centre spatial guyanais (Kourou)",
+      title: "Centre spatial guyanais (Kourou, Gujana Francuska)",
 
       description:
 
-        "Europejski port ESA/CNES w Gujanie Francuskiej — rzeczywista wieża startowa ELA-3 (Ariane) w dżungli.",
+        "Europejski kosmodrom ESA i CNES w tropikalnej dżungli Gujany Francuskiej. Stąd startują rakiety Ariane z ramp ELA-3 i nowego ELA-4, w tym Ariane 6.",
 
       imageUrl:
 
@@ -424,11 +641,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Blisko równika — większy ładunek na orbitę dzięki prędkości obrotu Ziemi.",
+        "Bliskość równika daje większy ładunek na orbitę dzięki prędkości obrotu Ziemi.",
 
-        "Ariane 6 startuje z nowego ELA-4 obok starszych ramp.",
+        "Jedyny europejski kosmodrom dla ciężkich rakiet orbitalnych.",
 
-        "Jedyny europejski kosmodrom dla ciężkich rakiet.",
+        "Ariane 6 startuje z ELA-4 obok starszych ramp Ariane 5.",
 
       ],
 
@@ -442,11 +659,11 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Tanegashima Space Center (JAXA)",
+      title: "Tanegashima Space Center (JAXA, Japonia)",
 
       description:
 
-        "Główny kosmodrom Japonii na wyspie Tanegashima — rampy H-IIA, H-IIB i H3.",
+        "Główny kosmodrom Japonii na wyspie Tanegashima z rampami H-IIA, H-IIB i H3 nad Oceanem Spokojnym.",
 
       imageUrl:
 
@@ -456,7 +673,7 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Wyspa na południu Japonii — starty wyłącznie nad Oceanem Spokojnym.",
+        "Wyspa na południu Japonii. Starty lecą wyłącznie nad Oceanem Spokojnym.",
 
         "Rakiety wyjeżdżają na rampę z montażowni przed startem.",
 
@@ -470,15 +687,15 @@ const SITES: SiteRule[] = [
 
   {
 
-    test: (h) => /wenchang|hainan/i.test(h) && !/lc-101/i.test(h),
+    test: (h) => /wenchang|hainan/i.test(h) && !/lc-101|\blc-1\b/i.test(h),
 
     spotlight: {
 
-      title: "Wenchang Space Launch Site",
+      title: "Wenchang Space Launch Site (Hainan, Chiny)",
 
       description:
 
-        "Chiński kosmodrom na wyspie Hainan — port przy morzu dla rakiet Długi Marsz 5 i 7.",
+        "Chiński kosmodrom na wyspie Hainan nad morzem, z rampami dla rakiet Długi Marsz 5 i 7 oraz modułów stacji Tiangong.",
 
       imageUrl:
 
@@ -492,7 +709,67 @@ const SITES: SiteRule[] = [
 
         "Stąd startowały moduły stacji Tiangong i misje Chang’e.",
 
-        "Long March 5 — ciężki nośnik na orbitę księżycową.",
+        "Long March 5 to ciężki nośnik na orbitę księżycową.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) => /taiyuan|shanxi/i.test(h) && !/jiuquan|gobi/i.test(h),
+
+    spotlight: {
+
+      title: "Taiyuan Satellite Launch Center (Shanxi, Chiny)",
+
+      description:
+
+        "Kosmodrom na północy Chin, w górach prowincji Shanxi. Stąd startują głównie satelity na orbity polarne i słoneczno-synchroniczne, w tym misje Fengyun i Gaofen.",
+
+      imageUrl: WIKI.jiuquan,
+
+      imageCredit: "中国新闻网 · CC BY 4.0 · Wikimedia Commons",
+
+      facts: [
+
+        "Położenie na północy sprzyja wynoszeniu ładunków na orbity o wysokim nachyleniu.",
+
+        "Rakiety Long March 2C, 4B i 6 startują stąd regularnie.",
+
+        "Jeden z trzech głównych kosmodromów państwowych CNSA obok Jiuquan i Xichang.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
+    test: (h) => /xichang|sichuan/i.test(h) && !/wenchang|hainan/i.test(h),
+
+    spotlight: {
+
+      title: "Xichang Satellite Launch Center (Sichuan, Chiny)",
+
+      description:
+
+        "Kosmodrom w górach prowincji Sichuan, wykorzystywany do geostacjonarnych i nawigacyjnych satelitów BeiDou oraz misji księżycowych Chang'e.",
+
+      imageUrl: WIKI.jiuquan,
+
+      imageCredit: "中国新闻网 · CC BY 4.0 · Wikimedia Commons",
+
+      facts: [
+
+        "Stąd startowały sondy Chang'e na Księżyc i misje BeiDou.",
+
+        "Rampa leży w kotlinie górskim, co wymaga precyzyjnych okien pogodowych.",
+
+        "Long March 3A/B/C to główne nośniki z tego portu.",
 
       ],
 
@@ -506,25 +783,23 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Jiuquan Satellite Launch Center",
+      title: "Jiuquan Satellite Launch Center (Gobi, Chiny)",
 
       description:
 
-        "Najstarszy aktywny kosmodrom Chin w pustyni Gobi — na zdjęciu tablica wejścia i wieże startowe w tle.",
+        "Najstarszy aktywny kosmodrom Chin w pustyni Gobi. Stąd startowały misje załogowe Shenzhou, a dziś także prywatne rakiety LandSpace Zhuque i ładunki naukowe.",
 
-      imageUrl:
+      imageUrl: WIKI.jiuquan,
 
-        "https://upload.wikimedia.org/wikipedia/commons/0/05/Jiuquan_Satellite_Launch_Center_with_sign.jpg",
-
-      imageCredit: "Sparktour · CC BY-SA · Wikimedia Commons",
+      imageCredit: "中国新闻网 · CC BY 4.0 · Wikimedia Commons",
 
       facts: [
 
-        "Pierwszy chiński lot załogowy (Yang Liwei, 2003) startował stąd.",
+        "Pierwszy chiński lot załogowy Yang Liweiego w 2003 roku startował stąd.",
 
-        "Ekstremalny klimat Gobi — stabilna pogoda poza burzami piaskowymi.",
+        "Ekstremalny klimat Gobi daje stabilną pogodę poza burzami piaskowymi.",
 
-        "Głównie orbity nachylone i misje rozpoznawcze.",
+        "Launch Area 96A obsługuje prywatne starty LandSpace Zhuque na ciekłym metanie.",
 
       ],
 
@@ -534,37 +809,6 @@ const SITES: SiteRule[] = [
 
   {
 
-    test: (h) => /mahia|launch complex 1/i.test(h) && /rocket lab/i.test(h),
-
-    spotlight: {
-
-      title: "Rocket Lab Launch Complex 1 — Mahia",
-
-      description:
-
-        "Pierwszy komercyjny port orbitalny Rocket Lab na półwyspie Mahia (Nowa Zelandia) — rakiety Electron.",
-
-      imageUrl:
-
-        "https://upload.wikimedia.org/wikipedia/commons/f/fe/Rocket_Lab_Launch_Complex_1.jpg",
-
-      imageCredit: "Grumpy Eye · CC BY-SA · Wikimedia Commons",
-
-      facts: [
-
-        "Electron — małe satelity i CubeSaty w wysokiej częstotliwości startów.",
-
-        "Widok na Pacyfik — bezpieczna ścieżka nad oceanem.",
-
-        "Główny kosmodrom Rocket Lab na południowej półkuli.",
-
-      ],
-
-    },
-
-  },
-
-  {
 
     test: (h) => /wallops|virginia|antares|mars/i.test(h) && !/rocket lab/i.test(h),
 
@@ -574,7 +818,7 @@ const SITES: SiteRule[] = [
 
       description:
 
-        "Wybrzeże Wirginii — rampy Antares i Electron (MARS) oraz NASA Wallops Flight Facility.",
+        "Kosmodrom na wybrzeżu Wirginii obsługujący Antares, Electron Rocket Lab i misje NASA Wallops Flight Facility. Ważny węzeł zaopatrzenia stacji kosmicznej na wschodnim wybrzeżu USA.",
 
       imageUrl:
 
@@ -584,11 +828,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Kluczowy dla zaopatrzenia ISS (Northrop Grumman Cygnus).",
+        "Stąd regularnie startują statki zaopatrzeniowe Cygnus na ISS.",
 
-        "Także suborbitalne i małe satelity naukowe.",
+        "Rocket Lab LC-2 uzupełnia główny kosmodrom firmy w Mahia na południowej półkuli.",
 
-        "Nocne starty bywają widoczne z wybrzeża USA.",
+        "Nocne starty bywają widoczne z wybrzeża wschodniego USA.",
 
       ],
 
@@ -598,29 +842,27 @@ const SITES: SiteRule[] = [
 
   {
 
-    test: (h) => /slc-41|platforma slc-41/i.test(h),
+    test: (h) => /slc-41|platforma slc-41|launch complex 41|space launch complex 41/i.test(h),
 
     spotlight: {
 
-      title: "Space Launch Complex 41",
+      title: "Space Launch Complex 41 (Cape Canaveral, USA) · ULA",
 
       description:
 
-        "Rampa SLC-41 — Atlas V i Vulcan (ULA) na Przylądku Canaveral.",
+        "Jedna z kluczowych ramp United Launch Alliance na Florydzie. Stąd startują rakiety Atlas V, a od niedawna także Vulcan Centaur z misjami naukowymi, wojskowymi i planetarnymi.",
 
-      imageUrl:
+      imageUrl: WIKI.slc41,
 
-        "https://upload.wikimedia.org/wikipedia/commons/9/9b/Aerial_View_of_Launch_Complex_39.jpg",
-
-      imageCredit: "NASA · Wikimedia Commons",
+      imageCredit: "NASA · KSC-05PD-2401 · Wikimedia Commons",
 
       facts: [
 
-        "W pobliżu LC-39 — ten sam region kosmodromu co KSC.",
+        "Leży w tym samym regionie co LC-39, w sercu kosmodromu Przylądku Canaveral.",
 
-        "Stąd m.in. sondy na Marsa i misje wojskowe.",
+        "Stąd wystartowały m.in. sondy na Marsa i misje wojskowe USA.",
 
-        "Atlas V startował stąd przez dekady.",
+        "Vulcan Centaur stopniowo zastępuje Atlas V w długoterminowych kontraktach.",
 
       ],
 
@@ -638,7 +880,7 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Kennedy Space Center — Launch Complex 39",
+      title: "Kennedy Space Center · Launch Complex 39",
 
       description:
 
@@ -652,7 +894,7 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "VAB — jeden z największych budynków na świecie (montaż rakiet).",
+        "VAB to jeden z największych budynków na świecie, służący do montażu rakiet.",
 
         "Crawlerway łączy montażownię z rampami nad Atlantykiem.",
 
@@ -666,15 +908,45 @@ const SITES: SiteRule[] = [
 
   {
 
+    test: (h) => /vostochny|wostochny|kosmodrom wostoczny|site 1s/i.test(h),
+
+    spotlight: {
+
+      title: "Kosmodrom Wostochny (Amur, Rosja)",
+
+      description:
+
+        "Najnowszy rosyjski port orbitalny na Dalekim Wschodzie, zbudowany na terytorium Rosji. Obsługuje Sojuz-2, a w przyszłości ma przejąć część startów ciężkich rakiet Angara z Bajkonuru.",
+
+      imageUrl: WIKI.vostochny,
+
+      imageCredit: "kremlin.ru · CC BY 4.0 · Wikimedia Commons",
+
+      facts: [
+
+        "Pierwszy start w 2016 roku. Symbol przeniesienia rosyjskiej astronautyki na własne terytorium.",
+
+        "Infrastruktura przygotowana pod cięższe nośniki Angara-A5.",
+
+        "Położony w lesie taigi, daleko od gęsto zaludnionych regionów.",
+
+      ],
+
+    },
+
+  },
+
+  {
+
     test: (h) => /plesetsk/i.test(h),
 
     spotlight: {
 
-      title: "Kosmodrom Plesetsk",
+      title: "Kosmodrom Plesetsk (Arkhangelsk, Rosja)",
 
       description:
 
-        "Północna Rosja — wojskowy kosmodrom, rampy Sojuz-2 i historyczne starty.",
+        "Wojskowy kosmodrom w północnej Rosji, zoptymalizowany pod orbity polarne i słoneczno-synchroniczne. Stąd startują Sojuz-2 oraz rosyjskie satelity rozpoznawcze i nawigacyjne.",
 
       imageUrl:
 
@@ -684,11 +956,11 @@ const SITES: SiteRule[] = [
 
       facts: [
 
-        "Orbity polarne — idealne położenie geograficzne.",
+        "Położenie na północy ułatwia wynoszenie ładunków na orbity polarne.",
 
-        "Głównie ładunki wojskowe i rosyjskie satelity.",
+        "Głównie satelity wojskowe i państwowe, rzadziej misje komercyjne.",
 
-        "Jeden z najbardziej odludnych kosmodromów.",
+        "Jeden z najbardziej odludnych dużych kosmodromów na świecie.",
 
       ],
 
@@ -702,25 +974,23 @@ const SITES: SiteRule[] = [
 
     spotlight: {
 
-      title: "Satish Dhawan Space Centre (Sriharikota)",
+      title: "Satish Dhawan Space Centre (Sriharikota, Indie)",
 
       description:
 
-        "Główny kosmodrom ISRO w Indiach — rampa PSLV na wyspie Sriharikota.",
+        "Główny kosmodrom ISRO na wyspie Sriharikota w Zatoce Bengalskiej. Stąd startują rakiety PSLV i GSLV z satelitami naukowymi, nawigacyjnymi i misjami planetarnymi.",
 
-      imageUrl:
+      imageUrl: WIKI.sriharikota,
 
-        "https://upload.wikimedia.org/wikipedia/commons/1/16/PSLV-C52_launch_from_Sriharikota_%28cropped%29.jpg",
-
-      imageCredit: "ISRO · Wikimedia Commons",
+      imageCredit: "ISRO · GODL · Wikimedia Commons",
 
       facts: [
 
-        "PSLV i GSLV startują stąd od lat 90.",
+        "PSLV i GSLV startują stąd regularnie od lat 90.",
 
-        "Wyspa na Zatoce Bengalskiej.",
+        "Mars Orbiter Mission (Mangalyaan) wystartował stąd w 2013 roku.",
 
-        "Mars Orbiter Mission (Mangalyaan) wystartował stąd.",
+        "Misje Chandrayaan na Księżyc to kolejny filar programu ISRO z tego portu.",
 
       ],
 
@@ -738,21 +1008,19 @@ const FALLBACK: CosmodromeSpotlight = {
 
   description:
 
-    "Miejsce z harmonogramu Launch Library — współrzędne odpowiadają rzeczywistej rampie nadchodzącego startu.",
+    "Rampa startowa powiązana z nadchodzącym lotem w harmonogramie WSS.",
 
-  imageUrl:
-
-    "https://upload.wikimedia.org/wikipedia/commons/9/9b/Aerial_View_of_Launch_Complex_39.jpg",
+  imageUrl: WIKI.slc41,
 
   imageCredit: "NASA · Wikimedia Commons",
 
   facts: [
 
-    "Dokładna rampa zależy od misji w harmonogramie WSS.",
+    "Termin NET w harmonogramie może się przesunąć z powodu pogody, testów technicznych lub kolejki na rampie.",
 
-    "Termin NET może się przesunąć (pogoda, testy, kolejka).",
+    "Operator startu wskazuje firmę lub agencję odpowiedzialną za nadchodzącą misję.",
 
-    "Kliknij inne pinezki — każda to inny kosmodrom na Ziemi.",
+    "Współrzędne rampy pochodzą z Launch Library i wskazują realne miejsce startu na mapie.",
 
   ],
 
@@ -760,15 +1028,31 @@ const FALLBACK: CosmodromeSpotlight = {
 
 
 
-export function matchCosmodromeSpotlight(
-
+function normalizePadHaystack(
   label: string,
+  sublabel: string,
+  context?: { ll2Label?: string; lat?: number; lon?: number },
+): string {
+  return buildPadHaystack({
+    label: context?.ll2Label?.trim() || label,
+    provider: sublabel,
+    lat: context?.lat,
+    lon: context?.lon,
+  });
+}
 
-  sublabel: string
+export type PadSpotlightContext = {
+  ll2Label?: string;
+  lat?: number;
+  lon?: number;
+};
 
+export function matchCosmodromeSpotlight(
+  label: string,
+  sublabel: string,
+  context?: PadSpotlightContext,
 ): CosmodromeSpotlight {
-
-  const h = `${label} ${sublabel}`.toLowerCase();
+  const h = normalizePadHaystack(label, sublabel, context);
 
   for (const { test, spotlight } of SITES) {
 
@@ -780,15 +1064,25 @@ export function matchCosmodromeSpotlight(
 
   }
 
-  const operator = sublabel.trim() || "operator";
+  const name = label.trim() || FALLBACK.title;
+
+  const operator = sublabel
+
+    .replace(/\s*·\s*start w harmonogramie\s*$/i, "")
+
+    .trim();
 
   return {
 
     ...FALLBACK,
 
-    title: label.trim() || FALLBACK.title,
+    title: name,
 
-    description: `${FALLBACK.description} Operator: ${operator}.`,
+    description: operator
+
+      ? `${name} to rampa startowa w harmonogramie WSS. Operator nadchodzącej misji: ${operator}.`
+
+      : `${name} to rampa startowa powiązana z nadchodzącym startem w harmonogramie WSS.`,
 
   };
 

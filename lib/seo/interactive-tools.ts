@@ -33,7 +33,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
     description:
       "Śledź Międzynarodową Stację Kosmiczną na żywo: pozycja ISS na mapie, orbita, prędkość, wysokość i platformy startowe nadchodzących rakiet.",
     longDescription:
-      "Sprawdź, gdzie nad Ziemią leci ISS w tej chwili. Mapa pokazuje pozycję stacji na orbicie, trasę lotu i miejsca planowanych startów rakiet — dane odświeżane na bieżąco, bez instalacji aplikacji.",
+      "Sprawdź, gdzie nad Ziemią leci ISS w tej chwili. Mapa pokazuje pozycję stacji na orbicie, trasę lotu i miejsca planowanych startów rakiet. Dane odświeżane na bieżąco, bez instalacji aplikacji.",
     keywords: [
       "ISS tracker",
       "śledzenie ISS",
@@ -63,12 +63,12 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       {
         question: "Czy mogę zobaczyć ISS gołym okiem?",
         answer:
-          "Tak — ISS bywa widoczna o zmierzchu i świcie jako jasny punkt przelatujący po niebie. Tracker pomaga ustalić, nad którym regionem Ziemi stacja leci w danej chwili.",
+          "Tak. ISS bywa widoczna o zmierzchu i świcie jako jasny punkt przelatujący po niebie. Tracker pomaga ustalić, nad którym regionem Ziemi stacja leci w danej chwili.",
       },
       {
         question: "Czy mapa pokazuje też starty rakiet?",
         answer:
-          "Tak — na tej samej mapie zaznaczone są platformy startowe i nadchodzące starty. Pełny harmonogram z odliczaniem znajdziesz w sekcji Starty rakiet.",
+          "Tak. Na tej samej mapie zaznaczone są platformy startowe i nadchodzące starty. Pełny harmonogram z odliczaniem znajdziesz w sekcji Starty rakiet.",
       },
     ],
     relatedToolIds: ["rocket-launches", "aurora-terminal", "launch-calendar"],
@@ -82,9 +82,9 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
     title: "Czy dziś będzie zorza? · indeks Kp na żywo",
     headline: "Terminal zorzy polarnej · space weather na żywo",
     description:
-      "Monitoruj zorzę polarną na żywo: indeks geomagnetyczny Kp, wiatr słoneczny Bz, prognoza burz i mapa widoczności zorzy w Polsce i na świecie — dane NOAA.",
+      "Monitoruj zorzę polarną na żywo: indeks geomagnetyczny Kp, wiatr słoneczny Bz, prognoza burz i mapa widoczności zorzy w Polsce i na świecie. Dane NOAA.",
     longDescription:
-      "Sprawdź szansę na zorzę dziś i w najbliższych godzinach. Terminal łączy indeks Kp, parametry wiatru słonecznego, prognozę NOAA i mapę owali auroralnych — narzędzie dla łowców zórz i fotografów nocnego nieba.",
+      "Sprawdź szansę na zorzę dziś i w najbliższych godzinach. Terminal łączy indeks Kp, parametry wiatru słonecznego, prognozę NOAA i mapę owali auroralnych. Narzędzie dla łowców zórz i fotografów nocnego nieba.",
     keywords: [
       "zorza polarna",
       "zorza polarna dziś",
@@ -135,9 +135,9 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
     title: "Starty rakiet · harmonogram i odliczanie na żywo",
     headline: "Starty rakiet na żywo",
     description:
-      "Harmonogram nadchodzących startów rakiet: SpaceX, NASA, ESA i inne — daty NET, okna startowe, odliczanie na żywo i kontekst każdej misji.",
+      "Harmonogram nadchodzących startów rakiet: SpaceX, NASA, ESA i inne. Daty NET, okna startowe, odliczanie na żywo i kontekst każdej misji.",
     longDescription:
-      "Śledź, kiedy wystartuje następna rakieta. Lista startów z odliczaniem, informacjami o misji, rakiecie i platformie startowej — z linkiem do mapy ISS i terminala zorzy w Centrum operacyjnym WSS.",
+      "Śledź, kiedy wystartuje następna rakieta. Lista startów z odliczaniem, informacjami o misji, rakiecie i platformie startowej, z linkiem do mapy ISS i terminala zorzy w Centrum operacyjnym WSS.",
     keywords: [
       "starty rakiet",
       "harmonogram startów",
@@ -166,7 +166,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       {
         question: "Czy odliczanie do startu jest na żywo?",
         answer:
-          "Tak — licznik aktualizuje się automatycznie i uwzględnia fazy odliczania, okna startowego oraz opóźnień, gdy agencja je zgłosi.",
+          "Tak. Licznik aktualizuje się automatycznie i uwzględnia fazy odliczania, okna startowego oraz opóźnień, gdy agencja je zgłosi.",
       },
       {
         question: "Gdzie zobaczę skąd startuje rakieta?",
@@ -185,7 +185,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
     title: "Harmonogram startów rakiet · terminy i odliczanie",
     headline: "Harmonogram startów rakiet",
     description:
-      "Kalendarz startów rakiet z terminami NET, oknami startowymi i odliczaniem — przejrzysta oś czasu nadchodzących misji kosmicznych.",
+      "Kalendarz startów rakiet z terminami NET, oknami startowymi i odliczaniem. Przejrzysta oś czasu nadchodzących misji kosmicznych.",
     longDescription:
       "Oś czasu nadchodzących startów rakiet w jednym widoku. Sprawdź daty, agencje i misje, a potem przejdź do pełnej listy startów lub mapy ISS.",
     keywords: [
@@ -206,7 +206,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       {
         question: "Czym różni się kalendarz od strony Starty?",
         answer:
-          "Kalendarz pokazuje terminy na osi czasu, a strona Starty — pełne karty misji z odliczaniem, zdjęciami i kontekstem.",
+          "Kalendarz pokazuje terminy na osi czasu, a strona Starty to pełne karty misji z odliczaniem, zdjęciami i kontekstem.",
       },
     ],
     relatedToolIds: ["rocket-launches", "iss-tracker"],

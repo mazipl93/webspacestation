@@ -4,6 +4,10 @@ import {
   matchCosmodromeSpotlight,
   type CosmodromeSpotlight,
 } from "@/lib/ops/cosmodrome-photos";
+import {
+  getMajorCosmodromeSpotlight,
+  matchPadToMajorCosmodrome,
+} from "@/lib/ops/major-cosmodromes";
 
 export type MapPinSpotlight = CosmodromeSpotlight;
 
@@ -17,10 +21,33 @@ export function isMapPreviewImage(url: string | undefined): boolean {
   return MAP_PREVIEW_URL.test(u) || u.includes("map_image");
 }
 
+function padSpotlightContext(pin: OpsMapPin) {
+  return {
+    ll2Label: pin.ll2Label,
+    lat: pin.lat,
+    lon: pin.lon,
+  };
+}
+
 /** Treść popupu — wyłącznie zdjęcia obiektów, nie mapy z API. */
 export function resolveMapPinSpotlight(pin: OpsMapPin): MapPinSpotlight {
   if (pin.kind === "iss") {
     return ISS_SPOTLIGHT;
   }
-  return matchCosmodromeSpotlight(pin.label, pin.sublabel);
+
+  const ctx = padSpotlightContext(pin);
+
+  if (pin.ll2Label) {
+    return matchCosmodromeSpotlight(pin.label, pin.sublabel, ctx);
+  }
+
+  if (pin.siteId) {
+    const site = getMajorCosmodromeSpotlight(pin.siteId);
+    if (site) return site;
+  }
+
+  const nearMajor = matchPadToMajorCosmodrome({ lat: pin.lat, lon: pin.lon });
+  if (nearMajor) return nearMajor.spotlight;
+
+  return matchCosmodromeSpotlight(pin.label, pin.sublabel, ctx);
 }

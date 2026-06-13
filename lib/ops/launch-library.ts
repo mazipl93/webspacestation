@@ -1,6 +1,8 @@
+import type { LaunchPadCoord } from "@/lib/ops/launch-pads";
+import { extractLaunchPadCoords } from "@/lib/ops/launch-pads";
 import type { OpsLaunch } from "@/lib/ops/types";
 import { fetchExternal } from "@/lib/ops/fetch-external";
-import { localizeOpsLaunch, localizeStatus } from "@/lib/ops/localize-ops";
+import { localizeOpsLaunch, localizePadLabel, localizeStatus } from "@/lib/ops/localize-ops";
 import {
   enrichLaunchPhase,
   isActionableUpcoming,
@@ -50,7 +52,10 @@ type Ll2Launch = {
     };
   };
   pad?: {
+    id?: number;
     name?: string;
+    latitude?: number | string;
+    longitude?: number | string;
     map_image?: string | null;
     location?: { name?: string; country_code?: string };
   };
@@ -113,13 +118,26 @@ function formatWindowLabel(net: string, windowEnd?: string | null): string {
   return netLabel;
 }
 
+function parseCoord(value: number | string | undefined): number | null {
+  if (value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : parseFloat(value);
+  return Number.isNaN(n) ? null : n;
+}
+
 function mapLaunch(raw: Ll2Launch): OpsLaunch {
   const provider = raw.launch_service_provider?.name?.trim() || "Operator";
   const mission = launchMissionTitle(raw);
   const rocketName = launchRocketName(raw);
   const padName = raw.pad?.name?.trim();
   const loc = raw.pad?.location?.name?.trim();
-  const site = [padName, loc].filter(Boolean).join(" · ") || "Miejsce startu";
+  const rawSite = [padName, loc].filter(Boolean).join(" · ") || "Miejsce startu";
+  const lat = parseCoord(raw.pad?.latitude);
+  const lon = parseCoord(raw.pad?.longitude);
+  const site = localizePadLabel(
+    padName || loc || rawSite,
+    provider,
+    lat != null && lon != null ? { lat, lon } : undefined,
+  );
 
   const net = raw.net?.trim();
   if (!net) {
@@ -154,13 +172,22 @@ function mapLaunch(raw: Ll2Launch): OpsLaunch {
   return localizeOpsLaunch(enrichLaunchPhase(base));
 }
 
-function ll2RequestHeaders(): HeadersInit {
+export function ll2RequestHeaders(): HeadersInit {
   const headers: Record<string, string> = { Accept: "application/json" };
   const token = process.env.LAUNCH_LIBRARY_API_TOKEN?.trim();
   if (token) {
     headers.Authorization = `Token ${token}`;
   }
   return headers;
+}
+
+function logLl2HttpFailure(list: string, status: number, snippet: string): void {
+  const msg = `[ops] Launch Library ${list} HTTP ${status}${snippet ? `: ${snippet}` : ""}`;
+  if (status === 429) {
+    console.warn(`${msg} — używamy cache / ostatniego snapshotu`);
+    return;
+  }
+  console.warn(msg);
 }
 
 async function fetchLaunchesFromList(
@@ -179,12 +206,13 @@ async function fetchLaunchesFromList(
   const url = `${LL2_BASE}/launches/${list}/?${params}`;
   const res = await fetchExternal(url, {
     headers: ll2RequestHeaders(),
-    cache: "no-store",
+    next: { revalidate: 300 },
   });
 
   if (!res.ok) {
     const snippet = (await res.text()).slice(0, 120);
-    throw new Error(`Launch Library ${list} HTTP ${res.status}: ${snippet}`);
+    logLl2HttpFailure(list, res.status, snippet);
+    return [];
   }
 
   const data = (await res.json()) as Ll2Response;
@@ -194,6 +222,7 @@ async function fetchLaunchesFromList(
 export type LaunchSchedule = {
   upcoming: OpsLaunch[];
   recent: OpsLaunch[];
+  padCoords: LaunchPadCoord[];
 };
 
 /** Nadchodzące + ostatnie zakończone — pełniejszy obraz niż sam /upcoming/. */
@@ -229,13 +258,10 @@ export async function fetchLaunchSchedule(
     .filter((l) => l.phase === "success" || l.phase === "failure")
     .sort((a, b) => Date.parse(b.net) - Date.parse(a.net));
 
-  if (resolvedUpcoming.length === 0 && upcomingRaw.length === 0) {
-    throw new Error("Launch Library: empty upcoming results");
-  }
-
   return {
     upcoming: resolvedUpcoming.slice(0, 12),
     recent: recent.slice(0, 3),
+    padCoords: extractLaunchPadCoords(upcomingRaw, 24),
   };
 }
 

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/cn";
 import type { OpsIssPosition } from "@/lib/ops/types";
 import { formatIssForReader } from "@/lib/ops/format-ops-display";
 
@@ -11,10 +12,10 @@ export default function OpsIssTelemetry({ iss, className }: Props) {
 
   return (
     <div
-      className={
-        className ??
-        "rounded-lg border border-white/15 bg-black/55 px-3 py-2.5 text-[11px] text-white backdrop-blur-md"
-      }
+      className={cn(
+        "rounded-lg border border-white/30 bg-[rgba(6,10,18,0.82)] px-3 py-2.5 text-[11px] text-white shadow-[0_4px_16px_rgba(0,0,0,0.35)] backdrop-blur-md",
+        className,
+      )}
     >
       <p className="mb-2 font-bold uppercase tracking-[0.12em] text-accent-cyan">
         ISS · na żywo

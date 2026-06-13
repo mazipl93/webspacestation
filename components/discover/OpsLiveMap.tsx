@@ -12,11 +12,15 @@ import {
 } from "react-leaflet";
 import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
 import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
+import { alignTrackToReference } from "@/lib/ops/iss-orbit-geo";
 import { cn } from "@/lib/cn";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
 import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import "leaflet/dist/leaflet.css";
+
+/** Leaflet 1.9 — worldCopyJump zapobiega „hakom” przy ±180° (typy @types/leaflet bez tego pola). */
+const ORBIT_LINE_OPTS = { worldCopyJump: true } as L.PolylineOptions;
 
 type Props = {
   pins: OpsMapPin[];
@@ -101,6 +105,7 @@ function focusZoomForPin(pin: OpsMapPin): number {
   const narrow =
     typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
   if (pin.kind === "iss") return narrow ? 3 : 4;
+  if (pin.kind === "cosmodrome" && !pin.scheduled) return narrow ? 3 : 4;
   return narrow ? 4 : 5;
 }
 
@@ -150,6 +155,27 @@ function createPadIcon(color: string, active: boolean) {
   });
 }
 
+function createCosmodromeIcon(
+  color: string,
+  scheduled: boolean,
+  active: boolean,
+) {
+  const size = scheduled ? 12 : 10;
+  const ring = active
+    ? `box-shadow:0 0 0 3px #fff, 0 0 12px ${color};`
+    : scheduled
+      ? `box-shadow:0 0 10px ${color}cc;`
+      : "box-shadow:0 0 6px rgba(100,116,139,0.45);";
+  const border = scheduled ? "2px solid #fff" : "1.5px solid rgba(255,255,255,0.75)";
+  const opacity = scheduled ? 1 : 0.88;
+  return L.divIcon({
+    className: "ops-leaflet-pin",
+    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:${border};opacity:${opacity};${ring}"></span>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
 const SATELLITE_TILE =
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
 
@@ -168,12 +194,29 @@ export default function OpsLiveMap({
   followIss = false,
 }: Props) {
   const [isFollowing, setIsFollowing] = useState(followIss);
-  const { iss: liveIss, orbit: liveOrbit } = useLiveIssTrack(
+  const { iss: liveIss, orbitPast, orbitFuture } = useLiveIssTrack(
     iss ?? null,
     issOrbit,
   );
+
+  const refLon = liveIss?.longitude ?? iss?.longitude;
+  const displayPast = useMemo(
+    () =>
+      refLon == null
+        ? orbitPast
+        : orbitPast.map((seg) => alignTrackToReference(seg, refLon)),
+    [orbitPast, refLon],
+  );
+  const displayFuture = useMemo(
+    () =>
+      refLon == null
+        ? orbitFuture
+        : orbitFuture.map((seg) => alignTrackToReference(seg, refLon)),
+    [orbitFuture, refLon],
+  );
   const issPin = pins.find((p) => p.kind === "iss");
-  const padPins = pins.filter((p) => p.kind === "pad");
+  const cosmodromePins = pins.filter((p) => p.kind === "cosmodrome");
+  const extraPadPins = pins.filter((p) => p.kind === "pad");
 
   const issLatLng = useMemo<[number, number] | null>(() => {
     if (liveIss) return [liveIss.latitude, liveIss.longitude];
@@ -195,13 +238,17 @@ export default function OpsLiveMap({
     () => (issPin ? createIssIcon(focusPinId === issPin.id) : null),
     [issPin, focusPinId]
   );
-  const padIcons = useMemo(() => {
+  const siteIcons = useMemo(() => {
     const icons: Record<string, L.DivIcon> = {};
-    for (const pin of padPins) {
-      icons[pin.id] = createPadIcon(pin.color, focusPinId === pin.id);
+    for (const pin of [...cosmodromePins, ...extraPadPins]) {
+      const active = focusPinId === pin.id;
+      icons[pin.id] =
+        pin.kind === "cosmodrome"
+          ? createCosmodromeIcon(pin.color, Boolean(pin.scheduled), active)
+          : createPadIcon(pin.color, active);
     }
     return icons;
-  }, [padPins, focusPinId]);
+  }, [cosmodromePins, extraPadPins, focusPinId]);
 
   const center = useMemo<[number, number]>(() => {
     if (issLatLng) return issLatLng;
@@ -272,15 +319,33 @@ export default function OpsLiveMap({
         />
         <PinFocusController focusPinId={focusPinId} pins={effectivePins} />
 
-        {liveOrbit.map((segment, i) => (
+        {displayPast.map((segment, i) => (
           <Polyline
-            key={`orbit-${i}`}
+            key={`orbit-past-${i}`}
             positions={segment.map((p) => [p.lat, p.lon] as [number, number])}
             pathOptions={{
-              color: "#ef4444",
-              weight: 2.5,
-              opacity: 0.92,
+              ...ORBIT_LINE_OPTS,
+              color: "#f87171",
+              weight: 2.75,
+              opacity: 0.95,
               lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
+        ))}
+
+        {displayFuture.map((segment, i) => (
+          <Polyline
+            key={`orbit-future-${i}`}
+            positions={segment.map((p) => [p.lat, p.lon] as [number, number])}
+            pathOptions={{
+              ...ORBIT_LINE_OPTS,
+              color: "#ef4444",
+              weight: 2,
+              opacity: 0.55,
+              lineCap: "round",
+              lineJoin: "round",
+              dashArray: "6 8",
             }}
           />
         ))}
@@ -309,11 +374,22 @@ export default function OpsLiveMap({
           />
         )}
 
-        {padPins.map((pin) => (
+        {cosmodromePins.map((pin) => (
           <Marker
             key={pin.id}
             position={[pin.lat, pin.lon]}
-            icon={padIcons[pin.id]}
+            icon={siteIcons[pin.id]}
+            eventHandlers={{
+              click: () => onPinSelect?.(pin.id),
+            }}
+          />
+        ))}
+
+        {extraPadPins.map((pin) => (
+          <Marker
+            key={pin.id}
+            position={[pin.lat, pin.lon]}
+            icon={siteIcons[pin.id]}
             eventHandlers={{
               click: () => onPinSelect?.(pin.id),
             }}
@@ -322,7 +398,7 @@ export default function OpsLiveMap({
       </MapContainer>
 
       {liveIss && (
-        <div className="pointer-events-none absolute right-2 top-2 z-[1000] hidden max-w-[168px] sm:block">
+        <div className="pointer-events-none absolute right-2 top-2 z-10 hidden max-w-[168px] sm:block">
           <OpsIssTelemetry iss={liveIss} className="px-2.5 py-2 text-[10px]" />
         </div>
       )}
@@ -330,7 +406,7 @@ export default function OpsLiveMap({
       {followIss && !isFollowing && liveIss && (
         <button
           onClick={() => setIsFollowing(true)}
-          className="absolute bottom-3 left-3 z-[1000] flex items-center gap-1.5 rounded-lg border border-accent-cyan/40 bg-[rgba(8,14,24,0.88)] px-3 py-1.5 text-[11px] font-semibold text-accent-cyan backdrop-blur-sm transition-colors hover:bg-[rgba(8,14,24,0.95)]"
+          className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-lg border border-accent-cyan/40 bg-[rgba(8,14,24,0.88)] px-3 py-1.5 text-[11px] font-semibold text-accent-cyan backdrop-blur-sm transition-colors hover:bg-[rgba(8,14,24,0.95)]"
         >
           <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-accent-cyan" />
           Śledź ISS

@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { IssLiveTrack, OrbitSegment } from "@/lib/ops/iss-orbit-geo";
 import type { OpsIssPosition } from "@/lib/ops/types";
 
-type OrbitSegment = { lat: number; lon: number }[];
-
-const POSITION_URL = "https://api.wheretheiss.at/v1/satellites/25544";
-const POSITIONS_URL =
-  "https://api.wheretheiss.at/v1/satellites/25544/positions";
-const POSITION_INTERVAL_MS = 4_000;
-const ORBIT_REFRESH_MS = 45_000;
-
-/** Offsety (min) względem „teraz" dla linii orbity — maks. 10 punktów (limit API). */
-const ORBIT_OFFSETS_MIN = [-20, -15, -10, -5, 0, 5, 10, 15, 20, 25];
+const TRACK_URL = "/api/ops/iss-track";
+const TRACK_INTERVAL_MS = 5_000;
+const FALLBACK_POSITION_URL =
+  "https://api.wheretheiss.at/v1/satellites/25544";
 
 type RawIss = {
   latitude?: number;
@@ -37,99 +32,75 @@ function toIssPosition(d: RawIss): OpsIssPosition | null {
   };
 }
 
-function unwrapLongitude(lon: number): number {
-  let x = lon;
-  while (x > 180) x -= 360;
-  while (x < -180) x += 360;
-  return x;
-}
-
-function buildSegments(points: { lat: number; lon: number }[]): OrbitSegment[] {
-  const segments: OrbitSegment[] = [];
-  let current: OrbitSegment = [];
-  let prevLon: number | null = null;
-  for (const p of points) {
-    if (prevLon !== null && Math.abs(p.lon - prevLon) > 120) {
-      if (current.length > 1) segments.push(current);
-      current = [];
-    }
-    current.push(p);
-    prevLon = p.lon;
-  }
-  if (current.length > 1) segments.push(current);
-  return segments;
-}
-
 /**
- * Żywy tracker ISS — pozycja (co 4 s) i ground track (co 45 s) z api.wheretheiss.at.
- * Marker i linia pochodzą z tego samego propagatora, więc zawsze są zsynchronizowane.
- * W całości po stronie przeglądarki (działa lokalnie i na prodzie, bez crona).
+ * ISS live — gęsty ground track SGP4 (/api/ops/iss-track) + fallback pozycji wheretheiss.at.
+ * Marker i linia z jednego propagatora, gdy API działa.
  */
 export function useLiveIssTrack(
   initialIss: OpsIssPosition | null,
   initialOrbit: OrbitSegment[] = [],
-): { iss: OpsIssPosition | null; orbit: OrbitSegment[] } {
+): {
+  iss: OpsIssPosition | null;
+  orbitPast: OrbitSegment[];
+  orbitFuture: OrbitSegment[];
+} {
   const [iss, setIss] = useState<OpsIssPosition | null>(initialIss);
-  const [orbit, setOrbit] = useState<OrbitSegment[]>(initialOrbit);
+  const [orbitPast, setOrbitPast] = useState<OrbitSegment[]>(initialOrbit);
+  const [orbitFuture, setOrbitFuture] = useState<OrbitSegment[]>([]);
+  const sgp4OkRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    const pollPosition = async () => {
+    const pollTrack = async () => {
       if (typeof document !== "undefined" && document.hidden) return;
       try {
-        const res = await fetch(POSITION_URL, { cache: "no-store" });
+        const res = await fetch(TRACK_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("track unavailable");
+        const data = (await res.json()) as IssLiveTrack;
+        if (cancelled || !data?.iss) return;
+        setIss(data.iss);
+        setOrbitPast(data.orbitPast ?? []);
+        setOrbitFuture(data.orbitFuture ?? []);
+        sgp4OkRef.current = true;
+      } catch {
+        sgp4OkRef.current = false;
+      }
+    };
+
+    const pollFallbackPosition = async () => {
+      if (sgp4OkRef.current) return;
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const res = await fetch(FALLBACK_POSITION_URL, { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as RawIss;
         const next = toIssPosition(data);
         if (!cancelled && next) setIss(next);
       } catch {
-        // sieć padła — zostaje ostatnia znana pozycja
+        // zostaje ostatnia znana pozycja
       }
     };
 
-    const pollOrbit = async () => {
-      if (typeof document !== "undefined" && document.hidden) return;
-      try {
-        const now = Math.floor(Date.now() / 1000);
-        const timestamps = ORBIT_OFFSETS_MIN.map((m) => now + m * 60).join(",");
-        const url = `${POSITIONS_URL}?timestamps=${timestamps}&units=kilometers`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return;
-        const arr = (await res.json()) as RawIss[];
-        if (!Array.isArray(arr)) return;
-        const points = arr
-          .filter(
-            (p): p is RawIss & { latitude: number; longitude: number } =>
-              typeof p.latitude === "number" && typeof p.longitude === "number",
-          )
-          .map((p) => ({ lat: p.latitude, lon: unwrapLongitude(p.longitude) }));
-        const segments = buildSegments(points);
-        if (!cancelled && segments.length > 0) setOrbit(segments);
-      } catch {
-        // zostaje ostatnia znana orbita
-      }
-    };
-
-    pollPosition();
-    pollOrbit();
-    const posTimer = setInterval(pollPosition, POSITION_INTERVAL_MS);
-    const orbitTimer = setInterval(pollOrbit, ORBIT_REFRESH_MS);
+    pollTrack();
+    pollFallbackPosition();
+    const trackTimer = setInterval(pollTrack, TRACK_INTERVAL_MS);
+    const fallbackTimer = setInterval(pollFallbackPosition, 4_000);
 
     const onVisibility = () => {
       if (document.hidden) return;
-      pollPosition();
-      pollOrbit();
+      pollTrack();
+      pollFallbackPosition();
     };
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       cancelled = true;
-      clearInterval(posTimer);
-      clearInterval(orbitTimer);
+      clearInterval(trackTimer);
+      clearInterval(fallbackTimer);
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
-  return { iss, orbit };
+  return { iss, orbitPast, orbitFuture };
 }

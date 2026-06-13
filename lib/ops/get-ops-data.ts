@@ -61,7 +61,7 @@ async function bootstrapCore(): Promise<OpsCorePayload> {
       return fresh;
     }
   } catch (error) {
-    console.error("[ops] bootstrap core failed", error);
+    console.warn("[ops] bootstrap core failed:", error instanceof Error ? error.message : error);
   }
   if (stored && hasRealLaunchData(stored.launches)) return stored;
   return buildEmptyCoreSnapshot();
