@@ -364,11 +364,11 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ GSC tier-2 dokończyć jutro:** `/technologie`, `/iss`, `/ziemia-z-kosmosu` (limit dzienny GSC 13.06.2026).
+**→ Krok 9:** A/B tytułów OG (ostatni krok planu · opcjonalny, po baseline GSC 2–4 tyg.) · albo **Krok 7** (dev OG URL) · **Krok 5** (static PNG).
 
-**→ Krok 9:** A/B tytułów OG (opcjonalny) · albo **Krok 7** (dev OG URL) · **Krok 5** (static PNG).
+**GSC (osobna kolejka — nie krok planu):** tier-2 reszta 3 URL gdy reset limitu dziennego: `/technologie`, `/iss`, `/ziemia-z-kosmosu`. Nie blokuj Krok 9.
 
-**GSC tier-1 Request indexing:** **DONE** 13.06.2026 (user OK na `/aktualnosci`).
+**GSC tier-1 Request indexing:** **DONE** 13.06.2026.
 
 **GSC tier-2 Request indexing:** **3/6 DONE** 13.06.2026 · limit po `/nauka`, `/technologie` odrzucone.
 
@@ -405,24 +405,16 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 Skopiuj do nowej sesji:
 
 ```
-Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation, HEAD 74bc482
+Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation, HEAD 1bf6fca
 
-Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md · wykonaj WYŁĄCZNIE: **GSC tier-2 reszta** (3 URL).
+Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md · wykonaj WYŁĄCZNIE **Krok 9** (A/B tytułów OG) lub opcjonalnie Krok 7.
 
 Done (nie powtarzaj):
-- Krok 0–4, 6, 8 · Krok 5 pominięty
-- GSC verify: google64d13b3cded8c481.html
-- GSC tier-1: /, /mapa, /zorza, /starty, /kalendarz, /aktualnosci — ✅
-- GSC tier-2 częściowo: /misje, /astronomia, /nauka — ✅ (limit dzienny 13.06)
+- Krok 0–4, 6, 8 · Krok 5 pominięty · deploy main ✅ (74bc482 / 1bf6fca)
+- GSC tier-1: 6 URL ✅ · tier-2: /misje, /astronomia, /nauka ✅
+- GSC tier-2 reszta (/technologie, /iss, /ziemia-z-kosmosu): backlog — limit dzienny, osobna sesja gdy quota wróci
 
-Następne (Inspekcja URL → Poproś o zindeksowanie, GSC otwarte w przeglądarce):
-1. https://webspacestation.pl/technologie
-2. https://webspacestation.pl/iss
-3. https://webspacestation.pl/ziemia-z-kosmosu
-
-Czekaj 25–35 s po sukcesie; „Google nieznany” = live test ~60–90 s.
-
-Opcjonalnie po tier-2 done: tier-3 (`npm run gsc:priority-urls -- --tier=3`) · osobna sesja.
+Krok 9: jedna zmiana tytułu (np. /zorza wariant B), obserwacja 2–4 tyg. w GSC/social — bez frameworku A/B.
 
 Reguły: jeden krok/sesję, STOP na OK, commit tylko po explicit OK.
 Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
@@ -448,9 +440,9 @@ Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 | 2026-06-13 | GSC tier-2 indexing | user | 3/6 · limit po nauka (technologie odrzucone) |
 | | 5 — static PNG | | opcjonalny, pominięty |
 | | 7 — dev OG URL | | opcjonalny |
-| 2026-06-13 | 8 — keywords audit | user | H1 /zorza · meta nauka · deploy main |
-| | GSC tier-2 reszta | | **NEXT** · /technologie, /iss, /ziemia-z-kosmosu |
-| | 9 — A/B tytułów | | opcjonalny po tier-2 |
+| 2026-06-13 | 8 — keywords audit | user | deploy 74bc482 |
+| | 9 — A/B tytułów | | **NEXT** (ostatni krok planu) |
+| | GSC tier-2 reszta | | backlog · 3 URL gdy reset limitu |
 | | 9 — A/B tytułów | | |
 
 **GSC baseline (wklej po Krok 6):**
