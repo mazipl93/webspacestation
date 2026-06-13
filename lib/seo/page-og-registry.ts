@@ -54,7 +54,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
   zorza: {
     id: "zorza",
     path: "/zorza",
-    headline: "Zorza polarna na żywo",
+    headline: "Czy dziś będzie zorza?",
     subtitle: "Indeks Kp · prognoza NOAA · space weather",
     alt: "Zorza polarna na żywo, indeks geomagnetyczny Kp i prognoza aurora borealis",
     accent: "#34d399",

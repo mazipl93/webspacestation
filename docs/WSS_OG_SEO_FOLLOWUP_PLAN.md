@@ -1,8 +1,8 @@
 # WSS — OG / SEO: plan follow-up (krok po kroku)
 
 **Utworzono:** 13 czerwca 2026  
-**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 8 deploy · GSC tier-2 3/6 · handoff reszta tier-2).  
-**Prod HEAD:** `74bc482` (`main`) — `fix(seo): Krok 8 keywords audit and GSC tier-2 handoff`  
+**Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 9 wariant B `/zorza` · plan OG/SEO zamknięty).  
+**Prod HEAD:** oczekuje deploy po commicie Krok 9  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -327,13 +327,13 @@ curl.exe -sI "https://webspacestation.pl/og/zorza"
 
 ### Krok 9 — A/B tytułów OG (eksperyment, opcjonalny)
 
-- [ ] **Status:** oczekuje · **Opcjonalny:** po Krok 6 baseline
+- [x] **Status:** done 2026-06-13 · wariant B wdrożony na `/zorza` · obserwacja GSC 2–4 tyg.
 
 **Cel:** Przetestować który tytuł daje lepszy CTR w social / GSC.
 
 **Dlaczego (F):** Np. `/zorza`:
-- Wariant A: `Zorza polarna na żywo · indeks Kp i prognoza` (obecny)
-- Wariant B: `Czy dziś będzie zorza? · indeks Kp na żywo`
+- Wariant A: `Zorza polarna na żywo · indeks Kp i prognoza` (baseline)
+- Wariant B: `Czy dziś będzie zorza? · indeks Kp na żywo` (**aktywny**)
 
 **Implementacja (minimalna):**
 - Tylko zmiana `title` w `interactive-tools.ts` + ewent. `headline` na karcie OG w rejestrze
@@ -364,9 +364,9 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 
 ## NASTĘPNY KROK (dla nowego czatu)
 
-**→ Krok 9:** A/B tytułów OG (ostatni krok planu · opcjonalny, po baseline GSC 2–4 tyg.) · albo **Krok 7** (dev OG URL) · **Krok 5** (static PNG).
+**Plan OG/SEO (kroki 0–9): zamknięty.** Opcjonalne follow-upy poza checklistą: **Krok 5** (static PNG), **Krok 7** (dev OG URL), ocena wariantu A vs B po 2–4 tyg. GSC.
 
-**GSC (osobna kolejka — nie krok planu):** tier-2 reszta 3 URL gdy reset limitu dziennego: `/technologie`, `/iss`, `/ziemia-z-kosmosu`. Nie blokuj Krok 9.
+**GSC (osobna kolejka — nie krok planu):** tier-2 reszta 3 URL gdy reset limitu dziennego: `/technologie`, `/iss`, `/ziemia-z-kosmosu`.
 
 **GSC tier-1 Request indexing:** **DONE** 13.06.2026.
 
@@ -405,16 +405,15 @@ Pełne copy: `lib/seo/page-og-registry.ts`
 Skopiuj do nowej sesji:
 
 ```
-Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation, HEAD 1bf6fca
+Projekt: WSS, prod https://webspacestation.pl, repo mazipl93/webspacestation
 
-Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md · wykonaj WYŁĄCZNIE **Krok 9** (A/B tytułów OG) lub opcjonalnie Krok 7.
+Plan OG/SEO (docs/WSS_OG_SEO_FOLLOWUP_PLAN.md): kroki 0–9 DONE.
 
 Done (nie powtarzaj):
-- Krok 0–4, 6, 8 · Krok 5 pominięty · deploy main ✅ (74bc482 / 1bf6fca)
-- GSC tier-1: 6 URL ✅ · tier-2: /misje, /astronomia, /nauka ✅
-- GSC tier-2 reszta (/technologie, /iss, /ziemia-z-kosmosu): backlog — limit dzienny, osobna sesja gdy quota wróci
+- Krok 0–4, 6, 8, 9 · Krok 5 pominięty · Krok 7 opcjonalny
+- GSC tier-1: 6 URL ✅ · tier-2: /misje, /astronomia, /nauka ✅ (reszta: backlog limit)
 
-Krok 9: jedna zmiana tytułu (np. /zorza wariant B), obserwacja 2–4 tyg. w GSC/social — bez frameworku A/B.
+Opcjonalnie: GSC tier-2 reszta · re-scrape /zorza po deploy wariantu B · ocena A/B po 2–4 tyg.
 
 Reguły: jeden krok/sesję, STOP na OK, commit tylko po explicit OK.
 Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
@@ -441,9 +440,8 @@ Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 | | 5 — static PNG | | opcjonalny, pominięty |
 | | 7 — dev OG URL | | opcjonalny |
 | 2026-06-13 | 8 — keywords audit | user | deploy 74bc482 |
-| | 9 — A/B tytułów | | **NEXT** (ostatni krok planu) |
+| 2026-06-13 | 9 — A/B tytułów | user | wariant B `/zorza` · obserwacja GSC 2–4 tyg. |
 | | GSC tier-2 reszta | | backlog · 3 URL gdy reset limitu |
-| | 9 — A/B tytułów | | |
 
 **GSC baseline (wklej po Krok 6):**
 - zorza polarna dziś: imp ___ / CTR ___ / pos ___

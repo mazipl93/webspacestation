@@ -79,7 +79,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
   "aurora-terminal": {
     id: "aurora-terminal",
     path: "/zorza",
-    title: "Zorza polarna na żywo · indeks Kp i prognoza",
+    title: "Czy dziś będzie zorza? · indeks Kp na żywo",
     headline: "Terminal zorzy polarnej · space weather na żywo",
     description:
       "Monitoruj zorzę polarną na żywo: indeks geomagnetyczny Kp, wiatr słoneczny Bz, prognoza burz i mapa widoczności zorzy w Polsce i na świecie — dane NOAA.",
