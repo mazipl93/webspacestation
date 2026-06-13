@@ -2170,6 +2170,29 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   background: transparent !important;
   border: none !important;
 }
+.ops-iss-map-pin {
+  display: block;
+  line-height: 0;
+}
+.ops-iss-map-pin img {
+  display: block;
+  width: 38px;
+  height: auto;
+  max-height: 24px;
+  object-fit: contain;
+  opacity: 0.92;
+  filter: brightness(0) invert(1);
+  pointer-events: none;
+  user-select: none;
+}
+.ops-iss-map-pin--active img {
+  opacity: 1;
+  transform: scale(1.06);
+}
+.ops-iss-map-pin--chip img {
+  width: 24px;
+  max-height: 15px;
+}
 .ops-live-map .ops-map-leaflet-popup .leaflet-popup-content-wrapper {
   border-radius: 14px;
   padding: 0;

@@ -68,7 +68,7 @@ export default async function ArticleFeedSection({
           background: `radial-gradient(ellipse 70% 140% at 0% 0%, ${accent}22 0%, transparent 58%), transparent`,
         }}
       >
-        <div className={cn(SITE_CONTAINER, "pb-5 pt-[96px]")}>
+        <div className={cn(SITE_CONTAINER, "pb-5 pt-28")}>
           <nav
             aria-label="Breadcrumb"
             className="mb-5 flex items-center gap-1.5 text-[11px] text-text-tertiary"

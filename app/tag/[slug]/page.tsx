@@ -76,7 +76,7 @@ export default async function TagPage({ params, searchParams }: Props) {
       <main className="min-h-screen">
         {/* Header */}
         <div className="border-b border-hairline">
-          <div className={cn(SITE_CONTAINER, "pb-5 pt-[96px]")}>
+          <div className={cn(SITE_CONTAINER, "pb-5 pt-28")}>
             {/* Breadcrumb */}
             <nav
               aria-label="Breadcrumb"

@@ -107,7 +107,7 @@ export default async function HubPageShell({
             background: `radial-gradient(ellipse 80% 160% at 0% 0%, ${config.accent}1a 0%, transparent 55%), transparent`,
           }}
         >
-          <div className={cn(SITE_CONTAINER, "pb-8 pt-[96px]")}>
+          <div className={cn(SITE_CONTAINER, "pb-8 pt-28")}>
             {/* Breadcrumb */}
             <nav
               aria-label="Breadcrumb"

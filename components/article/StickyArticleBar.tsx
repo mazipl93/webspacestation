@@ -65,11 +65,11 @@ export default function StickyArticleBar({ title, category, slug }: Props) {
   }, []);
 
   return (
-    /* sits immediately under the navbar (top: 64px = h-16) */
+    /* sits immediately under the navbar (top: 112px = h-28) */
     <div
       className="fixed left-0 right-0 z-40"
       style={{
-        top: 64,
+        top: 112,
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(-6px)",
         pointerEvents: visible ? "auto" : "none",

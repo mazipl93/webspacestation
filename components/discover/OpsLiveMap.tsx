@@ -16,6 +16,7 @@ import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
 import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
 import { prepareOrbitSegmentsForLeaflet } from "@/lib/ops/iss-orbit-geo";
 import { cn } from "@/lib/cn";
+import { issMapPinHtml, ISS_MAP_PIN_HEIGHT, ISS_MAP_PIN_WIDTH } from "@/lib/ops/iss-map-pin-icon";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
 import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
@@ -192,14 +193,13 @@ function MapOrbitReadyGate({ onReady }: { onReady: () => void }) {
 }
 
 function createIssIcon(active: boolean) {
-  const ring = active
-    ? "box-shadow:0 0 0 3px rgba(56,189,248,0.9), 0 0 20px rgba(56,189,248,0.85);"
-    : "box-shadow:0 0 16px rgba(56,189,248,0.85);";
+  const w = ISS_MAP_PIN_WIDTH;
+  const h = ISS_MAP_PIN_HEIGHT;
   return L.divIcon({
     className: "ops-leaflet-pin",
-    html: `<span style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9999px;background:rgba(56,189,248,0.95);border:2px solid #fff;${ring}font-size:14px;">🛰</span>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    html: issMapPinHtml(active),
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h / 2],
   });
 }
 

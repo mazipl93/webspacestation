@@ -28,7 +28,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
           "radial-gradient(ellipse 80% 60% at 10% -10%, rgba(47,109,255,0.14) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 90% 0%, rgba(56,189,248,0.08) 0%, transparent 50%), var(--color-space-bg)",
       }}
     >
-      <div className={`${SITE_CONTAINER} min-h-[calc(100vh-160px)] pb-16 pt-[96px]`}>
+      <div className={`${SITE_CONTAINER} min-h-[calc(100vh-160px)] pb-16 pt-28`}>
         {children}
       </div>
     </div>

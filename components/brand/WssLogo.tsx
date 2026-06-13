@@ -11,7 +11,7 @@ type WssLogoProps = {
 
 export default function WssLogo({ className, asLink = false, height = 52 }: WssLogoProps) {
   const inner = <WssLogoWordmark height={height} />;
-  const classes = cn("group flex min-w-0 items-center bg-transparent", className);
+  const classes = cn("group flex shrink-0 items-center overflow-visible bg-transparent leading-none", className);
 
   if (asLink) {
     return (

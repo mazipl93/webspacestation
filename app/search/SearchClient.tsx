@@ -65,7 +65,7 @@ export default function SearchClient() {
             "radial-gradient(ellipse 70% 140% at 0% 0%, #2f6dff12 0%, transparent 56%), var(--color-space-bg)",
         }}
       >
-        <div className="container-site pb-6 pt-[96px]">
+        <div className="container-site pb-6 pt-28">
           <nav
             aria-label="Breadcrumb"
             className="mb-5 flex items-center gap-1.5 text-[11px] text-text-tertiary"

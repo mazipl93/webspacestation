@@ -56,7 +56,8 @@ function CategoryChip({ label, color }: { label: string; color: string }) {
 }
 
 const LOGO_HEIGHT = 58;
-const LOGO_ASPECT = 1120 / 405;
+/** Intrinsic asset ratio (808×460) — `WssLogoWordmark`. */
+const LOGO_ASPECT = 808 / 460;
 const LOGO_WIDTH = Math.round(LOGO_HEIGHT * LOGO_ASPECT);
 
 function formatFotoCredit(credit: string): string {

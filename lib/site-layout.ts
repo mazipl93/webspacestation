@@ -13,7 +13,7 @@ export const SITE_CONTAINER =
   "mx-auto w-full max-w-[min(100%,var(--spacing-site-shell))] px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 2xl:px-10";
 
 /** Ten sam odstęp pod fixed Navbar co homepage (ContentGrid). */
-export const BELOW_FIXED_NAV_OFFSET_CLASS = "pt-[4.5rem] sm:pt-24";
+export const BELOW_FIXED_NAV_OFFSET_CLASS = "pt-28";
 
 // ─── Legacy (HOMEPAGE_LAYOUT_V2 = false) ─────────────────────────────────────
 

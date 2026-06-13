@@ -146,7 +146,7 @@ async function main() {
   img = await trimAlpha(img, 4);
 
   const meta = await img.metadata();
-  await img.png({ compressionLevel: 9 }).toFile(outPath);
+  await img.png({ compressionLevel: 3 }).toFile(outPath);
 
   const aspect = ((meta.width ?? 1) / (meta.height ?? 1)).toFixed(4);
   console.log("OK:", outPath, `${meta.width}x${meta.height}`, `aspect ${aspect}`);

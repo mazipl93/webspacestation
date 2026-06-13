@@ -1,14 +1,14 @@
-/** Wysokość fixed nav — 4.25rem mobile, h-16 (4rem) od sm. */
+/** Wysokość fixed nav — 7rem (112px). */
 
-export const FIXED_NAV_PADDING_CLASS = "pt-[4.25rem] sm:pt-16";
+export const FIXED_NAV_PADDING_CLASS = "pt-28";
 
 /** Wysokość paska nav (do podglądu CMS w flow). */
-export const ARTICLE_NAV_HEIGHT_CLASS = "h-[4.25rem] sm:h-16";
+export const ARTICLE_NAV_HEIGHT_CLASS = "h-28";
 
 /**
- * Odstęp <main> artykułu pod fixed nav — na sm+ bez luki pod h-16 (homepage: pt-24).
+ * Odstęp <main> artykułu pod fixed nav.
  */
-export const ARTICLE_PAGE_MAIN_OFFSET_CLASS = "pt-[4.5rem] sm:pt-16";
+export const ARTICLE_PAGE_MAIN_OFFSET_CLASS = "pt-28";
 
 /** Sekcja hero — offset nav przez ARTICLE_PAGE_MAIN_OFFSET_CLASS na <main>. */
 export const ARTICLE_HERO_SECTION_CLASS =

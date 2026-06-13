@@ -7,8 +7,8 @@ type Props = {
 };
 
 const LOGO_SRC = "/brand/wss-logo.png";
-/** Intrinsic asset ratio (1120×405, transparent PNG). */
-const LOGO_ASPECT = 1120 / 405;
+/** Logo ISS + WEB SPACE STATION (808×460, transparent PNG). */
+const LOGO_ASPECT = 808 / 460;
 
 export default function WssLogoWordmark({ height = 52, className }: Props) {
   const width = Math.round(height * LOGO_ASPECT);
@@ -19,7 +19,8 @@ export default function WssLogoWordmark({ height = 52, className }: Props) {
       alt=""
       width={width}
       height={height}
-      className={cn("block max-w-full bg-transparent object-contain object-left", className)}
+      unoptimized
+      className={cn("block shrink-0 bg-transparent object-contain object-left", className)}
       style={{ height: `${height}px`, width: `${width}px` }}
       priority
       aria-hidden

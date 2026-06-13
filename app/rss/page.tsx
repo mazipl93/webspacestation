@@ -20,7 +20,7 @@ export default function RssIndexPage() {
   return (
     <>
       <Navbar />
-      <main className={cn(SITE_CONTAINER, "pb-16 pt-[96px]")}>
+      <main className={cn(SITE_CONTAINER, "pb-16 pt-28")}>
         <div className="mx-auto max-w-3xl">
           <div className="mb-8 flex items-start gap-4">
             <span

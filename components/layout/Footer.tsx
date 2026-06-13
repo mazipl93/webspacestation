@@ -1,5 +1,5 @@
 import Link from "next/link";
-import WssLogoWordmark from "@/components/brand/WssLogoWordmark";
+import WssLogo from "@/components/brand/WssLogo";
 import CookieSettingsButton from "@/components/consent/CookieSettingsButton";
 import { cn } from "@/lib/cn";
 import { SITE_CONTAINER } from "@/lib/site-layout";
@@ -80,7 +80,7 @@ export default function Footer() {
 
         <div className={cn(SITE_CONTAINER, "relative py-10 sm:py-12")}>
           <div className="card-surface editorial-surface overflow-hidden rounded-2xl border border-hairline">
-            <div className="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
+            <div className="grid grid-cols-1 gap-0 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
               {/* Punkt zaczepienia — marka */}
               <div className="relative border-b border-hairline-faint bg-[#0c111a] px-6 py-8 sm:px-8 lg:border-b-0 lg:border-r">
                 <div
@@ -91,13 +91,12 @@ export default function Footer() {
                       "linear-gradient(180deg, #2f6dff 0%, #22d3ee 55%, transparent 100%)",
                   }}
                 />
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-cyan">
-                  Web Space Station
-                </p>
-                <Link href="/" className="inline-block rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-cyan">
-                  <WssLogoWordmark height={56} className="max-w-[240px]" />
-                </Link>
-                <p className="mt-4 text-[13px] leading-relaxed text-text-secondary">
+                <WssLogo
+                  asLink
+                  height={160}
+                  className="rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-cyan"
+                />
+                <p className="mt-5 text-[13px] leading-relaxed text-text-secondary">
                   Polski portal o kosmosie, astronomii i technologiach
                   kosmicznych. Newsy, misje i odkrycia.
                 </p>

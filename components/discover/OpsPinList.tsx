@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/cn";
 import type { OpsMapPin } from "@/lib/ops/types";
+import { ISS_MAP_PIN_SRC } from "@/lib/ops/iss-map-pin-icon";
 
 type Props = {
   pins: OpsMapPin[];
@@ -38,11 +39,9 @@ function PinChip({
   const inner = (
     <>
       {pin.kind === "iss" ? (
-        <span
-          className="flex h-5 w-5 shrink-0 items-center justify-center text-[12px]"
-          aria-hidden
-        >
-          🛰
+        <span className="ops-iss-map-pin ops-iss-map-pin--chip shrink-0" aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={ISS_MAP_PIN_SRC} alt="" width={24} height={15} decoding="async" draggable={false} />
         </span>
       ) : (
         <span

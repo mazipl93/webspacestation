@@ -1,6 +1,7 @@
 /**
  * Generuje favicon.ico + PNG (48, 96, 180) z app/icon.svg.
- * Uruchom: npx tsx scripts/generate-favicons.ts
+ * Znak ISS: public/brand/wss-icon-source.png → node scripts/generate-icon-svg.mjs
+ * Uruchom: node scripts/generate-icon-svg.mjs && npx tsx scripts/generate-favicons.ts
  */
 import fs from "node:fs/promises";
 import path from "node:path";
