@@ -1,9 +1,10 @@
 import { getOgPageById } from "@/lib/seo/page-og-registry";
+import { loadOgBackgroundDataUrl } from "@/lib/seo/og-load-background";
 import { buildOgImageResponse } from "@/lib/seo/og-image-response";
 
-export const runtime = "edge";
+/** Node: odczyt plików z /public (edge często nie ładuje tła z URL). */
+export const runtime = "nodejs";
 
-/** CDN cache: OG cards are stable per page; refresh daily. */
 export const revalidate = 86400;
 
 type RouteContext = { params: Promise<{ pageId: string }> };
@@ -14,5 +15,11 @@ export async function GET(_request: Request, context: RouteContext) {
   if (!entry) {
     return new Response("Not found", { status: 404 });
   }
-  return buildOgImageResponse(entry);
+
+  let backgroundSrc: string | null = null;
+  if (entry.backgroundImage) {
+    backgroundSrc = await loadOgBackgroundDataUrl(entry.backgroundImage);
+  }
+
+  return buildOgImageResponse(entry, { backgroundSrc });
 }

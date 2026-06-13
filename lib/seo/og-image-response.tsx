@@ -4,31 +4,30 @@ import {
   DEFAULT_OG_IMAGE_HEIGHT,
   DEFAULT_OG_IMAGE_WIDTH,
 } from "@/lib/seo/site-og";
-import { getSiteUrl } from "@/lib/site-url";
 
-function absoluteAsset(path: string): string {
-  const base = getSiteUrl();
-  return path.startsWith("http") ? path : `${base}${path.startsWith("/") ? path : `/${path}`}`;
-}
+type OgImageOptions = {
+  /** data: URL — z loadOgBackgroundDataUrl */
+  backgroundSrc?: string | null;
+};
 
 /**
- * Satori (@vercel/og): bez radial-gradient w CSS.
- * Elegancki floating glass panel na zdjęciu tła.
+ * Satori (@vercel/og): bez flex:1 (zawęża tekst do jednego słowa w linii).
+ * Stała szerokość karty + data URL tła.
  */
-export function buildOgImageResponse(entry: OgPageEntry): ImageResponse {
-  const bg = entry.backgroundImage ? absoluteAsset(entry.backgroundImage) : null;
+export function buildOgImageResponse(
+  entry: OgPageEntry,
+  options: OgImageOptions = {},
+): ImageResponse {
+  const bg = options.backgroundSrc ?? null;
   const accent = entry.accent ?? "#38bdf8";
+  const cardWidth = 1104;
 
   return new ImageResponse(
     (
       <div
         style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-end",
-          alignItems: "flex-start",
+          width: DEFAULT_OG_IMAGE_WIDTH,
+          height: DEFAULT_OG_IMAGE_HEIGHT,
           position: "relative",
           backgroundColor: "#060810",
           fontFamily: "system-ui, sans-serif",
@@ -39,52 +38,32 @@ export function buildOgImageResponse(entry: OgPageEntry): ImageResponse {
           <img
             src={bg}
             alt=""
-            width={1200}
-            height={630}
+            width={DEFAULT_OG_IMAGE_WIDTH}
+            height={DEFAULT_OG_IMAGE_HEIGHT}
             style={{
               position: "absolute",
               top: 0,
               left: 0,
-              width: "100%",
-              height: "100%",
+              width: DEFAULT_OG_IMAGE_WIDTH,
+              height: DEFAULT_OG_IMAGE_HEIGHT,
               objectFit: "cover",
             }}
           />
         ) : (
-          <>
-            <div
-              style={{
-                position: "absolute",
-                top: -80,
-                right: -60,
-                width: 480,
-                height: 480,
-                borderRadius: 240,
-                backgroundColor: accent,
-                opacity: 0.14,
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                bottom: 80,
-                left: -80,
-                width: 420,
-                height: 420,
-                borderRadius: 210,
-                backgroundColor: accent,
-                opacity: 0.08,
-              }}
-            />
-          </>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "#060810",
+            }}
+          />
         )}
 
-        {/* Lekkie vignette */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: bg ? "rgba(6,8,16,0.28)" : "rgba(6,8,16,0.2)",
+            backgroundColor: bg ? "rgba(6,8,16,0.22)" : "rgba(6,8,16,0.4)",
           }}
         />
         <div
@@ -92,80 +71,62 @@ export function buildOgImageResponse(entry: OgPageEntry): ImageResponse {
             position: "absolute",
             bottom: 0,
             left: 0,
-            right: 0,
-            height: "55%",
-            backgroundColor: "rgba(6,8,16,0.5)",
+            width: DEFAULT_OG_IMAGE_WIDTH,
+            height: 340,
+            backgroundColor: "rgba(6,8,16,0.55)",
           }}
         />
 
-        {/* Floating glass card */}
         <div
           style={{
-            position: "relative",
-            zIndex: 1,
+            position: "absolute",
+            bottom: 40,
+            left: 48,
+            width: cardWidth,
             display: "flex",
-            flexDirection: "row",
-            margin: "0 48px 44px",
-            maxWidth: 1104,
+            flexDirection: "column",
+            padding: "28px 36px 32px 32px",
+            backgroundColor: "rgba(8, 12, 22, 0.86)",
+            borderRadius: 14,
+            border: "1px solid rgba(255, 255, 255, 0.12)",
+            borderLeft: `5px solid ${accent}`,
           }}
         >
-          {/* Accent bar */}
           <div
             style={{
-              width: 4,
-              flexShrink: 0,
-              borderRadius: 4,
-              backgroundColor: accent,
-              marginRight: 0,
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              padding: "32px 40px",
-              backgroundColor: "rgba(8, 12, 22, 0.82)",
-              borderRadius: "0 14px 14px 0",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderLeft: "none",
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: accent,
+              marginBottom: 10,
             }}
           >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: accent,
-                marginBottom: 12,
-              }}
-            >
-              Web Space Station
-            </div>
-            <div
-              style={{
-                fontSize: 48,
-                fontWeight: 700,
-                lineHeight: 1.12,
-                letterSpacing: "-0.025em",
-                color: "#ffffff",
-                maxWidth: 920,
-              }}
-            >
-              {entry.headline}
-            </div>
-            <div
-              style={{
-                fontSize: 21,
-                lineHeight: 1.45,
-                color: "#b8c5d6",
-                marginTop: 14,
-                maxWidth: 880,
-              }}
-            >
-              {entry.subtitle}
-            </div>
+            Web Space Station
+          </div>
+          <div
+            style={{
+              fontSize: 46,
+              fontWeight: 700,
+              lineHeight: 1.15,
+              letterSpacing: "-0.02em",
+              color: "#ffffff",
+              width: cardWidth - 72,
+            }}
+          >
+            {entry.headline}
+          </div>
+          <div
+            style={{
+              fontSize: 22,
+              fontWeight: 400,
+              lineHeight: 1.35,
+              color: "#c8d3e0",
+              marginTop: 12,
+              width: cardWidth - 72,
+            }}
+          >
+            {entry.subtitle}
           </div>
         </div>
       </div>

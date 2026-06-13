@@ -74,7 +74,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Gdzie jest ISS · orbita · mapa startów rakiet",
     alt: "ISS tracker na żywo, mapa pozycji Międzynarodowej Stacji Kosmicznej na orbicie",
     accent: "#ffb830",
-    backgroundImage: "/images/ops-pads/iss.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "ISS tracker",
       "gdzie jest ISS",
