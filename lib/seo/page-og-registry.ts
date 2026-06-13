@@ -93,7 +93,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Harmonogram · odliczanie · SpaceX · NASA · ESA",
     alt: "Starty rakiet, harmonogram nadchodzących misji i odliczanie na żywo",
     accent: "#f97316",
-    backgroundImage: "/images/ops-pads/cape-slc-40.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "starty rakiet",
       "harmonogram startów",
@@ -110,7 +110,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Terminy NET · oś czasu misji kosmicznych",
     alt: "Kalendarz startów rakiet, terminy i harmonogram misji kosmicznych",
     accent: "#38bdf8",
-    backgroundImage: "/images/ops-pads/vandenberg-slc-4e.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "harmonogram startów",
       "kalendarz startów rakiet",
@@ -126,7 +126,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Newsy · misje · astronomia · technologie",
     alt: "Aktualności kosmiczne, najnowsze wiadomości ze świata kosmosu i astronomii",
     accent: "#2f6dff",
-    backgroundImage: "/images/ops-pads/cape-slc-40.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "aktualności kosmiczne",
       "newsy kosmos",
@@ -142,7 +142,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Starty · eksploracja · programy NASA i SpaceX",
     alt: "Misje kosmiczne, artykuły o startach rakiet i programach kosmicznych",
     accent: "#2f6dff",
-    backgroundImage: "/images/ops-pads/cape-slc-40.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "misje kosmiczne",
       "programy kosmiczne",
@@ -210,7 +210,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "Załogi · EVA · eksperymenty na orbicie",
     alt: "ISS, aktualności z Międzynarodowej Stacji Kosmicznej, spacery i eksperymenty",
     accent: "#ffb830",
-    backgroundImage: "/images/ops-pads/iss.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: [
       "ISS",
       "Międzynarodowa Stacja Kosmiczna",
@@ -234,22 +234,6 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
       "pogoda z orbity",
       "klimat satelity",
       "Ziemia z orbity",
-    ],
-  },
-  rozrywka: {
-    id: "rozrywka",
-    path: "/rozrywka",
-    headline: "Rozrywka kosmiczna",
-    subtitle: "Sci-fi · filmy · gry o kosmosie",
-    alt: "Rozrywka, sci-fi, filmy i gry z kosmosem i science fiction",
-    accent: "#ec4899",
-    gradient:
-      "radial-gradient(ellipse at 40% 30%, rgba(236,72,153,0.4) 0%, transparent 55%), linear-gradient(145deg, #0a0610 0%, #120818 100%)",
-    keywords: [
-      "sci-fi kosmos",
-      "filmy o kosmosie",
-      "gry kosmiczne",
-      "rozrywka science fiction",
     ],
   },
   nasa: {
@@ -402,7 +386,7 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     subtitle: "ISS · Tiangong · stacje orbitalne",
     alt: "Stacje kosmiczne, ISS, Tiangong i przyszłe stacje orbitalne",
     accent: "#ffb830",
-    backgroundImage: "/images/ops-pads/iss.png",
+    backgroundImage: "/og/home-cover.jpg",
     keywords: ["stacja kosmiczna", "ISS", "Tiangong", "stacja orbitalna"],
   },
 };
@@ -426,7 +410,7 @@ export function getOgPageByPath(path: string): OgPageEntry | undefined {
   return id ? OG_PAGE_REGISTRY[id] : undefined;
 }
 
-/** Absolute URL to dynamic OG image (1200×630 PNG). */
+/** Absolute URL to dynamic OG image (1200×630 JPEG). */
 export function getPageOgImageUrl(pageId: string): string {
   return `${getSiteUrl()}/og/${pageId}`;
 }

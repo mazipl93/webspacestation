@@ -1,8 +1,6 @@
 import { getOgPageById } from "@/lib/seo/page-og-registry";
-import { loadOgBackgroundDataUrl } from "@/lib/seo/og-load-background";
-import { buildOgImageResponse } from "@/lib/seo/og-image-response";
+import { buildOgImageJpeg } from "@/lib/seo/og-image-sharp";
 
-/** Node: odczyt plików z /public (edge często nie ładuje tła z URL). */
 export const runtime = "nodejs";
 
 export const revalidate = 86400;
@@ -16,10 +14,12 @@ export async function GET(_request: Request, context: RouteContext) {
     return new Response("Not found", { status: 404 });
   }
 
-  let backgroundSrc: string | null = null;
-  if (entry.backgroundImage) {
-    backgroundSrc = await loadOgBackgroundDataUrl(entry.backgroundImage);
-  }
+  const jpeg = await buildOgImageJpeg(entry);
 
-  return buildOgImageResponse(entry, { backgroundSrc });
+  return new Response(new Uint8Array(jpeg), {
+    headers: {
+      "Content-Type": "image/jpeg",
+      "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+    },
+  });
 }
