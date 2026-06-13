@@ -2,7 +2,7 @@
 
 **Utworzono:** 13 czerwca 2026  
 **Ostatnia aktualizacja planu:** 13 czerwca 2026 (Krok 6: GSC pakiet + RSS w sitemap).  
-**Prod HEAD:** _(po push tej sesji — Krok 6)_ · `main`  
+**Prod HEAD:** `a69d372` (`main`)  
 **Produkcja:** https://webspacestation.pl · repo `mazipl93/webspacestation` · branch `main`
 
 ### Commity OG (kolejność)
@@ -376,7 +376,7 @@ Skopiuj do nowej sesji:
 
 ```
 Projekt: Web Space Station (WSS), Next.js 15, prod https://webspacestation.pl
-Repo: mazipl93/webspacestation, branch main
+Repo: mazipl93/webspacestation, branch main, HEAD a69d372
 
 Przeczytaj docs/WSS_OG_SEO_FOLLOWUP_PLAN.md i wykonaj WYŁĄCZNIE następny nieodhaczony krok (obecnie: Krok 7, opcjonalny).
 
@@ -403,7 +403,7 @@ Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 | 2026-06-13 | extra — jakość OG | user | `e92d7d4` JPEG sharp, `805b3d8` 2× WebP Satori, `b8f7be4` hotfix 500 |
 | 2026-06-13 | extra — og:title | user | `0042519` bez em dash (` · `) |
 | 2026-06-13 | 4 — live Kp OG | user | commit 41605ae |
-| 2026-06-13 | 6 — GSC pakiet | user | sitemap RSS, gsc-priority-urls, JSON-LD sameAs |
+| 2026-06-13 | 6 — GSC pakiet | user | a69d372 · RSS w sitemap, gsc:priority-urls |
 | | 5 — static PNG | | opcjonalny, pominięty |
 | | 7 — dev OG URL | | **NEXT (opcjonalny)** |
 | | 8 — keywords audit | | |
