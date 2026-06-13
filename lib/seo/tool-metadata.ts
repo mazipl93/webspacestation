@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
 import type { InteractiveToolSeo } from "@/lib/seo/interactive-tools";
-import {
-  DEFAULT_OG_IMAGE_ALT,
-  DEFAULT_OG_IMAGE_HEIGHT,
-  DEFAULT_OG_IMAGE_WIDTH,
-  getDefaultOgImageUrl,
-} from "@/lib/seo/site-og";
+import { getPageOgImageForPath } from "@/lib/seo/site-og";
 import { formatPageTitle } from "@/lib/seo/site-title";
 import { getSiteUrl } from "@/lib/site-url";
 
 /** Pełne metadata dla stron narzędzi live (ISS, zorza, starty). */
 export function buildToolPageMetadata(tool: InteractiveToolSeo): Metadata {
   const canonical = `${getSiteUrl()}${tool.path}`;
-  const ogImage = getDefaultOgImageUrl();
+  const og = getPageOgImageForPath(tool.path);
   const pageTitle = formatPageTitle(tool.title);
 
   return {
@@ -30,10 +25,10 @@ export function buildToolPageMetadata(tool: InteractiveToolSeo): Metadata {
       locale: "pl_PL",
       images: [
         {
-          url: ogImage,
-          width: DEFAULT_OG_IMAGE_WIDTH,
-          height: DEFAULT_OG_IMAGE_HEIGHT,
-          alt: tool.ogImageAlt || DEFAULT_OG_IMAGE_ALT,
+          url: og.url,
+          width: og.width,
+          height: og.height,
+          alt: tool.ogImageAlt || og.alt,
         },
       ],
     },
@@ -41,7 +36,7 @@ export function buildToolPageMetadata(tool: InteractiveToolSeo): Metadata {
       card: "summary_large_image",
       title: pageTitle,
       description: tool.description,
-      images: [ogImage],
+      images: [og.url],
     },
   };
 }

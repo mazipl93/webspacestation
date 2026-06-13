@@ -1,5 +1,6 @@
 import { getCategoryInfo } from "@/lib/categories";
 import type { InteractiveToolSeo } from "@/lib/seo/interactive-tools";
+import { getPageOgImageUrl, pathToOgPageId } from "@/lib/seo/page-og-registry";
 import { getSiteUrl } from "@/lib/site-url";
 import type { NewsArticle } from "@/types";
 
@@ -137,6 +138,8 @@ export function buildBreadcrumbJsonLd(items: BreadcrumbItem[]) {
 export function buildWebApplicationJsonLd(tool: InteractiveToolSeo) {
   const siteUrl = getSiteUrl();
   const url = `${siteUrl}${tool.path}`;
+  const ogPageId = pathToOgPageId(tool.path);
+  const ogImage = ogPageId ? getPageOgImageUrl(ogPageId) : undefined;
 
   return {
     "@context": "https://schema.org",
@@ -152,6 +155,7 @@ export function buildWebApplicationJsonLd(tool: InteractiveToolSeo) {
     isAccessibleForFree: true,
     keywords: tool.keywords.join(", "),
     featureList: tool.featureList,
+    ...(ogImage ? { image: ogImage } : {}),
     offers: {
       "@type": "Offer",
       price: "0",
@@ -200,4 +204,44 @@ export function buildInteractiveToolJsonLd(
   const faq = buildFaqPageJsonLd(tool.faq, tool.path);
   if (faq) blocks.push(faq);
   return blocks;
+}
+
+/** CollectionPage — listingi działów, hubów, /aktualnosci. */
+export function buildCollectionPageJsonLd({
+  name,
+  description,
+  path,
+}: {
+  name: string;
+  description: string;
+  path: `/${string}` | "/";
+}) {
+  const url = absoluteUrl(path);
+  const ogPageId = pathToOgPageId(path);
+  const ogImage = ogPageId ? getPageOgImageUrl(ogPageId) : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${url}#collection`,
+    name,
+    description,
+    url,
+    inLanguage: "pl-PL",
+    isPartOf: { "@id": `${getSiteUrl()}/#website` },
+    ...(ogImage ? { image: ogImage } : {}),
+  };
+}
+
+/** Breadcrumb + CollectionPage dla stron listingowych. */
+export function buildListingPageJsonLd(
+  name: string,
+  description: string,
+  path: `/${string}` | "/",
+  breadcrumb: BreadcrumbItem[],
+) {
+  return [
+    buildCollectionPageJsonLd({ name, description, path }),
+    buildBreadcrumbJsonLd(breadcrumb),
+  ];
 }

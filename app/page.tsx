@@ -8,43 +8,40 @@ import {
   getHeroPreconnectOrigin,
 } from "@/lib/home/hero-lcp";
 import { getSiteUrl } from "@/lib/site-url";
-import {
-  DEFAULT_OG_IMAGE_ALT,
-  DEFAULT_OG_IMAGE_HEIGHT,
-  DEFAULT_OG_IMAGE_WIDTH,
-  getDefaultOgImageUrl,
-} from "@/lib/seo/site-og";
+import { getPageKeywords } from "@/lib/seo/page-og-registry";
+import { getPageOgImageForPath } from "@/lib/seo/site-og";
 import { SITE_HOME_TITLE } from "@/lib/seo/site-title";
+
+const HOME_DESCRIPTION =
+  "Aktualności kosmiczne, ISS tracker na żywo, terminal zorzy polarnej (indeks Kp) i harmonogram startów rakiet. Web Space Station.";
+const homeOg = getPageOgImageForPath("/");
 
 export const metadata: Metadata = {
   title: { absolute: SITE_HOME_TITLE },
-  description:
-    "Aktualności kosmiczne, ISS tracker na żywo, terminal zorzy polarnej (indeks Kp) i harmonogram startów rakiet — Web Space Station.",
-  keywords: [
-    "aktualności kosmiczne",
-    "kosmos",
-    "astronomia",
-    "ISS tracker",
-    "śledzenie ISS",
-    "zorza polarna",
-    "indeks Kp",
-    "starty rakiet",
-    "harmonogram startów",
-    "misje kosmiczne",
-    "NASA",
-    "SpaceX",
-  ],
+  description: HOME_DESCRIPTION,
+  keywords: getPageKeywords("/"),
   alternates: { canonical: getSiteUrl() },
+  robots: { index: true, follow: true },
   openGraph: {
     url: getSiteUrl(),
+    title: SITE_HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    type: "website",
+    locale: "pl_PL",
     images: [
       {
-        url: getDefaultOgImageUrl(),
-        width: DEFAULT_OG_IMAGE_WIDTH,
-        height: DEFAULT_OG_IMAGE_HEIGHT,
-        alt: DEFAULT_OG_IMAGE_ALT,
+        url: homeOg.url,
+        width: homeOg.width,
+        height: homeOg.height,
+        alt: homeOg.alt,
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: [homeOg.url],
   },
 };
 

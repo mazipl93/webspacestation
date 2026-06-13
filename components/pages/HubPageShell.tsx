@@ -10,6 +10,8 @@ import {
   parseListingPage,
 } from "@/lib/seo/article-listing";
 import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import { buildListingPageJsonLd } from "@/lib/seo/json-ld";
+import JsonLd from "@/components/seo/JsonLd";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import { cn } from "@/lib/cn";
 import ArticleCard from "@/components/article/ArticleCard";
@@ -85,6 +87,17 @@ export default async function HubPageShell({
 
   return (
     <>
+      <JsonLd
+        data={buildListingPageJsonLd(
+          `${config.title} — misje, starty i odkrycia`,
+          config.description,
+          `/${config.slug}`,
+          [
+            { name: "Strona główna", path: "/" },
+            { name: config.title, path: `/${config.slug}` },
+          ],
+        )}
+      />
       <Navbar />
       <main className="min-h-screen">
         {/* Hub header */}

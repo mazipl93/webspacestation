@@ -5,9 +5,9 @@ import ArticleListingPageShell, {
 } from "@/components/pages/ArticleListingPageShell";
 
 const LISTING: ArticleListingConfig = {
-  title: "Aktualności",
+  title: "Aktualności kosmiczne",
   description:
-    "Najnowsze wiadomości ze świata kosmosu, astronomii i technologii kosmicznych. Śledź misje, starty rakiet i odkrycia naukowe.",
+    "Najnowsze wiadomości ze świata kosmosu, astronomii i technologii kosmicznych: newsy o misjach, startach rakiet i odkryciach naukowych.",
   path: "/aktualnosci",
 };
 

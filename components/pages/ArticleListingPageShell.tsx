@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ArticleFeedSection from "@/components/sections/ArticleFeedSection";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildListingPageJsonLd } from "@/lib/seo/json-ld";
 import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
 import { parseListingPage } from "@/lib/seo/article-listing";
 import type { CategorySlug } from "@/lib/categories";
@@ -40,6 +42,12 @@ export default async function ArticleListingPageShell({
 
   return (
     <>
+      <JsonLd
+        data={buildListingPageJsonLd(listing.title, listing.description, listing.path, [
+          { name: "Strona główna", path: "/" },
+          { name: listing.title, path: listing.path },
+        ])}
+      />
       <Navbar />
       <main className="min-h-screen">
         <ArticleFeedSection
