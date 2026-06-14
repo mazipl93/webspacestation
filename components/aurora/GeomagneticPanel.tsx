@@ -51,11 +51,11 @@ function IndexChartRow({
   return (
     <div className="rounded-lg border border-slate-800/80 bg-slate-950/40 p-2 flex gap-2 items-stretch">
       <div className="w-[4rem] sm:w-[4.5rem] shrink-0 flex flex-col justify-center items-center text-center border-r border-slate-800/80 pr-2">
-        <span className="text-[8px] text-slate-500 font-mono uppercase leading-tight">{label}</span>
-        <span className="text-base font-bold font-mono leading-none mt-1" style={{ color }}>
+        <span className="text-[11px] lg:text-[8px] text-slate-500 font-mono uppercase leading-tight">{label}</span>
+        <span className="text-xl lg:text-base font-bold font-mono leading-none mt-1" style={{ color }}>
           {value}
         </span>
-        <span className="text-[8px] text-slate-600 font-mono mt-0.5">{unit}</span>
+        <span className="text-[11px] lg:text-[8px] text-slate-600 font-mono mt-0.5">{unit}</span>
       </div>
       <div className="flex-1 min-w-0">
         <ResponsiveContainer width="100%" height={height}>

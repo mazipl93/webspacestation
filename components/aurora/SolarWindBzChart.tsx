@@ -78,7 +78,7 @@ export default function SolarWindBzChart({
                 key={value}
                 type="button"
                 onClick={() => setInternalWindow(value)}
-                className={`px-2.5 py-1 text-[9px] font-mono transition-colors ${
+                className={`px-3 py-1.5 lg:px-2.5 lg:py-1 text-[12px] lg:text-[9px] font-mono transition-colors ${
                   windowMin === value
                     ? "bg-slate-700 text-sky-300"
                     : "text-slate-500 hover:text-slate-300"
@@ -92,7 +92,7 @@ export default function SolarWindBzChart({
       )}
 
       {!isTeaser && (
-        <div className="text-[9px] text-slate-500 font-mono uppercase tracking-widest">
+        <div className="text-[13px] lg:text-[9px] text-slate-500 font-mono uppercase tracking-widest">
           Pole magnetyczne IMF
         </div>
       )}

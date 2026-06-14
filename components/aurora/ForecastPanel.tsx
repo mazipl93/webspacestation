@@ -92,7 +92,7 @@ export default function ForecastPanel({ forecast, alerts }: ForecastPanelProps) 
       {/* Active Alerts */}
       {alerts.length > 0 && (
         <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-          <h3 className="text-xs font-bold tracking-widest text-slate-200 uppercase mb-3">
+          <h3 className="text-sm lg:text-xs font-bold tracking-widest text-slate-200 uppercase mb-3">
             Alerty NOAA Space Weather
           </h3>
           <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
@@ -111,12 +111,12 @@ export default function ForecastPanel({ forecast, alerts }: ForecastPanelProps) 
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span
-                      className="text-[9px] font-bold px-1.5 py-0.5 rounded font-mono"
+                      className="text-[12px] lg:text-[9px] font-bold px-2 py-0.5 rounded font-mono"
                       style={{ color: col, background: `${col}22`, border: `1px solid ${col}44` }}
                     >
                       {lbl}
                     </span>
-                    <span className="text-[9px] text-slate-500 font-mono">
+                    <span className="text-[12px] lg:text-[9px] text-slate-500 font-mono">
                       {alert.issueTime.slice(0, 16).replace("T", " ")}
                     </span>
                   </div>
@@ -125,7 +125,7 @@ export default function ForecastPanel({ forecast, alerts }: ForecastPanelProps) 
                   {i < 5 && (
                     <div className="mb-2">
                       {translation ? (
-                        <p className="text-[11px] text-slate-100 leading-relaxed">
+                        <p className="text-[14px] lg:text-[11px] text-slate-100 leading-relaxed">
                           {translation}
                         </p>
                       ) : (

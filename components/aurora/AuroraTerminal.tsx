@@ -150,17 +150,17 @@ export default function AuroraTerminal() {
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <Link
             href="/"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-slate-800 bg-slate-900/40 px-2.5 py-1.5 text-[10px] font-mono text-slate-500 transition-colors hover:border-[#44ff88]/35 hover:text-[#44ff88]"
+            className="inline-flex shrink-0 items-center gap-2 rounded-md border border-slate-800 bg-slate-900/40 px-3 py-2 text-[13px] lg:text-[10px] font-mono text-slate-500 transition-colors hover:border-[#44ff88]/35 hover:text-[#44ff88]"
             aria-label="Wróć na stronę główną Web Space Station"
           >
-            <ArrowLeft size={12} aria-hidden />
+            <ArrowLeft className="size-4 lg:size-3" aria-hidden />
             <span className="hidden sm:inline">Strona główna</span>
           </Link>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-bold tracking-tight text-slate-100">
+            <h1 className="text-lg lg:text-base font-bold tracking-tight text-slate-100">
               {AURORA_TOOL.headline}
             </h1>
-            <p className="text-[9px] text-slate-600 font-mono mt-0.5">
+            <p className="text-[13px] lg:text-[9px] text-slate-500 font-mono mt-1 lg:mt-0.5 leading-snug">
               Aurora Terminal · indeks Kp · NOAA SWPC · odswiezono {lastUpdateStr}
             </p>
           </div>
@@ -168,7 +168,7 @@ export default function AuroraTerminal() {
         <button
           type="button"
           onClick={refetch}
-          className="shrink-0 text-[10px] font-mono text-slate-400 hover:text-sky-300 border border-slate-700 hover:border-sky-600/50 bg-slate-900/60 px-3 py-1.5 rounded-md transition-colors"
+          className="shrink-0 text-[14px] lg:text-[10px] font-mono text-slate-400 hover:text-sky-300 border border-slate-700 hover:border-sky-600/50 bg-slate-900/60 px-3.5 py-2 lg:px-3 lg:py-1.5 rounded-md transition-colors"
           aria-label="Odswiez dane"
         >
           ↻ Odswiez
@@ -190,7 +190,7 @@ export default function AuroraTerminal() {
                   subtitle="Indeks geomagnetyczny · okno 3h"
                   action={
                     isStormy ? (
-                      <span className="px-2 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider text-orange-400 border border-orange-500/40 bg-orange-500/10">
+                      <span className="px-2.5 py-1 rounded text-[12px] lg:text-[9px] font-bold font-mono tracking-wider text-orange-400 border border-orange-500/40 bg-orange-500/10">
                         BURZA G{Math.min(5, Math.max(1, Math.floor(currentKp - 4)))}
                       </span>
                     ) : undefined
@@ -198,14 +198,14 @@ export default function AuroraTerminal() {
                 >
                   <div className="flex flex-col items-center">
                     <KpGauge kp={currentKp} size={200} />
-                    <div className="mt-3 w-full grid grid-cols-2 gap-2 text-[11px] font-mono">
-                      <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2 text-center">
-                        <div className="text-slate-500 text-[10px]">Hp30</div>
-                        <div className="font-bold text-sky-300">{hp30}</div>
+                    <div className="mt-3 w-full grid grid-cols-2 gap-2 text-[14px] lg:text-[11px] font-mono">
+                      <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2.5 lg:p-2 text-center">
+                        <div className="text-slate-500 text-[13px] lg:text-[10px]">Hp30</div>
+                        <div className="font-bold text-lg lg:text-base text-sky-300">{hp30}</div>
                       </div>
-                      <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2 text-center">
-                        <div className="text-slate-500 text-[10px]">Hp60</div>
-                        <div className="font-bold text-violet-300">{hp60}</div>
+                      <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2.5 lg:p-2 text-center">
+                        <div className="text-slate-500 text-[13px] lg:text-[10px]">Hp60</div>
+                        <div className="font-bold text-lg lg:text-base text-violet-300">{hp60}</div>
                       </div>
                     </div>
                   </div>
@@ -271,7 +271,7 @@ export default function AuroraTerminal() {
         )}
       </main>
 
-      <footer className="border-t border-slate-800/50 px-4 py-3 text-[9px] text-slate-600 font-mono text-center pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-3">
+      <footer className="border-t border-slate-800/50 px-4 py-3 text-[12px] lg:text-[9px] text-slate-600 font-mono text-center pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-3">
         NOAA SWPC · Open-Meteo · odswiezanie co 60s ·{" "}
         <Link href="/" className="text-slate-500 transition-colors hover:text-[#44ff88]">
           Web Space Station
@@ -303,7 +303,7 @@ export default function AuroraTerminal() {
               aria-current={isActive ? "page" : undefined}
             >
               <span className="aurora-mobile-nav__icon" aria-hidden>
-                <Icon size={20} strokeWidth={1.75} />
+                <Icon size={26} strokeWidth={1.75} />
               </span>
               <span className="aurora-mobile-nav__label">{label}</span>
             </button>

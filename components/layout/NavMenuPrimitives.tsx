@@ -227,15 +227,14 @@ export function NavMobileAccordion({
         type="button"
         aria-expanded={open}
         onClick={onToggle}
-        className="flex min-h-[52px] w-full items-center justify-between gap-3 py-2 text-left"
+        className="flex min-h-[56px] w-full items-center justify-between gap-3 py-2.5 text-left"
       >
-        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
+        <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
           {label}
         </span>
         <ChevronDown
-          size={18}
           className={cn(
-            "shrink-0 text-text-muted transition-transform duration-300 ease-out",
+            "size-5 shrink-0 text-text-muted transition-transform duration-300 ease-out",
             open && "rotate-180"
           )}
         />
@@ -259,7 +258,7 @@ export function NavMobileAccordion({
                     onClick={onNavigate}
                     {...(link.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     className={cn(
-                      "nav-menu-item-enter flex min-h-[48px] items-center gap-3 rounded-xl px-2.5 py-2 transition-colors duration-200",
+                      "nav-menu-item-enter flex min-h-[52px] items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors duration-200",
                       active
                         ? "bg-glass-hover text-text-primary"
                         : "text-text-secondary hover:bg-glass/60 hover:text-text-primary"
@@ -267,17 +266,17 @@ export function NavMobileAccordion({
                     style={{ animationDelay: `${i * 35}ms` }}
                   >
                     <span
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                       style={{
                         color: accent,
                         background: `${accent}14`,
                         border: `1px solid ${accent}33`,
                       }}
                     >
-                      {Icon ? <Icon size={15} aria-hidden /> : null}
+                      {Icon ? <Icon size={18} aria-hidden /> : null}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-semibold leading-snug">
+                      <span className="block text-[16px] font-semibold leading-snug">
                         {link.label}
                         {link.newTab ? (
                           <span className="ml-1 text-[11px] text-text-muted" aria-hidden>

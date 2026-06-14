@@ -67,7 +67,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
           key={value}
           type="button"
           onClick={() => setWindowMin(value)}
-          className={`px-2.5 py-1 text-[9px] font-mono transition-colors ${
+          className={`px-3 py-1.5 lg:px-2.5 lg:py-1 text-[12px] lg:text-[9px] font-mono transition-colors ${
             windowMin === value
               ? "bg-slate-700 text-sky-300"
               : "text-slate-500 hover:text-slate-300"
@@ -106,7 +106,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
           height={80}
         />
 
-        <div className="flex gap-2 text-[9px] font-mono px-1">
+        <div className="flex gap-2 text-[13px] lg:text-[9px] font-mono px-1">
           <span className="text-slate-500">By:</span>
           <span className="text-violet-400 font-bold">
             {l1By >= 0 ? "+" : ""}{l1By.toFixed(1)} nT
@@ -114,7 +114,7 @@ export default function SolarWindPanel({ data }: SolarWindPanelProps) {
           {l1Timestamp && <span className="text-slate-600">{l1Timestamp}</span>}
         </div>
 
-        <div className="text-[9px] text-slate-500 font-mono uppercase tracking-widest pt-1">
+        <div className="text-[13px] lg:text-[9px] text-slate-500 font-mono uppercase tracking-widest pt-1">
           Plazma
         </div>
 

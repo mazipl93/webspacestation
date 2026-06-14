@@ -2405,8 +2405,8 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
     bottom: 0;
     z-index: 1100;
     display: flex;
-    gap: 0.35rem;
-    padding: 0.5rem 0.65rem 0.65rem;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid rgb(30 41 59 / 0.9);
     background: linear-gradient(180deg, rgb(6 8 16 / 0.92) 0%, rgb(4 6 12 / 0.98) 100%);
     backdrop-filter: blur(14px);
@@ -2419,9 +2419,9 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
-  min-height: 3.75rem;
-  padding: 0.55rem 0.35rem 0.45rem;
+  gap: 0.35rem;
+  min-height: 4.5rem;
+  padding: 0.65rem 0.45rem 0.55rem;
   border-radius: 0.75rem;
   border: 1px solid rgb(51 65 85 / 0.55);
   background: rgb(10 15 30 / 0.55);
@@ -2437,8 +2437,8 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
 .aurora-mobile-nav__icon {
   display: grid;
   place-items: center;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.85rem;
+  height: 2.85rem;
   border-radius: 0.6rem;
   border: 1px solid rgb(51 65 85 / 0.5);
   background: rgb(8 12 24 / 0.75);
@@ -2447,7 +2447,7 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
 }
 
 .aurora-mobile-nav__label {
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;

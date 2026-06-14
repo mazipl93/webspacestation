@@ -10,8 +10,8 @@ import { matchesArticle } from "@/lib/search";
 import type { AdminArticle } from "@/lib/admin/types";
 import { useAuth } from "@/components/auth/AuthProvider";
 import AccountMenu from "@/components/auth/AccountMenu";
-import WssLogo from "@/components/brand/WssLogo";
 import LogoutButton from "@/components/auth/LogoutButton";
+import WssLogo from "@/components/brand/WssLogo";
 import Avatar from "@/components/profile/Avatar";
 import NotificationsPopover from "@/components/notifications/NotificationsPopover";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -40,6 +40,10 @@ import {
   NavMenuSectionLabel,
   NavMobileAccordion,
 } from "@/components/layout/NavMenuPrimitives";
+
+const NAV_ICON_BTN =
+  "flex h-11 w-11 items-center justify-center rounded-lg transition-colors duration-200 lg:h-8 lg:w-8";
+const NAV_ICON_CLASS = "size-[22px] lg:size-[18px]";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -375,9 +379,9 @@ export default function Navbar() {
                 aria-label="Szukaj"
                 aria-expanded={searchOpen}
                 onClick={() => (searchOpen ? closeSearch() : openSearch())}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 hover:bg-white/[0.06] hover:text-text-primary"
+                className={cn(NAV_ICON_BTN, "text-text-tertiary hover:bg-white/[0.06] hover:text-text-primary")}
               >
-                <Search size={18} strokeWidth={2} />
+                <Search className={NAV_ICON_CLASS} strokeWidth={2} />
               </button>
 
               {searchOpen && (
@@ -491,9 +495,9 @@ export default function Navbar() {
                   setSearchShown(false);
                   setNotificationsOpen((v) => !v);
                 }}
-                className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary transition-colors duration-200 hover:bg-white/[0.06] hover:text-text-primary"
+                className={cn(NAV_ICON_BTN, "relative text-text-tertiary hover:bg-white/[0.06] hover:text-text-primary")}
               >
-                <Bell size={17} strokeWidth={2} />
+                <Bell className={NAV_ICON_CLASS} strokeWidth={2} />
                 {hasUnreadNotifications && (
                   <span
                     aria-hidden="true"
@@ -537,9 +541,9 @@ export default function Navbar() {
             <button
               aria-label="Menu"
               onClick={() => setMobileOpen((v) => !v)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-white/[0.06] hover:text-text-primary lg:hidden"
+              className={cn(NAV_ICON_BTN, "text-text-secondary hover:bg-white/[0.06] hover:text-text-primary lg:hidden")}
             >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              {mobileOpen ? <X className={NAV_ICON_CLASS} /> : <Menu className={NAV_ICON_CLASS} />}
             </button>
           </div>
         </div>
@@ -571,7 +575,7 @@ export default function Navbar() {
             }}
           >
             <nav className={cn(SITE_CONTAINER, "flex max-h-[min(78vh,640px)] flex-col overflow-y-auto overscroll-contain py-3")}>
-              <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">
+              <p className="mb-2 px-1 text-[12px] font-bold uppercase tracking-[0.14em] text-text-muted">
                 Artykuły
               </p>
               <ul className="mb-2 flex flex-col gap-0.5">
@@ -585,7 +589,7 @@ export default function Navbar() {
                         href={link.href}
                         onClick={closeMobileNav}
                         className={cn(
-                          "nav-menu-item-enter flex min-h-[48px] items-center gap-3 rounded-xl px-2.5 py-2 transition-colors",
+                          "nav-menu-item-enter flex min-h-[52px] items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors",
                           active
                             ? "bg-glass-hover text-text-primary"
                             : "text-text-secondary hover:bg-glass/60 hover:text-text-primary"
@@ -593,16 +597,16 @@ export default function Navbar() {
                         style={{ animationDelay: `${i * 35}ms` }}
                       >
                         <span
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                           style={{
                             color: accent,
                             background: `${accent}14`,
                             border: `1px solid ${accent}33`,
                           }}
                         >
-                          {Icon ? <Icon size={15} aria-hidden /> : null}
+                          {Icon ? <Icon size={18} aria-hidden /> : null}
                         </span>
-                        <span className="text-[15px] font-semibold">{link.label}</span>
+                        <span className="text-[16px] font-semibold">{link.label}</span>
                       </Link>
                     </li>
                   );

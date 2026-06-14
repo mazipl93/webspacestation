@@ -196,8 +196,8 @@ export function SolarWindChartRow({
         <span
           className={
             compact
-              ? "text-[7px] text-slate-500 font-mono uppercase leading-tight mb-0.5"
-              : "text-[8px] lg:text-[9px] text-slate-500 font-mono uppercase leading-tight mb-1"
+              ? "text-[10px] lg:text-[7px] text-slate-500 font-mono uppercase leading-tight mb-0.5"
+              : "text-[12px] lg:text-[9px] text-slate-500 font-mono uppercase leading-tight mb-1"
           }
         >
           {label}
@@ -205,18 +205,18 @@ export function SolarWindChartRow({
         <span
           className={
             compact
-              ? "text-sm font-bold font-mono leading-none"
-              : "text-base sm:text-lg lg:text-xl font-bold font-mono leading-none"
+              ? "text-base font-bold font-mono leading-none"
+              : "text-xl lg:text-xl font-bold font-mono leading-none"
           }
           style={{ color }}
         >
           {value}
         </span>
-        <span className="text-[7px] text-slate-500 font-mono mt-0.5">{unit}</span>
+        <span className="text-[11px] lg:text-[7px] text-slate-500 font-mono mt-0.5">{unit}</span>
         {!compact && (
           <>
             {l1Timestamp && (
-              <span className="text-[7px] text-slate-600 font-mono mt-1.5 leading-tight">{l1Timestamp}</span>
+              <span className="text-[10px] lg:text-[7px] text-slate-600 font-mono mt-1.5 leading-tight">{l1Timestamp}</span>
             )}
             {sublabel && (
               <span className="text-[7px] font-mono mt-0.5 leading-tight" style={{ color }}>

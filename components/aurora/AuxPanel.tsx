@@ -80,13 +80,13 @@ export default function AuxPanel({ kp, weather, lat, lon, bz = 0, bt = 0, speed 
 
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 space-y-4">
-      <h3 className="text-xs font-bold tracking-widest text-slate-200 uppercase">
+      <h3 className="text-sm lg:text-xs font-bold tracking-widest text-slate-200 uppercase">
         Warunki obserwacyjne
       </h3>
 
       {/* Observing score */}
       <div className="text-center py-2">
-        <div className="text-[10px] text-slate-500 font-mono mb-1">Indeks obserwacji</div>
+        <div className="text-[13px] lg:text-[10px] text-slate-500 font-mono mb-1">Indeks obserwacji</div>
         <div
           className="text-6xl font-bold font-mono"
           style={{ color: scoreColor, textShadow: `0 0 20px ${scoreColor}` }}
@@ -95,7 +95,7 @@ export default function AuxPanel({ kp, weather, lat, lon, bz = 0, bt = 0, speed 
           <span className="text-xl">/10</span>
         </div>
         <div
-          className="mt-2 text-xs font-bold font-mono tracking-widest"
+          className="mt-2 text-sm lg:text-xs font-bold font-mono tracking-widest"
           style={{ color: scoreColor }}
         >
           {canSee
@@ -109,7 +109,7 @@ export default function AuxPanel({ kp, weather, lat, lon, bz = 0, bt = 0, speed 
       </div>
 
       {/* Grid of conditions */}
-      <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+      <div className="grid grid-cols-2 gap-2 text-[13px] lg:text-[10px] font-mono">
         <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
           <div className="text-slate-500 mb-0.5">Czas lokalny</div>
           <div className="text-slate-200 font-bold">{localTime}</div>
