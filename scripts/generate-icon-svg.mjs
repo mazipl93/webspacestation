@@ -1,5 +1,6 @@
 /**
- * Buduje app/icon.svg z public/brand/wss-icon-source.png (znak ISS).
+ * DEPRECATED — nadpisuje app/icon.svg starym znakiem ISS (rounded square).
+ * Aktualny favicon: app/icon.svg (WSS na czerni) + node scripts/generate-favicons.mjs
  * node scripts/generate-icon-svg.mjs
  */
 import fs from "node:fs/promises";
