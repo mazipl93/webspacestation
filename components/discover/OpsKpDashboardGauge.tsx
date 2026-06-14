@@ -10,9 +10,8 @@ type Props = {
 };
 
 const KP_MAX = 9;
-const LABELED_TICKS = [0, 3, 6, 9];
+const ALL_TICKS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-/** Pozycja % na osi 0–9 — zgodna z tor SVG (0…100%). */
 function kpToPct(value: number): number {
   return (value / KP_MAX) * 100;
 }
@@ -109,14 +108,16 @@ export default function OpsKpDashboardGauge({ kp, className }: Props) {
       </svg>
 
       <div className="ops-kp-scale__labels">
-        {LABELED_TICKS.map((n) => {
+        {ALL_TICKS.map((n) => {
           const pct = kpToPct(n);
+          const passed = n <= kp + 0.05;
           return (
             <span
               key={n}
-              className="ops-kp-scale__label"
+              className={cn("ops-kp-scale__label", passed && "ops-kp-scale__label--lit")}
               style={{
                 left: `${pct}%`,
+                color: passed ? color : undefined,
                 transform: n === 0 ? "none" : n === 9 ? "translateX(-100%)" : "translateX(-50%)",
               }}
             >

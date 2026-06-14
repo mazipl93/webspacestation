@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import OpsPinList from "@/components/discover/OpsPinList";
+import OpsIssPolandPasses from "@/components/discover/OpsIssPolandPasses";
 import { cn } from "@/lib/cn";
 import { captionForMapPin } from "@/lib/ops/map-pin-caption";
 import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
@@ -26,6 +27,7 @@ type Props = {
   height?: number;
   layout?: "stack" | "split";
   showPinList?: boolean;
+  showPolandPasses?: boolean;
   interactive?: boolean;
   mapClassName?: string;
   followIss?: boolean;
@@ -38,6 +40,7 @@ export default function OpsMissionMap({
   height = 320,
   layout = "stack",
   showPinList = true,
+  showPolandPasses = false,
   interactive = false,
   mapClassName,
   followIss = false,
@@ -105,6 +108,7 @@ export default function OpsMissionMap({
             </div>
           ) : null}
         </div>
+        {showPolandPasses ? <OpsIssPolandPasses variant="map" limit={6} /> : null}
       </div>
     );
   }
@@ -112,6 +116,7 @@ export default function OpsMissionMap({
   return (
     <div className="flex min-w-0 w-full max-w-full flex-col gap-3 overflow-hidden sm:gap-4">
       {mapBlock}
+      {showPolandPasses ? <OpsIssPolandPasses variant="map" limit={6} /> : null}
       {pinList}
     </div>
   );

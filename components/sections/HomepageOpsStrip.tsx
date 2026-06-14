@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import OpsAuroraShowcase from "@/components/discover/OpsAuroraShowcase";
 import OpsIssShowcase from "@/components/discover/OpsIssShowcase";
+import OpsIssPolandPasses from "@/components/discover/OpsIssPolandPasses";
 import OpsLaunchFeedPaused from "@/components/discover/OpsLaunchFeedPaused";
 import OpsLaunchShowcase from "@/components/discover/OpsLaunchShowcase";
 import OpsQuickNav from "@/components/discover/OpsQuickNav";
@@ -79,6 +80,7 @@ function HomepageOpsStripView({
 
           <aside className="ops-widget-side">
             <OpsIssShowcase initialIss={iss} />
+            <OpsIssPolandPasses variant="compact" limit={4} />
             <OpsQuickNav exclude={["/mapa"]} />
           </aside>
         </div>

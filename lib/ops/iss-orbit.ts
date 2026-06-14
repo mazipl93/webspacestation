@@ -22,7 +22,7 @@ type SatelliteModule = typeof import("satellite.js");
 let tleCache: { satrec: SatRec; satellite: SatelliteModule; at: number } | null =
   null;
 
-async function loadSatrec(): Promise<{
+export async function loadIssSatrec(): Promise<{
   satrec: SatRec;
   satellite: SatelliteModule;
 } | null> {
@@ -136,7 +136,7 @@ export async function computeIssOrbitSegments(
 export async function computeIssLiveTrack(
   window: OrbitWindow = {},
 ): Promise<IssLiveTrack | null> {
-  const loaded = await loadSatrec();
+  const loaded = await loadIssSatrec();
   if (!loaded) return null;
 
   const { satrec, satellite } = loaded;

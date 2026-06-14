@@ -38,6 +38,7 @@ export default async function MapaPage() {
             issOrbit={ops.issOrbit}
             layout="stack"
             interactive
+            showPolandPasses
             mapClassName="ops-map-page-map"
             followIss={!!ops.iss}
           />
