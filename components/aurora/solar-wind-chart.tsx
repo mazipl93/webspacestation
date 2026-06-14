@@ -14,6 +14,13 @@ import {
 } from "recharts";
 import type { SolarWindData } from "@/lib/aurora/api";
 import { getEarthSolarWindMarker } from "@/lib/aurora/api";
+import {
+  formatChartAxisTime,
+  formatChartTooltipTime,
+  formatTimeDualFromTag,
+} from "@/lib/aurora/time-display";
+import { TimestampTagDual } from "./TimeDual";
+import DataOriginBadge from "./DataOriginBadge";
 
 export type WindChartPoint = {
   time: string;
@@ -37,7 +44,7 @@ export const WIND_TOOLTIP_STYLE = {
   background: "#0a0f1e",
   border: "1px solid #334155",
   borderRadius: 4,
-  fontSize: 10,
+  fontSize: 12,
   fontFamily: "monospace",
   color: "#e2e8f0",
 };
@@ -45,27 +52,12 @@ export const WIND_TOOLTIP_STYLE = {
 export const EARTH_LINE = { stroke: "#fbbf24", strokeWidth: 1.5, strokeDasharray: "5 3" };
 
 export function fmtWindTime(t: string): string {
-  try {
-    const normalized = t.includes("T") ? t : t.replace(" ", "T") + (t.length === 19 ? "Z" : "");
-    const d = new Date(normalized);
-    if (isNaN(d.getTime())) return t.slice(11, 16);
-    return d.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return t.slice(11, 16);
-  }
+  return formatChartAxisTime(t);
 }
 
 export function fmtUtcShort(timeTag: string | undefined): string | null {
   if (!timeTag) return null;
-  const d = new Date(timeTag.includes("T") ? timeTag : timeTag.replace(" ", "T") + "Z");
-  if (isNaN(d.getTime())) return null;
-  return (
-    d.toLocaleTimeString("pl-PL", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "UTC",
-    }) + " UTC"
-  );
+  return formatTimeDualFromTag(timeTag);
 }
 
 export function buildWindChartData(windSlice: SolarWindData[]): WindChartPoint[] {
@@ -126,10 +118,12 @@ export function EarthChartOverlay({
         label={
           showLabel
             ? {
-                value: marker.earthUtc ? `Ziemia ${marker.earthUtc}` : "Ziemia",
+                value: marker.earthUtc
+                  ? `Teraz na Ziemi · ${marker.earthUtc}`
+                  : "Teraz na Ziemi",
                 position: "insideTopLeft",
                 fill: "#fbbf24",
-                fontSize: 8,
+                fontSize: 10,
                 fontFamily: "monospace",
               }
             : undefined
@@ -154,6 +148,8 @@ export interface SolarWindChartRowProps {
   height?: number;
   earthLabel?: boolean;
   l1Timestamp?: string | null;
+  /** Surowy NOAA tag — timestamp w dwóch wierszach na mobile. */
+  timestampTag?: string | null;
   compact?: boolean;
   children?: ReactNode;
 }
@@ -173,31 +169,61 @@ export function SolarWindChartRow({
   height = 80,
   earthLabel = false,
   l1Timestamp,
+  timestampTag,
   compact = false,
   children,
 }: SolarWindChartRowProps) {
-  const chartPx = height >= 200 ? 220 : height >= 100 ? 88 : Math.max(44, height);
+  const chartPx = height >= 200 ? Math.max(220, height) : height >= 100 ? (showXAxis ? 108 : 100) : Math.max(52, height);
 
   return (
     <div
       className={
         compact
           ? "rounded border border-slate-800/80 bg-slate-950/30 p-1.5 flex gap-1.5 items-stretch"
-          : "rounded border border-slate-800 bg-slate-950/40 p-2 lg:p-3 flex gap-2 lg:gap-3 items-stretch"
+          : "rounded-xl border border-slate-800 bg-slate-950/40 p-3 lg:p-3 flex flex-col lg:flex-row gap-0 lg:gap-3 items-stretch min-w-0"
       }
     >
+      {/* Mobile: poziomy pasek metryki */}
+      {!compact && (
+        <div className="flex lg:hidden items-start justify-between gap-3 min-w-0 pb-3 border-b border-slate-800/80 mb-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+              <span className="text-[13px] text-slate-500 font-mono uppercase tracking-wide">{label}</span>
+              <DataOriginBadge origin="l1-now" />
+            </div>
+            {sublabel && (
+              <span className="block text-[12px] font-mono mt-0.5 capitalize" style={{ color }}>
+                {sublabel}
+              </span>
+            )}
+          </div>
+          <div className="flex items-baseline gap-1.5 shrink-0 tabular-nums">
+            <span className="text-2xl font-bold font-mono leading-none" style={{ color }}>
+              {value}
+            </span>
+            <span className="text-[13px] text-slate-500 font-mono">{unit}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop: boczna kolumna */}
       <div
         className={
           compact
             ? "w-[3.25rem] shrink-0 flex flex-col justify-center items-center text-center border-r border-slate-800/60 pr-1.5"
-            : "w-[4.5rem] sm:w-24 lg:w-28 shrink-0 flex flex-col justify-center items-center text-center border-r border-slate-800/80 pr-2 lg:pr-3"
+            : "hidden lg:flex w-32 shrink-0 flex-col justify-center items-center text-center border-r border-slate-800/80 pr-3 min-w-0"
         }
       >
+        {!compact && (
+          <div className="hidden lg:block mb-1.5">
+            <DataOriginBadge origin="l1-now" />
+          </div>
+        )}
         <span
           className={
             compact
-              ? "text-[10px] lg:text-[7px] text-slate-500 font-mono uppercase leading-tight mb-0.5"
-              : "text-[12px] lg:text-[9px] text-slate-500 font-mono uppercase leading-tight mb-1"
+              ? "text-[10px] lg:text-[10px] text-slate-500 font-mono uppercase leading-tight mb-0.5"
+              : "text-[12px] lg:text-[11px] text-slate-500 font-mono uppercase leading-tight mb-1"
           }
         >
           {label}
@@ -206,20 +232,22 @@ export function SolarWindChartRow({
           className={
             compact
               ? "text-base font-bold font-mono leading-none"
-              : "text-xl lg:text-xl font-bold font-mono leading-none"
+              : "text-xl lg:text-3xl font-bold font-mono leading-none tabular-nums"
           }
           style={{ color }}
         >
           {value}
         </span>
-        <span className="text-[11px] lg:text-[7px] text-slate-500 font-mono mt-0.5">{unit}</span>
+        <span className="text-[11px] lg:text-[11px] text-slate-500 font-mono mt-0.5">{unit}</span>
         {!compact && (
           <>
             {l1Timestamp && (
-              <span className="text-[10px] lg:text-[7px] text-slate-600 font-mono mt-1.5 leading-tight">{l1Timestamp}</span>
+              <span className="text-[10px] lg:text-[10px] text-slate-600 font-mono mt-2 leading-snug block max-w-full break-words">
+                {l1Timestamp}
+              </span>
             )}
             {sublabel && (
-              <span className="text-[7px] font-mono mt-0.5 leading-tight" style={{ color }}>
+              <span className="text-[10px] font-mono mt-0.5 leading-tight capitalize" style={{ color }}>
                 {sublabel}
               </span>
             )}
@@ -232,9 +260,9 @@ export function SolarWindChartRow({
         )}
       </div>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 w-full">
         <ResponsiveContainer width="100%" height={chartPx}>
-          <LineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: showXAxis ? 2 : 0 }}>
+          <LineChart data={chartData} margin={{ top: 4, right: 6, left: 0, bottom: showXAxis ? 20 : 0 }}>
             <CartesianGrid stroke="#1e293b" strokeDasharray="2 4" vertical={false} />
             <XAxis
               dataKey="time"
@@ -242,23 +270,28 @@ export function SolarWindChartRow({
               scale="point"
               hide={!showXAxis}
               tickFormatter={fmtWindTime}
-              tick={showXAxis ? { fontSize: 7, fill: "#64748b", fontFamily: "monospace" } : false}
+              tick={
+                showXAxis
+                  ? { fontSize: 11, fill: "#64748b", fontFamily: "monospace" }
+                  : false
+              }
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
+              minTickGap={28}
             />
             {children}
             <YAxis
               domain={domain}
-              tick={{ fontSize: 7, fill: "#64748b", fontFamily: "monospace" }}
+              tick={{ fontSize: 10, fill: "#64748b", fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
-              width={30}
+              width={34}
               tickFormatter={(v: number) => (decimals === 0 ? String(Math.round(v)) : v.toFixed(decimals))}
             />
             <Tooltip
               contentStyle={WIND_TOOLTIP_STYLE}
-              labelFormatter={(t: unknown) => fmtWindTime(String(t ?? ""))}
+              labelFormatter={(t: unknown) => formatChartTooltipTime(String(t ?? ""))}
               formatter={(v: unknown) => [
                 typeof v === "number" ? v.toFixed(decimals) : String(v ?? ""),
                 unit,
@@ -276,6 +309,12 @@ export function SolarWindChartRow({
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {!compact && timestampTag && (
+        <div className="lg:hidden pt-3 mt-0 border-t border-slate-800/60 text-center min-w-0">
+          <TimestampTagDual tag={timestampTag} className="text-[13px]" />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { getMoonPhase, calculateObservingScore } from "@/lib/aurora/api";
+import { TimeDual, TimeDualSplit } from "./TimeDual";
 import type { WeatherData } from "./useLocation";
 
 interface AuxPanelProps {
@@ -12,6 +13,7 @@ interface AuxPanelProps {
   bz?: number;
   bt?: number;
   speed?: number;
+  hideScore?: boolean;
 }
 
 function getScoreColor(score: number): string {
@@ -39,7 +41,39 @@ function isDarkNow(sunrise: string, sunset: string): boolean {
   return nowMins < riseMins || nowMins > setMins;
 }
 
-export default function AuxPanel({ kp, weather, lat, lon, bz = 0, bt = 0, speed = 0 }: AuxPanelProps) {
+function ConditionCell({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-xl lg:rounded-lg border border-slate-700/80 bg-slate-800/40 lg:bg-slate-800/35 p-3.5 lg:p-3 min-w-0 ${className}`}
+    >
+      <div className="text-[12px] lg:text-[11px] text-slate-500 font-mono mb-1 uppercase tracking-wide">
+        {label}
+      </div>
+      <div className="font-mono font-bold text-[15px] lg:text-[15px] leading-snug break-words">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export default function AuxPanel({
+  kp,
+  weather,
+  lat,
+  lon,
+  bz = 0,
+  bt = 0,
+  speed = 0,
+  hideScore = false,
+}: AuxPanelProps) {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -61,103 +95,90 @@ export default function AuxPanel({ kp, weather, lat, lon, bz = 0, bt = 0, speed 
   });
 
   const scoreColor = getScoreColor(score);
-
-  const localTime = now.toLocaleTimeString("pl-PL", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-  const utcTime = now.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    timeZone: "UTC",
-  });
-
-  // Can user see aurora?
   const kpRequiredAtLat = Math.max(1, 10 - Math.abs(lat) / 9);
   const canSee = kp >= kpRequiredAtLat && dark && weather.cloudCover < 70;
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 space-y-4">
-      <h3 className="text-sm lg:text-xs font-bold tracking-widest text-slate-200 uppercase">
-        Warunki obserwacyjne
+    <div className="rounded-2xl lg:rounded-2xl lg:aurora-panel-desktop border border-slate-800 bg-slate-900/60 lg:bg-slate-900/55 p-4 lg:p-5 space-y-4 lg:space-y-4 min-w-0 lg:shadow-[0_4px_28px_rgb(0_0_0_/_0.22)]">
+      <h3 className="text-[15px] lg:text-[13px] font-bold tracking-[0.14em] text-slate-200 uppercase">
+        {hideScore ? "Szczegóły lokalne" : "Warunki obserwacyjne"}
       </h3>
 
-      {/* Observing score */}
-      <div className="text-center py-2">
-        <div className="text-[13px] lg:text-[10px] text-slate-500 font-mono mb-1">Indeks obserwacji</div>
-        <div
-          className="text-6xl font-bold font-mono"
-          style={{ color: scoreColor, textShadow: `0 0 20px ${scoreColor}` }}
-        >
-          {score}
-          <span className="text-xl">/10</span>
-        </div>
-        <div
-          className="mt-2 text-sm lg:text-xs font-bold font-mono tracking-widest"
-          style={{ color: scoreColor }}
-        >
-          {canSee
-            ? "✓ ZORZA MOŻLIWA!"
-            : dark && weather.cloudCover < 70
-            ? "Zbyt słaba aktywność"
-            : !dark
-            ? "Za jasno (dzień)"
-            : "Zbyt duże zachmurzenie"}
-        </div>
-      </div>
-
-      {/* Grid of conditions */}
-      <div className="grid grid-cols-2 gap-2 text-[13px] lg:text-[10px] font-mono">
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
-          <div className="text-slate-500 mb-0.5">Czas lokalny</div>
-          <div className="text-slate-200 font-bold">{localTime}</div>
-        </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
-          <div className="text-slate-500 mb-0.5">UTC</div>
-          <div className="text-slate-200 font-bold">{utcTime}</div>
-        </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
-          <div className="text-slate-500 mb-0.5">Wschód / Zachód</div>
-          <div className="text-slate-200 font-bold">
-            {weather.sunrise} / {weather.sunset}
+      {!hideScore && (
+        <div className="text-center py-1 lg:py-2 rounded-xl lg:rounded-lg border border-slate-800/80 bg-slate-950/40 lg:bg-slate-950/50 px-3">
+          <div className="text-[14px] lg:text-[11px] text-slate-500 font-mono mb-1 uppercase tracking-wide">
+            Indeks obserwacji
           </div>
-        </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
-          <div className="text-slate-500 mb-0.5">Ciemność</div>
           <div
-            className="font-bold"
-            style={{ color: dark ? "#44ff88" : "#ff6600" }}
+            className="text-6xl lg:text-[4.5rem] font-bold font-mono leading-none tabular-nums"
+            style={{ color: scoreColor, textShadow: `0 0 24px ${scoreColor}55` }}
           >
-            {dark ? "✓ NOC" : "☀ DZIEŃ"}
+            {score}
+            <span className="text-xl lg:text-2xl text-slate-600">/10</span>
+          </div>
+          <div
+            className="mt-2 text-[15px] lg:text-[13px] font-bold font-mono tracking-wide leading-snug"
+            style={{ color: scoreColor }}
+          >
+            {canSee
+              ? "✓ ZORZA MOŻLIWA!"
+              : dark && weather.cloudCover < 70
+              ? "Zbyt słaba aktywność"
+              : !dark
+              ? "Za jasno (dzień)"
+              : "Zbyt duże zachmurzenie"}
           </div>
         </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
-          <div className="text-slate-500 mb-0.5">Zachmurzenie</div>
-          <div
-            className="font-bold"
+      )}
+
+      <div className="grid grid-cols-2 gap-2.5 lg:gap-2 font-mono min-w-0">
+        <ConditionCell label="Czas" className="col-span-2">
+          <span className="lg:hidden">
+            <TimeDualSplit date={now} seconds className="text-slate-200 text-[15px]" />
+          </span>
+          <span className="hidden lg:block text-slate-200">
+            <TimeDual date={now} seconds className="text-[14px]" />
+          </span>
+        </ConditionCell>
+
+        <ConditionCell label="Wschód">
+          <span className="text-slate-200 tabular-nums">{weather.sunrise}</span>
+        </ConditionCell>
+        <ConditionCell label="Zachód">
+          <span className="text-slate-200 tabular-nums">{weather.sunset}</span>
+        </ConditionCell>
+
+        <ConditionCell label="Ciemność">
+          <span style={{ color: dark ? "#44ff88" : "#ff6600" }}>
+            {dark ? "✓ NOC" : "☀ DZIEŃ"}
+          </span>
+        </ConditionCell>
+
+        <ConditionCell label="Zachmurzenie">
+          <span
+            className="tabular-nums"
             style={{
               color: weather.cloudCover < 30 ? "#44ff88" : weather.cloudCover < 70 ? "#ffdd00" : "#ff6600",
             }}
           >
             {weather.loading ? "…" : `${weather.cloudCover}%`}
-          </div>
-        </div>
-        <div className="rounded border border-slate-700 bg-slate-800/40 p-2">
-          <div className="text-slate-500 mb-0.5">Księżyc</div>
-          <div className="text-slate-200 font-bold">
-            {moon.emoji} {moon.illumination}%
-          </div>
-          <div className="text-slate-500 text-[9px]">{moon.name}</div>
-        </div>
+          </span>
+        </ConditionCell>
+
+        <ConditionCell label="Księżyc" className="col-span-2">
+          <span className="text-slate-200">
+            {moon.emoji} {moon.illumination}% · {moon.name}
+          </span>
+        </ConditionCell>
       </div>
 
-      {/* Location */}
-      <div className="text-[9px] text-slate-600 font-mono text-center">
-        📍 {lat.toFixed(2)}°N {lon.toFixed(2)}°E
-        {" · "}
-        Wymagane Kp ≥ {kpRequiredAtLat.toFixed(0)} dla tej lokalizacji
+      <div className="rounded-xl lg:rounded-lg border border-slate-800/80 bg-slate-950/35 px-3 py-3 space-y-1 text-[12px] lg:text-[12px] text-slate-500 font-mono text-center min-w-0">
+        <div className="text-slate-400 break-words tabular-nums">
+          📍 {lat.toFixed(2)}°N · {lon.toFixed(2)}°E
+        </div>
+        <div className="text-slate-600 leading-snug">
+          Wymagane Kp ≥ {kpRequiredAtLat.toFixed(0)} na Twojej szerokości
+        </div>
       </div>
     </div>
   );

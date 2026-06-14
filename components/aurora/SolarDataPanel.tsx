@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import type { XrayFlux, SolarFlare } from "@/lib/aurora/api";
 import { getFlareClass, getFlareColor } from "@/lib/aurora/api";
+import { formatChartAxisTime, formatChartTooltipTime, formatTimeDualFromTag } from "@/lib/aurora/time-display";
 
 interface SolarDataPanelProps {
   xrayFlux: XrayFlux[];
@@ -34,17 +35,6 @@ export default function SolarDataPanel({
   const flareClass = getFlareClass(latestFlux);
   const flareColor = getFlareColor(latestFlux);
 
-  const fmt = (t: string) => {
-    try {
-      const normalized = t.includes("T") ? t : t.replace(" ", "T") + (t.length === 19 ? "Z" : "");
-      const d = new Date(normalized);
-      if (isNaN(d.getTime())) return t.slice(11, 16);
-      return d.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
-    } catch {
-      return t.slice(11, 16);
-    }
-  };
-
   const chartData = xrayFlux.slice(-180).map((d) => ({
     time: d.time_tag,
     logFlux: d.flux > 0 ? Math.log10(d.flux) : -9,
@@ -60,48 +50,47 @@ export default function SolarDataPanel({
   ];
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4 space-y-4">
-      <h3 className="text-sm font-bold tracking-widest text-slate-200 uppercase">
+    <div className="rounded-2xl lg:rounded-2xl lg:aurora-panel-desktop border border-slate-800 bg-slate-900/60 lg:bg-slate-900/55 p-4 lg:p-5 space-y-4 lg:space-y-5 min-w-0 lg:shadow-[0_4px_28px_rgb(0_0_0_/_0.22)]">
+      <h3 className="text-[15px] lg:text-[13px] font-bold tracking-[0.14em] text-slate-200 uppercase">
         Aktywność Słoneczna
       </h3>
 
-      {/* X-ray status */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Metryki: stos na wąskiej kolumnie desktop, 2+1 na szerszym mobile */}
+      <div className="grid grid-cols-2 gap-3 min-w-0">
         <div
-          className="rounded-lg border p-3 text-center col-span-1"
+          className="col-span-2 rounded-xl border p-4 text-center min-w-0 overflow-hidden"
           style={{ borderColor: flareColor, background: `${flareColor}11` }}
         >
-          <div className="text-[10px] text-slate-400 font-mono">Klasa X-ray</div>
+          <div className="text-[12px] text-slate-400 font-mono">Klasa X-ray</div>
           <div
-            className="text-3xl font-bold font-mono mt-1"
+            className="text-4xl font-bold font-mono tabular-nums mt-1"
             style={{ color: flareColor, textShadow: `0 0 12px ${flareColor}` }}
           >
             {flareClass}
           </div>
-          <div className="text-[9px] text-slate-500 font-mono mt-1">{formatFlux(latestFlux)}</div>
+          <div className="text-[11px] text-slate-500 font-mono mt-1 break-words">{formatFlux(latestFlux)}</div>
         </div>
-        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3 text-center">
-          <div className="text-[10px] text-slate-400 font-mono">Plamy słoneczne</div>
-          <div className="text-2xl font-bold font-mono text-amber-300 mt-1">
+        <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-3 text-center min-w-0 overflow-hidden">
+          <div className="text-[11px] text-slate-400 font-mono leading-snug">Plamy</div>
+          <div className="text-2xl lg:text-3xl font-bold font-mono text-amber-300 tabular-nums mt-1">
             {sunspotNumber ?? "—"}
           </div>
-          <div className="text-[9px] text-slate-500 font-mono">SSN</div>
+          <div className="text-[10px] text-slate-500 font-mono mt-0.5">SSN</div>
         </div>
-        <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-3 text-center">
-          <div className="text-[10px] text-slate-400 font-mono">Radio Blackout</div>
+        <div className="rounded-xl border border-slate-700 bg-slate-800/40 p-3 text-center min-w-0 overflow-hidden">
+          <div className="text-[11px] text-slate-400 font-mono leading-snug">Radio blackout</div>
           <div
-            className="text-sm font-bold font-mono mt-1"
+            className="text-sm lg:text-base font-bold font-mono mt-2 leading-snug"
             style={{ color: latestFlux >= 1e-5 ? "#ff6600" : "#44ff88" }}
           >
-            {latestFlux >= 1e-5 ? "⚠ AKTYWNY" : "BRAK"}
+            {latestFlux >= 1e-5 ? "Aktywny" : "Brak"}
           </div>
         </div>
       </div>
-
       {/* X-ray flux chart */}
       <div>
-        <div className="text-[10px] text-slate-500 font-mono mb-1">X-ray flux — 6h (log scale)</div>
-        <ResponsiveContainer width="100%" height={85}>
+        <div className="text-[12px] lg:text-xs text-slate-500 font-mono mb-2">X-ray flux — 6h (log scale)</div>
+        <ResponsiveContainer width="100%" height={110}>
           <AreaChart data={chartData} margin={{ top: 2, right: 4, left: 0, bottom: 2 }}>
             <defs>
               <linearGradient id="xray-grad" x1="0" y1="0" x2="0" y2="1">
@@ -111,18 +100,18 @@ export default function SolarDataPanel({
             </defs>
             <XAxis
               dataKey="time"
-              tickFormatter={fmt}
-              tick={{ fontSize: 8, fill: "#64748b", fontFamily: "monospace" }}
+              tickFormatter={formatChartAxisTime}
+              tick={{ fontSize: 11, fill: "#64748b", fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
               domain={[-9, -3]}
-              tick={{ fontSize: 8, fill: "#64748b", fontFamily: "monospace" }}
+              tick={{ fontSize: 11, fill: "#64748b", fontFamily: "monospace" }}
               tickLine={false}
               axisLine={false}
-              width={20}
+              width={24}
               tickFormatter={(v) => String(v)}
             />
             <Tooltip
@@ -130,11 +119,11 @@ export default function SolarDataPanel({
                 background: "#0a0f1e",
                 border: "1px solid #334155",
                 borderRadius: 4,
-                fontSize: 10,
+                fontSize: 12,
                 fontFamily: "monospace",
                 color: "#e2e8f0",
               }}
-              labelFormatter={(t: unknown) => fmt(String(t ?? ""))}
+              labelFormatter={(t: unknown) => formatChartTooltipTime(String(t ?? ""))}
               formatter={(v: unknown) => [`10^${Number(v).toFixed(1)}`, "Flux"]}
             />
             {classLines.map((cl) => (
@@ -144,7 +133,7 @@ export default function SolarDataPanel({
                 stroke={cl.color}
                 strokeOpacity={0.4}
                 strokeDasharray="2 3"
-                label={{ value: cl.label, position: "right", fill: cl.color, fontSize: 8, fontFamily: "monospace" }}
+                label={{ value: cl.label, position: "right", fill: cl.color, fontSize: 10, fontFamily: "monospace" }}
               />
             ))}
             <Area
@@ -163,7 +152,7 @@ export default function SolarDataPanel({
       {/* Recent flares */}
       {solarFlares.length > 0 && (
         <div>
-          <div className="text-[10px] text-slate-500 font-mono mb-1 uppercase tracking-widest">
+          <div className="text-[10px] lg:text-xs text-slate-500 font-mono mb-1 uppercase tracking-widest">
             Ostatnie rozbłyski
           </div>
           <div className="space-y-1">
@@ -179,7 +168,7 @@ export default function SolarDataPanel({
               return (
                 <div
                   key={i}
-                  className="flex items-center gap-2 text-[10px] font-mono"
+                  className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-[12px] lg:text-xs font-mono py-2 border-b border-slate-800/40 last:border-0"
                 >
                   <span
                     className="font-bold text-xs w-8 text-center rounded px-1"
@@ -187,8 +176,8 @@ export default function SolarDataPanel({
                   >
                     {cls.slice(0, 3)}
                   </span>
-                  <span className="text-slate-500">
-                    {fmt(f.beginTime)} → {fmt(f.maxTime)}
+                  <span className="text-slate-500 leading-snug">
+                    {formatTimeDualFromTag(f.beginTime)} → {formatTimeDualFromTag(f.maxTime)}
                   </span>
                   {f.sourceLocation && (
                     <span className="text-slate-600">{f.sourceLocation}</span>

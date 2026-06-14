@@ -272,11 +272,14 @@ type SolarRegionItem = {
 
 export function useAuroraData() {
   const [state, setState] = useState<AuroraState>(initialState);
+  const [refreshing, setRefreshing] = useState(false);
   const mountedRef = useRef(true);
   const fetchGenerationRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetchAll = useCallback(async () => {
+  const fetchAll = useCallback(async (opts?: { userInitiated?: boolean }) => {
+    if (opts?.userInitiated) setRefreshing(true);
+    try {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -465,14 +468,19 @@ export function useAuroraData() {
         swPlasmaActive: swPlasma.filter((r) => r.active).length,
       });
     }
+    } finally {
+      if (opts?.userInitiated && mountedRef.current) {
+        setRefreshing(false);
+      }
+    }
   }, []);
 
   useEffect(() => {
     mountedRef.current = true;
-    fetchAll();
+    void fetchAll();
 
     // Solar wind: 60s, Kp updates every few minutes but we check at 60s
-    const interval = setInterval(fetchAll, 60_000);
+    const interval = setInterval(() => void fetchAll(), 60_000);
 
     return () => {
       mountedRef.current = false;
@@ -481,5 +489,7 @@ export function useAuroraData() {
     };
   }, [fetchAll]);
 
-  return { state, refetch: fetchAll };
+  const refetch = useCallback(() => fetchAll({ userInitiated: true }), [fetchAll]);
+
+  return { state, refetch, refreshing };
 }

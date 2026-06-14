@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Gauge, Sun, Wind, type LucideIcon } from "lucide-react";
+import { Activity, ArrowLeft, RefreshCw, Sparkles, Sun, type LucideIcon } from "lucide-react";
 import { useAuroraData } from "./useAuroraData";
 import { useUserLocation, useWeather } from "./useLocation";
 import KpGauge from "./KpGauge";
@@ -14,11 +14,17 @@ import SolarDataPanel from "./SolarDataPanel";
 import AuxPanel from "./AuxPanel";
 import AuroraPanel from "./AuroraPanel";
 import SunspotRegionsPanel from "./SunspotRegionsPanel";
+import ObservationHero from "./ObservationHero";
 import { ToastContainer, useToasts } from "./ToastSystem";
 import {
   getDisplayKp,
   getEarthSolarWindPoint,
+  getKpColor,
+  getBzColor,
 } from "@/lib/aurora/api";
+import { formatKpPeriodDual, formatTimeDual } from "@/lib/aurora/time-display";
+import { TimeDualSplit } from "./TimeDual";
+import DataOriginBadge from "./DataOriginBadge";
 import { getInteractiveTool } from "@/lib/seo/interactive-tools";
 
 const AURORA_TOOL = getInteractiveTool("aurora-terminal");
@@ -44,22 +50,59 @@ function Spinner() {
   );
 }
 
-type Tab = "live" | "geo" | "solar";
+type MobileTab = "zorza" | "wykresy" | "slonce";
 
-const MOBILE_NAV: { id: Tab; Icon: LucideIcon; label: string; tone: "wind" | "kp" | "solar" }[] = [
-  { id: "live", Icon: Wind, label: "Wiatr", tone: "wind" },
-  { id: "geo", Icon: Gauge, label: "Kp", tone: "kp" },
-  { id: "solar", Icon: Sun, label: "Słońce", tone: "solar" },
+const MOBILE_TABS: { id: MobileTab; Icon: LucideIcon; label: string }[] = [
+  { id: "zorza", Icon: Sparkles, label: "Zorza" },
+  { id: "wykresy", Icon: Activity, label: "Wykresy" },
+  { id: "slonce", Icon: Sun, label: "Słońce" },
 ];
 
+function MobileSectionLabel({ children }: { children: string }) {
+  return (
+    <p className="text-[14px] font-mono font-semibold uppercase tracking-widest text-slate-400 pt-2 pb-1">
+      {children}
+    </p>
+  );
+}
+
+function HpStats({ hp30, hp60 }: { hp30: string; hp60: string }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 lg:gap-3 text-[14px] lg:text-sm font-mono">
+      <div className="rounded-xl border border-slate-800 bg-slate-950/40 lg:bg-slate-950/50 p-4 lg:p-4 text-center min-w-0">
+        <div className="text-slate-500 text-[13px] lg:text-[11px] uppercase tracking-wide">Hp30</div>
+        <div className="font-bold text-3xl lg:text-3xl text-sky-300 mt-1 tabular-nums">{hp30}</div>
+        <div className="text-[12px] lg:text-[11px] text-slate-600 mt-1 leading-snug">średnia 30 min</div>
+      </div>
+      <div className="rounded-xl border border-slate-800 bg-slate-950/40 lg:bg-slate-950/50 p-4 lg:p-4 text-center min-w-0">
+        <div className="text-slate-500 text-[13px] lg:text-[11px] uppercase tracking-wide">Hp60</div>
+        <div className="font-bold text-3xl lg:text-3xl text-violet-300 mt-1 tabular-nums">{hp60}</div>
+        <div className="text-[12px] lg:text-[11px] text-slate-600 mt-1 leading-snug">średnia 60 min</div>
+      </div>
+    </div>
+  );
+}
+
 export default function AuroraTerminal() {
-  const { state, refetch } = useAuroraData();
+  const { state, refetch, refreshing } = useAuroraData();
   const location = useUserLocation();
   const weather = useWeather(location.lat, location.lon, !location.loading);
   const { toasts, addToast, dismiss } = useToasts();
   const prevKpRef = useRef<number>(0);
-  const [activeTab, setActiveTab] = useState<Tab>("live");
+  const wasRefreshingRef = useRef(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("zorza");
   const [isWide, setIsWide] = useState(false);
+  const [refreshDone, setRefreshDone] = useState(false);
+
+  useEffect(() => {
+    if (wasRefreshingRef.current && !refreshing) {
+      setRefreshDone(true);
+      const timer = window.setTimeout(() => setRefreshDone(false), 2200);
+      wasRefreshingRef.current = refreshing;
+      return () => window.clearTimeout(timer);
+    }
+    wasRefreshingRef.current = refreshing;
+  }, [refreshing]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -68,8 +111,6 @@ export default function AuroraTerminal() {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
-
-  const mapVisible = isWide || activeTab === "geo";
 
   useEffect(() => {
     const currentKp = getDisplayKp(state.kpCurrent, state.kp3Day);
@@ -100,7 +141,7 @@ export default function AuroraTerminal() {
   const isStormy = currentKp >= 5;
 
   const lastUpdateStr = state.lastUpdate
-    ? state.lastUpdate.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })
+    ? formatTimeDual(state.lastUpdate)
     : "—";
 
   const hp30 =
@@ -121,6 +162,13 @@ export default function AuroraTerminal() {
     bt: earthWind?.bt ?? 0,
     speed: headerWindSpeed,
   };
+
+  const stormAlertCount = state.alerts.filter(
+    (a) => a.type === "alert" || a.type === "warning",
+  ).length;
+
+  const mapVisible = isWide || mobileTab === "zorza";
+  const kpPeriodLabel = formatKpPeriodDual();
 
   return (
     <div
@@ -146,73 +194,251 @@ export default function AuroraTerminal() {
 
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
 
-      <header className="max-w-screen-2xl mx-auto px-2 sm:px-3 lg:px-4 pt-3 sm:pt-4 flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+      <header className="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 lg:pt-5 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3 lg:gap-4">
           <Link
             href="/"
-            className="inline-flex shrink-0 items-center gap-2 rounded-md border border-slate-800 bg-slate-900/40 px-3 py-2 text-[13px] lg:text-[10px] font-mono text-slate-500 transition-colors hover:border-[#44ff88]/35 hover:text-[#44ff88]"
+            className="inline-flex shrink-0 items-center gap-2 rounded-md lg:rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-2 min-h-[44px] lg:min-h-0 lg:px-3.5 lg:py-2 text-[14px] lg:text-[13px] font-mono text-slate-500 transition-colors hover:border-[#44ff88]/35 hover:text-[#44ff88]"
             aria-label="Wróć na stronę główną Web Space Station"
           >
-            <ArrowLeft className="size-4 lg:size-3" aria-hidden />
+            <ArrowLeft className="size-4" aria-hidden />
             <span className="hidden sm:inline">Strona główna</span>
           </Link>
           <div className="min-w-0">
-            <h1 className="text-lg lg:text-base font-bold tracking-tight text-slate-100">
-              {AURORA_TOOL.headline}
+            <h1 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight text-slate-100">
+              <span className="lg:hidden">Terminal zorzy</span>
+              <span className="hidden lg:inline">{AURORA_TOOL.headline}</span>
             </h1>
-            <p className="text-[13px] lg:text-[9px] text-slate-500 font-mono mt-1 lg:mt-0.5 leading-snug">
-              Aurora Terminal · indeks Kp · NOAA SWPC · odswiezono {lastUpdateStr}
+            <p className="text-[13px] lg:text-[13px] text-slate-500 font-mono mt-0.5 lg:mt-1 leading-snug">
+              NOAA SWPC · odświeżono{" "}
+              {state.lastUpdate ? (
+                <>
+                  <span className="lg:hidden">
+                    <TimeDualSplit date={state.lastUpdate} className="inline-block mt-1" />
+                  </span>
+                  <span className="hidden lg:inline">{lastUpdateStr}</span>
+                </>
+              ) : (
+                "—"
+              )}
             </p>
           </div>
         </div>
         <button
           type="button"
-          onClick={refetch}
-          className="shrink-0 text-[14px] lg:text-[10px] font-mono text-slate-400 hover:text-sky-300 border border-slate-700 hover:border-sky-600/50 bg-slate-900/60 px-3.5 py-2 lg:px-3 lg:py-1.5 rounded-md transition-colors"
-          aria-label="Odswiez dane"
+          onClick={() => void refetch()}
+          disabled={refreshing}
+          aria-busy={refreshing}
+          aria-label={
+            refreshing ? "Odświeżanie danych NOAA" : refreshDone ? "Dane odświeżone" : "Odśwież dane NOAA"
+          }
+          className={[
+            "aurora-refresh-btn shrink-0 inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px]",
+            "text-[14px] lg:text-[13px] font-mono px-3.5 py-2 lg:px-4 lg:py-2.5 rounded-md lg:rounded-lg",
+            "border transition-all duration-200 active:scale-[0.97]",
+            "disabled:cursor-wait",
+            refreshing
+              ? "border-sky-500/60 text-sky-300 bg-sky-950/50 shadow-[0_0_12px_rgb(56_189_248_/_0.2)]"
+              : refreshDone
+              ? "border-[#44ff88]/55 text-[#44ff88] bg-[#44ff88]/10 shadow-[0_0_12px_rgb(68_255_136_/_0.2)]"
+              : "text-slate-400 hover:text-sky-300 border-slate-700 hover:border-sky-600/50 bg-slate-900/60 lg:hover:bg-slate-900/80",
+          ].join(" ")}
         >
-          ↻ Odswiez
+          <RefreshCw
+            className={`size-4 shrink-0 ${refreshing ? "animate-spin" : refreshDone ? "text-[#44ff88]" : ""}`}
+            aria-hidden
+          />
+          <span className="whitespace-nowrap">
+            {refreshing ? "Odświeżanie…" : refreshDone ? "Odświeżono" : "Odśwież"}
+          </span>
         </button>
       </header>
 
-      <main className="max-w-screen-2xl mx-auto px-2 sm:px-3 lg:px-4 py-2 sm:py-3 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-5">
+      {/* Desktop: pasek odczytu na żywo */}
+      {!state.loading && (
+        <div className="hidden lg:block max-w-screen-2xl mx-auto px-6 pb-4">
+          <div className="aurora-desktop-hud" role="group" aria-label="Bieżące parametry space weather">
+            <div className="aurora-desktop-hud__cell">
+              <DataOriginBadge origin="noaa-ground" className="mb-1" />
+              <span className="aurora-desktop-hud__label">Kp</span>
+              <span className="aurora-desktop-hud__value" style={{ color: getKpColor(currentKp) }}>
+                {currentKp.toFixed(1)}
+              </span>
+              <span className="aurora-desktop-hud__unit">indeks geomagnetyczny</span>
+            </div>
+            <div className="aurora-desktop-hud__cell">
+              <DataOriginBadge origin="earth-now" className="mb-1" />
+              <span className="aurora-desktop-hud__label">Bz</span>
+              <span className="aurora-desktop-hud__value" style={{ color: getBzColor(bz) }}>
+                {bz >= 0 ? "+" : ""}{bz.toFixed(1)}
+              </span>
+              <span className="aurora-desktop-hud__unit">nT · szac. z DSCOVR</span>
+            </div>
+            <div className="aurora-desktop-hud__cell">
+              <DataOriginBadge origin="earth-now" className="mb-1" />
+              <span className="aurora-desktop-hud__label">V</span>
+              <span className="aurora-desktop-hud__value" style={{ color: "#34d399" }}>
+                {headerWindSpeed > 0 ? headerWindSpeed.toFixed(0) : "—"}
+              </span>
+              <span className="aurora-desktop-hud__unit">km/s · szac. z DSCOVR</span>
+            </div>
+            <div className="aurora-desktop-hud__cell">
+              <DataOriginBadge origin="noaa-ground" className="mb-1" />
+              <span className="aurora-desktop-hud__label">Hp30</span>
+              <span className="aurora-desktop-hud__value" style={{ color: "#7dd3fc" }}>
+                {hp30}
+              </span>
+              <span className="aurora-desktop-hud__unit">średnia 30 min</span>
+            </div>
+            <div className="aurora-desktop-hud__cell">
+              <DataOriginBadge origin="local" className="mb-1" />
+              <span className="aurora-desktop-hud__label">Zachmurzenie</span>
+              <span
+                className="aurora-desktop-hud__value text-xl"
+                style={{
+                  color: weather.cloudCover < 30 ? "#44ff88" : weather.cloudCover < 70 ? "#ffdd00" : "#ff6600",
+                }}
+              >
+                {weather.loading ? "…" : `${weather.cloudCover}%`}
+              </span>
+              <span className="aurora-desktop-hud__unit">Open-Meteo</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile: 3 zakladki u gory */}
+      <nav
+        className="aurora-mobile-tabs lg:hidden sticky top-0 z-20 max-w-screen-2xl mx-auto px-2 sm:px-3 pt-2 pb-2"
+        aria-label="Sekcje terminala"
+      >
+        <div className="aurora-mobile-tabs__track" role="tablist">
+          {MOBILE_TABS.map(({ id, Icon, label }) => {
+            const isActive = mobileTab === id;
+            const badge = id === "wykresy" && stormAlertCount > 0 ? stormAlertCount : null;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setMobileTab(id)}
+                className={`aurora-mobile-tabs__btn${isActive ? " is-active" : ""}`}
+              >
+                <Icon size={20} strokeWidth={1.75} aria-hidden />
+                <span>{label}</span>
+                {badge != null && (
+                  <span className="aurora-mobile-tabs__badge">{badge}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      <main className="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-3 lg:py-2 pb-8 lg:pb-6">
         {state.loading ? (
           <Spinner />
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,270px)] gap-3 sm:gap-4 lg:items-start">
-              {/* ── LEWO: Kp + mapa + historia geomagnetyczna ── */}
-              <div
-                className={`space-y-3 sm:space-y-4 ${activeTab !== "geo" ? "hidden lg:block" : ""}`}
-              >
+            {/* ── MOBILE: jedna kolumna, tylko aktywna zakladka ── */}
+            <div className="lg:hidden space-y-4 pb-2">
+              {mobileTab === "zorza" && (
+                <>
+                  <ObservationHero {...auxProps} isStormy={isStormy} />
+                  <AuroraPanel title="Mapa zorzy" subtitle="Owale auroralne · Twoja lokalizacja" className="overflow-hidden">
+                    <div className="-mx-3 sm:-mx-4 -mb-3 sm:-mb-4">
+                      <AuroraMap
+                        kp={currentKp}
+                        userLat={location.lat}
+                        userLon={location.lon}
+                        dataReady={!state.loading && state.solarWind.length > 0}
+                        compact
+                        isVisible={mapVisible}
+                      />
+                    </div>
+                  </AuroraPanel>
+                  <ForecastPanel
+                    forecast={state.kpForecast}
+                    alerts={state.alerts}
+                    showAlerts={false}
+                    showForecast
+                  />
+                  <AuxPanel {...auxProps} hideScore />
+                </>
+              )}
+
+              {mobileTab === "wykresy" && (
+                <>
+                  <SolarWindPanel data={state.solarWind} showTimeAxis />
+
+                  <MobileSectionLabel>Geomagnetyzm</MobileSectionLabel>
+                  <AuroraPanel title="Indeksy godzinowe" subtitle="Hp30 · Hp60">
+                    <HpStats hp30={hp30} hp60={hp60} />
+                  </AuroraPanel>
+                  <AuroraPanel title="Historia Kp · Dst · SYM-H" subtitle="72h · NOAA">
+                    <GeomagneticPanel
+                      kp3Day={state.kp3Day}
+                      kp1m={state.kpCurrent}
+                      dst={state.dst}
+                      symh={state.symh}
+                      showTimeAxis
+                    />
+                  </AuroraPanel>
+                  <ForecastPanel
+                    forecast={state.kpForecast}
+                    alerts={state.alerts}
+                    showForecast={false}
+                    alertsFilter="storm"
+                  />
+                </>
+              )}
+
+              {mobileTab === "slonce" && (
+                <>
+                  <SunspotRegionsPanel regions={state.solarRegions} />
+                  <SolarDataPanel
+                    xrayFlux={state.xrayFlux}
+                    solarFlares={state.solarFlares}
+                    sunspotNumber={state.sunspotNumber}
+                  />
+                  <ForecastPanel
+                    forecast={state.kpForecast}
+                    alerts={state.alerts}
+                    showForecast={false}
+                    alertsFilter="all"
+                  />
+                </>
+              )}
+            </div>
+
+            {/* ── DESKTOP: 3 kolumny ── */}
+            <div className="hidden lg:block">
+              <div className="aurora-desktop-grid grid grid-cols-[minmax(288px,24%)_minmax(0,1fr)_minmax(300px,28%)] xl:grid-cols-[300px_1fr_320px] gap-5 xl:gap-6 mb-4">
+                <div className="aurora-desktop-col-label aurora-desktop-col-label--geom">Geomagnetyzm · Zorza</div>
+                <div className="aurora-desktop-col-label aurora-desktop-col-label--wind">Wiatr słoneczny · IMF</div>
+                <div className="aurora-desktop-col-label aurora-desktop-col-label--ops">Warunki · Słońce</div>
+              </div>
+              <div className="aurora-desktop-grid grid grid-cols-[minmax(288px,24%)_minmax(0,1fr)_minmax(300px,28%)] xl:grid-cols-[300px_1fr_320px] gap-5 xl:gap-6 items-start">
+              <div className="space-y-5 aurora-desktop-col--geom">
                 <AuroraPanel
-                  title="Kp · teraz"
-                  subtitle="Indeks geomagnetyczny · okno 3h"
+                  title="Indeks Kp"
+                  subtitle={`Okres ${kpPeriodLabel} · NOAA SWPC`}
                   action={
                     isStormy ? (
-                      <span className="px-2.5 py-1 rounded text-[12px] lg:text-[9px] font-bold font-mono tracking-wider text-orange-400 border border-orange-500/40 bg-orange-500/10">
+                      <span className="px-2.5 py-1 rounded-md text-xs font-bold font-mono tracking-wider text-orange-400 border border-orange-500/40 bg-orange-500/10">
                         BURZA G{Math.min(5, Math.max(1, Math.floor(currentKp - 4)))}
                       </span>
                     ) : undefined
                   }
                 >
-                  <div className="flex flex-col items-center">
-                    <KpGauge kp={currentKp} size={200} />
-                    <div className="mt-3 w-full grid grid-cols-2 gap-2 text-[14px] lg:text-[11px] font-mono">
-                      <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2.5 lg:p-2 text-center">
-                        <div className="text-slate-500 text-[13px] lg:text-[10px]">Hp30</div>
-                        <div className="font-bold text-lg lg:text-base text-sky-300">{hp30}</div>
-                      </div>
-                      <div className="rounded-md border border-slate-800 bg-slate-950/40 p-2.5 lg:p-2 text-center">
-                        <div className="text-slate-500 text-[13px] lg:text-[10px]">Hp60</div>
-                        <div className="font-bold text-lg lg:text-base text-violet-300">{hp60}</div>
-                      </div>
-                    </div>
+                  <div className="flex flex-col items-center py-1">
+                    <KpGauge kp={currentKp} size={228} />
                   </div>
                 </AuroraPanel>
 
                 <AuroraPanel title="Mapa zorzy" subtitle="Owale auroralne · Twoja lokalizacja" className="overflow-hidden">
-                  <div className="-mx-3 sm:-mx-4 -mb-3 sm:-mb-4">
+                  <div className="-mx-3 sm:-mx-4 lg:-mx-5 -mb-3 sm:-mb-4 lg:-mb-5">
                     <AuroraMap
                       kp={currentKp}
                       userLat={location.lat}
@@ -222,6 +448,10 @@ export default function AuroraTerminal() {
                       isVisible={mapVisible}
                     />
                   </div>
+                </AuroraPanel>
+
+                <AuroraPanel title="Indeksy godzinowe" subtitle="Hp30 · Hp60">
+                  <HpStats hp30={hp30} hp60={hp60} />
                 </AuroraPanel>
 
                 <AuroraPanel title="Historia geomagnetyczna" subtitle="Kp · Dst · SYM-H">
@@ -234,45 +464,32 @@ export default function AuroraTerminal() {
                 </AuroraPanel>
               </div>
 
-              {/* ── SRODEK: wiatr sloneczny DSCOVR ── */}
-              <div className={`min-w-0 ${activeTab !== "live" ? "hidden lg:block" : ""}`}>
+              <div className="min-w-0 aurora-desktop-col--wind">
                 <SolarWindPanel data={state.solarWind} />
               </div>
 
-              {/* ── PRAWO: obserwacja + slonce ── */}
-              <div
-                className={`space-y-3 sm:space-y-4 ${activeTab === "solar" ? "" : "hidden lg:block"}`}
-              >
+              <div className="space-y-5 aurora-desktop-col--ops">
                 <AuxPanel {...auxProps} />
-
-                <div className={activeTab === "solar" ? "block" : "hidden lg:block"}>
-                  <SunspotRegionsPanel regions={state.solarRegions} />
-                </div>
-                <div className={activeTab === "solar" ? "block" : "hidden lg:block"}>
-                  <SolarDataPanel
-                    xrayFlux={state.xrayFlux}
-                    solarFlares={state.solarFlares}
-                    sunspotNumber={state.sunspotNumber}
-                  />
-                </div>
-                <div className={activeTab === "solar" ? "block" : "hidden lg:block"}>
-                  <ForecastPanel forecast={state.kpForecast} alerts={state.alerts} />
-                </div>
+                <SunspotRegionsPanel regions={state.solarRegions} />
+                <SolarDataPanel
+                  xrayFlux={state.xrayFlux}
+                  solarFlares={state.solarFlares}
+                  sunspotNumber={state.sunspotNumber}
+                />
+                <ForecastPanel
+                  forecast={state.kpForecast}
+                  alerts={state.alerts}
+                  alertsFilter="all"
+                />
               </div>
             </div>
-
-            {/* Mobile: obserwacja pod wiatrem na zakladce live */}
-            {activeTab === "live" && (
-              <div className="lg:hidden mt-3">
-                <AuxPanel {...auxProps} />
-              </div>
-            )}
+            </div>
           </>
         )}
       </main>
 
-      <footer className="border-t border-slate-800/50 px-4 py-3 text-[12px] lg:text-[9px] text-slate-600 font-mono text-center pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-3">
-        NOAA SWPC · Open-Meteo · odswiezanie co 60s ·{" "}
+      <footer className="border-t border-slate-800/50 px-4 lg:px-6 py-3 lg:py-4 text-[13px] lg:text-[12px] text-slate-600 font-mono text-center">
+        NOAA SWPC · Open-Meteo · odświeżanie co 60s ·{" "}
         <Link href="/" className="text-slate-500 transition-colors hover:text-[#44ff88]">
           Web Space Station
         </Link>
@@ -285,31 +502,6 @@ export default function AuroraTerminal() {
           Starty rakiet
         </Link>
       </footer>
-
-      {/* Mobile bottom nav */}
-      <nav
-        className="aurora-mobile-nav lg:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-        aria-label="Nawigacja zakładek"
-      >
-        {MOBILE_NAV.map(({ id, Icon, label, tone }) => {
-          const isActive = activeTab === id;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              className={`aurora-mobile-nav__btn aurora-mobile-nav__btn--${tone}${isActive ? " is-active" : ""}`}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <span className="aurora-mobile-nav__icon" aria-hidden>
-                <Icon size={26} strokeWidth={1.75} />
-              </span>
-              <span className="aurora-mobile-nav__label">{label}</span>
-            </button>
-          );
-        })}
-      </nav>
     </div>
   );
 }

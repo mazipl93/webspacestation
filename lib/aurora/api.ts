@@ -33,6 +33,19 @@ export function getUtc3hPeriodStart(date = new Date()): string {
   return `${date.toISOString().slice(0, 11)}${String(h).padStart(2, "0")}:00:00`;
 }
 
+/** Granice bieżącego 3-godzinnego okna Kp (UTC). */
+export function getKpPeriodBounds(date = new Date()): { start: Date; end: Date } {
+  const h = Math.floor(date.getUTCHours() / 3) * 3;
+  const start = new Date(date);
+  start.setUTCMinutes(0, 0, 0);
+  start.setUTCMilliseconds(0);
+  start.setUTCHours(h);
+  const end = new Date(start);
+  end.setUTCHours(h + 3);
+  return { start, end };
+}
+
+
 /**
  * Display Kp aligned with SWPC / SpaceWeatherLive semantics:
  * max(official 3h Kp, running max estimated_kp in the current 3h UTC window).

@@ -2394,23 +2394,69 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
 }
 
 /* Mobile bottom nav — tylko < lg; ikony Lucide */
-.aurora-mobile-nav {
-  display: none;
+/* Aurora Terminal — mobile segment tabs (3 sekcje u gory) */
+.aurora-mobile-tabs {
+  background: linear-gradient(180deg, rgb(4 6 12 / 0.98) 0%, rgb(4 6 12 / 0.92) 70%, transparent 100%);
+  backdrop-filter: blur(12px);
 }
 
-@media (max-width: 1023px) {
-  .aurora-mobile-nav {
-    position: fixed;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: 1100;
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.65rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid rgb(30 41 59 / 0.9);
-    background: linear-gradient(180deg, rgb(6 8 16 / 0.92) 0%, rgb(4 6 12 / 0.98) 100%);
-    backdrop-filter: blur(14px);
-  }
+.aurora-mobile-tabs__track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.35rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgb(51 65 85 / 0.55);
+  background: rgb(10 15 30 / 0.65);
+}
+
+.aurora-mobile-tabs__btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 3.5rem;
+  padding: 0.65rem 0.4rem;
+  border-radius: 0.65rem;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: var(--font-geist-mono, "Courier New", monospace);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgb(148 163 184);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aurora-mobile-tabs__btn.is-active {
+  color: rgb(226 232 240);
+  background: rgb(30 41 59 / 0.75);
+  border-color: rgb(68 255 136 / 0.35);
+  box-shadow: inset 0 0 0 1px rgb(68 255 136 / 0.08);
+}
+
+.aurora-mobile-tabs__badge {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.35rem;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: rgb(239 68 68);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: center;
+}
+
+/* Legacy bottom nav — nieuzywane, zostawione na wypadek rollbacku */
+.aurora-mobile-nav {
+  display: none;
 }
 
 .aurora-mobile-nav__btn {
@@ -2419,10 +2465,11 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  min-height: 4.5rem;
-  padding: 0.65rem 0.45rem 0.55rem;
-  border-radius: 0.75rem;
+  gap: 0.3rem;
+  min-height: 3.75rem;
+  min-width: 0;
+  padding: 0.5rem 0.25rem 0.45rem;
+  border-radius: 0.7rem;
   border: 1px solid rgb(51 65 85 / 0.55);
   background: rgb(10 15 30 / 0.55);
   font-family: var(--font-geist-mono, "Courier New", monospace);
@@ -2435,47 +2482,78 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
 }
 
 .aurora-mobile-nav__icon {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 2.85rem;
-  height: 2.85rem;
-  border-radius: 0.6rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.55rem;
   border: 1px solid rgb(51 65 85 / 0.5);
   background: rgb(8 12 24 / 0.75);
   color: rgb(100 116 139);
   transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
+.aurora-mobile-nav__badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: rgb(239 68 68);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+  box-shadow: 0 0 8px rgb(239 68 68 / 0.5);
+}
+
 .aurora-mobile-nav__label {
-  font-size: 0.875rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(148 163 184);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* Akcenty zakładek — stonowany neon na ikonach */
-.aurora-mobile-nav__btn--wind .aurora-mobile-nav__icon {
-  color: rgb(56 189 248 / 0.85);
+.aurora-mobile-nav__btn--aurora .aurora-mobile-nav__icon {
+  color: rgb(167 139 250 / 0.9);
 }
-.aurora-mobile-nav__btn--kp .aurora-mobile-nav__icon {
+.aurora-mobile-nav__btn--geo .aurora-mobile-nav__icon {
   color: rgb(74 222 128 / 0.85);
+}
+.aurora-mobile-nav__btn--plasma .aurora-mobile-nav__icon {
+  color: rgb(56 189 248 / 0.85);
 }
 .aurora-mobile-nav__btn--solar .aurora-mobile-nav__icon {
   color: rgb(251 191 36 / 0.85);
 }
 
-.aurora-mobile-nav__btn--wind.is-active .aurora-mobile-nav__icon {
-  color: rgb(103 232 249);
-  border-color: rgb(34 211 238 / 0.55);
-  background: rgb(34 211 238 / 0.12);
-  box-shadow: 0 0 14px rgb(34 211 238 / 0.28);
+.aurora-mobile-nav__btn--aurora.is-active .aurora-mobile-nav__icon {
+  color: rgb(196 181 253);
+  border-color: rgb(167 139 250 / 0.55);
+  background: rgb(167 139 250 / 0.12);
+  box-shadow: 0 0 14px rgb(167 139 250 / 0.28);
 }
-.aurora-mobile-nav__btn--kp.is-active .aurora-mobile-nav__icon {
+.aurora-mobile-nav__btn--geo.is-active .aurora-mobile-nav__icon {
   color: rgb(110 255 170);
   border-color: rgb(68 255 136 / 0.55);
   background: rgb(68 255 136 / 0.12);
   box-shadow: 0 0 14px rgb(68 255 136 / 0.28);
+}
+.aurora-mobile-nav__btn--plasma.is-active .aurora-mobile-nav__icon {
+  color: rgb(103 232 249);
+  border-color: rgb(34 211 238 / 0.55);
+  background: rgb(34 211 238 / 0.12);
+  box-shadow: 0 0 14px rgb(34 211 238 / 0.28);
 }
 .aurora-mobile-nav__btn--solar.is-active .aurora-mobile-nav__icon {
   color: rgb(253 224 71);
@@ -2484,15 +2562,20 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   box-shadow: 0 0 14px rgb(251 191 36 / 0.28);
 }
 
-.aurora-mobile-nav__btn--wind.is-active {
-  border-color: rgb(34 211 238 / 0.65);
-  background: rgb(34 211 238 / 0.1);
-  box-shadow: 0 0 18px rgb(34 211 238 / 0.22), inset 0 0 12px rgb(34 211 238 / 0.06);
+.aurora-mobile-nav__btn--aurora.is-active {
+  border-color: rgb(167 139 250 / 0.65);
+  background: rgb(167 139 250 / 0.1);
+  box-shadow: 0 0 18px rgb(167 139 250 / 0.22), inset 0 0 12px rgb(167 139 250 / 0.06);
 }
-.aurora-mobile-nav__btn--kp.is-active {
+.aurora-mobile-nav__btn--geo.is-active {
   border-color: rgb(68 255 136 / 0.65);
   background: rgb(68 255 136 / 0.1);
   box-shadow: 0 0 18px rgb(68 255 136 / 0.22), inset 0 0 12px rgb(68 255 136 / 0.06);
+}
+.aurora-mobile-nav__btn--plasma.is-active {
+  border-color: rgb(34 211 238 / 0.65);
+  background: rgb(34 211 238 / 0.1);
+  box-shadow: 0 0 18px rgb(34 211 238 / 0.22), inset 0 0 12px rgb(34 211 238 / 0.06);
 }
 .aurora-mobile-nav__btn--solar.is-active {
   border-color: rgb(251 191 36 / 0.65);
@@ -2500,12 +2583,145 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   box-shadow: 0 0 18px rgb(251 191 36 / 0.22), inset 0 0 12px rgb(251 191 36 / 0.06);
 }
 
-.aurora-mobile-nav__btn--wind.is-active .aurora-mobile-nav__label {
-  color: rgb(103 232 249);
+.aurora-mobile-nav__btn--aurora.is-active .aurora-mobile-nav__label {
+  color: rgb(196 181 253);
 }
-.aurora-mobile-nav__btn--kp.is-active .aurora-mobile-nav__label {
+.aurora-mobile-nav__btn--geo.is-active .aurora-mobile-nav__label {
   color: rgb(110 255 170);
+}
+.aurora-mobile-nav__btn--plasma.is-active .aurora-mobile-nav__label {
+  color: rgb(103 232 249);
 }
 .aurora-mobile-nav__btn--solar.is-active .aurora-mobile-nav__label {
   color: rgb(253 224 71);
+}
+
+/* ── Aurora Terminal — desktop (lg+) mission-control layout ── */
+@media (min-width: 1024px) {
+  .aurora-desktop-hud {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.625rem;
+    padding: 0.875rem 1.125rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(51 65 85 / 0.55);
+    background: linear-gradient(165deg, rgb(10 15 30 / 0.92) 0%, rgb(4 6 12 / 0.88) 100%);
+    box-shadow:
+      0 1px 0 rgb(148 163 184 / 0.06) inset,
+      0 8px 32px rgb(0 0 0 / 0.35);
+  }
+
+  .aurora-desktop-hud__cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-height: 4rem;
+    padding: 0.5rem 0.35rem;
+    border-radius: 0.625rem;
+    border: 1px solid rgb(51 65 85 / 0.4);
+    background: rgb(2 4 8 / 0.55);
+    text-align: center;
+  }
+
+  .aurora-desktop-hud__label {
+    font-family: var(--font-geist-mono, "Courier New", monospace);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+  }
+
+  .aurora-desktop-hud__value {
+    font-family: var(--font-geist-mono, "Courier New", monospace);
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aurora-desktop-hud__unit {
+    font-family: var(--font-geist-mono, "Courier New", monospace);
+    font-size: 0.625rem;
+    color: rgb(100 116 139);
+    letter-spacing: 0.04em;
+  }
+
+  .aurora-desktop-grid {
+    align-items: start;
+  }
+
+  .aurora-desktop-col-label {
+    font-family: var(--font-geist-mono, "Courier New", monospace);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 0 0.25rem 0.625rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid rgb(51 65 85 / 0.45);
+  }
+
+  .aurora-desktop-col-label--geom {
+    color: rgb(196 181 253 / 0.9);
+    border-bottom-color: rgb(167 139 250 / 0.28);
+  }
+
+  .aurora-desktop-col-label--wind {
+    color: rgb(125 211 252 / 0.9);
+    border-bottom-color: rgb(56 189 248 / 0.28);
+  }
+
+  .aurora-desktop-col-label--ops {
+    color: rgb(253 224 71 / 0.85);
+    border-bottom-color: rgb(251 191 36 / 0.28);
+  }
+
+  .aurora-desktop-col--geom {
+    padding-right: 0.25rem;
+  }
+
+  .aurora-desktop-col--wind {
+    padding-left: 0.125rem;
+    padding-right: 0.125rem;
+  }
+
+  .aurora-desktop-col--ops {
+    padding-left: 0.25rem;
+  }
+
+  .aurora-panel-desktop {
+    border-radius: 1rem;
+    box-shadow: 0 4px 28px rgb(0 0 0 / 0.22);
+  }
+
+  .aurora-panel-desktop .aurora-panel-head {
+    padding: 0.875rem 1.25rem;
+  }
+
+  .aurora-panel-desktop .aurora-panel-body {
+    padding: 1.25rem;
+  }
+
+  .aurora-wind-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.375rem 0 0.125rem;
+    font-family: var(--font-geist-mono, "Courier New", monospace);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+  }
+
+  .aurora-wind-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgb(51 65 85 / 0.6), transparent);
+  }
 }

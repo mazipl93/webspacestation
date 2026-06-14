@@ -32,6 +32,18 @@ function clearLeafletContainer(el: LeafletContainer | null) {
   el.replaceChildren();
 }
 
+/** Leaflet rzuca gdy kontener jest ukryty lub mapa w trakcie demontażu. */
+function safeInvalidateSize(map: L.Map | null, container: HTMLElement | null): void {
+  if (!map || !container?.isConnected) return;
+  if (!(container as LeafletContainer)._leaflet_id) return;
+  if (container.offsetWidth === 0 && container.offsetHeight === 0) return;
+  try {
+    map.invalidateSize({ animate: false });
+  } catch {
+    // mapa usunięta między klatkami (zmiana zakładki mobile)
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -52,6 +64,7 @@ export default function AuroraMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const ovalLayerRef = useRef<L.LayerGroup | null>(null);
+  const mountedRef = useRef(true);
   const [mapReady, setMapReady] = useState(false);
   const lastKpRef = useRef(kp);
 
@@ -65,6 +78,7 @@ export default function AuroraMap({
   }
 
   useEffect(() => {
+    mountedRef.current = true;
     const container = mapRef.current;
     if (!container || mapInstanceRef.current) return;
 
@@ -94,7 +108,12 @@ export default function AuroraMap({
     setMapReady(true);
 
     return () => {
-      map.remove();
+      mountedRef.current = false;
+      try {
+        map.remove();
+      } catch {
+        // ignore teardown races
+      }
       mapInstanceRef.current = null;
       ovalLayerRef.current = null;
       clearLeafletContainer(mapRef.current as LeafletContainer | null);
@@ -107,10 +126,15 @@ export default function AuroraMap({
 
     const map = mapInstanceRef.current;
     const el = mapRef.current;
+    let cancelled = false;
+    let rafId = 0;
 
     const fixSize = () => {
-      requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
+      if (cancelled || !mountedRef.current) return;
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (cancelled || !mountedRef.current || mapInstanceRef.current !== map) return;
+        safeInvalidateSize(map, mapRef.current);
       });
     };
 
@@ -122,6 +146,8 @@ export default function AuroraMap({
     ro.observe(el);
 
     return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
       window.clearTimeout(t1);
       window.clearTimeout(t2);
       ro.disconnect();
@@ -129,7 +155,7 @@ export default function AuroraMap({
   }, [isVisible, mapReady]);
 
   useEffect(() => {
-    if (!mapReady || !mapInstanceRef.current) return;
+    if (!mapReady || !mapInstanceRef.current || !mountedRef.current) return;
 
     const map = mapInstanceRef.current;
     const displayKp = effectiveKp;

@@ -29,6 +29,7 @@ type Props = {
   windowMin?: WindTimeWindow;
   height?: number;
   showWindowControl?: boolean;
+  showTimeAxis?: boolean;
   variant?: "full" | "teaser";
   className?: string;
 };
@@ -38,6 +39,7 @@ export default function SolarWindBzChart({
   windowMin: windowMinProp,
   height = 220,
   showWindowControl = false,
+  showTimeAxis = false,
   variant = "full",
   className,
 }: Props) {
@@ -64,6 +66,7 @@ export default function SolarWindBzChart({
     [windSlice, chartData],
   );
   const l1Timestamp = marker?.l1Utc ?? fmtUtcShort(l1?.time_tag);
+  const l1TimeTag = l1?.time_tag ?? marker?.latestKey ?? null;
   const yDomain = useMemo(() => getBzChartDomain(chartData.map((d) => d.bz)), [chartData]);
   const bzZones = useMemo(() => getVisibleBzZones(yDomain), [yDomain]);
   const bzThresholds = useMemo(() => getVisibleBzThresholds(yDomain), [yDomain]);
@@ -78,7 +81,7 @@ export default function SolarWindBzChart({
                 key={value}
                 type="button"
                 onClick={() => setInternalWindow(value)}
-                className={`px-3 py-1.5 lg:px-2.5 lg:py-1 text-[12px] lg:text-[9px] font-mono transition-colors ${
+                className={`px-3 py-1.5 lg:px-3 lg:py-1.5 text-[12px] lg:text-xs font-mono transition-colors ${
                   windowMin === value
                     ? "bg-slate-700 text-sky-300"
                     : "text-slate-500 hover:text-slate-300"
@@ -92,7 +95,7 @@ export default function SolarWindBzChart({
       )}
 
       {!isTeaser && (
-        <div className="text-[13px] lg:text-[9px] text-slate-500 font-mono uppercase tracking-widest">
+        <div className="text-[13px] lg:text-[11px] text-slate-500 font-mono uppercase tracking-widest mb-1">
           Pole magnetyczne IMF
         </div>
       )}
@@ -108,9 +111,11 @@ export default function SolarWindBzChart({
         domain={yDomain}
         marker={marker}
         l1Timestamp={l1Timestamp}
+        timestampTag={l1TimeTag}
         decimals={1}
         height={isTeaser ? 56 : height}
         compact={isTeaser}
+        showXAxis={showTimeAxis}
       >
         {bzZones.map((zone) => (
           <ReferenceArea
