@@ -1011,6 +1011,77 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   color: var(--color-text-tertiary, #6e7894);
 }
 
+.ops-iss-showcase__passes {
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.ops-iss-showcase__passes-title {
+  margin: 0 0 0.45rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(186, 230, 253, 0.85);
+}
+
+.ops-iss-showcase__passes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ops-iss-showcase__passes-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.28rem 0.4rem;
+  border-radius: 0.4rem;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.ops-iss-showcase__passes-line {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-primary, #f3f5fa);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.ops-iss-showcase__passes-empty {
+  margin: 0;
+  font-size: 10px;
+  color: var(--color-text-muted, #64748b);
+}
+
+.ops-iss-showcase__passes-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ops-iss-showcase__passes-skeleton-row {
+  height: 0.95rem;
+  border-radius: 0.25rem;
+  background: rgba(148, 163, 184, 0.08);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.ops-iss-showcase__cta {
+  margin-top: 0.65rem;
+}
+
 /* Aurora showcase — ISS-scale teaser */
 .ops-aurora-showcase {
   width: 100%;
@@ -1097,7 +1168,56 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
 }
 
 .ops-iss-passes--compact {
-  padding: 0.7rem 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
+.ops-iss-passes--compact .ops-iss-passes__header {
+  margin-bottom: 0.35rem;
+  align-items: center;
+}
+
+.ops-iss-passes--compact .ops-iss-passes__kicker {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.ops-iss-passes--compact .ops-iss-passes__empty {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.ops-iss-passes__list--compact {
+  gap: 0.25rem;
+}
+
+.ops-iss-passes__row-compact-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.ops-iss-passes__row-compact-wrap .ops-iss-passes__badge {
+  flex-shrink: 0;
+  padding: 0.08rem 0.35rem;
+  font-size: 8px;
+}
+
+.ops-iss-passes__row-compact {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--color-text-secondary, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ops-iss-passes__skeleton-row--compact {
+  height: 1.1rem;
 }
 
 .ops-iss-passes__header {
@@ -1205,6 +1325,162 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   border-color: rgba(56, 189, 248, 0.35);
   color: #7dd3fc;
   background: rgba(56, 189, 248, 0.08);
+}
+
+.ops-iss-passes__badge--daylight {
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #fcd34d;
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.ops-iss-passes__badge--low {
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.ops-iss-passes__badge--sm {
+  padding: 0.06rem 0.32rem;
+  font-size: 8px;
+}
+
+.ops-iss-passes--sidebar {
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+
+.ops-iss-passes--sidebar .ops-iss-passes__header {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.ops-iss-passes__sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ops-iss-passes__sidebar-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.55rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.ops-iss-passes__sidebar-row + .ops-iss-passes__sidebar-row {
+  margin-top: 0.35rem;
+  border-top: none;
+  padding-top: 0.55rem;
+}
+
+.ops-iss-passes__sidebar-num {
+  flex-shrink: 0;
+  width: 1.1rem;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.ops-iss-passes__sidebar-peak {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-primary, #f3f5fa);
+}
+
+.ops-iss-passes__sidebar-meta {
+  margin-top: 0.15rem;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--color-text-secondary, #cbd5e1);
+}
+
+.ops-iss-passes__sidebar-detail {
+  margin-top: 0.1rem;
+  font-size: 9px;
+  color: var(--color-text-muted, #64748b);
+}
+
+/* /mapa — mapa + piny pod spodem | przeloty po prawej (PC) */
+.ops-mission-map-page {
+  display: grid;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
+  grid-template-areas:
+    "map"
+    "pins"
+    "passes";
+}
+
+.ops-mission-map-page__map {
+  grid-area: map;
+  min-width: 0;
+}
+
+.ops-mission-map-page__pins {
+  grid-area: pins;
+  min-width: 0;
+}
+
+.ops-mission-map-page__passes {
+  grid-area: passes;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .ops-mission-map-page {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+    grid-template-areas:
+      "map passes"
+      "pins passes";
+    align-items: start;
+    gap: 1rem 1.25rem;
+  }
+
+  .ops-mission-map-page__passes {
+    position: sticky;
+    top: 5.5rem;
+    max-height: calc(100dvh - 6.5rem);
+    overflow-y: auto;
+  }
+}
+
+.ops-map-pin-grid {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .ops-map-pin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+}
+
+.ops-map-pin-grid > section:last-child {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(8, 12, 20, 0.45);
+  padding: 0.75rem 0.85rem;
+}
+
+.ops-map-pin-grid > section:last-child h3 {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--color-text-primary, #f3f5fa) !important;
 }
 
 .ops-iss-passes__empty {

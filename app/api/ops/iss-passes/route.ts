@@ -6,9 +6,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const limit = Math.min(8, Math.max(1, Number(searchParams.get("limit") ?? 4) || 4));
-
-  const passes = await computeIssPolandPasses(limit, 52);
+  const limit = Math.min(16, Math.max(1, Number(searchParams.get("limit") ?? 4) || 4));
+  const passes = await computeIssPolandPasses(limit, 72);
   return NextResponse.json(
     { passes, computedAt: new Date().toISOString() },
     {

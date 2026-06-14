@@ -1,34 +1,16 @@
+import "server-only";
+
+import { solarElevationDeg, ISS_VISIBLE_SUN_MAX_DEG } from "@/lib/ops/solar-elevation";
 import { loadIssSatrec } from "@/lib/ops/iss-orbit";
+import {
+  POLAND_BOUNDS,
+  POLAND_OBSERVER,
+  type IssPassObservationKind,
+  type IssPolandPass,
+} from "@/lib/ops/iss-poland-passes.types";
 
-/** Granice Polski (prostokąt) — wystarczające do przelotów ground track. */
-export const POLAND_BOUNDS = {
-  latMin: 49.0,
-  latMax: 54.9,
-  lonMin: 14.12,
-  lonMax: 24.15,
-} as const;
-
-export const POLAND_OBSERVER = {
-  city: "Warszawa",
-  lat: 52.2297,
-  lon: 21.0122,
-} as const;
-
-export type IssPolandPass = {
-  id: string;
-  /** ISO — wejście nad terytorium PL */
-  startAt: string;
-  /** ISO — wyjście z terytorium PL */
-  endAt: string;
-  durationSec: number;
-  maxElevationDeg: number;
-  /** Azymut przy maks. elewacji (°) */
-  azimuthDeg: number;
-  /** true = możliwa obserwacja (ciemno + elewacja ≥ 15°) */
-  visible: boolean;
-  /** ISO — moment maks. elewacji nad obserwatorem */
-  maxAt: string;
-};
+export type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
+export { POLAND_BOUNDS, POLAND_OBSERVER } from "@/lib/ops/iss-poland-passes.types";
 
 type SatRec = import("satellite.js").SatRec;
 type SatelliteModule = typeof import("satellite.js");
@@ -73,22 +55,6 @@ function elevationDeg(
   return satellite.radiansToDegrees(look.elevation);
 }
 
-/** Prosta elewacja Słońca — wystarczy do flagi „widoczny”. */
-function sunElevationDeg(time: Date, lat: number, lon: number): number {
-  const rad = Math.PI / 180;
-  const d = (time.getTime() / 86_400_000 - 10957.5) * 2 * Math.PI;
-  const decl = 0.4093 * Math.sin(d);
-  const hour =
-    time.getUTCHours() +
-    time.getUTCMinutes() / 60 +
-    lon / 15;
-  const ha = (hour - 12) * 15 * rad;
-  const latR = lat * rad;
-  const sinAlt =
-    Math.sin(latR) * Math.sin(decl) +
-    Math.cos(latR) * Math.cos(decl) * Math.cos(ha);
-  return Math.asin(Math.max(-1, Math.min(1, sinAlt))) / rad;
-}
 
 function refineBoundary(
   satrec: SatRec,
@@ -109,12 +75,34 @@ function refineBoundary(
   return (lo + hi) / 2;
 }
 
+function classifyObservation(
+  maxEl: number,
+  sunEl: number,
+): { visible: boolean; observationKind: IssPassObservationKind } {
+  if (maxEl < 0) {
+    return { visible: false, observationKind: "below" };
+  }
+  if (maxEl >= 15 && sunEl < ISS_VISIBLE_SUN_MAX_DEG) {
+    return { visible: true, observationKind: "visible" };
+  }
+  if (sunEl >= ISS_VISIBLE_SUN_MAX_DEG) {
+    return { visible: false, observationKind: "daylight" };
+  }
+  return { visible: false, observationKind: "low" };
+}
+
 function scanPassMetrics(
   satrec: SatRec,
   satellite: SatelliteModule,
   startMs: number,
   endMs: number,
-): { maxElevationDeg: number; azimuthDeg: number; maxAt: string; visible: boolean } {
+): {
+  maxElevationDeg: number;
+  azimuthDeg: number;
+  maxAt: string;
+  visible: boolean;
+  observationKind: IssPassObservationKind;
+} {
   const { lat, lon } = POLAND_OBSERVER;
   let maxEl = -90;
   let maxAt = startMs;
@@ -141,21 +129,22 @@ function scanPassMetrics(
     }
   }
 
-  const sunEl = sunElevationDeg(new Date(maxAt), lat, lon);
-  const visible = maxEl >= 15 && sunEl < -4;
+  const sunEl = solarElevationDeg(new Date(maxAt), lat, lon);
+  const { visible, observationKind } = classifyObservation(maxEl, sunEl);
 
   return {
     maxElevationDeg: Math.round(maxEl * 10) / 10,
     azimuthDeg: Math.round(azimuth),
     maxAt: new Date(maxAt).toISOString(),
     visible,
+    observationKind,
   };
 }
 
 /** Najbliższe przeloty ISS nad Polską (ground track + elewacja z Warszawy). */
 export async function computeIssPolandPasses(
   limit = 4,
-  hoursAhead = 48,
+  hoursAhead = 72,
 ): Promise<IssPolandPass[]> {
   const loaded = await loadIssSatrec();
   if (!loaded) return [];

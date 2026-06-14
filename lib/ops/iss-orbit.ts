@@ -1,3 +1,5 @@
+import "server-only";
+
 import { fetchExternal } from "@/lib/ops/fetch-external";
 import {
   continuousLongitude,

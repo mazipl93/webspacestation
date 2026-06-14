@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { IssPolandPass } from "@/lib/ops/iss-poland-passes";
+import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
 
 const PASSES_URL = "/api/ops/iss-passes";
 const INTERVAL_MS = 120_000;
@@ -11,7 +11,11 @@ type Payload = {
   computedAt: string;
 };
 
-export function useIssPolandPasses(limit = 4) {
+type Options = {
+  limit?: number;
+};
+
+export function useIssPolandPasses({ limit = 4 }: Options = {}) {
   const [passes, setPasses] = useState<IssPolandPass[]>([]);
   const [computedAt, setComputedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

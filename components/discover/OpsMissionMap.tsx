@@ -4,7 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import OpsPinList from "@/components/discover/OpsPinList";
 import OpsIssPolandPasses from "@/components/discover/OpsIssPolandPasses";
-import { cn } from "@/lib/cn";
 import { captionForMapPin } from "@/lib/ops/map-pin-caption";
 import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
@@ -25,7 +24,7 @@ type Props = {
   iss?: OpsIssPosition | null;
   issOrbit?: { lat: number; lon: number }[][];
   height?: number;
-  layout?: "stack" | "split";
+  layout?: "stack" | "split" | "map-page";
   showPinList?: boolean;
   showPolandPasses?: boolean;
   interactive?: boolean;
@@ -47,6 +46,7 @@ export default function OpsMissionMap({
 }: Props) {
   const [focusPinId, setFocusPinId] = useState<string | null>(null);
   const isSplit = layout === "split";
+  const isMapPage = layout === "map-page";
 
   const handleSelectPin = useCallback((pinId: string) => {
     setFocusPinId((prev) => (prev === pinId ? null : pinId));
@@ -87,20 +87,31 @@ export default function OpsMissionMap({
       <OpsPinList
         pins={pins}
         compact
+        hideIss={isMapPage}
+        layout={isMapPage ? "map-grid" : "stack"}
         activePinId={focusPinId}
         onSelectPin={handleSelectPin}
       />
     ) : null;
 
+  if (isMapPage) {
+    return (
+      <div className="ops-mission-map-page">
+        <div className="ops-mission-map-page__map">{mapBlock}</div>
+        {pinList ? <div className="ops-mission-map-page__pins">{pinList}</div> : null}
+        {showPolandPasses ? (
+          <aside className="ops-mission-map-page__passes">
+            <OpsIssPolandPasses variant="sidebar" limit={10} />
+          </aside>
+        ) : null}
+      </div>
+    );
+  }
+
   if (isSplit) {
     return (
       <div className="flex min-w-0 w-full max-w-full flex-col gap-3 sm:gap-4">
-        <div
-          className={cn(
-            "grid min-w-0 w-full gap-3 sm:gap-4",
-            "lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] lg:items-start",
-          )}
-        >
+        <div className="grid min-w-0 w-full gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(180px,220px)] lg:items-start">
           <div className="min-w-0 w-full shrink-0">{mapBlock}</div>
           {pinList ? (
             <div className="min-w-0 rounded-xl border border-hairline-faint p-3 sm:p-4 lg:max-h-[420px] lg:overflow-y-auto">
@@ -108,7 +119,6 @@ export default function OpsMissionMap({
             </div>
           ) : null}
         </div>
-        {showPolandPasses ? <OpsIssPolandPasses variant="map" limit={6} /> : null}
       </div>
     );
   }
@@ -116,7 +126,6 @@ export default function OpsMissionMap({
   return (
     <div className="flex min-w-0 w-full max-w-full flex-col gap-3 overflow-hidden sm:gap-4">
       {mapBlock}
-      {showPolandPasses ? <OpsIssPolandPasses variant="map" limit={6} /> : null}
       {pinList}
     </div>
   );

@@ -1,4 +1,7 @@
-import type { IssPolandPass } from "@/lib/ops/iss-poland-passes";
+import type {
+  IssPassObservationKind,
+  IssPolandPass,
+} from "@/lib/ops/iss-poland-passes.types";
 
 const TZ = "Europe/Warsaw";
 
@@ -70,6 +73,11 @@ export function formatPassWindow(pass: IssPolandPass): string {
   return `${day} ${fmtTime(pass.startAt)}–${fmtTime(pass.endAt)}`;
 }
 
+export function formatPassPeak(pass: IssPolandPass): string {
+  const day = fmtDayLabel(pass.maxAt);
+  return `${day} ${fmtTime(pass.maxAt)}`;
+}
+
 export function formatPassDuration(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
@@ -79,6 +87,52 @@ export function formatPassDuration(sec: number): string {
 
 export function formatPassSummary(pass: IssPolandPass): string {
   const dir = azimuthLabelPl(pass.azimuthDeg);
-  const vis = pass.visible ? " · widoczny" : "";
-  return `max ${pass.maxElevationDeg.toFixed(0)}° · ${dir}${vis}`;
+  return `max ${pass.maxElevationDeg.toFixed(0)}° · ${dir}`;
+}
+
+const PASS_BADGE: Record<
+  IssPassObservationKind,
+  { label: string; hint: string }
+> = {
+  visible: {
+    label: "Widoczny",
+    hint: "Ciemne niebo, elewacja ≥ 15° — do obserwacji gołym okiem",
+  },
+  daylight: {
+    label: "W dzień",
+    hint: "Jasne niebo — ISS niewidoczna, ale tor nad Polską (anteny, łączność)",
+  },
+  low: {
+    label: "Nisko",
+    hint: "Nad horyzontem, ale elewacja < 15° — trudna obserwacja wzrokowa",
+  },
+  below: {
+    label: "Pod horyzontem",
+    hint: "Tor nad terytorium PL, ale satelita poniżej horyzontu ze środka kraju",
+  },
+};
+
+export function passBadgeMeta(kind: IssPassObservationKind) {
+  return PASS_BADGE[kind];
+}
+
+export function passBadgeClass(kind: IssPassObservationKind): string {
+  switch (kind) {
+    case "visible":
+      return "ops-iss-passes__badge--visible";
+    case "daylight":
+      return "ops-iss-passes__badge--daylight";
+    case "low":
+      return "ops-iss-passes__badge--low";
+    default:
+      return "ops-iss-passes__badge--below";
+  }
+}
+
+/** Jedna linia na homepage — godzina szczytu + elewacja. */
+export function formatPassCompact(pass: IssPolandPass): string {
+  const day = fmtDayLabel(pass.maxAt);
+  const time = fmtTime(pass.maxAt);
+  const dir = azimuthLabelPl(pass.azimuthDeg);
+  return `${day} ${time} · ${pass.maxElevationDeg.toFixed(0)}° · ${dir}`;
 }

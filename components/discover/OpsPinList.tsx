@@ -9,6 +9,10 @@ type Props = {
   activePinId?: string | null;
   onSelectPin?: (pinId: string) => void;
   compact?: boolean;
+  /** Ukryj chip ISS — na /mapa marker wystarcza. */
+  hideIss?: boolean;
+  /** Dwa boksy pod mapą: starty | kosmodromy. */
+  layout?: "stack" | "map-grid";
 };
 
 type PinTone = "iss" | "scheduled" | "idle";
@@ -222,9 +226,11 @@ export default function OpsPinList({
   activePinId,
   onSelectPin,
   compact = false,
+  hideIss = false,
+  layout = "stack",
 }: Props) {
   const interactive = Boolean(onSelectPin);
-  const iss = pins.find((p) => p.kind === "iss");
+  const iss = hideIss ? undefined : pins.find((p) => p.kind === "iss");
   const scheduled = pins.filter(
     (p) => p.scheduled && p.kind !== "iss",
   );
@@ -237,6 +243,41 @@ export default function OpsPinList({
       <p className="text-[12px] text-text-tertiary">
         Brak punktów do wyświetlenia. Odśwież za chwilę.
       </p>
+    );
+  }
+
+  const scheduledSection = (
+    <PinSection
+      title="Start w harmonogramie"
+      hint="Kolorowe pinezki — nadchodzące starty. Kliknij, aby wycentrować mapę."
+      groupPins={scheduled}
+      activePinId={activePinId}
+      onSelectPin={onSelectPin}
+      compact={compact}
+      interactive={interactive}
+      tone="scheduled"
+    />
+  );
+
+  const cosmodromeSection = (
+    <PinSection
+      title="Kosmodromy"
+      hint="Szare pinezki — platformy bez startu w harmonogramie."
+      groupPins={cosmodromes}
+      activePinId={activePinId}
+      onSelectPin={onSelectPin}
+      compact={compact}
+      interactive={interactive}
+      tone="idle"
+    />
+  );
+
+  if (layout === "map-grid") {
+    return (
+      <div className="ops-map-pin-grid">
+        {scheduledSection}
+        {cosmodromeSection}
+      </div>
     );
   }
 
@@ -254,26 +295,8 @@ export default function OpsPinList({
           tone="iss"
         />
       ) : null}
-      <PinSection
-        title="Start w harmonogramie"
-        hint="Kolorowe pinezki na mapie: nadchodzące starty."
-        groupPins={scheduled}
-        activePinId={activePinId}
-        onSelectPin={onSelectPin}
-        compact={compact}
-        interactive={interactive}
-        tone="scheduled"
-      />
-      <PinSection
-        title="Brak startu w harmonogramie"
-        hint="Szare pinezki: aktywne kosmodromy bez zaplanowanej misji."
-        groupPins={cosmodromes}
-        activePinId={activePinId}
-        onSelectPin={onSelectPin}
-        compact={compact}
-        interactive={interactive}
-        tone="idle"
-      />
+      {scheduledSection}
+      {cosmodromeSection}
     </div>
   );
 }
