@@ -13,16 +13,14 @@ import {
 } from "@/lib/aurora/api";
 
 import { KpPeriodSplit } from "./TimeDual";
-
 import type { WeatherData } from "./useLocation";
-
 import KpGauge from "./KpGauge";
-
-
+import KpContextCaption from "./KpContextCaption";
+import type { KpLiveReading } from "@/lib/aurora/api";
 
 interface ObservationHeroProps {
-
   kp: number;
+  kpReading?: KpLiveReading;
 
   weather: WeatherData;
 
@@ -155,9 +153,8 @@ function ContextChip({
 /** Mobile hero: Kp + szansa na zorze — pełna szerokość, bez overflow. */
 
 export default function ObservationHero({
-
   kp,
-
+  kpReading,
   weather,
 
   lat,
@@ -249,7 +246,7 @@ export default function ObservationHero({
         </p>
 
         <KpGauge kp={kp} size={240} showStormBadge={false} />
-
+        {kpReading && <KpContextCaption reading={kpReading} className="mt-2" />}
         <div className="mt-3 px-2">
 
           <p className="text-[11px] text-slate-600 uppercase tracking-widest mb-1.5">Okres pomiaru</p>

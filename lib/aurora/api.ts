@@ -46,17 +46,93 @@ export function getKpPeriodBounds(date = new Date()): { start: Date; end: Date }
 }
 
 
-/**
- * Display Kp aligned with SWPC / SpaceWeatherLive semantics:
- * max(official 3h Kp, running max estimated_kp in the current 3h UTC window).
- */
-export function getDisplayKp(kp1m: KpData[], kp3Day: KpData[]): number {
-  const official = kp3Day.at(-1)?.kp ?? 0;
-  const periodStart = getUtc3hPeriodStart();
+/** NOAA 28-step Kp scale (thirds) — jak SpaceWeatherLive / GFZ. */
+const KP_NOTATION_STEPS: { label: string; value: number }[] = [
+  { label: "0o", value: 0 },
+  { label: "0+", value: 0.33 },
+  { label: "1−", value: 0.67 },
+  { label: "1o", value: 1 },
+  { label: "1+", value: 1.33 },
+  { label: "2−", value: 1.67 },
+  { label: "2o", value: 2 },
+  { label: "2+", value: 2.33 },
+  { label: "3−", value: 2.67 },
+  { label: "3o", value: 3 },
+  { label: "3+", value: 3.33 },
+  { label: "4−", value: 3.67 },
+  { label: "4o", value: 4 },
+  { label: "4+", value: 4.33 },
+  { label: "5−", value: 4.67 },
+  { label: "5o", value: 5 },
+  { label: "5+", value: 5.33 },
+  { label: "6−", value: 5.67 },
+  { label: "6o", value: 6 },
+  { label: "6+", value: 6.33 },
+  { label: "7−", value: 6.67 },
+  { label: "7o", value: 7 },
+  { label: "7+", value: 7.33 },
+  { label: "8−", value: 7.67 },
+  { label: "8o", value: 8 },
+  { label: "8+", value: 8.33 },
+  { label: "9−", value: 8.67 },
+  { label: "9o", value: 9 },
+];
+
+export type KpLiveReading = {
+  /** Bieżący estimated Kp (NOAA 1-min, ostatnia wartość). */
+  current: number;
+  /** Szczyt estimated Kp w bieżącym oknie 3h UTC. */
+  periodPeak: number;
+  /** Ostatni zamknięty oficjalny Kp 3h. */
+  lastClosed: number;
+  /** Notacja 28-stopniowa (1+, 2−, …). */
+  notation: string;
+};
+
+/** Mapuje wartość Kp na notację NOAA 28-stopniową. */
+export function formatKpNotation(kp: number): string {
+  if (!Number.isFinite(kp)) return "—";
+  let best = KP_NOTATION_STEPS[0];
+  let bestDist = Math.abs(kp - best.value);
+  for (const step of KP_NOTATION_STEPS) {
+    const dist = Math.abs(kp - step.value);
+    if (dist < bestDist) {
+      best = step;
+      bestDist = dist;
+    }
+  }
+  return best.label;
+}
+
+/** Szczyt estimated Kp w bieżącym 3-godzinnym oknie UTC. */
+export function getKpPeriodPeak(kp1m: KpData[], date = new Date()): number {
+  const periodStart = getUtc3hPeriodStart(date);
   const inPeriod = kp1m.filter((p) => p.time >= periodStart);
-  const periodMax =
-    inPeriod.length > 0 ? Math.max(...inPeriod.map((p) => p.kp)) : 0;
-  return Math.max(official, periodMax);
+  if (inPeriod.length === 0) return kp1m.at(-1)?.kp ?? 0;
+  return Math.max(...inPeriod.map((p) => p.kp));
+}
+
+/** Odczyt Kp na żywo — zgodny z NOAA SWPC Estimated Planetary K-index. */
+export function getKpLiveReading(kp1m: KpData[], kp3Day: KpData[]): KpLiveReading {
+  const lastClosed = kp3Day.at(-1)?.kp ?? 0;
+  const current = kp1m.at(-1)?.kp ?? lastClosed;
+  const periodPeak = getKpPeriodPeak(kp1m);
+  return {
+    current,
+    periodPeak,
+    lastClosed,
+    notation: formatKpNotation(current),
+  };
+}
+
+/** Bieżący estimated Kp (NOAA 1-min). */
+export function getDisplayKp(kp1m: KpData[], kp3Day: KpData[]): number {
+  return getKpLiveReading(kp1m, kp3Day).current;
+}
+
+/** Czy szczyt okna 3h wyraźnie przewyższa bieżący odczyt. */
+export function hasKpPeriodPeakAboveCurrent(reading: KpLiveReading, epsilon = 0.15): boolean {
+  return reading.periodPeak > reading.current + epsilon;
 }
 
 /** Last non-zero solar-wind speed in the series (newest first). */

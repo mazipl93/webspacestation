@@ -481,8 +481,11 @@ export default function OpsLiveMap({
       </MapContainer>
 
       {liveIss && (
-        <div className="pointer-events-none absolute right-2 top-2 z-10 hidden max-w-[168px] sm:block">
-          <OpsIssTelemetry iss={liveIss} className="px-2.5 py-2 text-[10px]" />
+        <div className="pointer-events-none absolute right-1.5 top-1.5 z-10 max-w-[min(168px,46vw)] sm:right-2 sm:top-2">
+          <OpsIssTelemetry
+            iss={liveIss}
+            className="px-2 py-1.5 text-[9px] sm:px-2.5 sm:py-2 sm:text-[10px]"
+          />
         </div>
       )}
 

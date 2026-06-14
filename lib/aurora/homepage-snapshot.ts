@@ -1,9 +1,9 @@
 import { unstable_cache } from "next/cache";
 import type { KpData, SolarWindData } from "@/lib/aurora/api";
 import {
-  getDisplayKp,
   getEarthSolarWindPoint,
   getKpLabel,
+  getKpLiveReading,
 } from "@/lib/aurora/api";
 import {
   fetchTerminalKp1m,
@@ -13,6 +13,8 @@ import {
 
 export type AuroraHomepageSnapshot = {
   kp: number;
+  kpNotation: string;
+  kpPeriodPeak: number;
   label: string;
   stormy: boolean;
   bzAtEarth: number | null;
@@ -34,11 +36,14 @@ async function loadAuroraSnapshot(): Promise<AuroraHomepageSnapshot | null> {
       return null;
     }
 
-    const kp = getDisplayKp(kp1m, kp3Day);
+    const reading = getKpLiveReading(kp1m, kp3Day);
+    const kp = reading.current;
     const earth = getEarthSolarWindPoint(solarWind);
 
     return {
       kp,
+      kpNotation: reading.notation,
+      kpPeriodPeak: reading.periodPeak,
       label: getKpLabel(kp),
       stormy: kp >= 5,
       bzAtEarth: earth?.bz ?? null,
@@ -57,7 +62,7 @@ export async function getHomepageAuroraSnapshot(): Promise<AuroraHomepageSnapsho
   if (process.env.NODE_ENV === "development") {
     return loadAuroraSnapshot();
   }
-  return unstable_cache(loadAuroraSnapshot, ["aurora-homepage-v2"], {
+  return unstable_cache(loadAuroraSnapshot, ["aurora-homepage-v3"], {
     revalidate: 60,
   })();
 }

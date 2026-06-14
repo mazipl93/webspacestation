@@ -10,7 +10,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import type { KpData, GeomagneticIndex } from "@/lib/aurora/api";
-import { getKpColor, getDisplayKp } from "@/lib/aurora/api";
+import { getKpColor, getKpLiveReading } from "@/lib/aurora/api";
 import { formatChartAxisTime, formatChartTooltipTime } from "@/lib/aurora/time-display";
 
 interface IndexChartRowProps {
@@ -127,7 +127,8 @@ export default function GeomagneticPanel({
   showTimeAxis = false,
 }: GeomagneticPanelProps) {
   const kpChart = kp3Day.map((d) => ({ time: d.time, value: d.kp }));
-  const currentKp = kp1m ? getDisplayKp(kp1m, kp3Day) : kp3Day.at(-1)?.kp ?? 0;
+  const kpReading = kp1m ? getKpLiveReading(kp1m, kp3Day) : null;
+  const currentKp = kpReading?.current ?? kp3Day.at(-1)?.kp ?? 0;
   const kpColor = getKpColor(currentKp);
   const dstNow = dst.at(-1)?.value;
   const symhNow = symh.at(-1)?.value;

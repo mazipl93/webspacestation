@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Sparkles } from "lucide-react";
-import KpGauge from "@/components/aurora/KpGauge";
+import OpsKpDashboardGauge from "@/components/discover/OpsKpDashboardGauge";
 import OpsShowcaseBackdrop from "@/components/discover/OpsShowcaseBackdrop";
 import { cn } from "@/lib/cn";
-import { getBzColor, getDisplayKp, getKpLabel } from "@/lib/aurora/api";
+import { getBzColor, getKpLabel, getKpLiveReading } from "@/lib/aurora/api";
+import KpContextCaption from "@/components/aurora/KpContextCaption";
 import type { AuroraHomepageSnapshot } from "@/lib/aurora/homepage-snapshot";
 import {
   OPS_AURORA_SHOWCASE_IMAGE,
@@ -48,9 +49,11 @@ export default function OpsAuroraShowcase({ initialSnapshot, className }: Props)
 
   const live = useMemo(() => {
     if (!snapshot) return null;
-    const kp = getDisplayKp(snapshot.kp1m, snapshot.kp3Day);
+    const reading = getKpLiveReading(snapshot.kp1m, snapshot.kp3Day);
+    const kp = reading.current;
     return {
       kp,
+      reading,
       label: getKpLabel(kp),
       stormy: kp >= 5,
       bzAtEarth: snapshot.bzAtEarth,
@@ -79,10 +82,6 @@ export default function OpsAuroraShowcase({ initialSnapshot, className }: Props)
         imagePosition="78% 32%"
       >
         <div className="ops-aurora-showcase__inner">
-          <div className="ops-aurora-showcase__gauge" aria-hidden>
-            <KpGauge kp={live.kp} size={72} showLabel={false} showStormBadge={false} />
-          </div>
-
           <div className="ops-aurora-showcase__content min-w-0 flex-1">
             <p className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#44ff88]">
               <Sparkles size={13} aria-hidden />
@@ -93,28 +92,33 @@ export default function OpsAuroraShowcase({ initialSnapshot, className }: Props)
               />
             </p>
 
-            <p className="ops-aurora-showcase__kp">
-              Kp {live.kp.toFixed(1)}
-              <span className="ops-aurora-showcase__kp-sep"> · </span>
-              {live.label}
-            </p>
-
-            <div className="ops-aurora-showcase__chips mt-2 flex flex-wrap gap-2">
-              {live.bzAtEarth != null && (
-                <span
-                  className="ops-aurora-showcase__chip"
-                  style={{ color: bzColor, borderColor: `${bzColor}55` }}
-                >
-                  Bz @ Ziemia {live.bzAtEarth > 0 ? "+" : ""}
-                  {live.bzAtEarth.toFixed(1)} nT
-                </span>
-              )}
-              {live.stormy && (
-                <span className="ops-aurora-showcase__chip ops-aurora-showcase__chip--storm">
-                  Burza geomagnetyczna
-                </span>
-              )}
+            <div className="ops-aurora-showcase__meta-row">
+              <p className="ops-aurora-showcase__kp">
+                Kp {live.kp.toFixed(1)}
+                <span className="ops-aurora-showcase__kp-sep"> · </span>
+                {live.label}
+              </p>
+              <div className="ops-aurora-showcase__chips flex flex-wrap gap-2">
+                {live.bzAtEarth != null && (
+                  <span
+                    className="ops-aurora-showcase__chip"
+                    style={{ color: bzColor, borderColor: `${bzColor}55` }}
+                  >
+                    Bz @ Ziemia {live.bzAtEarth > 0 ? "+" : ""}
+                    {live.bzAtEarth.toFixed(1)} nT
+                  </span>
+                )}
+                {live.stormy && (
+                  <span className="ops-aurora-showcase__chip ops-aurora-showcase__chip--storm">
+                    Burza geomagnetyczna
+                  </span>
+                )}
+              </div>
             </div>
+
+            <OpsKpDashboardGauge kp={live.kp} className="ops-aurora-showcase__scale" />
+
+            <KpContextCaption reading={live.reading} variant="compact" className="text-[10px] mt-1 block" />
 
             <p className="ops-aurora-showcase__desc">
               Śledź warunki geomagnetyczne i sprawdź szansę na zorzę u siebie.

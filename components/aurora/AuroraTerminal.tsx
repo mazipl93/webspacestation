@@ -17,13 +17,14 @@ import SunspotRegionsPanel from "./SunspotRegionsPanel";
 import ObservationHero from "./ObservationHero";
 import { ToastContainer, useToasts } from "./ToastSystem";
 import {
-  getDisplayKp,
   getEarthSolarWindPoint,
   getKpColor,
+  getKpLiveReading,
   getBzColor,
 } from "@/lib/aurora/api";
 import { formatKpPeriodDual, formatTimeDual } from "@/lib/aurora/time-display";
 import { TimeDualSplit } from "./TimeDual";
+import KpContextCaption from "./KpContextCaption";
 import DataOriginBadge from "./DataOriginBadge";
 import { getInteractiveTool } from "@/lib/seo/interactive-tools";
 
@@ -113,13 +114,14 @@ export default function AuroraTerminal() {
   }, []);
 
   useEffect(() => {
-    const currentKp = getDisplayKp(state.kpCurrent, state.kp3Day);
-    if (currentKp >= 5 && prevKpRef.current < 5) {
-      addToast(`Kp = ${currentKp.toFixed(1)} — Burza G${Math.min(5, Math.floor(currentKp - 4))}! Zorza mozliwa!`, "storm");
-    } else if (currentKp >= 4 && prevKpRef.current < 4) {
-      addToast(`Kp = ${currentKp.toFixed(1)} — Wzrosla aktywnosc geomagnetyczna`, "warning");
+    const reading = getKpLiveReading(state.kpCurrent, state.kp3Day);
+    const kp = reading.current;
+    if (kp >= 5 && prevKpRef.current < 5) {
+      addToast(`Kp = ${kp.toFixed(1)} — Burza G${Math.min(5, Math.floor(kp - 4))}! Zorza mozliwa!`, "storm");
+    } else if (kp >= 4 && prevKpRef.current < 4) {
+      addToast(`Kp = ${kp.toFixed(1)} — Wzrosla aktywnosc geomagnetyczna`, "warning");
     }
-    prevKpRef.current = currentKp;
+    prevKpRef.current = kp;
   }, [state.kpCurrent, state.kp3Day, addToast]);
 
   const alertsLen = state.alerts.length;
@@ -134,7 +136,8 @@ export default function AuroraTerminal() {
     prevAlertsRef.current = alertsLen;
   }, [alertsLen, state.alerts, addToast]);
 
-  const currentKp = getDisplayKp(state.kpCurrent, state.kp3Day);
+  const kpReading = getKpLiveReading(state.kpCurrent, state.kp3Day);
+  const currentKp = kpReading.current;
   const earthWind = getEarthSolarWindPoint(state.solarWind);
   const bz = earthWind?.bz ?? 0;
   const headerWindSpeed = earthWind?.speed ?? 0;
@@ -264,7 +267,7 @@ export default function AuroraTerminal() {
               <span className="aurora-desktop-hud__value" style={{ color: getKpColor(currentKp) }}>
                 {currentKp.toFixed(1)}
               </span>
-              <span className="aurora-desktop-hud__unit">indeks geomagnetyczny</span>
+              <KpContextCaption reading={kpReading} variant="hud" />
             </div>
             <div className="aurora-desktop-hud__cell">
               <DataOriginBadge origin="earth-now" className="mb-1" />
@@ -345,7 +348,7 @@ export default function AuroraTerminal() {
             <div className="lg:hidden space-y-4 pb-2">
               {mobileTab === "zorza" && (
                 <>
-                  <ObservationHero {...auxProps} isStormy={isStormy} />
+                  <ObservationHero {...auxProps} kpReading={kpReading} isStormy={isStormy} />
                   <AuroraPanel title="Mapa zorzy" subtitle="Owale auroralne · Twoja lokalizacja" className="overflow-hidden">
                     <div className="-mx-3 sm:-mx-4 -mb-3 sm:-mb-4">
                       <AuroraMap
@@ -434,6 +437,7 @@ export default function AuroraTerminal() {
                 >
                   <div className="flex flex-col items-center py-1">
                     <KpGauge kp={currentKp} size={228} />
+                    <KpContextCaption reading={kpReading} className="mt-2 text-center" />
                   </div>
                 </AuroraPanel>
 
