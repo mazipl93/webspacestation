@@ -24,7 +24,6 @@ export const SEO_SITEMAP_PATHS = [
   "/artemis",
   "/ciemna-materia",
   "/stacja-kosmiczna",
-  "/rss",
   "/polityka-prywatnosci",
   "/kontakt",
   "/starty",
@@ -35,5 +34,5 @@ export const SEO_SITEMAP_PATHS = [
   "/zorza",
 ] as const;
 
-/** Utility — poza sitemap. */
-export const SEO_NOINDEX_PUBLIC_PATHS = ["/search"] as const;
+/** Utility — poza sitemap, noindex. */
+export const SEO_NOINDEX_PUBLIC_PATHS = ["/search", "/rss"] as const;

@@ -41,7 +41,6 @@ export function getGscTier3Paths(): string[] {
   const skip = new Set<string>([
     ...GSC_TIER_1_PATHS,
     ...GSC_TIER_2_PATHS,
-    "/rss",
     "/polityka-prywatnosci",
     "/kontakt",
   ]);

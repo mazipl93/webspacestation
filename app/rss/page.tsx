@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import { RSS_ALL_FEEDS } from "@/lib/rss-feeds";
+import { SEO_NOINDEX_FOLLOW } from "@/lib/seo/metadata";
 import { getSiteUrl } from "@/lib/site-url";
 import { cn } from "@/lib/cn";
 
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
   title: "Subskrypcje",
   description:
     "Subskrybuj aktualności Web Space Station — cały portal lub wybrany dział — w ulubionym czytniku newsów.",
+  robots: SEO_NOINDEX_FOLLOW,
 };
 
 export default function RssIndexPage() {

@@ -10,6 +10,7 @@ import {
   parseListingPage,
 } from "@/lib/seo/article-listing";
 import { buildListingPageMetadata } from "@/lib/seo/listing-metadata";
+import { SEO_NOINDEX_FOLLOW } from "@/lib/seo/metadata";
 import { SITE_CONTAINER } from "@/lib/site-layout";
 import { cn } from "@/lib/cn";
 import ArticleCard from "@/components/article/ArticleCard";
@@ -40,6 +41,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     description: `Artykuły i newsy kosmiczne oznaczone tagiem "${label}" w serwisie Web Space Station.`,
     path: `/tag/${slug}`,
     page,
+    robots: SEO_NOINDEX_FOLLOW,
   });
 }
 

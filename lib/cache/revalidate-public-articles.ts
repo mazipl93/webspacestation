@@ -3,7 +3,12 @@ import { CATEGORY_SLUG_ORDER } from "@/lib/categories";
 import { ARTICLES_TAG, articleTag, categoryTag } from "@/lib/cache/tags";
 import { RSS_CATEGORY_FEEDS } from "@/lib/rss-feeds";
 
-const SEO_FEED_PATHS = ["/sitemap.xml", "/feed.xml"] as const;
+const SEO_FEED_PATHS = [
+  "/sitemap.xml",
+  "/sitemaps/pages.xml",
+  "/sitemaps/articles.xml",
+  "/feed.xml",
+] as const;
 
 const PUBLIC_LIST_PATHS = [
   "/",

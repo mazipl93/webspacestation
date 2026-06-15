@@ -10,12 +10,14 @@ export function buildListingPageMetadata({
   path,
   page = 1,
   keywords,
+  robots = { index: true, follow: true },
 }: {
   title: string;
   description: string;
   path: `/${string}` | "/";
   page?: number;
   keywords?: string[];
+  robots?: Metadata["robots"];
 }): Metadata {
   const pagePath = page > 1 ? `${path}?strona=${page}` : path;
   const canonical = `${getSiteUrl()}${pagePath === "/" ? "" : pagePath}`;
@@ -32,7 +34,7 @@ export function buildListingPageMetadata({
     description,
     ...(resolvedKeywords?.length ? { keywords: resolvedKeywords } : {}),
     alternates: { canonical },
-    robots: { index: true, follow: true },
+    robots,
     openGraph: {
       url: canonical,
       title: pageTitle,

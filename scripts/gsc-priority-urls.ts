@@ -55,6 +55,7 @@ async function main() {
 
   console.log("## 1. GSC → Sitemaps → Dodaj / odśwież");
   console.log(sitemapUrl);
+  console.log("   ↳ indeks → /sitemaps/pages.xml + /sitemaps/articles.xml (bez tagów i feedów)");
   console.log("");
 
   console.log("## 2. URL Inspection → Request indexing (tier", tier, ")\n");
