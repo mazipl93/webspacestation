@@ -56,12 +56,18 @@ describe("normalizeCoverImageUrl", () => {
 });
 
 describe("shouldBypassImageOptimizer", () => {
-  it("optimizes Supabase article-covers bucket", () => {
+  it("bypasses Supabase article-covers (pre-compressed WebP, saves Vercel quota)", () => {
     assert.equal(
       shouldBypassImageOptimizer(
         "https://abc.supabase.co/storage/v1/object/public/article-covers/drafts/x.webp"
       ),
-      false
+      true
+    );
+    assert.equal(
+      shouldBypassImageOptimizer(
+        "https://abc.supabase.co/storage/v1/object/public/avatars/user/avatar.webp"
+      ),
+      true
     );
   });
 

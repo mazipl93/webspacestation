@@ -65,18 +65,35 @@ export function normalizeCoverImageUrl(
   }
 }
 
-/** Only these patterns are known to break via `/_next/image` on Vercel. */
+/** CMS uploads — already WebP ≤1920px from sharp; skip Vercel transform quota. */
+export function isSupabaseStoragePublicUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return (
+      /\.supabase\.co$/i.test(parsed.hostname) &&
+      parsed.pathname.includes("/storage/v1/object/public/")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** Patterns that must not go through `/_next/image` (quota, broken hosts, inline). */
 const OPTIMIZER_BYPASS = [
   /^data:/i,
   /^blob:/i,
+  // Pre-compressed CMS covers — each hero/card was burning a Vercel transform.
+  (url: string) => isSupabaseStoragePublicUrl(url),
 ] as const;
 
 /**
- * Route remote covers through Next.js image optimizer by default (WebP/AVIF, resize).
- * RSS hotlinks (nasa.gov, theverge.com, wp.com, …) were loading multi‑MB originals in browser.
+ * Route remote covers through Next.js image optimizer when it helps (RSS hotlinks).
+ * Supabase article-covers and data/blob URLs are served directly.
  */
 export function shouldBypassImageOptimizer(url: string): boolean {
   const normalized = normalizeCoverImageUrl(url);
   if (!normalized) return true;
-  return OPTIMIZER_BYPASS.some((pattern) => pattern.test(normalized));
+  return OPTIMIZER_BYPASS.some((pattern) =>
+    typeof pattern === "function" ? pattern(normalized) : pattern.test(normalized)
+  );
 }

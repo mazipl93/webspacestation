@@ -5,7 +5,6 @@ import Image, { type ImageProps } from "next/image";
 import { pickCategoryCoverFallback } from "@/lib/cover-fallbacks";
 import {
   normalizeCoverImageUrl,
-  shouldBypassImageOptimizer,
 } from "@/lib/media/cover-url";
 import type { NewsCategory } from "@/types";
 
@@ -48,7 +47,9 @@ export default function CoverImage({
   const rawSrc =
     current || (suppressFallback ? current : resolveErrorFallback());
   const resolvedSrc = normalizeCoverImageUrl(rawSrc) ?? rawSrc;
-  const useUnoptimized = shouldBypassImageOptimizer(resolvedSrc);
+  // Same as inline ArticleFigure: direct <img src>, no /_next/image.
+  // Vercel free tier caps image transforms (~5000/mo); homepage cards + hero burn quota fast.
+  const useUnoptimized = true;
   const isPriority = Boolean(priority);
 
   const resolvedFetchPriority =
