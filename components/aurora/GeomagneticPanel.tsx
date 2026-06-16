@@ -94,7 +94,7 @@ function IndexChartRow({
               formatter={(v: unknown) => [Number(v).toFixed(1), unit]}
             />
             {referenceY !== undefined && (
-              <ReferenceLine y={referenceY} stroke="#334155" strokeDasharray="3 3" />
+              <ReferenceLine y={referenceY} stroke="#334155" strokeDasharray="3 3" ifOverflow="visible" />
             )}
             <Line
               type="monotone"
@@ -103,6 +103,7 @@ function IndexChartRow({
               strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}
+              connectNulls
             />
           </LineChart>
         </ResponsiveContainer>

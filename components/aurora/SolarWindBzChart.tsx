@@ -125,9 +125,10 @@ export default function SolarWindBzChart({
             fill={zone.fill}
             fillOpacity={zone.opacity}
             stroke="none"
+            ifOverflow="visible"
           />
         ))}
-        <ReferenceLine y={0} stroke="#334155" strokeWidth={1.5} />
+        <ReferenceLine y={0} stroke="#334155" strokeWidth={1.5} ifOverflow="visible" />
         {bzThresholds.map((t) => (
           <ReferenceLine
             key={t}
@@ -135,6 +136,7 @@ export default function SolarWindBzChart({
             stroke={t === -5 ? "#ffdd0044" : t === -10 ? "#ffaa0044" : "#ff660044"}
             strokeDasharray="2 4"
             strokeWidth={1}
+            ifOverflow="visible"
           />
         ))}
       </SolarWindChartRow>

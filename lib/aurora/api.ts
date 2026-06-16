@@ -600,7 +600,7 @@ export async function fetchSolarFlares(): Promise<SolarFlare[]> {
     active_region_num: number | null;
   };
   const raw = await fetchJson<Raw[]>(
-    `${NOAA_BASE}/json/goes/primary/solar-flares-latest.json`,
+    `${NOAA_BASE}/json/goes/primary/xray-flares-latest.json`,
     []
   );
   return raw.slice(0, 10).map((r) => ({

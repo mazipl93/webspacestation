@@ -74,7 +74,14 @@ export function parseRtswSolarWind(magRaw: RtswMagItem[], windRaw: RtswWindItem[
 
   const activeMag = magRaw.filter((r) => r.active);
   activeMag.sort((a, b) => a.time_tag.localeCompare(b.time_tag));
-  const sliceMag = activeMag.slice(-RTSW_MAX_POINTS);
+  // One row per UTC minute — duplicate time keys break Recharts category X + ReferenceArea
+  const magByMinute = new Map<string, RtswMagItem>();
+  for (const row of activeMag) {
+    magByMinute.set(minuteKey(row.time_tag), row);
+  }
+  const sliceMag = Array.from(magByMinute.values())
+    .sort((a, b) => a.time_tag.localeCompare(b.time_tag))
+    .slice(-RTSW_MAX_POINTS);
 
   let lastWind: RtswWindItem | null = null;
   const points: SolarWindData[] = [];

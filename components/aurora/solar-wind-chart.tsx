@@ -61,13 +61,20 @@ export function fmtUtcShort(timeTag: string | undefined): string | null {
 }
 
 export function buildWindChartData(windSlice: SolarWindData[]): WindChartPoint[] {
-  return windSlice.map((d) => ({
-    time: d.time_tag,
-    bz: d.bz,
-    bt: d.bt,
-    speed: d.speed,
-    density: d.density,
-  }));
+  const seen = new Set<string>();
+  const points: WindChartPoint[] = [];
+  for (const d of windSlice) {
+    if (seen.has(d.time_tag)) continue;
+    seen.add(d.time_tag);
+    points.push({
+      time: d.time_tag,
+      bz: d.bz,
+      bt: d.bt,
+      speed: d.speed,
+      density: d.density,
+    });
+  }
+  return points;
 }
 
 export function resolveEarthMarker(
@@ -110,10 +117,12 @@ export function EarthChartOverlay({
         fill="#fbbf24"
         fillOpacity={0.08}
         stroke="none"
+        ifOverflow="visible"
       />
       <ReferenceLine
         x={marker.earthKey}
         {...EARTH_LINE}
+        ifOverflow="visible"
         strokeWidth={showLabel ? 2 : EARTH_LINE.strokeWidth}
         label={
           showLabel
@@ -260,7 +269,15 @@ export function SolarWindChartRow({
         )}
       </div>
 
-      <div className="flex-1 min-w-0 w-full">
+      <div className="flex-1 min-w-0 w-full" style={{ minHeight: chartPx }}>
+        {chartData.length < 2 ? (
+          <div
+            className="flex items-center justify-center text-[11px] text-slate-600 font-mono border border-dashed border-slate-800 rounded"
+            style={{ height: chartPx }}
+          >
+            Brak danych wykresu
+          </div>
+        ) : (
         <ResponsiveContainer width="100%" height={chartPx}>
           <LineChart data={chartData} margin={{ top: 4, right: 6, left: 0, bottom: showXAxis ? 20 : 0 }}>
             <CartesianGrid stroke="#1e293b" strokeDasharray="2 4" vertical={false} />
@@ -280,7 +297,6 @@ export function SolarWindChartRow({
               interval="preserveStartEnd"
               minTickGap={28}
             />
-            {children}
             <YAxis
               domain={domain}
               tick={{ fontSize: 10, fill: "#64748b", fontFamily: "monospace" }}
@@ -297,6 +313,7 @@ export function SolarWindChartRow({
                 unit,
               ]}
             />
+            {children}
             <Line
               type="monotone"
               dataKey={dataKey}
@@ -304,10 +321,12 @@ export function SolarWindChartRow({
               strokeWidth={1.5}
               dot={false}
               isAnimationActive={false}
+              connectNulls
             />
             <EarthChartOverlay marker={marker} showLabel={earthLabel} />
           </LineChart>
         </ResponsiveContainer>
+        )}
       </div>
 
       {!compact && timestampTag && (

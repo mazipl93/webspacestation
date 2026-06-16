@@ -247,10 +247,14 @@ type Kp1mItem = { time_tag: string; kp_index: number; estimated_kp: number; kp: 
 type KpFcItem = { time_tag: string; kp: number; observed: string; noaa_scale: string | null };
 // Alerts
 type AlertItem = { product_id: string; issue_datetime: string; message: string };
-// Flare
+// Flare (xray-flares-latest.json)
 type FlareItem = {
-  begin_time: string; max_time: string; class_type: string;
-  source_location: string; active_region_num: number | null;
+  begin_time: string;
+  max_time: string;
+  class_type?: string;
+  max_class?: string;
+  source_location?: string;
+  active_region_num?: number | null;
 };
 // SSN
 type SsnItem = { obsdate: string; ssn: number };
@@ -279,13 +283,16 @@ export function useAuroraData() {
 
   const fetchAll = useCallback(async (opts?: { userInitiated?: boolean }) => {
     if (opts?.userInitiated) setRefreshing(true);
-    try {
-    abortRef.current?.abort();
+    const generation = ++fetchGenerationRef.current;
+    // Abort only on explicit refresh or unmount — not on 60s interval (slow NOAA would never finish).
+    if (opts?.userInitiated) {
+      abortRef.current?.abort();
+    }
     const controller = new AbortController();
     abortRef.current = controller;
-    const generation = ++fetchGenerationRef.current;
     const { signal } = controller;
 
+    try {
     const endpoints = [
       { key: "kp1m", url: "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json" },
       { key: "kp3d", url: "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json" },
@@ -295,7 +302,7 @@ export function useAuroraData() {
       { key: "dst", url: "https://services.swpc.noaa.gov/json/geospace/geospace_dst_7_day.json" },
       { key: "alerts", url: "https://services.swpc.noaa.gov/products/alerts.json" },
       { key: "xray", url: "https://services.swpc.noaa.gov/json/goes/primary/xrays-6-hour.json" },
-      { key: "flares", url: "https://services.swpc.noaa.gov/json/goes/primary/solar-flares-latest.json" },
+      { key: "flares", url: "https://services.swpc.noaa.gov/json/goes/primary/xray-flares-latest.json" },
       { key: "ssn", url: "https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json" },
       { key: "regions", url: "https://services.swpc.noaa.gov/json/solar_regions.json" },
     ] as const;
@@ -313,7 +320,7 @@ export function useAuroraData() {
       }),
     );
 
-    if (generation !== fetchGenerationRef.current || !mountedRef.current || signal.aborted) {
+    if (generation !== fetchGenerationRef.current || !mountedRef.current) {
       return;
     }
 
@@ -409,13 +416,14 @@ export function useAuroraData() {
       satellite: parseInt(r[2]) || 0,
     }));
 
-    // ── Solar flares
-    const flaresParsed: SolarFlare[] = flares.slice(0, 10).map((r) => ({
+    // ── Solar flares (xray-flares-latest.json)
+    const flaresRaw = Array.isArray(flares) ? flares : [];
+    const flaresParsed: SolarFlare[] = flaresRaw.slice(0, 10).map((r) => ({
       beginTime: r.begin_time,
       maxTime: r.max_time,
-      classType: r.class_type,
-      sourceLocation: r.source_location,
-      activeRegionNum: r.active_region_num,
+      classType: r.class_type ?? r.max_class ?? "",
+      sourceLocation: r.source_location ?? "",
+      activeRegionNum: r.active_region_num ?? null,
     }));
 
     // ── Sunspot number
@@ -468,7 +476,12 @@ export function useAuroraData() {
         swPlasmaActive: swPlasma.filter((r) => r.active).length,
       });
     }
+    } catch (err) {
+      console.error("[aurora-diag] fetchAll failed", err);
     } finally {
+      if (generation === fetchGenerationRef.current && mountedRef.current) {
+        setState((prev) => (prev.loading ? { ...prev, loading: false } : prev));
+      }
       if (opts?.userInitiated && mountedRef.current) {
         setRefreshing(false);
       }
@@ -477,14 +490,22 @@ export function useAuroraData() {
 
   useEffect(() => {
     mountedRef.current = true;
-    void fetchAll();
 
-    // Solar wind: 60s, Kp updates every few minutes but we check at 60s
+    const loadWatchdog = window.setTimeout(() => {
+      if (!mountedRef.current) return;
+      setState((prev) => (prev.loading ? { ...prev, loading: false } : prev));
+      if (isAuroraDebug()) {
+        console.warn("[aurora-diag] load watchdog — NOAA fetch >30s, showing UI with stale/empty data");
+      }
+    }, 30_000);
+
+    void fetchAll().finally(() => window.clearTimeout(loadWatchdog));
+
     const interval = setInterval(() => void fetchAll(), 60_000);
 
     return () => {
       mountedRef.current = false;
-      abortRef.current?.abort();
+      window.clearTimeout(loadWatchdog);
       clearInterval(interval);
     };
   }, [fetchAll]);
