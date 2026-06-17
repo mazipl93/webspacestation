@@ -1,7 +1,6 @@
-import { getImageProps } from "next/image";
-import { normalizeCoverImageUrl, shouldBypassImageOptimizer } from "@/lib/media/cover-url";
+import { normalizeCoverImageUrl } from "@/lib/media/cover-url";
 
-/** LCP hero is served via same-origin `/_next/image` — preconnect only the active cover host. */
+/** Hero covers load direct (CoverImage `unoptimized`) — preconnect the active cover host. */
 export const HERO_IMAGE_PRECONNECT_ORIGINS = [] as const;
 
 /**
@@ -14,15 +13,10 @@ export const HERO_IMAGE_SIZES =
 /** Quality on the visible hero (desktop + mobile). Preload stays at q62. */
 export const HERO_DISPLAY_QUALITY = 82;
 
-/** Preload hint only — tuned for Moto G LCP, not desktop sharpness. */
-const HERO_LCP_PRELOAD_SIZES = "(max-width: 640px) 100vw, 640px";
-const HERO_LCP_PRELOAD_QUALITY = 62;
-const HERO_LCP_PRELOAD_WIDTH = 640;
-
-/** Origin for preconnect when the hero cover is fetched unoptimized (rare). */
+/** Origin for preconnect — hero `<img>` loads direct from the cover CDN. */
 export function getHeroPreconnectOrigin(imageUrl: string | undefined): string | null {
   const normalized = normalizeCoverImageUrl(imageUrl);
-  if (!normalized || !shouldBypassImageOptimizer(normalized)) return null;
+  if (!normalized) return null;
   try {
     return new URL(normalized).origin;
   } catch {
@@ -30,29 +24,9 @@ export function getHeroPreconnectOrigin(imageUrl: string | undefined): string | 
   }
 }
 
-/** Optimized `/_next/image` URL for early discovery (PageSpeed mobile LCP). */
+/** Direct cover URL for `<link rel="preload">` — must match CoverImage (unoptimized). */
 export function buildHeroLcpPreloadHref(imageUrl: string | undefined): string | null {
   const src = imageUrl?.trim();
   if (!src) return null;
-
-  const normalized = normalizeCoverImageUrl(src) ?? src;
-
-  if (shouldBypassImageOptimizer(normalized)) {
-    return normalized;
-  }
-
-  try {
-    const { props } = getImageProps({
-      src: normalized,
-      alt: "",
-      width: HERO_LCP_PRELOAD_WIDTH,
-      height: Math.round((HERO_LCP_PRELOAD_WIDTH * 9) / 16),
-      sizes: HERO_LCP_PRELOAD_SIZES,
-      quality: HERO_LCP_PRELOAD_QUALITY,
-      priority: true,
-    });
-    return typeof props.src === "string" ? props.src : null;
-  } catch {
-    return null;
-  }
+  return normalizeCoverImageUrl(src) ?? src;
 }

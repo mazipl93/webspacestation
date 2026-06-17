@@ -69,6 +69,7 @@ export default function OpsLaunchShowcase({
           src={launch.image}
           alt=""
           fill
+          unoptimized
           sizes="(max-width: 768px) 100vw, 560px"
           className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-[1.03]"
         />

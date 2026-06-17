@@ -45,6 +45,7 @@ export default function LaunchCard({ launch, variant = "compact", href, wssArtic
           src={image}
           alt={`${provider} — ${mission}`}
           fill
+          unoptimized
           sizes={featured ? "(max-width:640px) 100vw, 320px" : "260px"}
           className={
             featured

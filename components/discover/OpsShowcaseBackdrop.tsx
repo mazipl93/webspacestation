@@ -26,6 +26,7 @@ export default function OpsShowcaseBackdrop({
         src={src}
         alt=""
         fill
+        unoptimized
         sizes={sizes}
         className="ops-showcase-backdrop__image object-cover opacity-90 transition-transform duration-700 group-hover:scale-[1.03]"
         style={{ objectPosition: imagePosition }}

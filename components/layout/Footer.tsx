@@ -93,7 +93,7 @@ export default function Footer() {
                 />
                 <WssLogo
                   asLink
-                  height={160}
+                  height={120}
                   className="rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-cyan"
                 />
                 <p className="mt-5 text-[13px] leading-relaxed text-text-secondary">

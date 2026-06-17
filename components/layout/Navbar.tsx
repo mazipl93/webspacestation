@@ -281,7 +281,7 @@ export default function Navbar() {
         data-scrolled={scrolled ? "true" : "false"}
       >
         <div className={cn(SITE_CONTAINER, "flex h-28 items-center gap-3 sm:gap-4")}>
-          <WssLogo asLink height={96} className="shrink-0 overflow-visible" />
+          <WssLogo asLink height={68} className="shrink-0 overflow-visible" />
 
           <span
             aria-hidden

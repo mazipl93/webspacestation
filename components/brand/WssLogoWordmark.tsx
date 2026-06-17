@@ -7,8 +7,8 @@ type Props = {
 };
 
 const LOGO_SRC = "/brand/wss-logo.png";
-/** Logo ISS + WEB SPACE STATION (808×460, transparent PNG). */
-const LOGO_ASPECT = 808 / 460;
+/** Logo ISS + WEB SPACE STATION (868×388, transparent PNG). */
+const LOGO_ASPECT = 868 / 388;
 
 export default function WssLogoWordmark({ height = 52, className }: Props) {
   const width = Math.round(height * LOGO_ASPECT);
