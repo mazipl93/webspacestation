@@ -12,21 +12,9 @@ import { fetchIssPosition } from "@/lib/ops/iss-tracker";
 import { fetchLaunchSchedule } from "@/lib/ops/launch-library";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
 import { buildMapPins } from "@/lib/ops/map-geo";
+import { refreshIssOnMapPins } from "@/lib/ops/refresh-iss-fields";
 import type { OpsCorePayload } from "@/lib/ops/payloads";
-import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import { readStoredCore } from "@/lib/ops/snapshot-store";
-
-function refreshIssOnMapPins(
-  pins: OpsMapPin[],
-  iss: OpsIssPosition | null,
-): OpsMapPin[] {
-  if (!iss) return pins;
-  return pins.map((pin) =>
-    pin.kind === "iss"
-      ? { ...pin, lat: iss.latitude, lon: iss.longitude }
-      : pin,
-  );
-}
 
 /** Launch Library + ISS + pads — no NASA, no CMS articles. */
 export async function fetchCoreOpsSnapshot(

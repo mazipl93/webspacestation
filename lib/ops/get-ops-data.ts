@@ -30,11 +30,16 @@ import {
 import type { OpsSnapshot } from "@/lib/ops/types";
 import { withTimeout } from "@/lib/ops/with-timeout";
 import { isLaunchFeedStale } from "@/lib/ops/launch-phase";
+import { isIssPositionStale } from "@/lib/ops/iss-stale";
+import { fetchIssCoreFields } from "@/lib/ops/refresh-iss-fields";
 
 export { OPS_CACHE_TAG };
 
 const BOOTSTRAP_TIMEOUT_MS =
   process.env.NODE_ENV === "development" ? 14_000 : 8_000;
+
+const ISS_REFRESH_TIMEOUT_MS =
+  process.env.NODE_ENV === "development" ? 8_000 : 5_000;
 
 /** Maks. wiek snapshotu z DB zanim wymusimy fetch LL2 + ISS. */
 const OPS_MAX_AGE_MS =
@@ -63,7 +68,9 @@ async function bootstrapCore(): Promise<OpsCorePayload> {
   } catch (error) {
     console.warn("[ops] bootstrap core failed:", error instanceof Error ? error.message : error);
   }
-  if (stored && hasRealLaunchData(stored.launches)) return stored;
+  if (stored && hasRealLaunchData(stored.launches)) {
+    return refreshStaleIssInCore(stored);
+  }
   return buildEmptyCoreSnapshot();
 }
 
@@ -111,6 +118,33 @@ async function bootstrapVideo(): Promise<OpsVideoPayload> {
   return { videos: [], live: false, fetchedAt: new Date().toISOString() };
 }
 
+async function refreshStaleIssInCore(core: OpsCorePayload): Promise<OpsCorePayload> {
+  if (!isIssPositionStale(core.iss)) return core;
+
+  try {
+    const freshIss = await withTimeout(
+      fetchIssCoreFields(core),
+      ISS_REFRESH_TIMEOUT_MS,
+      null,
+    );
+    if (!freshIss?.iss) return core;
+
+    const merged = mergeIssRefreshIntoCore(core, freshIss);
+    await writeOpsCacheEntry(
+      OPS_CACHE_KEYS.core,
+      merged,
+      hasRealLaunchData(merged.launches),
+    ).catch(() => {});
+    return merged;
+  } catch (error) {
+    console.warn(
+      "[ops] ISS refresh failed:",
+      error instanceof Error ? error.message : error,
+    );
+    return core;
+  }
+}
+
 async function loadCoreFromStore(): Promise<OpsCorePayload> {
   const stored = await readStoredCore();
 
@@ -123,7 +157,7 @@ async function loadCoreFromStore(): Promise<OpsCorePayload> {
     stored &&
     !isLaunchFeedStale(stored.launches, stored.fetchedAt, OPS_MAX_AGE_MS)
   ) {
-    return stored;
+    return refreshStaleIssInCore(stored);
   }
   return bootstrapCore();
 }
