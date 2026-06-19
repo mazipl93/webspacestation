@@ -1,8 +1,8 @@
 import ShareBar from "@/components/article/ShareBar";
 import Comments from "@/components/article/Comments";
+import SocialFollowStrip from "@/components/social/SocialFollowStrip";
 import {
   ARTICLE_PAGE_GRID,
-  ARTICLE_PAGE_SIDEBAR_STUB,
   ARTICLE_SHELL,
 } from "@/lib/ui/article-editorial-layout";
 import { cn } from "@/lib/cn";
@@ -27,7 +27,7 @@ export default function ArticleInteractions({ slug, title }: Props) {
           <ShareBar title={title} slug={slug} />
           <Comments slug={slug} />
         </div>
-        <div aria-hidden className={ARTICLE_PAGE_SIDEBAR_STUB} />
+        <SocialFollowStrip variant="sidebar" />
       </div>
     </div>
   );

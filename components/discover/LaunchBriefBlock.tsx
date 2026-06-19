@@ -36,7 +36,7 @@ export default function LaunchBriefBlock({
       <p
         className={cn(
           "leading-relaxed text-text-secondary",
-          compact ? "text-[10.5px]" : "text-[11px] sm:text-[11.5px]",
+          compact ? "text-[12.5px] sm:text-[13px]" : "text-[11px] sm:text-[11.5px]",
           clampClass,
           className,
         )}

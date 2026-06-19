@@ -40,6 +40,7 @@ import {
   NavMenuSectionLabel,
   NavMobileAccordion,
 } from "@/components/layout/NavMenuPrimitives";
+import SocialIconLinks from "@/components/social/SocialIconLinks";
 
 const NAV_ICON_BTN =
   "flex h-11 w-11 items-center justify-center rounded-lg transition-colors duration-200 lg:h-8 lg:w-8";
@@ -512,6 +513,8 @@ export default function Navbar() {
               />
             </div>
 
+            <SocialIconLinks layout="inline" tone="nav" />
+
             {authLoading ? (
               <div
                 aria-hidden="true"
@@ -624,6 +627,10 @@ export default function Navbar() {
                   isActive={isActive}
                 />
               ))}
+
+              <div className="mt-4 border-t border-hairline-faint pt-4 lg:hidden">
+                <SocialIconLinks layout="drawer" size="md" tone="nav" />
+              </div>
 
               {user ? (
                 <div className="mt-4 flex flex-col gap-2 border-t border-hairline-faint pt-4">

@@ -47,7 +47,7 @@ export default function LaunchCard({
       )}
     >
       <div
-        className={`img-sheen relative shrink-0 overflow-hidden ${featured ? "h-[132px] sm:h-[148px]" : "h-[84px]"}`}
+        className={`img-sheen relative shrink-0 overflow-hidden ${featured ? "h-[140px] sm:h-[156px]" : "h-[84px]"}`}
         style={{ background: OPS_LAUNCH_IMAGE_GRADIENT.launchHue(hue) }}
       >
         <Image
@@ -59,28 +59,28 @@ export default function LaunchCard({
           className="object-cover opacity-85 transition-transform duration-700 group-hover:scale-[1.04]"
           style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
         />
-        <span className="absolute bottom-2 left-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white/80">
+        <span className="absolute bottom-2 left-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/80 sm:text-[12px]">
           {provider}
         </span>
         {statusLabel && (
-          <span className="absolute right-2 top-2 rounded-md border border-white/20 bg-black/45 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white/90 backdrop-blur-sm">
+          <span className="absolute right-2 top-2 rounded-md border border-white/20 bg-black/45 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white/90 backdrop-blur-sm">
             {statusLabel}
           </span>
         )}
       </div>
-      <div className={`flex min-h-0 flex-1 flex-col ${featured ? "p-4" : "p-3"}`}>
+      <div className={`flex min-h-0 flex-1 flex-col ${featured ? "p-4 sm:p-5" : "p-3"}`}>
         <div className="min-h-0 flex-1">
           <p
             className={
               featured
-                ? "text-[14px] font-bold leading-snug text-text-primary sm:text-[15px]"
+                ? "text-[16px] font-bold leading-snug text-text-primary sm:text-[17px]"
                 : "mb-3 text-[12.5px] font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan"
             }
           >
             {mission}
           </p>
           {(rocketName || windowLabel) && featured && (
-            <p className="mt-1 text-[10px] leading-relaxed text-text-muted">
+            <p className="mt-1.5 text-[12px] leading-relaxed text-text-muted sm:text-[13px]">
               {[rocketName, windowLabel].filter(Boolean).join(" · ")}
             </p>
           )}
@@ -97,21 +97,21 @@ export default function LaunchCard({
             />
           ) : null}
         </div>
-        <div className={cn("shrink-0", featured ? "mt-3 border-t border-hairline/80 pt-3" : undefined)}>
+        <div className={cn("shrink-0", featured ? "mt-4 border-t border-hairline/80 pt-3.5" : undefined)}>
           {launch.phase === "countdown" || launch.phase === "hold" ? (
             <>
-              <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">
+              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted sm:text-[11px]">
                 Start za
               </p>
               <LaunchCountdown net={net} featured={featured} phase={launch.phase} />
             </>
           ) : (
-            <p className={`font-bold text-accent-cyan ${featured ? "text-[14px]" : "text-[12px]"}`}>
+            <p className={`font-bold text-accent-cyan ${featured ? "text-[16px]" : "text-[12px]"}`}>
               {launch.statusLabel}
             </p>
           )}
           <p
-            className={`truncate text-text-muted ${featured ? "mt-2 text-[11px]" : "mt-1.5 text-[9.5px]"}`}
+            className={`truncate text-text-muted ${featured ? "mt-2 text-[13px] sm:text-[14px]" : "mt-1.5 text-[9.5px]"}`}
           >
             {site}
           </p>
@@ -120,7 +120,7 @@ export default function LaunchCard({
               href={detailUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-block text-[10px] font-medium text-accent-cyan hover:underline"
+              className="mt-2.5 inline-block text-[12px] font-medium text-accent-cyan hover:underline sm:text-[13px]"
             >
               Szczegoly misji
             </a>

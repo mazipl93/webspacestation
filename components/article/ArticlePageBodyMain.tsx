@@ -8,6 +8,7 @@ import ArticleFigure from "@/components/article/ArticleFigure";
 import ArticleVideoEmbed from "@/components/article/ArticleVideoEmbed";
 import InternalLinkTeaser from "@/components/article/InternalLinkTeaser";
 import ArticleEditButton from "@/components/article/ArticleEditButton";
+import SocialFollowCta from "@/components/social/SocialFollowCta";
 import {
   getArticleBodyBlocks,
   splitArticleLeadAndBody,
@@ -123,6 +124,8 @@ export default function ArticlePageBodyMain({
           {hasSourceAttribution(article.originalUrl) ? (
             <SourceAttribution article={article} />
           ) : null}
+
+          {!preview ? <SocialFollowCta /> : null}
         </div>
 
         {!preview ? (

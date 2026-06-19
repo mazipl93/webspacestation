@@ -1,4 +1,5 @@
 import { getCategoryInfo } from "@/lib/categories";
+import { getSocialSameAs } from "@/lib/social/wss-social-links";
 import type { InteractiveToolSeo } from "@/lib/seo/interactive-tools";
 import {
   getPageOgImageUrl,
@@ -9,14 +10,6 @@ import type { NewsArticle } from "@/types";
 
 const ORG_NAME = "Web Space Station";
 const ORG_LOGO_PATH = "/favicon-96.png";
-
-const ORG_SAME_AS = [
-  "https://discord.gg/wss",
-  "https://youtube.com/@webspacestation",
-  "https://x.com/webspacestation",
-  "https://instagram.com/webspacestation",
-  "https://facebook.com/webspacestation",
-] as const;
 
 function absoluteUrl(path: string): string {
   const base = getSiteUrl();
@@ -79,7 +72,7 @@ export function buildSiteJsonLd() {
         "@type": "ImageObject",
         url: logoUrl,
       },
-      sameAs: [...ORG_SAME_AS],
+      sameAs: getSocialSameAs(),
     },
   ];
 }

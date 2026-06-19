@@ -2111,6 +2111,80 @@ html[data-portal-theme] .site-cosmos-grain {
   .wss-nav-bar mark.text-accent-cyan {
     color: var(--color-accent-blue);
   }
+
+  /* Social w nav — klaster z etykietą + ikony w rzędzie */
+  .wss-nav-social-cluster {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 0 1px rgba(255, 255, 255, 0.03);
+  }
+
+  .wss-nav-social-cluster--drawer {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+
+  .wss-nav-social-cluster--drawer .wss-nav-social-label {
+    font-size: 10px;
+  }
+
+  .wss-nav-social-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: linear-gradient(92deg, #38bdf8 0%, #2f6dff 52%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.22));
+  }
+
+  @media (min-width: 640px) {
+    .wss-nav-social-label {
+      font-size: 10px;
+    }
+  }
+
+  .wss-nav-social-link {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.015) 100%
+    );
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .wss-nav-social-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 0 14px -4px color-mix(in srgb, var(--social-hover, #38bdf8) 65%, transparent);
+  }
+
+  .wss-nav-social-link:hover {
+    color: var(--social-hover, #38bdf8);
+    border-color: color-mix(in srgb, var(--social-hover, #38bdf8) 48%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--social-hover, #38bdf8) 18%, transparent) 0%,
+      color-mix(in srgb, var(--social-hover, #38bdf8) 8%, transparent) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 0 0 1px color-mix(in srgb, var(--social-hover, #38bdf8) 22%, transparent);
+  }
+
+  .wss-nav-social-link:hover::after {
+    opacity: 1;
+  }
 }
 
 /* ── Legacy white-alpha shorthands (kept so existing markup renders) ──── */
@@ -2841,8 +2915,8 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
 .starty-tabs__btn {
   border: none;
   border-radius: 0.55rem;
-  padding: 0.45rem 0.85rem;
-  font-size: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text-tertiary, #6e7894);
   background: transparent;
@@ -2871,9 +2945,20 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
 .starty-tabs__harmonogram-lead {
   margin-bottom: 1rem;
   max-width: 52ch;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--color-text-tertiary, #6e7894);
+}
+
+@media (min-width: 640px) {
+  .starty-tabs__btn {
+    font-size: 14px;
+    padding: 0.55rem 1.1rem;
+  }
+
+  .starty-tabs__harmonogram-lead {
+    font-size: 15px;
+  }
 }
 
 .ops-map-page-map.ops-live-map {
@@ -3584,7 +3669,7 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   border: 1px solid rgb(255 255 255 / 0.14);
   background: rgb(4 7 12 / 0.72);
   backdrop-filter: blur(10px);
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;

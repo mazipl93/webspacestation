@@ -68,21 +68,21 @@ export default function LaunchCountdown({ net, featured, phase = "countdown" }: 
 
   if (phase === "window") {
     return (
-      <p className={`font-bold text-accent-cyan live-breathe ${featured ? "text-[14px]" : "text-[12px]"}`}>
+      <p className={`font-bold text-accent-cyan live-breathe ${featured ? "text-[16px]" : "text-[12px]"}`}>
         Okno startowe otwarte
       </p>
     );
   }
   if (phase === "live") {
     return (
-      <p className={`font-bold text-accent-cyan live-breathe ${featured ? "text-[14px]" : "text-[12px]"}`}>
+      <p className={`font-bold text-accent-cyan live-breathe ${featured ? "text-[16px]" : "text-[12px]"}`}>
         Start w toku
       </p>
     );
   }
   if (phase === "success" || phase === "failure") {
     return (
-      <p className={`font-bold text-text-secondary ${featured ? "text-[14px]" : "text-[12px]"}`}>
+      <p className={`font-bold text-text-secondary ${featured ? "text-[16px]" : "text-[12px]"}`}>
         {phase === "success" ? "Start udany" : "Start nieudany"}
       </p>
     );
@@ -91,7 +91,7 @@ export default function LaunchCountdown({ net, featured, phase = "countdown" }: 
   if (parts.past) {
     return (
       <p
-        className={`font-bold text-text-tertiary ${featured ? "text-[14px]" : "text-[12px]"}`}
+        className={`font-bold text-text-tertiary ${featured ? "text-[16px]" : "text-[12px]"}`}
       >
         {phase === "hold" ? "Wstrzymany · sprawdź NET" : "Okno startowe · sprawdź status"}
       </p>
@@ -100,12 +100,12 @@ export default function LaunchCountdown({ net, featured, phase = "countdown" }: 
 
   return (
     <p
-      className={`tabular-nums font-bold leading-none text-text-primary ${featured ? "text-[18px] sm:text-[20px]" : "text-[13px]"}`}
+      className={`tabular-nums font-bold leading-none text-text-primary ${featured ? "text-[22px] sm:text-[24px]" : "text-[13px]"}`}
     >
       {parts.prefix ? (
         <>
           <span
-            className={`font-semibold text-text-secondary ${featured ? "text-[14px]" : "text-[12px]"}`}
+            className={`font-semibold text-text-secondary ${featured ? "text-[15px] sm:text-[16px]" : "text-[12px]"}`}
           >
             {parts.prefix}
           </span>

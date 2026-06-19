@@ -30,13 +30,13 @@ export default function LaunchWssArticleLink({
         <Newspaper size={14} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[8px] font-bold uppercase tracking-[0.14em] text-accent-cyan/80">
+        <span className="block text-[9px] font-bold uppercase tracking-[0.14em] text-accent-cyan/80 sm:text-[10px]">
           Czytaj zapowiedź
         </span>
         <span
           className={cn(
             "mt-0.5 block font-semibold leading-snug text-text-secondary transition-colors group-hover:text-accent-cyan",
-            compact ? "line-clamp-1 text-[11px]" : "line-clamp-2 text-[11.5px]",
+            compact ? "line-clamp-1 text-[13px] sm:text-[13.5px]" : "line-clamp-2 text-[11.5px]",
           )}
         >
           {article.title}

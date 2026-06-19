@@ -1,8 +1,10 @@
 import Link from "next/link";
 import WssLogo from "@/components/brand/WssLogo";
 import CookieSettingsButton from "@/components/consent/CookieSettingsButton";
+import SocialFollowStrip from "@/components/social/SocialFollowStrip";
 import { cn } from "@/lib/cn";
 import { SITE_CONTAINER } from "@/lib/site-layout";
+import { WSS_SOCIAL_SECONDARY } from "@/lib/social/wss-social-links";
 
 const FOOTER_NAV = {
   Nawigacja: [
@@ -36,13 +38,10 @@ const FOOTER_NAV = {
     { label: "Wideo", href: "/wideo" },
     { label: "Subskrypcje RSS", href: "/rss" },
   ],
-  Społeczność: [
-    { label: "Discord", href: "https://discord.gg/wss" },
-    { label: "YouTube", href: "https://youtube.com/@webspacestation" },
-    { label: "X (Twitter)", href: "https://x.com/webspacestation" },
-    { label: "Instagram", href: "https://instagram.com/webspacestation" },
-    { label: "Facebook", href: "https://facebook.com/webspacestation" },
-  ],
+  Społeczność: WSS_SOCIAL_SECONDARY.map((p) => ({
+    label: p.label,
+    href: p.url,
+  })),
 } as const;
 
 const FOOTER_LEGAL = [
@@ -99,6 +98,7 @@ export default function Footer() {
                   Polski portal o kosmosie, astronomii i technologiach
                   kosmicznych. Newsy, misje i odkrycia.
                 </p>
+                <SocialFollowStrip variant="footer" />
               </div>
 
               {/* Mapa linków — zwarte kolumny */}

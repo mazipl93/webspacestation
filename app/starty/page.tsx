@@ -33,10 +33,10 @@ export default async function StartyPage() {
   const listaPanel =
     ops.launches.length === 0 ? (
       <div className="card-surface rounded-xl border border-hairline p-6 sm:p-8">
-        <p className="text-[13px] font-semibold text-text-primary">
+        <p className="text-[15px] font-semibold text-text-primary">
           {OPS_LAUNCH_FEED_PAUSED_TITLE}
         </p>
-        <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-text-tertiary">
+        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-text-tertiary">
           {OPS_LAUNCH_FEED_PAUSED_BODY}
         </p>
       </div>
