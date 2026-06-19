@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Newspaper } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { LaunchWssArticleLink as LinkData } from "@/lib/ops/launch-article-bridge";
+import type { LaunchWssArticleLink as LinkData } from "@/lib/ops/launch-article-bridge.shared";
 
 type Props = {
   article: LinkData;

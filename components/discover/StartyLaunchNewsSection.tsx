@@ -6,15 +6,23 @@ import type { ArticleListItem } from "@/lib/server/articles";
 
 type Props = {
   articles: ArticleListItem[];
+  variant?: "default" | "embedded";
 };
 
-export default function StartyLaunchNewsSection({ articles }: Props) {
+export default function StartyLaunchNewsSection({
+  articles,
+  variant = "default",
+}: Props) {
   if (articles.length === 0) return null;
 
   const cards = articles.map(toNewsArticle);
+  const embedded = variant === "embedded";
 
   return (
-    <section className="mt-10 border-t border-hairline pt-8" aria-labelledby="starty-launch-news-heading">
+    <section
+      className={embedded ? undefined : "mt-10 border-t border-hairline pt-8"}
+      aria-labelledby="starty-launch-news-heading"
+    >
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-cyan">

@@ -4,21 +4,29 @@ import { useEffect, useState } from "react";
 import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
 
 const PASSES_URL = "/api/ops/iss-passes";
-const INTERVAL_MS = 120_000;
+const INTERVAL_MS = 60_000;
 
 type Payload = {
   passes: IssPolandPass[];
   computedAt: string;
+  tleAt?: string | null;
 };
 
 type Options = {
   limit?: number;
+  initialPasses?: IssPolandPass[];
+  initialComputedAt?: string | null;
 };
 
-export function useIssPolandPasses({ limit = 4 }: Options = {}) {
-  const [passes, setPasses] = useState<IssPolandPass[]>([]);
-  const [computedAt, setComputedAt] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export function useIssPolandPasses({
+  limit = 4,
+  initialPasses = [],
+  initialComputedAt = null,
+}: Options = {}) {
+  const [passes, setPasses] = useState<IssPolandPass[]>(initialPasses);
+  const [computedAt, setComputedAt] = useState<string | null>(initialComputedAt);
+  const [tleAt, setTleAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(initialPasses.length === 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +40,7 @@ export function useIssPolandPasses({ limit = 4 }: Options = {}) {
         if (cancelled) return;
         setPasses(data.passes ?? []);
         setComputedAt(data.computedAt ?? null);
+        setTleAt(data.tleAt ?? null);
       } catch {
         // zostaje ostatnia lista
       } finally {
@@ -52,5 +61,5 @@ export function useIssPolandPasses({ limit = 4 }: Options = {}) {
     };
   }, [limit]);
 
-  return { passes, computedAt, loading };
+  return { passes, computedAt, tleAt, loading };
 }

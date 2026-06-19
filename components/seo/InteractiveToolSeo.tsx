@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, type LucideIcon } from "lucide-react";
 import JsonLd from "@/components/seo/JsonLd";
 import {
   buildInteractiveToolJsonLd,
@@ -25,6 +25,8 @@ type CrossLinksProps = {
   tools: InteractiveToolSeo[];
   currentPath: string;
   className?: string;
+  headingId?: string;
+  linkIcons?: Partial<Record<InteractiveToolSeo["id"], LucideIcon>>;
 };
 
 /** Wewnętrzne linki między ISS trackerem, zorzą i startami. */
@@ -32,39 +34,49 @@ export function InteractiveToolsCrossLinks({
   tools,
   currentPath,
   className,
+  headingId = "interactive-tools-links",
+  linkIcons,
 }: CrossLinksProps) {
   const links = tools.filter((t) => t.path !== currentPath);
   if (links.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="interactive-tools-links"
-      className={className}
-    >
+    <section aria-labelledby={headingId} className={className}>
       <h2
-        id="interactive-tools-links"
+        id={headingId}
         className="mb-4 text-[13px] font-bold uppercase tracking-[0.12em] text-text-primary"
       >
         Powiązane narzędzia
       </h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {links.map((tool) => (
-          <Link
-            key={tool.path}
-            href={tool.path}
-            className="card-surface flex items-start gap-3 rounded-xl border border-hairline p-4 transition-colors hover:border-hairline-strong"
-          >
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1 text-[14px] font-semibold text-text-primary">
-                {tool.headline}
-                <ChevronRight size={14} className="shrink-0 opacity-60" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        {links.map((tool) => {
+          const Icon = linkIcons?.[tool.id];
+          return (
+            <Link
+              key={tool.path}
+              href={tool.path}
+              className="ops-discover-tool-link card-surface group flex items-start gap-3 rounded-xl border border-hairline p-4 transition-colors hover:border-hairline-strong"
+            >
+              {Icon ? (
+                <span className="ops-discover-below__tool-icon" aria-hidden>
+                  <Icon size={18} />
+                </span>
+              ) : null}
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1 text-[14px] font-semibold text-text-primary">
+                  {tool.headline}
+                  <ChevronRight
+                    size={14}
+                    className="shrink-0 opacity-60 transition-transform group-hover:translate-x-0.5"
+                  />
+                </span>
+                <span className="mt-1 block text-[12px] leading-relaxed text-text-tertiary">
+                  {tool.description}
+                </span>
               </span>
-              <span className="mt-1 block text-[12px] leading-relaxed text-text-tertiary">
-                {tool.description}
-              </span>
-            </span>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
@@ -73,18 +85,29 @@ export function InteractiveToolsCrossLinks({
 type SeoContentProps = {
   tool: InteractiveToolSeo;
   className?: string;
+  variant?: "plain" | "cards";
 };
 
 /** Widoczny blok treści + FAQ pod narzędziem (indeksowalny, naturalny język). */
-export function ToolSeoContent({ tool, className }: SeoContentProps) {
+export function ToolSeoContent({
+  tool,
+  className,
+  variant = "plain",
+}: SeoContentProps) {
+  const faqListClass =
+    variant === "cards"
+      ? "mt-4 grid gap-3 sm:grid-cols-1"
+      : "mt-3 space-y-4";
+  const faqItemClass =
+    variant === "cards"
+      ? "rounded-xl border border-hairline-faint bg-[rgba(0,0,0,0.22)] px-4 py-3.5"
+      : undefined;
+
   return (
-    <section
-      aria-labelledby={`${tool.id}-seo`}
-      className={className}
-    >
+    <section aria-labelledby={`${tool.id}-seo`} className={className}>
       <h2
         id={`${tool.id}-seo`}
-        className="text-[15px] font-bold text-text-primary"
+        className="text-[15px] font-bold text-text-primary sm:text-[16px]"
       >
         {tool.headline} · jak korzystać
       </h2>
@@ -97,13 +120,13 @@ export function ToolSeoContent({ tool, className }: SeoContentProps) {
           <h3 className="text-[12px] font-bold uppercase tracking-[0.1em] text-text-muted">
             Najczęstsze pytania
           </h3>
-          <dl className="mt-3 space-y-4">
+          <dl className={faqListClass}>
             {tool.faq.map((item) => (
-              <div key={item.question}>
+              <div key={item.question} className={faqItemClass}>
                 <dt className="text-[13px] font-semibold text-text-primary">
                   {item.question}
                 </dt>
-                <dd className="mt-1 max-w-[68ch] text-[12px] leading-relaxed text-text-tertiary">
+                <dd className="mt-1.5 max-w-[68ch] text-[12px] leading-relaxed text-text-tertiary">
                   {item.answer}
                 </dd>
               </div>

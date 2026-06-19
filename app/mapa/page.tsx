@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Rocket, ChevronRight } from "lucide-react";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
+import MapaPageBelowFold from "@/components/discover/MapaPageBelowFold";
 import OpsMissionMap from "@/components/discover/OpsMissionMap";
-import {
-  InteractiveToolsCrossLinks,
-  ToolPageJsonLd,
-  ToolSeoContent,
-} from "@/components/seo/InteractiveToolSeo";
+import { ToolPageJsonLd } from "@/components/seo/InteractiveToolSeo";
 import { getInteractiveTool, getRelatedTools } from "@/lib/seo/interactive-tools";
 import { buildToolPageMetadata } from "@/lib/seo/tool-metadata";
 import { getMapOpsData } from "@/lib/ops/get-ops-data";
+import { computeIssPolandPasses } from "@/lib/ops/iss-poland-passes";
+import { getIssTleCachedAt } from "@/lib/ops/iss-orbit";
 
 const TOOL = getInteractiveTool("iss-tracker");
 
@@ -19,7 +16,11 @@ export const metadata: Metadata = buildToolPageMetadata(TOOL);
 export const revalidate = 300;
 
 export default async function MapaPage() {
-  const ops = await getMapOpsData();
+  const [ops, polandPasses] = await Promise.all([
+    getMapOpsData(),
+    computeIssPolandPasses(10, 72).catch(() => []),
+  ]);
+  const passesComputedAt = getIssTleCachedAt() ?? new Date().toISOString();
   const related = getRelatedTools("iss-tracker");
 
   return (
@@ -43,34 +44,12 @@ export default async function MapaPage() {
             showPolandPasses
             mapClassName="ops-map-page-map"
             followIss={!!ops.iss}
+            polandPasses={polandPasses}
+            polandPassesComputedAt={passesComputedAt}
           />
         </div>
 
-        <Link
-          href="/starty"
-          className="card-surface mt-8 flex items-start gap-4 rounded-xl border border-hairline p-4"
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-hairline bg-glass text-accent-cyan">
-            <Rocket size={18} />
-          </span>
-          <span>
-            <span className="flex items-center gap-1 text-[14px] font-semibold text-text-primary">
-              Harmonogram startów rakiet
-              <ChevronRight size={14} />
-            </span>
-            <span className="mt-1 block text-[12px] text-text-tertiary">
-              Odliczanie do startu i pełna lista misji
-            </span>
-          </span>
-        </Link>
-
-        <InteractiveToolsCrossLinks
-          tools={related}
-          currentPath={TOOL.path}
-          className="mt-10"
-        />
-
-        <ToolSeoContent tool={TOOL} className="mt-10 border-t border-hairline pt-8" />
+        <MapaPageBelowFold tool={TOOL} related={related} />
       </DiscoverPageShell>
     </>
   );

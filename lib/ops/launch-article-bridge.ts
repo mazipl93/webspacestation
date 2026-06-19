@@ -10,16 +10,14 @@ import {
   toLaunchArticleHref,
   type BridgeArticle,
 } from "@/lib/ops/match-launch-articles";
+import type { LaunchWssArticleLink } from "@/lib/ops/launch-article-bridge.shared";
 import type { OpsLaunch } from "@/lib/ops/types";
+
+export type { LaunchWssArticleLink } from "@/lib/ops/launch-article-bridge.shared";
+export { linkForLaunch } from "@/lib/ops/launch-article-bridge.shared";
 
 const BRIDGE_CATEGORIES = ["misje", "iss", "technologie"] as const;
 const POOL_LIMIT_PER_CATEGORY = 40;
-
-export type LaunchWssArticleLink = {
-  slug: string;
-  title: string;
-  href: string;
-};
 
 function toIsoString(value: Date | string | null | undefined): string | null {
   if (value == null) return null;
@@ -80,13 +78,6 @@ export async function getLaunchWssArticleLinks(
   }
 
   return links;
-}
-
-export function linkForLaunch(
-  launchId: string,
-  links: Map<string, LaunchWssArticleLink>,
-): LaunchWssArticleLink | null {
-  return links.get(launchId) ?? null;
 }
 
 /** Best upcoming launch for a Misje/ISS/Tech article (article page widget). */

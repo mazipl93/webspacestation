@@ -6,6 +6,7 @@ import OpsPinList from "@/components/discover/OpsPinList";
 import OpsIssPolandPasses from "@/components/discover/OpsIssPolandPasses";
 import { captionForMapPin } from "@/lib/ops/map-pin-caption";
 import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
+import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 
 const OpsLiveMap = dynamic(() => import("@/components/discover/OpsLiveMap"), {
@@ -32,6 +33,8 @@ type Props = {
   interactive?: boolean;
   mapClassName?: string;
   followIss?: boolean;
+  polandPasses?: IssPolandPass[];
+  polandPassesComputedAt?: string | null;
 };
 
 export default function OpsMissionMap({
@@ -47,6 +50,8 @@ export default function OpsMissionMap({
   interactive = false,
   mapClassName,
   followIss = false,
+  polandPasses,
+  polandPassesComputedAt,
 }: Props) {
   const [focusPinId, setFocusPinId] = useState<string | null>(null);
   const isSplit = layout === "split";
@@ -107,7 +112,12 @@ export default function OpsMissionMap({
         {pinList ? <div className="ops-mission-map-page__pins">{pinList}</div> : null}
         {showPolandPasses ? (
           <aside className="ops-mission-map-page__passes">
-            <OpsIssPolandPasses variant="sidebar" limit={10} />
+            <OpsIssPolandPasses
+              variant="sidebar"
+              limit={10}
+              initialPasses={polandPasses}
+              initialComputedAt={polandPassesComputedAt}
+            />
           </aside>
         ) : null}
       </div>

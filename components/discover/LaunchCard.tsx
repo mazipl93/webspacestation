@@ -5,7 +5,7 @@ import LaunchBriefBlock from "@/components/discover/LaunchBriefBlock";
 import LaunchWssArticleLink from "@/components/discover/LaunchWssArticleLink";
 import { OPS_LAUNCH_IMAGE_GRADIENT } from "@/lib/ops/discover-data";
 import { resolveLaunchBrief } from "@/lib/ops/launch-brief-fallback";
-import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge";
+import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge.shared";
 import type { OpsLaunch } from "@/lib/ops/types";
 import { cn } from "@/lib/cn";
 

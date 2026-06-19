@@ -19,6 +19,8 @@ type Props = {
   limit?: number;
   variant?: "map" | "compact" | "sidebar";
   className?: string;
+  initialPasses?: IssPolandPass[];
+  initialComputedAt?: string | null;
 };
 
 function PassBadge({ kind, small }: { kind: IssPolandPass["observationKind"]; small?: boolean }) {
@@ -35,18 +37,34 @@ function PassBadge({ kind, small }: { kind: IssPolandPass["observationKind"]; sm
   );
 }
 
-function UpdatedAt({ computedAt, compact }: { computedAt: string | null; compact?: boolean }) {
-  if (!computedAt) return null;
+function UpdatedAt({
+  computedAt,
+  tleAt,
+  compact,
+}: {
+  computedAt: string | null;
+  tleAt?: string | null;
+  compact?: boolean;
+}) {
+  const stamp = tleAt ?? computedAt;
+  if (!stamp) return null;
   const label = new Intl.DateTimeFormat("pl-PL", {
     timeZone: "Europe/Warsaw",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).format(new Date(computedAt));
+  }).format(new Date(stamp));
 
   return (
-    <span className={cn("text-text-muted", compact ? "text-[9px]" : "text-[10px]")}>
-      TLE {label}
+    <span
+      className={cn(
+        "ops-iss-passes__fresh inline-flex items-center gap-1 text-text-muted",
+        compact ? "text-[9px]" : "text-[10px]",
+      )}
+      title="Ten sam propagator SGP4 i TLE co mapa ISS"
+    >
+      <span className="ops-iss-passes__fresh-dot" aria-hidden />
+      SGP4 · {label}
     </span>
   );
 }
@@ -55,10 +73,16 @@ export default function OpsIssPolandPasses({
   limit = 4,
   variant = "map",
   className,
+  initialPasses,
+  initialComputedAt,
 }: Props) {
   const compact = variant === "compact";
   const sidebar = variant === "sidebar";
-  const { passes, computedAt, loading } = useIssPolandPasses({ limit: sidebar ? Math.max(limit, 8) : limit });
+  const { passes, computedAt, tleAt, loading } = useIssPolandPasses({
+    limit: sidebar ? Math.max(limit, 8) : limit,
+    initialPasses,
+    initialComputedAt,
+  });
 
   return (
     <section
@@ -84,7 +108,11 @@ export default function OpsIssPolandPasses({
             </p>
           )}
         </div>
-        <UpdatedAt computedAt={computedAt} compact={compact || sidebar} />
+        <UpdatedAt
+          computedAt={computedAt}
+          tleAt={tleAt}
+          compact={compact || sidebar}
+        />
       </header>
 
       {loading && passes.length === 0 ? (

@@ -24,6 +24,11 @@ type SatelliteModule = typeof import("satellite.js");
 let tleCache: { satrec: SatRec; satellite: SatelliteModule; at: number } | null =
   null;
 
+/** ISO timestamp ostatniego pobrania TLE (wspólne dla mapy, orbity i przelotów). */
+export function getIssTleCachedAt(): string | null {
+  return tleCache ? new Date(tleCache.at).toISOString() : null;
+}
+
 export async function loadIssSatrec(): Promise<{
   satrec: SatRec;
   satellite: SatelliteModule;

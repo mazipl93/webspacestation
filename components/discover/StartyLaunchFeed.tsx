@@ -3,7 +3,7 @@ import { cn } from "@/lib/cn";
 import {
   linkForLaunch,
   type LaunchWssArticleLink,
-} from "@/lib/ops/launch-article-bridge";
+} from "@/lib/ops/launch-article-bridge.shared";
 import { providerAccent } from "@/lib/ops/ops-widget-utils";
 import type { OpsLaunch } from "@/lib/ops/types";
 import type { CSSProperties } from "react";

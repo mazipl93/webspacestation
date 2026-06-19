@@ -11,7 +11,7 @@ import {
   OPS_LAUNCH_IMAGE_GRADIENT,
   STARTY_SCHEDULE_HREF,
 } from "@/lib/ops/discover-data";
-import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge";
+import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge.shared";
 import {
   providerAccent,
   shortenMissionTitle,
