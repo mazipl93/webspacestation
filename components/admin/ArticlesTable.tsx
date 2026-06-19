@@ -21,6 +21,7 @@ import {
   hasCitationFields,
   hasSourceAttribution,
 } from "@/lib/ui/article-kind";
+import { CONTENT_KIND_LABELS } from "@/lib/articles/content-kind";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { cn } from "@/lib/cn";
 
@@ -161,6 +162,9 @@ export default function ArticlesTable({
                 </td>
                 <td className="hidden px-5 py-3.5 md:table-cell">
                   <p className="text-meta font-medium text-text-secondary">{typeLabel}</p>
+                  <p className="mt-1 text-caption text-text-muted">
+                    {CONTENT_KIND_LABELS[a.contentKind]}
+                  </p>
                   {hasCitationFields(a.source, a.originalUrl) && a.originalUrl ? (
                     <a
                       href={a.originalUrl}

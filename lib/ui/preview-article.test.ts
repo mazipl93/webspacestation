@@ -35,6 +35,7 @@ const BASE_FORM: ArticleFormValues = {
   authorByline: "",
   bylineUserId: "",
   categoryId: "cat-misje",
+  contentKind: "NEWS",
   featured: false,
   heroPosition: 0,
   weekTopicPosition: 0,

@@ -10,6 +10,7 @@ import type {
   ArticleUpdateInput,
 } from "@/lib/server/validation";
 import { calculateScore } from "@/lib/news/calculateScore";
+import { validateContentKindForCategory } from "@/lib/articles/content-kind";
 import {
   ARTICLES_TAG,
   CATEGORIES_TAG,
@@ -110,6 +111,7 @@ const articleSelect = {
   source: true,
   originalUrl: true,
   contentOrigin: true,
+  contentKind: true,
   category: {
     select: {
       id: true,
@@ -155,6 +157,7 @@ const articleListSelect = {
   source: true,
   originalUrl: true,
   contentOrigin: true,
+  contentKind: true,
   category: articleSelect.category,
   author: articleSelect.author,
 } satisfies Prisma.ArticleSelect;
@@ -864,6 +867,7 @@ function buildPrismaContentUpdateInput(
   if (input.tags !== undefined) data.tags = input.tags;
   if (input.source !== undefined) data.source = input.source;
   if (input.originalUrl !== undefined) data.originalUrl = input.originalUrl;
+  if (input.contentKind !== undefined) data.contentKind = input.contentKind;
 
   // publishedAt — wyłącznie articleStateTransition (PUBLISH); nigdy z PATCH treści.
   delete (data as { publishedAt?: unknown }).publishedAt;
@@ -898,6 +902,8 @@ export async function articleStateTransition(
       excerpt: true,
       content: true,
       categoryId: true,
+      contentKind: true,
+      category: { select: { slug: true } },
     },
   });
   if (!existing) return null;
@@ -912,6 +918,12 @@ export async function articleStateTransition(
       categoryId: existing.categoryId,
     });
     if (!pubCheck.ok) throw new ArticleWorkflowError(pubCheck.message);
+
+    const kindCheck = validateContentKindForCategory(
+      existing.category.slug,
+      existing.contentKind,
+    );
+    if (!kindCheck.ok) throw new ArticleWorkflowError(kindCheck.message);
   }
 
   if (action === "SCHEDULE") {
@@ -1005,6 +1017,19 @@ export async function createArticle(
 
   traceArticleWriteInput("create", { ...input, status: requestedStatus });
 
+  const category = await prisma.category.findUnique({
+    where: { id: input.categoryId },
+    select: { slug: true },
+  });
+  if (!category) {
+    throw new ArticleWorkflowError("Nie znaleziono kategorii artykułu.");
+  }
+  const kindCheck = validateContentKindForCategory(
+    category.slug,
+    input.contentKind,
+  );
+  if (!kindCheck.ok) throw new ArticleWorkflowError(kindCheck.message);
+
   const article = await prisma.article.create({
     data: {
       slug: input.slug,
@@ -1032,6 +1057,7 @@ export async function createArticle(
       categoryId: input.categoryId,
       authorId: resolvedAuthorId,
       contentOrigin: ArticleContentOrigin.EDITORIAL,
+      contentKind: input.contentKind,
       publishedAt: null,
       publishAt: null,
     },
@@ -1074,11 +1100,39 @@ export async function updateArticle(
 ): Promise<ArticleWithRelations | null> {
   const existing = await prisma.article.findUnique({
     where: { id },
-    select: { id: true, slug: true },
+    select: {
+      id: true,
+      slug: true,
+      contentKind: true,
+      categoryId: true,
+      category: { select: { slug: true } },
+    },
   });
   if (!existing) return null;
 
   traceArticleWriteInput("update", input);
+
+  const nextContentKind = input.contentKind ?? existing.contentKind;
+  if (
+    input.categoryId !== undefined ||
+    input.contentKind !== undefined
+  ) {
+    const category =
+      input.categoryId !== undefined && input.categoryId !== existing.categoryId
+        ? await prisma.category.findUnique({
+            where: { id: input.categoryId },
+            select: { slug: true },
+          })
+        : existing.category;
+    if (!category) {
+      throw new ArticleWorkflowError("Nie znaleziono kategorii artykułu.");
+    }
+    const kindCheck = validateContentKindForCategory(
+      category.slug,
+      nextContentKind,
+    );
+    if (!kindCheck.ok) throw new ArticleWorkflowError(kindCheck.message);
+  }
 
   if (
     input.heroPosition !== undefined &&

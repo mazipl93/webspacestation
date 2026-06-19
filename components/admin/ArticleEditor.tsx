@@ -14,6 +14,7 @@ import { adminApi, ApiError, type ArticleWritePayload } from "@/lib/admin/api";
 import type {
   AdminArticle,
   AdminCategory,
+  ArticleContentKind,
   ArticleFormValues,
   ArticleStatus,
   BylineAuthorOption,
@@ -38,9 +39,11 @@ import {
   type CategorySlug,
 } from "@/lib/categories";
 import {
-  hasPublishableBody,
-  validatePublishReady,
-} from "@/lib/articles/workflow";
+  ARTICLE_CONTENT_KINDS,
+  CONTENT_KIND_HINTS,
+  CONTENT_KIND_LABELS,
+  defaultContentKindForCategory,
+} from "@/lib/articles/content-kind";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import { cmsArticleTypeLabel, hasCitationFields } from "@/lib/ui/article-kind";
 import CoverImageCredit from "@/components/article/CoverImageCredit";
@@ -77,6 +80,10 @@ import {
   SOCIAL_CARD_HOOK_MAX,
   SOCIAL_CARD_TITLE_MAX,
 } from "@/lib/social/share-card-copy";
+import {
+  hasPublishableBody,
+  validatePublishReady,
+} from "@/lib/articles/workflow";
 
 const EMPTY_FORM: ArticleFormValues = {
   title: "",
@@ -92,6 +99,7 @@ const EMPTY_FORM: ArticleFormValues = {
   authorByline: "",
   bylineUserId: "",
   categoryId: "",
+  contentKind: "NEWS",
   featured: false,
   heroPosition: 0,
   weekTopicPosition: 0,
@@ -131,6 +139,7 @@ function toForm(a: AdminArticle): ArticleFormValues {
     authorByline: a.authorByline ?? "",
     bylineUserId: a.bylineUserId ?? "",
     categoryId: a.category.id,
+    contentKind: a.contentKind,
     featured: a.featured,
     heroPosition: a.heroPosition ?? 0,
     weekTopicPosition:
@@ -159,6 +168,7 @@ function toPayload(form: ArticleFormValues): ArticleWritePayload {
     authorByline: form.bylineUserId ? null : form.authorByline.trim() || null,
     bylineUserId: form.bylineUserId.trim() || null,
     categoryId: form.categoryId,
+    contentKind: form.contentKind,
     tags: parseTagsText(form.tagsText),
     featured: form.featured,
     heroPosition: form.heroPosition,
@@ -723,6 +733,14 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
       if (key === "title" && !slugTouched.current) {
         next.slug = slugify(String(value));
         slugConflictRef.current = false;
+      }
+      if (key === "categoryId") {
+        const cat = categories.find((c) => c.id === value);
+        if (cat) {
+          next.contentKind = defaultContentKindForCategory(
+            cat.slug,
+          ) as ArticleContentKind;
+        }
       }
       return next;
     });
@@ -1342,6 +1360,31 @@ export default function ArticleEditor({ articleId }: { articleId?: string }) {
                   {sortedCategories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </EditorFieldPanel>
+
+            <EditorFieldPanel>
+              <Field
+                label="Typ treści"
+                htmlFor="contentKind"
+                hint={
+                  CONTENT_KIND_HINTS[form.contentKind] ??
+                  "Aktualność vs wiedza — decyduje m.in. o news sitemap (48h)."
+                }
+              >
+                <Select
+                  id="contentKind"
+                  value={form.contentKind}
+                  onChange={(e) =>
+                    update("contentKind", e.target.value as ArticleContentKind)
+                  }
+                >
+                  {ARTICLE_CONTENT_KINDS.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {CONTENT_KIND_LABELS[kind]}
                     </option>
                   ))}
                 </Select>

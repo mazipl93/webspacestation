@@ -1,8 +1,11 @@
-import { ArticleStatus } from "@prisma/client";
+import { ArticleContentKind, ArticleStatus } from "@prisma/client";
 import {
   SOCIAL_CARD_HOOK_MAX,
   SOCIAL_CARD_TITLE_MAX,
 } from "@/lib/social/share-card-copy";
+import {
+  isArticleContentKind,
+} from "@/lib/articles/content-kind";
 import { normalizeArticleTags } from "@/lib/rss/article-tags";
 import {
   parseCoverImageForCreate,
@@ -147,6 +150,16 @@ function parsePublishAtField(
   return Number.isFinite(d.getTime()) ? d : null;
 }
 
+function parseContentKindField(
+  body: Record<string, unknown>,
+): ArticleContentKind | undefined {
+  if (body.contentKind === undefined) return undefined;
+  if (!isArticleContentKind(body.contentKind)) {
+    return undefined;
+  }
+  return body.contentKind;
+}
+
 // ─── Article inputs ───────────────────────────────────────────────────────--
 
 export interface ArticleCreateInput {
@@ -173,6 +186,7 @@ export interface ArticleCreateInput {
   source: string | null;
   originalUrl: string | null;
   publishAt: Date | null;
+  contentKind: ArticleContentKind;
 }
 
 export type ArticleUpdateInput = Partial<ArticleCreateInput>;
@@ -249,6 +263,8 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
   );
   if (socialCardHook && !socialCardHook.ok) return socialCardHook;
 
+  const contentKind = parseContentKindField(body) ?? ArticleContentKind.NEWS;
+
   return {
     ok: true,
     value: {
@@ -276,6 +292,7 @@ export function parseArticleCreate(body: unknown): Validated<ArticleCreateInput>
       source: parseSourceField(body) ?? null,
       originalUrl: parseOriginalUrlField(body) ?? null,
       publishAt: parsePublishAtField(body) ?? null,
+      contentKind,
     },
   };
 }
@@ -392,6 +409,13 @@ export function parseArticleUpdate(body: unknown): Validated<ArticleUpdateInput>
   if (originalUrl !== undefined) out.originalUrl = originalUrl;
   const publishAt = parsePublishAtField(body);
   if (publishAt !== undefined) out.publishAt = publishAt;
+
+  if (body.contentKind !== undefined) {
+    if (!isArticleContentKind(body.contentKind)) {
+      return { ok: false, message: "'contentKind' is invalid." };
+    }
+    out.contentKind = body.contentKind;
+  }
 
   return { ok: true, value: out };
 }

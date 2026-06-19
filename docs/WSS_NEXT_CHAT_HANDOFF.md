@@ -1,6 +1,7 @@
 # WSS — Handoff na następny czat (żywy dokument)
 
-**Ostatnia aktualizacja:** 8 czerwca 2026 (czat 58 — perf cache, logo, lajki SQL, CMS mobile nav)  
+**Ostatnia aktualizacja:** 15 czerwca 2026 (SEO sitemap/GSC — `docs/WSS_SEO_SITEMAP_HANDOFF.md`)  
+**→ SEO sitemap / GSC:** **`docs/WSS_SEO_SITEMAP_HANDOFF.md`** (DONE 15.06.2026)  
 **→ Następny temat:** wolne ładowanie strony → **`docs/WSS_PERF_CHAT_HANDOFF.md`** (gotowy prompt)  
 **→ Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` + `.cursor/rules/wss-content-architecture.mdc`  
 **Repo:** `mazipl93/webspacestation` · branch `main`  

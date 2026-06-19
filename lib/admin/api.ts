@@ -2,6 +2,7 @@ import type {
   AdminArticle,
   AdminCategory,
   AdminUser,
+  ArticleContentKind,
   ArticleStatus,
   BylineAuthorOption,
   UserRole,
@@ -73,6 +74,7 @@ export interface ArticleWritePayload {
   authorByline?: string | null;
   bylineUserId?: string | null;
   categoryId?: string;
+  contentKind?: ArticleContentKind;
   status?: ArticleStatus;
   featured?: boolean;
   heroPosition?: number;

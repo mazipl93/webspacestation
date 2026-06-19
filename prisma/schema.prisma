@@ -39,6 +39,14 @@ enum ArticleContentOrigin {
   AI_DRAFT
 }
 
+/// Editorial format — aktualność vs wiedza (drives news sitemap, not menu departments).
+enum ArticleContentKind {
+  NEWS
+  ANALYSIS
+  EVERGREEN
+  GUIDE
+}
+
 // ─── Models ────────────────────────────────────────────────────────────────--
 
 model User {
@@ -115,6 +123,8 @@ model Article {
   originalUrl String?       @unique
   /// Provenance for CMS policy (RSS prefill vs manual editorial vs future AI drafts).
   contentOrigin ArticleContentOrigin @default(EDITORIAL)
+  /// Aktualność vs wiedza — news sitemap, reguły działu (np. Nauka = evergreen only).
+  contentKind   ArticleContentKind   @default(NEWS)
 
   categoryId  String
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
@@ -145,6 +155,7 @@ model Article {
   @@index([publishedAt])
   @@index([source])
   @@index([contentOrigin])
+  @@index([contentKind])
   @@index([status, publishAt])
   @@index([tags], type: Gin)
   @@map("articles")

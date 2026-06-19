@@ -15,6 +15,9 @@ export type ArticleStatus =
 /** Mirrors Prisma ArticleContentOrigin — exposed on article API responses. */
 export type ArticleContentOrigin = "EDITORIAL" | "RSS" | "AI_DRAFT";
 
+/** Mirrors Prisma ArticleContentKind — editorial format (aktualność vs wiedza). */
+export type ArticleContentKind = "NEWS" | "ANALYSIS" | "EVERGREEN" | "GUIDE";
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -89,6 +92,7 @@ export interface AdminArticle {
   source?: string | null;
   originalUrl?: string | null;
   contentOrigin: ArticleContentOrigin;
+  contentKind: ArticleContentKind;
   /** Read-only intelligence score (0–100), computed on API — not persisted. */
   aiScore?: number | null;
   category: AdminArticleCategory;
@@ -109,6 +113,7 @@ export interface ArticleFormValues {
   authorByline: string;
   bylineUserId: string;
   categoryId: string;
+  contentKind: ArticleContentKind;
   featured: boolean;
   heroPosition: number;
   weekTopicPosition: number;
