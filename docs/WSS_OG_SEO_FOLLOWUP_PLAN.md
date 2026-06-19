@@ -273,7 +273,7 @@ curl.exe -sI "https://webspacestation.pl/og/zorza"
 - `lib/seo/gsc-priority.ts` — tier 1/2/3 URL + mapowanie fraz
 - `scripts/gsc-priority-urls.ts` — checklista GSC, feedy, baseline do wklejenia
 - `npm run gsc:priority-urls` · `npm run gsc:ping-sitemap` (Google + Bing ping)
-- `app/sitemap.ts` — feedy RSS (`/feed.xml`, `/feed/{dział}`) w sitemap
+- ~~`app/sitemap.ts` — feedy RSS w sitemap~~ → **COFNIĘTE 15.06.2026** — patrz `docs/WSS_SEO_SITEMAP_HANDOFF.md`
 - `app/layout.tsx` — wszystkie kanały RSS w `<link rel="alternate">`
 - `lib/seo/json-ld.ts` — `sameAs` Organization + `image` w WebSite.hasPart
 

@@ -103,9 +103,9 @@ function CategorySplitLeadDesktop({
             />
             {meta.label}
           </span>
-          <p className="text-[20px] font-bold leading-snug text-text-primary">
+          <h3 className="text-[20px] font-bold leading-snug text-text-primary">
             {lead.title}
-          </p>
+          </h3>
           <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
             {lead.excerpt}
           </p>
@@ -240,14 +240,14 @@ function CategorySection({
                     />
                     {meta.label}
                   </span>
-                  <p
+                  <h3
                     className={cn(
                       "font-bold leading-snug text-text-primary",
                       prominent ? "text-[22px]" : "text-[20px]",
                     )}
                   >
                     {lead.title}
-                  </p>
+                  </h3>
                   <p className="mt-2 line-clamp-2 text-[16px] leading-relaxed text-text-tertiary md:text-[15px]">
                     {lead.excerpt}
                   </p>
@@ -341,6 +341,9 @@ export default function ContentGrid({ homepage }: ContentGridProps) {
   if (allPublished.length === 0) {
     return (
       <div className={cn(SITE_CONTAINER, "relative z-[1] py-20")}>
+        <h1 className="sr-only">
+          Web Space Station – Twój portal o kosmosie, ISS i astronomii
+        </h1>
         <div className="card-surface px-8 py-16 text-center">
           <p className="text-[15px] text-text-secondary">
             Brak opublikowanych artykułów.
@@ -358,6 +361,9 @@ export default function ContentGrid({ homepage }: ContentGridProps) {
 
   return (
     <div className={cn(SITE_CONTAINER, "relative z-[1]")}>
+      <h1 className="sr-only">
+        Web Space Station – Twój portal o kosmosie, ISS i astronomii
+      </h1>
       <HomepageTopZone
         heroSlides={derived.heroSlides}
         latest={derived.latest}

@@ -65,14 +65,14 @@ export function HomeSectionLeadCard({
           />
           {categoryLabel}
         </span>
-        <p
+        <h3
           className={cn(
             "line-clamp-3 font-bold leading-snug text-text-primary transition-colors group-hover:text-accent-cyan",
             prominent ? "text-[20px] sm:text-[21px]" : "text-[18px] sm:text-[19px]",
           )}
         >
           {article.title}
-        </p>
+        </h3>
         <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-text-tertiary sm:text-[15px]">
           {article.excerpt}
         </p>

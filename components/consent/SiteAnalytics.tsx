@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
 import CookieConsentBanner from "@/components/consent/CookieConsentBanner";
 import {
   COOKIE_CONSENT_CHANGED_EVENT,
@@ -56,6 +57,7 @@ function SiteAnalyticsInner() {
         />
       ) : null}
       <GoogleAnalytics consent={consent} />
+      <MetaPixel consent={consent} />
     </>
   );
 }

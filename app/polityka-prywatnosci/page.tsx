@@ -78,14 +78,21 @@ export default function PrivacyPolicyPage() {
         <strong>Google Analytics 4</strong> (Google Ireland Limited) — po Twojej
         zgodzie w bannerze cookies mierzymy ruch na stronie: liczbę odwiedzin,
         źródła wejść, przeglądane podstrony i zdarzenia zaangażowania (np.
-        przewinięcia). Adres IP jest anonimizowany. Podstawą prawną jest zgoda
-        (art. 6 ust. 1 lit. a RODO). Zgodę możesz wycofać w dowolnym momencie
-        przez link <strong>Ustawienia cookies</strong> w stopce serwisu.
+        przewinięcia). Adres IP jest anonimizowany.
       </p>
       <p>
-        Dopóki nie zaakceptujesz analityki, skrypt Google Analytics nie jest
-        ładowany. Możesz też ograniczyć cookies w ustawieniach przeglądarki;
-        część funkcji (np. konto) może wtedy nie działać poprawnie.
+        <strong>Meta Pixel</strong> (Meta Platforms Ireland Limited) — po tej
+        samej zgodzie mierzymy skuteczność kampanii reklamowych Facebook i
+        Instagram (wizyty, konwersje, remarketing). Meta może ustawiać m.in.
+        cookies <code>_fbp</code> i <code>_fbc</code>.
+      </p>
+      <p>
+        Podstawą prawną obu narzędzi jest zgoda (art. 6 ust. 1 lit. a RODO).
+        Zgodę możesz wycofać w dowolnym momencie przez link{" "}
+        <strong>Ustawienia cookies</strong> w stopce serwisu. Dopóki jej nie
+        udzielisz, skrypty analityki i piksela Meta nie są ładowane. Możesz też
+        ograniczyć cookies w ustawieniach przeglądarki; część funkcji (np.
+        konto) może wtedy nie działać poprawnie.
       </p>
 
       <h2 className="pt-2 text-[17px] font-bold text-text-primary">
@@ -130,7 +137,7 @@ export default function PrivacyPolicyPage() {
       </p>
 
       <p className="pt-4 text-[13px] text-text-muted">
-        Ostatnia aktualizacja: 10 czerwca 2026.
+        Ostatnia aktualizacja: 19 czerwca 2026.
       </p>
     </LegalPageShell>
   );
