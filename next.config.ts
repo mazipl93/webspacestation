@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/kalendarz",
-        destination: "/starty",
+        destination: "/starty#harmonogram",
         permanent: true,
       },
     ];

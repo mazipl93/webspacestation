@@ -16,13 +16,17 @@ export type ArticleListingConfig = {
   path: `/${string}`;
 };
 
+type PageSearchParams = { strona?: string; dzial?: string };
+
 type PageProps = {
-  searchParams: Promise<{ strona?: string }>;
+  searchParams: Promise<PageSearchParams>;
 };
 
 type ShellProps = PageProps & {
   listing: ArticleListingConfig;
   category?: CategorySlug;
+  /** When set, category comes from searchParams (e.g. ?dzial=misje on /aktualnosci). */
+  resolveDepartment?: (params: PageSearchParams) => CategorySlug | undefined;
 };
 
 export async function buildArticleListingMetadata(
@@ -35,10 +39,16 @@ export async function buildArticleListingMetadata(
 
 export default async function ArticleListingPageShell({
   listing,
-  category,
+  category: categoryProp,
+  resolveDepartment,
   searchParams,
 }: ShellProps) {
-  const page = parseListingPage((await searchParams).strona);
+  const params = await searchParams;
+  const page = parseListingPage(params.strona);
+  const category = categoryProp ?? resolveDepartment?.(params);
+  const listingQuery = category && listing.path === "/aktualnosci"
+    ? { dzial: category }
+    : undefined;
 
   return (
     <>
@@ -54,6 +64,7 @@ export default async function ArticleListingPageShell({
           category={category}
           page={page}
           basePath={listing.path}
+          listingQuery={listingQuery}
         />
       </main>
       <Footer />

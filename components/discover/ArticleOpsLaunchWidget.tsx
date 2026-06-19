@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Rocket } from "lucide-react";
 import OpsCountdownHero from "@/components/discover/OpsCountdownHero";
+import { STARTY_SCHEDULE_HREF } from "@/lib/ops/discover-data";
 import { cn } from "@/lib/cn";
 import { isOpsLaunchImminent } from "@/lib/ops/ops-widget-utils";
 import type { OpsLaunch } from "@/lib/ops/types";
@@ -54,7 +55,7 @@ export default function ArticleOpsLaunchWidget({ launch, className }: Props) {
       </div>
 
       <Link
-        href="/starty"
+        href={STARTY_SCHEDULE_HREF}
         className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-accent-cyan transition-colors hover:text-text-primary"
       >
         Pełny harmonogram startów

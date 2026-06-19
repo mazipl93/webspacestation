@@ -18,7 +18,7 @@ export default function LaunchWssArticleLink({
     <Link
       href={article.href}
       className={cn(
-        "launch-wss-article-link group flex items-start gap-2.5 rounded-lg border border-hairline bg-glass/40 p-2.5 transition-colors hover:border-accent-cyan/35 hover:bg-glass/70",
+        "launch-wss-article-link group flex items-start gap-2.5 rounded-lg border border-accent-cyan/25 bg-accent-cyan/[0.06] p-2.5 transition-colors hover:border-accent-cyan/45 hover:bg-accent-cyan/10",
         compact && "p-2",
         className,
       )}
@@ -30,8 +30,8 @@ export default function LaunchWssArticleLink({
         <Newspaper size={14} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">
-          Artykuł o tym locie
+        <span className="block text-[8px] font-bold uppercase tracking-[0.14em] text-accent-cyan/80">
+          Czytaj zapowiedź
         </span>
         <span
           className={cn(

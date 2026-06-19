@@ -9,6 +9,7 @@ import {
   ARTICLE_FEED_PAGE_SIZE,
   clampListingPage,
   listingPageHref,
+  type ListingPageQuery,
 } from "@/lib/seo/article-listing";
 import { CATEGORY_SLUG_ORDER, getCategoryInfo } from "@/lib/categories";
 import { SITE_CONTAINER } from "@/lib/site-layout";
@@ -32,22 +33,25 @@ type Props = {
   category?: string;
   page?: number;
   basePath: string;
+  /** Preserved in pagination on /aktualnosci (?dzial=). */
+  listingQuery?: ListingPageQuery;
 };
 
 export default async function ArticleFeedSection({
   category,
   page = 1,
   basePath,
+  listingQuery,
 }: Props) {
   const feed = category
     ? await getArticlesByCategoryPage(category, page, ARTICLE_FEED_PAGE_SIZE)
     : await getLatestArticlesPage(page, ARTICLE_FEED_PAGE_SIZE);
 
   if (page > 1 && feed.totalPages > 0 && page > feed.totalPages) {
-    redirect(listingPageHref(basePath, feed.totalPages));
+    redirect(listingPageHref(basePath, feed.totalPages, listingQuery));
   }
   if (page > 1 && feed.totalPages === 0) {
-    redirect(basePath);
+    redirect(listingPageHref(basePath, 1, listingQuery));
   }
 
   const safePage = clampListingPage(page, feed.totalPages || 1);
@@ -59,6 +63,7 @@ export default async function ArticleFeedSection({
   const showFeatured = Boolean(category && safePage === 1 && articles.length > 0);
   const featured = showFeatured ? articles[0] : null;
   const rest = showFeatured ? articles.slice(1) : articles;
+  const useAktualnosciFilters = basePath === "/aktualnosci";
 
   return (
     <>
@@ -140,10 +145,15 @@ export default async function ArticleFeedSection({
           <div className="flex gap-1 overflow-x-auto pb-0 scrollbar-none">
             {FEED_FILTERS.map((f) => {
               const isActive = f.key === (category ?? null);
+              const href = useAktualnosciFilters
+                ? f.key
+                  ? listingPageHref("/aktualnosci", 1, { dzial: f.key })
+                  : "/aktualnosci"
+                : f.href;
               return (
                 <Link
                   key={f.href}
-                  href={f.href}
+                  href={href}
                   className={cn(
                     "mb-3 mt-1 flex shrink-0 items-center rounded-lg px-3.5 py-2 text-[12.5px] font-semibold transition-all duration-300",
                     isActive
@@ -207,6 +217,7 @@ export default async function ArticleFeedSection({
               basePath={basePath}
               page={safePage}
               totalPages={feed.totalPages}
+              listingQuery={listingQuery}
             />
           </>
         )}

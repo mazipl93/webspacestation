@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { listingPageHref, type ListingPageQuery } from "@/lib/seo/article-listing";
 import { getPageKeywords, resolvePageOgImage } from "@/lib/seo/page-og-registry";
 import { getSiteUrl } from "@/lib/site-url";
 import { formatPageTitle, sanitizeSeoTitle } from "@/lib/seo/site-title";
@@ -10,6 +11,7 @@ export function buildListingPageMetadata({
   path,
   page = 1,
   keywords,
+  query,
   robots = { index: true, follow: true },
 }: {
   title: string;
@@ -17,9 +19,10 @@ export function buildListingPageMetadata({
   path: `/${string}` | "/";
   page?: number;
   keywords?: string[];
+  query?: ListingPageQuery;
   robots?: Metadata["robots"];
 }): Metadata {
-  const pagePath = page > 1 ? `${path}?strona=${page}` : path;
+  const pagePath = listingPageHref(path, page, query);
   const canonical = `${getSiteUrl()}${pagePath === "/" ? "" : pagePath}`;
   const og = resolvePageOgImage(path);
   const displayTitle =

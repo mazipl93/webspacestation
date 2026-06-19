@@ -4,6 +4,7 @@ import {
   ARTICLE_FEED_PAGE_SIZE,
   clampListingPage,
   listingPageHref,
+  parseListingDepartment,
   parseListingPage,
 } from "./article-listing";
 
@@ -20,9 +21,26 @@ describe("article listing pagination", () => {
     assert.equal(parseListingPage(["3"]), 3);
   });
 
+  it("parseListingDepartment validates category slugs", () => {
+    assert.equal(parseListingDepartment("misje"), "misje");
+    assert.equal(parseListingDepartment(undefined), undefined);
+    assert.equal(parseListingDepartment("newsy"), undefined);
+  });
+
   it("listingPageHref keeps page 1 clean", () => {
     assert.equal(listingPageHref("/aktualnosci", 1), "/aktualnosci");
     assert.equal(listingPageHref("/nauka", 2), "/nauka?strona=2");
+  });
+
+  it("listingPageHref preserves dzial filter on /aktualnosci", () => {
+    assert.equal(
+      listingPageHref("/aktualnosci", 1, { dzial: "misje" }),
+      "/aktualnosci?dzial=misje",
+    );
+    assert.equal(
+      listingPageHref("/aktualnosci", 2, { dzial: "misje" }),
+      "/aktualnosci?dzial=misje&strona=2",
+    );
   });
 
   it("clampListingPage bounds page", () => {

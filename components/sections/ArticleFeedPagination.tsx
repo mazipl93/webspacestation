@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { listingPageHref } from "@/lib/seo/article-listing";
+import { listingPageHref, type ListingPageQuery } from "@/lib/seo/article-listing";
 import { cn } from "@/lib/cn";
 
 type Props = {
   basePath: string;
   page: number;
   totalPages: number;
+  listingQuery?: ListingPageQuery;
 };
 
 function pageRange(current: number, total: number): number[] {
@@ -22,12 +23,14 @@ export default function ArticleFeedPagination({
   basePath,
   page,
   totalPages,
+  listingQuery,
 }: Props) {
   if (totalPages <= 1) return null;
 
   const pages = pageRange(page, totalPages);
-  const prevHref = page > 1 ? listingPageHref(basePath, page - 1) : null;
-  const nextHref = page < totalPages ? listingPageHref(basePath, page + 1) : null;
+  const prevHref = page > 1 ? listingPageHref(basePath, page - 1, listingQuery) : null;
+  const nextHref =
+    page < totalPages ? listingPageHref(basePath, page + 1, listingQuery) : null;
 
   return (
     <nav
@@ -59,21 +62,37 @@ export default function ArticleFeedPagination({
         <div className="flex items-center gap-1">
           {pages[0] != null && pages[0] > 1 ? (
             <>
-              <PageLink basePath={basePath} page={1} current={page} />
+              <PageLink
+                basePath={basePath}
+                page={1}
+                current={page}
+                listingQuery={listingQuery}
+              />
               {pages[0] > 2 ? (
                 <span className="px-1 text-text-muted">…</span>
               ) : null}
             </>
           ) : null}
           {pages.map((p) => (
-            <PageLink key={p} basePath={basePath} page={p} current={page} />
+            <PageLink
+              key={p}
+              basePath={basePath}
+              page={p}
+              current={page}
+              listingQuery={listingQuery}
+            />
           ))}
           {pages.at(-1) != null && pages.at(-1)! < totalPages ? (
             <>
               {pages.at(-1)! < totalPages - 1 ? (
                 <span className="px-1 text-text-muted">…</span>
               ) : null}
-              <PageLink basePath={basePath} page={totalPages} current={page} />
+              <PageLink
+                basePath={basePath}
+                page={totalPages}
+                current={page}
+                listingQuery={listingQuery}
+              />
             </>
           ) : null}
         </div>
@@ -104,15 +123,17 @@ function PageLink({
   basePath,
   page,
   current,
+  listingQuery,
 }: {
   basePath: string;
   page: number;
   current: number;
+  listingQuery?: ListingPageQuery;
 }) {
   const active = page === current;
   return (
     <Link
-      href={listingPageHref(basePath, page)}
+      href={listingPageHref(basePath, page, listingQuery)}
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-[12.5px] font-semibold transition-colors",

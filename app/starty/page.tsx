@@ -6,6 +6,7 @@ import {
   OPS_LAUNCH_FEED_PAUSED_TITLE,
 } from "@/lib/ops/ops-outage-copy";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
+import OpsTimeline from "@/components/discover/OpsTimeline";
 import StartyLaunchFeed from "@/components/discover/StartyLaunchFeed";
 import StartyLaunchNewsSection from "@/components/discover/StartyLaunchNewsSection";
 import {
@@ -74,6 +75,20 @@ export default async function StartyPage() {
             articleLinks={articleLinks}
           />
         )}
+
+        <section
+          id="harmonogram"
+          className="mt-10 scroll-mt-28"
+          aria-labelledby="starty-harmonogram-heading"
+        >
+          <h2
+            id="starty-harmonogram-heading"
+            className="mb-4 text-[18px] font-semibold text-text-primary sm:text-[20px]"
+          >
+            Harmonogram startów
+          </h2>
+          <OpsTimeline events={ops.calendar} variant="page" />
+        </section>
 
         <StartyLaunchNewsSection articles={launchNews} />
 

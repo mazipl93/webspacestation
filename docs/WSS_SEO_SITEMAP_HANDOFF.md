@@ -31,7 +31,8 @@ Dodatkowo: `/sitemap.xml` zwracał **HTTP 500** na prod (jedna wielka mapa + tim
 ```
 /sitemap.xml                    ← indeks (JEDYNY wpis w GSC)
 ├── /sitemaps/pages.xml         ← strony indeksowalne (działy, huby, narzędzia)
-└── /sitemaps/articles.xml      ← tylko /aktualnosci/{slug}
+├── /sitemaps/articles.xml      ← pełny katalog /aktualnosci/{slug} (evergreen w tym)
+└── /sitemaps/news.xml          ← Google News: news/analysis ≤48h, bez Nauki
 ```
 
 **❌ NIE używać:** `/sitemap/pages.xml` (bez **s**) — to szablon ChatGPT, u nas folder to **`sitemaps`**.
@@ -40,6 +41,21 @@ Dodatkowo: `/sitemap.xml` zwracał **HTTP 500** na prod (jedna wielka mapa + tim
 - `/tag/*`
 - `/feed.xml`, `/feed/{dział}`
 - `/rss` (landing subskrypcji)
+- `/kalendarz` (301 → `/starty#harmonogram`)
+
+### news.xml — reguły CMS (Faza C, commit f6800c4+)
+
+| Warunek | W news.xml |
+|---|---|
+| `status = PUBLISHED` | ✅ |
+| `publishedAt` w ostatnich **48 h** | ✅ |
+| `contentKind` = `news` lub `analysis` | ✅ |
+| `category.slug != nauka` | ✅ (Nauka = tylko evergreen) |
+| `contentKind = evergreen` / `guide` | ❌ (zostaje w articles.xml) |
+
+Revalidate przy publikacji: `lib/cache/revalidate-public-articles.ts` → `/sitemaps/news.xml`.
+
+Testy: `lib/seo/sitemap-builders.test.ts`, smoke: `lib/seo/discovery-smoke.test.ts`.
 
 ### robots.txt
 
@@ -93,10 +109,12 @@ RSS discovery zostaje przez `<link rel="alternate" type="application/rss+xml">` 
 
 | URL | Oczekiwany wynik |
 |---|---|
-| `https://webspacestation.pl/sitemap.xml` | 200, `<sitemapindex>` z 2 dziećmi |
-| `https://webspacestation.pl/sitemaps/pages.xml` | 200, `<urlset>`, bez `/tag/`, `/feed/`, `/rss` |
-| `https://webspacestation.pl/sitemaps/articles.xml` | 200, `<urlset>` slugów artykułów |
+| `https://webspacestation.pl/sitemap.xml` | 200, `<sitemapindex>` z **3** dziećmi |
+| `https://webspacestation.pl/sitemaps/pages.xml` | 200, `<urlset>`, bez `/tag/`, `/feed/`, `/rss`, `/kalendarz` |
+| `https://webspacestation.pl/sitemaps/articles.xml` | 200, `<urlset>` — **pełny** katalog slugów |
+| `https://webspacestation.pl/sitemaps/news.xml` | 200, namespace `news:news`, tylko ≤48h news/analysis |
 | `https://webspacestation.pl/robots.txt` | Disallow `/tag/`, `/feed/` |
+| `https://webspacestation.pl/starty` | OG + JSON-LD; anchor `#harmonogram` |
 
 Komunikat przeglądarki *„This XML file does not appear to have any style information…”* przy XML — **normalny**, nie błąd.
 
@@ -154,8 +172,10 @@ Projekt Vercel: `mazipl93s-projects/wss` · alias prod: `webspacestation.pl`
 2. **Tagi = `noindex, follow`** — linkowanie wewnętrzne OK, indeks nie.
 3. **Nie przywracać** monolitycznego `app/sitemap.ts` z `getPublishedTags()` — funkcja w `lib/server/articles.ts` zostaje do innych celów, nie do sitemap.
 4. **GSC:** jeden wpis `sitemap.xml` (indeks).
-5. **sitemap_news.xml** — tylko jeśli portal w Google News Publisher Center (P2, nie wdrożone).
+5. **sitemap_news.xml** — wdrożone jako `/sitemaps/news.xml` (48h rolling). Google News Publisher Center = osobny proces biznesowy (P2).
 6. **Architektura treści:** `docs/WSS_CONTENT_ARCHITECTURE.md` — bez zmian.
+7. **`/aktualnosci?dzial=misje`** — opcjonalny filtr strumienia (bez slug `/newsy` w nav). Kanoniczne działy nadal pod `/misje` itd.
+8. **Starty:** `/starty#harmonogram` — anchor harmonogramu; redirect `/kalendarz` → ten URL.
 
 ---
 
@@ -165,6 +185,7 @@ Projekt Vercel: `mazipl93s-projects/wss` · alias prod: `webspacestation.pl`
 |---|---|
 | `docs/WSS_OG_SEO_FOLLOWUP_PLAN.md` | Krok 6 dodał feedy do sitemap — **cofnięte** tą sesją |
 | `docs/WSS_CONTENT_ARCHITECTURE.md` | Działy, redirecty legacy |
+| `docs/WSS_LAUNCHES_NEWS_SITEMAP_BACKLOG.md` | Fazy B–F: starty, news.xml, launch DRAFT |
 | `lib/seo/gsc-priority.ts` | Tier URL do Request indexing |
 | `scripts/gsc-priority-urls.ts` | Checklista GSC (`npm run gsc:priority-urls`) |
 
@@ -204,3 +225,4 @@ Architektura: docs/WSS_CONTENT_ARCHITECTURE.md
 | 2026-06-15 | user | push main; webhook Vercel nie zadziałał |
 | 2026-06-15 | agent | `npx vercel --prod --yes` — prod OK |
 | 2026-06-15 | user | GSC sitemap.xml usunięty + dodany → Sukces |
+| 2026-06-19 | agent | Faza E: news.xml w handoff, /starty#harmonogram, ?dzial=, discovery smoke |

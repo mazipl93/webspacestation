@@ -7,7 +7,10 @@ import LaunchBriefBlock from "@/components/discover/LaunchBriefBlock";
 import { resolveLaunchBrief } from "@/lib/ops/launch-brief-fallback";
 import LaunchWssArticleLink from "@/components/discover/LaunchWssArticleLink";
 import { cn } from "@/lib/cn";
-import { OPS_LAUNCH_IMAGE_GRADIENT } from "@/lib/ops/discover-data";
+import {
+  OPS_LAUNCH_IMAGE_GRADIENT,
+  STARTY_SCHEDULE_HREF,
+} from "@/lib/ops/discover-data";
 import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge";
 import {
   providerAccent,
@@ -157,7 +160,7 @@ export default function OpsLaunchShowcase({
 
       <div className="ops-launch-showcase__footer">
         <Link
-          href={href}
+          href={STARTY_SCHEDULE_HREF}
           className="flex min-w-0 items-center gap-1 text-[12px] font-medium text-accent-cyan transition-colors hover:text-text-primary"
         >
           Pełny harmonogram

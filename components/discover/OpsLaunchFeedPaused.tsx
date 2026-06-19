@@ -3,6 +3,7 @@ import { ChevronRight, Radio } from "lucide-react";
 import OpsLaunchPausedBackdrop from "@/components/discover/OpsLaunchPausedBackdrop";
 import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
 import { cn } from "@/lib/cn";
+import { STARTY_SCHEDULE_HREF } from "@/lib/ops/discover-data";
 import {
   OPS_LAUNCH_FEED_PAUSED_BODY,
   OPS_LAUNCH_FEED_PAUSED_TITLE,
@@ -27,7 +28,7 @@ export default function OpsLaunchFeedPaused({ className }: Props) {
           <p className="ops-launch-paused__title">{OPS_LAUNCH_FEED_PAUSED_TITLE}</p>
           <p className="ops-launch-paused__body">{OPS_LAUNCH_FEED_PAUSED_BODY}</p>
           <Link
-            href="/starty"
+            href={STARTY_SCHEDULE_HREF}
             className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-accent-cyan transition-colors hover:text-text-primary"
           >
             Pełny harmonogram
