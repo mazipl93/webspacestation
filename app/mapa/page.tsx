@@ -36,6 +36,8 @@ export default async function MapaPage() {
             pins={ops.mapPins}
             iss={ops.iss}
             issOrbit={ops.issOrbit}
+            issOrbitPast={ops.issOrbitPast}
+            issOrbitFuture={ops.issOrbitFuture}
             layout="map-page"
             interactive
             showPolandPasses

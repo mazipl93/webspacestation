@@ -38,15 +38,17 @@ function toIssPosition(d: RawIss): OpsIssPosition | null {
  */
 export function useLiveIssTrack(
   initialIss: OpsIssPosition | null,
-  initialOrbit: OrbitSegment[] = [],
+  initialOrbitPast: OrbitSegment[] = [],
+  initialOrbitFuture: OrbitSegment[] = [],
 ): {
   iss: OpsIssPosition | null;
   orbitPast: OrbitSegment[];
   orbitFuture: OrbitSegment[];
 } {
   const [iss, setIss] = useState<OpsIssPosition | null>(initialIss);
-  const [orbitPast, setOrbitPast] = useState<OrbitSegment[]>(initialOrbit);
-  const [orbitFuture, setOrbitFuture] = useState<OrbitSegment[]>([]);
+  const [orbitPast, setOrbitPast] = useState<OrbitSegment[]>(initialOrbitPast);
+  const [orbitFuture, setOrbitFuture] =
+    useState<OrbitSegment[]>(initialOrbitFuture);
   const sgp4OkRef = useRef(false);
 
   useEffect(() => {

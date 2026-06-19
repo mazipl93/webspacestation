@@ -107,8 +107,12 @@ export type OpsSnapshot = {
   recentLaunches: OpsLaunch[];
   calendar: OpsCalendarEvent[];
   iss: OpsIssPosition | null;
-  /** Ground track ISS (segmenty bez skoku dateline) */
+  /** Ground track ISS (segmenty bez skoku dateline) — łącznie past+future (cache) */
   issOrbit: { lat: number; lon: number }[][];
+  /** Ground track — odcinek za ISS (solid, przeszłość) */
+  issOrbitPast: { lat: number; lon: number }[][];
+  /** Ground track — odcinek przed ISS (przerywany, przyszłość) */
+  issOrbitFuture: { lat: number; lon: number }[][];
   mapPins: OpsMapPin[];
   gallery: OpsGalleryItem[];
   videos: OpsVideoItem[];

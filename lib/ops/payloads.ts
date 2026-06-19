@@ -25,6 +25,8 @@ export type OpsCorePayload = {
   calendar: OpsCalendarEvent[];
   iss: OpsIssPosition | null;
   issOrbit: { lat: number; lon: number }[][];
+  issOrbitPast: { lat: number; lon: number }[][];
+  issOrbitFuture: { lat: number; lon: number }[][];
   mapPins: OpsMapPin[];
   live: boolean;
   fetchedAt: string;
@@ -88,6 +90,8 @@ export function parseCorePayload(raw: unknown): OpsCorePayload | null {
     calendar: o.calendar,
     iss: o.iss ?? null,
     issOrbit: Array.isArray(o.issOrbit) ? o.issOrbit : [],
+    issOrbitPast: Array.isArray(o.issOrbitPast) ? o.issOrbitPast : [],
+    issOrbitFuture: Array.isArray(o.issOrbitFuture) ? o.issOrbitFuture : [],
     mapPins: Array.isArray(o.mapPins) ? o.mapPins : [],
     live: Boolean(o.live),
     fetchedAt:
@@ -126,6 +130,8 @@ export function galleryToOpsSnapshot(payload: OpsGalleryPayload): OpsSnapshot {
     calendar: [],
     iss: null,
     issOrbit: [],
+    issOrbitPast: [],
+    issOrbitFuture: [],
     mapPins: [],
     gallery: payload.gallery,
     videos: [],
@@ -141,6 +147,8 @@ export function videoToOpsSnapshot(payload: OpsVideoPayload): OpsSnapshot {
     calendar: [],
     iss: null,
     issOrbit: [],
+    issOrbitPast: [],
+    issOrbitFuture: [],
     mapPins: [],
     gallery: [],
     videos: payload.videos,

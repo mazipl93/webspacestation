@@ -50,6 +50,8 @@ export function buildEmptyCoreSnapshot(
     calendar: [],
     iss: null,
     issOrbit: [],
+    issOrbitPast: [],
+    issOrbitFuture: [],
     mapPins: buildMapPins(null, []),
     live: false,
     fetchedAt: new Date().toISOString(),
@@ -72,12 +74,21 @@ export function buildFallbackOpsSnapshot(): OpsSnapshot {
 /** Aktualizuj ISS/mapę bez kasowania ostatniego harmonogramu startów. */
 export function mergeIssRefreshIntoCore(
   stored: OpsCorePayload,
-  fresh: Pick<OpsCorePayload, "iss" | "issOrbit" | "mapPins" | "fetchedAt">,
+  fresh: Pick<
+    OpsCorePayload,
+    "iss" | "issOrbit" | "issOrbitPast" | "issOrbitFuture" | "mapPins" | "fetchedAt"
+  >,
 ): OpsCorePayload {
   return {
     ...stored,
     iss: fresh.iss ?? stored.iss,
     issOrbit: fresh.issOrbit.length > 0 ? fresh.issOrbit : stored.issOrbit,
+    issOrbitPast:
+      fresh.issOrbitPast.length > 0 ? fresh.issOrbitPast : stored.issOrbitPast,
+    issOrbitFuture:
+      fresh.issOrbitFuture.length > 0
+        ? fresh.issOrbitFuture
+        : stored.issOrbitFuture,
     mapPins: fresh.mapPins.length > 0 ? fresh.mapPins : stored.mapPins,
     fetchedAt: fresh.fetchedAt,
   };

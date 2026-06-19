@@ -23,6 +23,8 @@ type Props = {
   pins: OpsMapPin[];
   iss?: OpsIssPosition | null;
   issOrbit?: { lat: number; lon: number }[][];
+  issOrbitPast?: { lat: number; lon: number }[][];
+  issOrbitFuture?: { lat: number; lon: number }[][];
   height?: number;
   layout?: "stack" | "split" | "map-page";
   showPinList?: boolean;
@@ -36,6 +38,8 @@ export default function OpsMissionMap({
   pins,
   iss,
   issOrbit = [],
+  issOrbitPast,
+  issOrbitFuture,
   height = 320,
   layout = "stack",
   showPinList = true,
@@ -71,6 +75,8 @@ export default function OpsMissionMap({
       pins={pins}
       iss={iss}
       issOrbit={issOrbit}
+      issOrbitPast={issOrbitPast}
+      issOrbitFuture={issOrbitFuture}
       height={height}
       interactive={interactive}
       className={mapClassName}

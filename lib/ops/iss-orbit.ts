@@ -177,8 +177,21 @@ export async function computeIssLiveTrack(
     }
   }
 
-  const pastPoints = allPoints.slice(0, nowIdx + 1).map((x) => x.point);
-  const futurePoints = allPoints.slice(nowIdx).map((x) => x.point);
+  const prevLonBeforeNow =
+    nowIdx > 0 ? allPoints[nowIdx - 1]!.point.lon : null;
+  const issPoint: OrbitPoint = {
+    lat: iss.latitude,
+    lon: continuousLongitude(iss.longitude, prevLonBeforeNow),
+  };
+
+  const pastPoints = [
+    ...allPoints.slice(0, nowIdx).map((x) => x.point),
+    issPoint,
+  ];
+  const futurePoints = [
+    issPoint,
+    ...allPoints.slice(nowIdx + 1).map((x) => x.point),
+  ];
 
   return {
     iss,

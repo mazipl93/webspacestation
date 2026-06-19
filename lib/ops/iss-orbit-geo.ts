@@ -119,7 +119,14 @@ export function finalizeOrbitSegments(
   points: OrbitPoint[],
   refLon: number,
 ): OrbitSegment[] {
+  if (points.length < 2) return [];
+
   const aligned = alignTrackToReference(points, refLon);
-  const segments = splitOrbitAtDateline(aligned);
-  return segments.length > 0 ? segments : aligned.length > 1 ? [aligned] : [];
+  const wrapped = aligned.map((p) => ({
+    lat: p.lat,
+    lon: unwrapLongitude(p.lon),
+  }));
+  const segments = splitOrbitAtDateline(wrapped);
+  const raw = segments.length > 0 ? segments : [wrapped];
+  return filterRenderableOrbitSegments(raw);
 }

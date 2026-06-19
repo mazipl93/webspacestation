@@ -1,5 +1,4 @@
-import { computeIssOrbitSegments } from "@/lib/ops/iss-orbit";
-import { fetchIssPosition } from "@/lib/ops/iss-tracker";
+import { computeIssLiveTrack } from "@/lib/ops/iss-orbit";
 import { buildMapPins } from "@/lib/ops/map-geo";
 import type { OpsCorePayload } from "@/lib/ops/payloads";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
@@ -18,17 +17,35 @@ export function refreshIssOnMapPins(
 
 export type IssCoreFields = Pick<
   OpsCorePayload,
-  "iss" | "issOrbit" | "mapPins" | "fetchedAt"
+  "iss" | "issOrbit" | "issOrbitPast" | "issOrbitFuture" | "mapPins" | "fetchedAt"
 >;
 
-/** Lekki fetch — tylko pozycja ISS + orbita + pinezka na mapie (bez LL2). */
+function issTrackToCoreFields(
+  track: Awaited<ReturnType<typeof computeIssLiveTrack>>,
+): Omit<IssCoreFields, "mapPins" | "fetchedAt"> {
+  if (!track) {
+    return {
+      iss: null,
+      issOrbit: [],
+      issOrbitPast: [],
+      issOrbitFuture: [],
+    };
+  }
+  return {
+    iss: track.iss,
+    issOrbitPast: track.orbitPast,
+    issOrbitFuture: track.orbitFuture,
+    issOrbit: [...track.orbitPast, ...track.orbitFuture],
+  };
+}
+
+/** Lekki fetch — pozycja + ground track z jednego propagatora SGP4 (bez LL2). */
 export async function fetchIssCoreFields(
   stored: Pick<OpsCorePayload, "mapPins">,
 ): Promise<IssCoreFields> {
-  const [iss, issOrbit] = await Promise.all([
-    fetchIssPosition().catch(() => null),
-    computeIssOrbitSegments().catch(() => [] as { lat: number; lon: number }[][]),
-  ]);
+  const track = await computeIssLiveTrack().catch(() => null);
+  const { iss, issOrbit, issOrbitPast, issOrbitFuture } =
+    issTrackToCoreFields(track);
 
   const mapPins =
     stored.mapPins.length > 0
@@ -38,6 +55,8 @@ export async function fetchIssCoreFields(
   return {
     iss,
     issOrbit,
+    issOrbitPast,
+    issOrbitFuture,
     mapPins,
     fetchedAt: new Date().toISOString(),
   };

@@ -7,8 +7,7 @@ import {
   applyLaunchBriefPipeline,
   type FetchCoreOpsOptions,
 } from "@/lib/ops/generate-launch-briefs";
-import { computeIssOrbitSegments } from "@/lib/ops/iss-orbit";
-import { fetchIssPosition } from "@/lib/ops/iss-tracker";
+import { computeIssLiveTrack } from "@/lib/ops/iss-orbit";
 import { fetchLaunchSchedule } from "@/lib/ops/launch-library";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
 import { buildMapPins } from "@/lib/ops/map-geo";
@@ -49,12 +48,14 @@ export async function fetchCoreOpsSnapshot(
     console.warn("[ops] Launch Library pipeline failed:", msg);
   }
 
-  const [iss, issOrbit] = await Promise.all([
-    fetchIssPosition().catch(() => null),
-    computeIssOrbitSegments().catch(
-      () => [] as { lat: number; lon: number }[][],
-    ),
-  ]);
+  const issTrack = await computeIssLiveTrack().catch(() => null);
+  const iss = issTrack?.iss ?? null;
+  const issOrbitPast = issTrack?.orbitPast ?? [];
+  const issOrbitFuture = issTrack?.orbitFuture ?? [];
+  const issOrbit =
+    issOrbitPast.length > 0 || issOrbitFuture.length > 0
+      ? [...issOrbitPast, ...issOrbitFuture]
+      : [];
 
   const mapPins =
     padCoords.length > 0
@@ -82,6 +83,8 @@ export async function fetchCoreOpsSnapshot(
         calendar,
         iss,
         issOrbit,
+        issOrbitPast,
+        issOrbitFuture,
         mapPins,
         live: false,
         fetchedAt,
@@ -92,6 +95,8 @@ export async function fetchCoreOpsSnapshot(
       ...buildEmptyCoreSnapshot(),
       iss,
       issOrbit,
+      issOrbitPast,
+      issOrbitFuture,
       mapPins,
       fetchedAt,
     };
@@ -111,6 +116,8 @@ export async function fetchCoreOpsSnapshot(
     calendar,
     iss,
     issOrbit,
+    issOrbitPast,
+    issOrbitFuture,
     mapPins,
     live: launchesLive,
     fetchedAt,

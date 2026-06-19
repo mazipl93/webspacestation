@@ -29,6 +29,8 @@ type Props = {
   pins: OpsMapPin[];
   iss?: OpsIssPosition | null;
   issOrbit?: { lat: number; lon: number }[][];
+  issOrbitPast?: { lat: number; lon: number }[][];
+  issOrbitFuture?: { lat: number; lon: number }[][];
   height?: number;
   interactive?: boolean;
   className?: string;
@@ -246,6 +248,8 @@ export default function OpsLiveMap({
   pins,
   iss,
   issOrbit = [],
+  issOrbitPast,
+  issOrbitFuture,
   height = 320,
   interactive = false,
   className,
@@ -260,7 +264,8 @@ export default function OpsLiveMap({
   const [orbitReady, setOrbitReady] = useState(false);
   const { iss: liveIss, orbitPast, orbitFuture } = useLiveIssTrack(
     iss ?? null,
-    issOrbit,
+    issOrbitPast ?? issOrbit,
+    issOrbitFuture ?? [],
   );
 
   const refLon = liveIss?.longitude ?? iss?.longitude;
