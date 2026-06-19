@@ -1,6 +1,6 @@
 /** Cookie / analytics consent — stored in browser only (not CMS). */
 export const COOKIE_CONSENT_KEY = "wss_cookie_consent";
-export const COOKIE_CONSENT_VERSION = "2026-06-10";
+export const COOKIE_CONSENT_VERSION = "2026-06-19";
 export const COOKIE_CONSENT_OPEN_EVENT = "wss:cookie-consent-open";
 export const COOKIE_CONSENT_CHANGED_EVENT = "wss:cookie-consent-changed";
 

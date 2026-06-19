@@ -36,9 +36,9 @@ export default function CookieConsentBanner({ onDecide }: Props) {
             id="cookie-consent-desc"
             className="text-[13px] leading-relaxed text-text-secondary"
           >
-            Niezbędne cookies (logowanie, polubienia) działają zawsze. Analityka
-            Google Analytics uruchamia się dopiero po Twojej zgodzie. Służy do
-            statystyk odwiedzin serwisu.{" "}
+            Niezbędne cookies (logowanie, polubienia) działają zawsze. Po zgodzie
+            uruchamiamy Google Analytics (statystyki) oraz Meta Pixel (pomiar
+            skuteczności reklam Facebook/Instagram).{" "}
             <Link
               href="/polityka-prywatnosci"
               className="text-accent-cyan hover:underline"
