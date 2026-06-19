@@ -69,7 +69,7 @@ export function buildGscUrlEntries(tier: GscUrlTier = "all"): GscUrlEntry[] {
         ? "intencja: zorza polarna dziś, indeks Kp"
         : path === "/mapa"
           ? "intencja: ISS tracker, gdzie jest ISS"
-          : path === "/starty" || path === "/kalendarz"
+          : path === "/starty"
             ? "intencja: harmonogram startów"
             : undefined,
   }));

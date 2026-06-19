@@ -27,7 +27,6 @@ export const SEO_SITEMAP_PATHS = [
   "/polityka-prywatnosci",
   "/kontakt",
   "/starty",
-  "/kalendarz",
   "/mapa",
   "/galeria",
   "/wideo",

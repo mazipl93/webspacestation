@@ -7,6 +7,7 @@ const SEO_FEED_PATHS = [
   "/sitemap.xml",
   "/sitemaps/pages.xml",
   "/sitemaps/articles.xml",
+  "/sitemaps/news.xml",
   "/feed.xml",
 ] as const;
 

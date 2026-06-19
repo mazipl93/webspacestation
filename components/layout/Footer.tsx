@@ -32,7 +32,6 @@ const FOOTER_NAV = {
     { label: "ISS tracker na żywo", href: "/mapa" },
     { label: "Terminal zorzy polarnej (Kp)", href: "/zorza" },
     { label: "Starty rakiet na żywo", href: "/starty" },
-    { label: "Harmonogram startów", href: "/kalendarz" },
     { label: "Galeria zdjęć", href: "/galeria" },
     { label: "Wideo", href: "/wideo" },
     { label: "Subskrypcje RSS", href: "/rss" },

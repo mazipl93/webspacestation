@@ -11,11 +11,18 @@ import { cn } from "@/lib/cn";
 type Props = {
   launch: OpsLaunch;
   variant?: "compact" | "featured";
+  className?: string;
   href?: string;
   wssArticle?: WssArticleLink | null;
 };
 
-export default function LaunchCard({ launch, variant = "compact", href, wssArticle }: Props) {
+export default function LaunchCard({
+  launch,
+  variant = "compact",
+  className,
+  href,
+  wssArticle,
+}: Props) {
   const featured = variant === "featured";
   const {
     provider,
@@ -33,12 +40,13 @@ export default function LaunchCard({ launch, variant = "compact", href, wssArtic
   const card = (
     <article
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-hairline bg-space-card",
-        href || !featured ? "surface-interactive group" : "surface-interactive"
+        "flex h-full flex-col overflow-hidden rounded-xl border border-hairline bg-space-card",
+        href || featured ? "surface-interactive group" : "",
+        className,
       )}
     >
       <div
-        className={`img-sheen relative shrink-0 overflow-hidden ${featured ? "h-[140px] sm:h-[160px]" : "h-[84px]"}`}
+        className={`img-sheen relative shrink-0 overflow-hidden ${featured ? "h-[132px] sm:h-[148px]" : "h-[84px]"}`}
         style={{ background: OPS_LAUNCH_IMAGE_GRADIENT.launchHue(hue) }}
       >
         <Image
@@ -46,31 +54,25 @@ export default function LaunchCard({ launch, variant = "compact", href, wssArtic
           alt={`${provider} — ${mission}`}
           fill
           unoptimized
-          sizes={featured ? "(max-width:640px) 100vw, 320px" : "260px"}
-          className={
-            featured
-              ? "object-cover opacity-85"
-              : "object-cover opacity-80 transition-transform duration-700 group-hover:scale-[1.08]"
-          }
-          style={
-            featured ? undefined : { transitionTimingFunction: "var(--ease-out-soft)" }
-          }
+          sizes={featured ? "(max-width:640px) 100vw, 360px" : "260px"}
+          className="object-cover opacity-85 transition-transform duration-700 group-hover:scale-[1.04]"
+          style={{ transitionTimingFunction: "var(--ease-out-soft)" }}
         />
-        <span className="absolute bottom-2 left-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white/75">
+        <span className="absolute bottom-2 left-3 text-[9px] font-bold uppercase tracking-[0.12em] text-white/80">
           {provider}
         </span>
         {statusLabel && (
-          <span className="absolute right-2 top-2 rounded-md border border-white/20 bg-black/50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white/90">
+          <span className="absolute right-2 top-2 rounded-md border border-white/20 bg-black/45 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white/90 backdrop-blur-sm">
             {statusLabel}
           </span>
         )}
       </div>
-      <div className={`flex flex-1 flex-col justify-between ${featured ? "p-4 sm:p-5" : "p-3"}`}>
+      <div className={`flex flex-1 flex-col justify-between ${featured ? "p-4" : "p-3"}`}>
         <div>
           <p
             className={
               featured
-                ? "text-[15px] font-bold leading-snug text-text-primary sm:text-[16px]"
+                ? "text-[14px] font-bold leading-snug text-text-primary sm:text-[15px]"
                 : "mb-3 text-[12.5px] font-bold leading-snug text-text-primary transition-colors duration-300 group-hover:text-accent-cyan"
             }
           >
@@ -91,10 +93,10 @@ export default function LaunchCard({ launch, variant = "compact", href, wssArtic
             <p className="mt-1 text-[10px] text-text-muted">{windowLabel}</p>
           )}
           {launch.brief && featured ? (
-            <LaunchBriefBlock brief={launch.brief} className="mt-3" />
+            <LaunchBriefBlock brief={launch.brief} className="mt-2.5 line-clamp-2" />
           ) : null}
         </div>
-        <div className={featured ? "mt-4" : undefined}>
+        <div className={featured ? "mt-3" : undefined}>
           {launch.phase === "countdown" || launch.phase === "hold" ? (
             <>
               <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">
@@ -123,7 +125,7 @@ export default function LaunchCard({ launch, variant = "compact", href, wssArtic
             </a>
           )}
           {wssArticle ? (
-            <LaunchWssArticleLink article={wssArticle} className="mt-3" />
+            <LaunchWssArticleLink article={wssArticle} className="mt-2.5" compact />
           ) : null}
         </div>
       </div>

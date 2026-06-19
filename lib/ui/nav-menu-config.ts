@@ -1,7 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BookOpen,
-  Calendar,
   Cpu,
   Globe2,
   ImageIcon,
@@ -153,13 +152,6 @@ export const NAV_MORE_LINKS: NavMenuLink[] = [
     accentKey: "wideo",
     description: "Materiały wideo WSS",
     icon: Play,
-  },
-  {
-    label: "Harmonogram startów",
-    href: "/kalendarz",
-    accentKey: "kalendarz",
-    description: "Terminy NET nadchodzących misji",
-    icon: Calendar,
   },
 ];
 

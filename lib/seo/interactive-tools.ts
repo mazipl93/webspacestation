@@ -3,8 +3,7 @@
 export type InteractiveToolId =
   | "iss-tracker"
   | "aurora-terminal"
-  | "rocket-launches"
-  | "launch-calendar";
+  | "rocket-launches";
 
 export type InteractiveToolSeo = {
   id: InteractiveToolId;
@@ -71,7 +70,7 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
           "Tak. Na tej samej mapie zaznaczone są platformy startowe i nadchodzące starty. Pełny harmonogram z odliczaniem znajdziesz w sekcji Starty rakiet.",
       },
     ],
-    relatedToolIds: ["rocket-launches", "aurora-terminal", "launch-calendar"],
+    relatedToolIds: ["rocket-launches", "aurora-terminal"],
     ogImageAlt: "ISS tracker na żywo · mapa pozycji Międzynarodowej Stacji Kosmicznej",
     sitemapPriority: 0.95,
     sitemapChangeFrequency: "hourly",
@@ -133,11 +132,11 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
     id: "rocket-launches",
     path: "/starty",
     title: "Starty rakiet · harmonogram i odliczanie na żywo",
-    headline: "Starty rakiet na żywo",
+    headline: "Starty rakiet",
     description:
       "Harmonogram nadchodzących startów rakiet: SpaceX, NASA, ESA i inne. Daty NET, okna startowe, odliczanie na żywo i kontekst każdej misji.",
     longDescription:
-      "Śledź, kiedy wystartuje następna rakieta. Lista startów z odliczaniem, informacjami o misji, rakiecie i platformie startowej, z linkiem do mapy ISS i terminala zorzy w Centrum operacyjnym WSS.",
+      "Śledź, kiedy wystartuje następna rakieta. Karty misji z odliczaniem na żywo, datami NET, informacjami o rakiecie i platformie startowej oraz powiązanymi aktualnościami WSS.",
     keywords: [
       "starty rakiet",
       "harmonogram startów",
@@ -148,14 +147,15 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
       "start rakiety na żywo",
       "nadchodzące starty",
       "termin startu rakiety",
-      "rakiet start harmonogram",
+      "NET start rakiety",
+      "plan startów SpaceX",
       "launch schedule",
     ],
     featureList: [
-      "Harmonogram nadchodzących startów rakiet",
-      "Odliczanie do startu w czasie rzeczywistym",
+      "Nadchodzące starty z odliczaniem na żywo",
+      "Daty NET i okna startowe przy każdej misji",
       "Informacje o misji, rakiecie i platformie",
-      "Powiązane aktualności i kontekst AI",
+      "Powiązane aktualności i kontekst redakcyjny",
     ],
     faq: [
       {
@@ -174,44 +174,9 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
           "Przy każdym starcie podajemy platformę i kosmodrom. Mapę platform startowych i pozycję ISS znajdziesz w ISS trackerze na /mapa.",
       },
     ],
-    relatedToolIds: ["iss-tracker", "launch-calendar", "aurora-terminal"],
+    relatedToolIds: ["iss-tracker", "aurora-terminal"],
     ogImageAlt: "Starty rakiet · harmonogram i odliczanie na żywo",
     sitemapPriority: 0.92,
-    sitemapChangeFrequency: "hourly",
-  },
-  "launch-calendar": {
-    id: "launch-calendar",
-    path: "/kalendarz",
-    title: "Harmonogram startów rakiet · terminy i odliczanie",
-    headline: "Harmonogram startów rakiet",
-    description:
-      "Kalendarz startów rakiet z terminami NET, oknami startowymi i odliczaniem. Przejrzysta oś czasu nadchodzących misji kosmicznych.",
-    longDescription:
-      "Oś czasu nadchodzących startów rakiet w jednym widoku. Sprawdź daty, agencje i misje, a potem przejdź do pełnej listy startów lub mapy ISS.",
-    keywords: [
-      "harmonogram startów",
-      "kalendarz startów rakiet",
-      "terminy startów",
-      "start rakiety kiedy",
-      "NET start rakiety",
-      "plan startów SpaceX",
-      "nadchodzące misje kosmiczne",
-    ],
-    featureList: [
-      "Oś czasu nadchodzących startów",
-      "Terminy NET i okna startowe",
-      "Skrót do pełnego harmonogramu /starty",
-    ],
-    faq: [
-      {
-        question: "Czym różni się kalendarz od strony Starty?",
-        answer:
-          "Kalendarz pokazuje terminy na osi czasu, a strona Starty to pełne karty misji z odliczaniem, zdjęciami i kontekstem.",
-      },
-    ],
-    relatedToolIds: ["rocket-launches", "iss-tracker"],
-    ogImageAlt: "Harmonogram startów rakiet · kalendarz misji",
-    sitemapPriority: 0.9,
     sitemapChangeFrequency: "hourly",
   },
 };

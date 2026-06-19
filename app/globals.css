@@ -3230,3 +3230,109 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
     background: linear-gradient(90deg, rgb(51 65 85 / 0.6), transparent);
   }
 }
+
+/* ── Starty — siatka kart (/starty) ─────────────────────────────────── */
+.starty-launch-feed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .starty-launch-feed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.375rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .starty-launch-feed {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+.starty-launch-feed__item {
+  position: relative;
+  min-width: 0;
+}
+
+.starty-launch-tile {
+  --launch-accent: rgb(56 189 248 / 0.65);
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--launch-accent) 18%, var(--hairline));
+  background:
+    radial-gradient(
+      ellipse 140% 90% at 50% -30%,
+      color-mix(in srgb, var(--launch-accent) 11%, transparent),
+      transparent 58%
+    ),
+    var(--color-space-card);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    0 1px 2px rgb(0 0 0 / 0.35),
+    0 14px 36px -22px rgb(0 0 0 / 0.65);
+  transition:
+    border-color 0.35s var(--ease-out-soft),
+    box-shadow 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft);
+}
+
+.starty-launch-tile::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--launch-accent) 55%, transparent) 35%,
+    color-mix(in srgb, var(--launch-accent) 55%, transparent) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.starty-launch-tile:hover {
+  border-color: color-mix(in srgb, var(--launch-accent) 32%, var(--hairline-strong));
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 22px 48px -20px color-mix(in srgb, var(--launch-accent) 28%, rgb(0 0 0 / 0.85));
+}
+
+.starty-launch-tile--primary {
+  border-color: color-mix(in srgb, var(--launch-accent) 28%, var(--hairline-strong));
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+    0 0 0 1px color-mix(in srgb, var(--launch-accent) 14%, transparent),
+    0 16px 42px -18px color-mix(in srgb, var(--launch-accent) 22%, rgb(0 0 0 / 0.8));
+}
+
+.starty-launch-tile__badge {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(4 7 12 / 0.72);
+  backdrop-filter: blur(10px);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.92);
+  pointer-events: none;
+}

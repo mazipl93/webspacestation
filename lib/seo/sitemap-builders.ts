@@ -1,10 +1,67 @@
 import type { MetadataRoute } from "next";
+import { ArticleContentKind } from "@prisma/client";
+import { isFreshContentKind } from "@/lib/articles/content-kind";
 import { INTERACTIVE_TOOLS } from "@/lib/seo/interactive-tools";
 import { SEO_SITEMAP_PATHS } from "@/lib/seo/public-routes";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const SITEMAP_PAGES_SEGMENT = "pages";
 export const SITEMAP_ARTICLES_SEGMENT = "articles";
+export const SITEMAP_NEWS_SEGMENT = "news";
+
+/** Rolling window for Google News sitemap (hours). */
+export const NEWS_SITEMAP_FRESH_HOURS = 48;
+export const NEWS_SITEMAP_FRESH_MS = NEWS_SITEMAP_FRESH_HOURS * 60 * 60 * 1000;
+
+export const NEWS_PUBLICATION_NAME = "Web Space Station";
+export const NEWS_PUBLICATION_LANGUAGE = "pl";
+
+export type NewsSitemapEntry = {
+  slug: string;
+  title: string;
+  publishedAt: Date;
+};
+
+export function newsSitemapCutoff(now: Date): Date {
+  return new Date(now.getTime() - NEWS_SITEMAP_FRESH_MS);
+}
+
+/** Pure filter — mirrors DB query rules (tests + docs). */
+export function matchesFreshNewsSitemapCriteria(
+  article: {
+    publishedAt: Date | null;
+    contentKind: ArticleContentKind;
+    categorySlug: string;
+  },
+  now: Date,
+): boolean {
+  if (!article.publishedAt) return false;
+  if (article.categorySlug === "nauka") return false;
+  if (!isFreshContentKind(article.contentKind)) return false;
+  const publishedAt = article.publishedAt.getTime();
+  const cutoff = newsSitemapCutoff(now).getTime();
+  const upper = now.getTime();
+  return publishedAt >= cutoff && publishedAt <= upper;
+}
+
+export function filterFreshNewsSitemapEntries<T extends NewsSitemapEntry & {
+  contentKind: ArticleContentKind;
+  categorySlug: string;
+}>(
+  entries: T[],
+  now: Date,
+): T[] {
+  return entries.filter((entry) =>
+    matchesFreshNewsSitemapCriteria(
+      {
+        publishedAt: entry.publishedAt,
+        contentKind: entry.contentKind,
+        categorySlug: entry.categorySlug,
+      },
+      now,
+    ),
+  );
+}
 
 export function sitemapChildPath(segment: string): string {
   return `/sitemaps/${segment}.xml`;
@@ -15,6 +72,7 @@ export function buildSitemapIndexLocations(): string[] {
   return [
     `${base}${sitemapChildPath(SITEMAP_PAGES_SEGMENT)}`,
     `${base}${sitemapChildPath(SITEMAP_ARTICLES_SEGMENT)}`,
+    `${base}${sitemapChildPath(SITEMAP_NEWS_SEGMENT)}`,
   ];
 }
 
@@ -63,6 +121,18 @@ export async function buildArticlesSitemapEntries(
   }
 }
 
+export async function buildNewsSitemapEntries(
+  now = new Date(),
+): Promise<NewsSitemapEntry[]> {
+  try {
+    const { getFreshNewsSitemapEntries } = await import("@/lib/server/articles");
+    return await getFreshNewsSitemapEntries(now);
+  } catch (error) {
+    console.error("[sitemap] failed to load fresh news", error);
+    return [];
+  }
+}
+
 type SitemapXmlEntry = MetadataRoute.Sitemap[number];
 
 function formatLastMod(value: SitemapXmlEntry["lastModified"]): string | undefined {
@@ -105,6 +175,37 @@ export function renderUrlsetXml(entries: MetadataRoute.Sitemap): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    urls,
+    "</urlset>",
+  ].join("\n");
+}
+
+export function renderNewsUrlsetXml(entries: NewsSitemapEntry[]): string {
+  const base = getSiteUrl().replace(/\/$/, "");
+  const urls = entries
+    .map((entry) => {
+      const loc = `${base}/aktualnosci/${entry.slug}`;
+      const publicationDate = entry.publishedAt.toISOString();
+      return [
+        "  <url>",
+        `    <loc>${escapeXml(loc)}</loc>`,
+        "    <news:news>",
+        "      <news:publication>",
+        `        <news:name>${escapeXml(NEWS_PUBLICATION_NAME)}</news:name>`,
+        `        <news:language>${NEWS_PUBLICATION_LANGUAGE}</news:language>`,
+        "      </news:publication>",
+        `      <news:publication_date>${publicationDate}</news:publication_date>`,
+        `      <news:title>${escapeXml(entry.title)}</news:title>`,
+        "    </news:news>",
+        "  </url>",
+      ].join("\n");
+    })
+    .join("\n");
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+    '        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">',
     urls,
     "</urlset>",
   ].join("\n");

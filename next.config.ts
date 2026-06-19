@@ -62,6 +62,11 @@ const nextConfig: NextConfig = {
         destination: "/technologie",
         permanent: true,
       },
+      {
+        source: "/kalendarz",
+        destination: "/starty",
+        permanent: true,
+      },
     ];
   },
   images: {

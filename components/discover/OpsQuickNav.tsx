@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { Calendar, Map, Rocket, Sparkles } from "lucide-react";
+import { Map, Rocket, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const LINKS = [
   { href: "/starty", label: "Starty", icon: Rocket, color: "#38bdf8" },
-  { href: "/kalendarz", label: "Terminy", icon: Calendar, color: "#2f6dff" },
   { href: "/mapa", label: "Mapa", icon: Map, color: "#a78bfa" },
   {
     href: "/zorza",

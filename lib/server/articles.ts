@@ -19,6 +19,9 @@ import {
 } from "@/lib/cache/tags";
 import { categorySlugsForDepartmentFeed } from "@/lib/categories";
 import { PUBLISHED_ARTICLE_WHERE } from "@/lib/server/published-only";
+import type { NewsSitemapEntry } from "@/lib/seo/sitemap-builders";
+import { newsSitemapCutoff } from "@/lib/seo/sitemap-builders";
+import { FRESH_CONTENT_KINDS } from "@/lib/articles/content-kind";
 
 export class ArticleWorkflowError extends Error {
   constructor(message: string) {
@@ -250,6 +253,58 @@ export async function getPublishedSitemapEntries(): Promise<SitemapArticleEntry[
     ["published-sitemap-entries", "v1"],
     { tags: [ARTICLES_TAG] },
   )();
+}
+
+const freshNewsSitemapSelect = {
+  slug: true,
+  title: true,
+  publishedAt: true,
+  contentKind: true,
+  category: { select: { slug: true } },
+} satisfies Prisma.ArticleSelect;
+
+export type FreshNewsSitemapEntry = Prisma.ArticleGetPayload<{
+  select: typeof freshNewsSitemapSelect;
+}>;
+
+async function queryFreshNewsSitemapEntriesFromDb(
+  now: Date,
+): Promise<NewsSitemapEntry[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: {
+        ...PUBLISHED_ARTICLE_WHERE,
+        contentKind: { in: [...FRESH_CONTENT_KINDS] },
+        publishedAt: {
+          gte: newsSitemapCutoff(now),
+          lte: now,
+        },
+        category: { slug: { not: "nauka" } },
+      },
+      orderBy: [{ publishedAt: "desc" }],
+      select: freshNewsSitemapSelect,
+    });
+
+    return rows
+      .filter(
+        (row): row is typeof row & { publishedAt: Date } => row.publishedAt != null,
+      )
+      .map((row) => ({
+        slug: row.slug,
+        title: row.title,
+        publishedAt: row.publishedAt,
+      }));
+  } catch (error) {
+    console.error("[getFreshNewsSitemapEntries]", error);
+    return [];
+  }
+}
+
+/** Fresh news/analysis ≤48h for Google News sitemap — excludes Nauka. */
+export async function getFreshNewsSitemapEntries(
+  now = new Date(),
+): Promise<NewsSitemapEntry[]> {
+  return queryFreshNewsSitemapEntriesFromDb(now);
 }
 
 async function queryPublishedTagsFromDb(): Promise<string[]> {

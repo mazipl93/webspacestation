@@ -37,7 +37,6 @@ export function buildSiteJsonLd() {
     { path: "/mapa", name: "ISS tracker na żywo" },
     { path: "/zorza", name: "Terminal zorzy polarnej" },
     { path: "/starty", name: "Starty rakiet na żywo" },
-    { path: "/kalendarz", name: "Harmonogram startów rakiet" },
   ];
 
   return [

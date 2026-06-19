@@ -72,7 +72,7 @@ export type OpsMapPin = {
 
 export type OpsCalendarEvent = {
   id: string;
-  /** Etykieta kwartału — tylko widok strony /kalendarz */
+  /** Etykieta kwartału — widok harmonogramu na /starty */
   quarter: string;
   /** Krótka data startu, np. „12 cze” */
   dateLabel: string;

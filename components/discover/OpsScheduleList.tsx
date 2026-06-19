@@ -7,7 +7,7 @@ type Props = {
   href?: string;
 };
 
-export default function OpsScheduleList({ events, limit = 5, href = "/kalendarz" }: Props) {
+export default function OpsScheduleList({ events, limit = 5, href = "/starty" }: Props) {
   const sorted = [...events]
     .sort((a, b) => new Date(a.net).getTime() - new Date(b.net).getTime())
     .slice(0, limit);
