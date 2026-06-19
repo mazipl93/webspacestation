@@ -13,6 +13,7 @@ import {
 } from "@/lib/ops/launch-brief-merge";
 import { isInterestingLaunch } from "@/lib/ops/launch-brief-interesting";
 import { generateBriefWithWebSearch } from "@/lib/ops/launch-brief-web-search";
+import { buildFallbackLaunchBrief } from "@/lib/ops/launch-brief-fallback";
 import { polishTypography } from "@/lib/rss/translate";
 import type { OpsLaunch, OpsLaunchBrief } from "@/lib/ops/types";
 
@@ -22,11 +23,11 @@ const OPENAI_ITEMS_PER_BATCH = 6;
 const LAUNCH_BRIEF_SYSTEM_PROMPT =
   "Jesteś redaktorem portalu kosmicznego Web Space Station. " +
   "Na podstawie WYŁĄCZNIE dostarczonych pól JSON o locie napisz krótki kontekst po polsku. " +
-  "Zasady: 2–3 zdania, maks. 280 znaków w polu brief. " +
-  "Nie dodawaj faktów spoza inputu (nie zgaduj payloadu ani orbit). " +
-  "Misje nieujawnione, NROL, „Unknown payload”: napisz wprost, że szczegóły są niepubliczne. " +
-  "Rutynowy Starlink: wyjaśnij krótko profil misji (internet LEO), bez udawania przełomu. " +
-  "Ton: konkretny, ciekawy, bez clickbaitu. Używaj przecinków, nie myślników em. " +
+  "Format: dokładnie 2 zdania, łącznie 130–250 znaków (nie więcej). " +
+  "Zdanie 1: czym jest ten lot (operator, rakieta, miejsce). " +
+  "Zdanie 2: co wiadomo o oknie NET albo profilu misji (Starlink = internet LEO, NROL = ładunek niejawny). " +
+  "Nie dodawaj faktów spoza inputu. Misje nieujawnione: napisz wprost o braku publicznych szczegółów. " +
+  "Ton: konkretny, ciekawy dla laika, bez clickbaitu i bez etykiety „Kontekst”. " +
   'Zwróć JSON: {"items":[{"id":"...","brief":"..."}]} — ta sama liczba i kolejność co input.';
 
 type BriefInput = {
@@ -57,7 +58,7 @@ function toBriefInput(launch: OpsLaunch): BriefInput {
 
 function sanitizeBriefText(raw: string): string | null {
   const text = polishTypography(raw.replace(/\s+/g, " ").trim());
-  if (text.length < 40 || text.length > 360) return null;
+  if (text.length < 35 || text.length > 320) return null;
   return text;
 }
 
@@ -170,8 +171,24 @@ export async function generateMissingLaunchBriefs(
     }
   }
 
-  if (generated.size === 0) return launches;
-  return attachBriefsToLaunches(launches, generated);
+  if (generated.size === 0 && routine.length === 0 && interesting.length === 0) {
+    return attachFallbackBriefs(launches, pending);
+  }
+
+  const withAi = attachBriefsToLaunches(launches, generated);
+  return attachFallbackBriefs(withAi, pending);
+}
+
+function attachFallbackBriefs(
+  launches: OpsLaunch[],
+  pending: OpsLaunch[],
+): OpsLaunch[] {
+  const pendingIds = new Set(pending.map((l) => l.id));
+  return launches.map((launch) => {
+    if (!pendingIds.has(launch.id)) return launch;
+    if (launch.brief && launch.brief.model !== "fallback") return launch;
+    return { ...launch, brief: buildFallbackLaunchBrief(launch) };
+  });
 }
 
 export type FetchCoreOpsOptions = {

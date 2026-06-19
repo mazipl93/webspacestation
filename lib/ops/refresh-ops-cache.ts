@@ -19,10 +19,13 @@ import {
   writeOpsCacheEntry,
 } from "@/lib/ops/snapshot-store";
 
+import { syncLaunchNewsDrafts } from "@/lib/ops/launch-news-sync";
+
 export type OpsRefreshResult = {
   core: { live: boolean; launches: number; fetchedAt: string };
   gallery: { live: boolean; items: number; fetchedAt: string };
   video: { live: boolean; items: number; fetchedAt: string };
+  launchNews?: Awaited<ReturnType<typeof syncLaunchNewsDrafts>>;
 };
 
 /** Fetch external APIs and persist snapshots — invoked by cron, never by user SSR. */
@@ -90,6 +93,13 @@ export async function refreshOpsCache(): Promise<OpsRefreshResult> {
     console.warn("[ops] revalidateTag skipped — run cron or redeploy to bust ISR");
   }
 
+  let launchNews: OpsRefreshResult["launchNews"];
+  try {
+    launchNews = await syncLaunchNewsDrafts(core.launches);
+  } catch (err) {
+    console.error("[ops] launch-news draft sync failed", err);
+  }
+
   return {
     core: {
       live: core.live,
@@ -106,5 +116,6 @@ export async function refreshOpsCache(): Promise<OpsRefreshResult> {
       items: video.videos.length,
       fetchedAt: video.fetchedAt,
     },
+    launchNews,
   };
 }

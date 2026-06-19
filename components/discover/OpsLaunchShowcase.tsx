@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import OpsCountdownHero from "@/components/discover/OpsCountdownHero";
 import OpsPreviewBadge from "@/components/discover/OpsPreviewBadge";
 import LaunchBriefBlock from "@/components/discover/LaunchBriefBlock";
+import { resolveLaunchBrief } from "@/lib/ops/launch-brief-fallback";
 import LaunchWssArticleLink from "@/components/discover/LaunchWssArticleLink";
 import { cn } from "@/lib/cn";
 import { OPS_LAUNCH_IMAGE_GRADIENT } from "@/lib/ops/discover-data";
@@ -50,6 +51,7 @@ export default function OpsLaunchShowcase({
   const accent = providerAccent(launch.hue);
   const showImminent =
     imminent && (launch.phase === "countdown" || launch.phase === "window");
+  const brief = resolveLaunchBrief(launch);
 
   return (
     <div
@@ -121,21 +123,22 @@ export default function OpsLaunchShowcase({
               ) : null}
             </p>
             <p className="ops-launch-showcase__site hidden min-[480px]:block">{launch.site}</p>
-            {launch.brief ? (
-              <>
-                <LaunchBriefBlock
-                  brief={launch.brief}
-                  compact
-                  overlay
-                  className="mt-2 sm:hidden"
-                />
-                <LaunchBriefBlock
-                  brief={launch.brief}
-                  compact
-                  className="mt-2.5 hidden sm:block"
-                />
-              </>
-            ) : null}
+            <>
+              <LaunchBriefBlock
+                brief={brief}
+                compact
+                overlay
+                className="mt-2 sm:hidden"
+                maxLines={4}
+              />
+              <LaunchBriefBlock
+                brief={brief}
+                compact
+                className="mt-2.5 hidden sm:block"
+                showLabel={false}
+                maxLines={4}
+              />
+            </>
           </div>
 
           <div className="ops-launch-showcase__countdown-wrap shrink-0">

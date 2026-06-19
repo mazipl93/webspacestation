@@ -6,13 +6,12 @@ const OPENAI_API = "https://api.openai.com/v1/chat/completions";
 
 const WEB_SEARCH_SYSTEM_PROMPT =
   "Jesteś redaktorem portalu kosmicznego Web Space Station (webspacestation.pl). " +
-  "Napisz krótki KONTEKST do startu rakiety po polsku, korzystając z aktualnych informacji w internecie. " +
-  "Zasady: 2–3 zdania, maks. 280 znaków. " +
-  "Misje klasyfikowane (NROL, USSF): napisz co wiadomo publicznie (klient, rola misji), nie spekuluj o ładunku. " +
-  "Misje załogowe: wymień astronautów jeśli znani, cel i czas trwania. " +
-  "Misje naukowe: cel naukowy, orbita docelowa lub cel badań. " +
-  "Ton: konkretny, ciekawy, bez clickbaitu. Używaj przecinków, nie myślników em. " +
-  "Zwróć WYŁĄCZNIE sam tekst kontekstu — bez tytułu, cudzysłowów, przypisów ani etykiet.";
+  "Napisz krótki kontekst do startu rakiety po polsku, korzystając z aktualnych informacji w internecie. " +
+  "Format: dokładnie 2 zdania, 130–250 znaków. " +
+  "Zdanie 1: czym jest misja. Zdanie 2: najważniejszy publiczny fakt (ładunek, załoga, cel). " +
+  "Misje klasyfikowane (NROL, USSF): tylko to, co potwierdzone publicznie. " +
+  "Ton: konkretny, bez clickbaitu. Bez etykiety „Kontekst”, cudzysłowów i przypisów [1]. " +
+  "Zwróć WYŁĄCZNIE sam tekst.";
 
 /** Usuwa znaczniki cytowań OpenAI web search ([1], [2], itp.) */
 function stripCitations(text: string): string {
@@ -75,7 +74,7 @@ export async function generateBriefWithWebSearch(
     if (!raw) return null;
 
     const text = polishTypography(stripCitations(raw.replace(/\s+/g, " ").trim()));
-    if (text.length < 40 || text.length > 360) return null;
+    if (text.length < 35 || text.length > 320) return null;
 
     return { text, basedOnNet: launch.net, generatedAt, model };
   } catch (err) {

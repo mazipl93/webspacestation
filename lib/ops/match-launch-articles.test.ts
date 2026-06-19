@@ -8,6 +8,7 @@ import {
   scoreLaunchArticleMatch,
   type BridgeArticle,
 } from "@/lib/ops/match-launch-articles";
+import { launchTagFor } from "@/lib/ops/launch-tag";
 
 const starlinkLaunch: OpsLaunch = {
   id: "ll-starlink-10-54",
@@ -114,6 +115,19 @@ describe("pickArticleForLaunch", () => {
       starlinkArticle,
     ]);
     assert.equal(match?.id, "a4");
+  });
+
+  it("prefers exact launch tag over fuzzy title match", () => {
+    const taggedGeneric: BridgeArticle = {
+      id: "a5",
+      slug: "tagged-nrol",
+      title: "Krótka zapowiedź",
+      tags: [launchTagFor(nrolLaunch.id)],
+      categorySlug: "misje",
+      publishedAt: "2026-06-01T08:00:00Z",
+    };
+    const match = pickArticleForLaunch(nrolLaunch, [nrolArticle, taggedGeneric]);
+    assert.equal(match?.id, "a5");
   });
 });
 

@@ -22,6 +22,7 @@ import { PUBLISHED_ARTICLE_WHERE } from "@/lib/server/published-only";
 import type { NewsSitemapEntry } from "@/lib/seo/sitemap-builders";
 import { newsSitemapCutoff } from "@/lib/seo/sitemap-builders";
 import { FRESH_CONTENT_KINDS } from "@/lib/articles/content-kind";
+import { LAUNCH_TAG_PREFIX } from "@/lib/ops/launch-tag";
 
 export class ArticleWorkflowError extends Error {
   constructor(message: string) {
@@ -251,6 +252,40 @@ export async function getPublishedSitemapEntries(): Promise<SitemapArticleEntry[
   return unstable_cache(
     querySitemapArticlesFromDb,
     ["published-sitemap-entries", "v1"],
+    { tags: [ARTICLES_TAG] },
+  )();
+}
+
+async function queryPublishedLaunchNewsFromDb(
+  limit: number,
+): Promise<ArticleListItem[]> {
+  try {
+    const rows = await prisma.article.findMany({
+      where: {
+        ...PUBLISHED_ARTICLE_WHERE,
+        category: { slug: "misje" },
+        NOT: { tags: { equals: [] } },
+      },
+      orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      take: 80,
+      select: articleListSelect,
+    });
+    return rows
+      .filter((row) => row.tags.some((tag) => tag.startsWith(LAUNCH_TAG_PREFIX)))
+      .slice(0, limit);
+  } catch (error) {
+    console.error("[getPublishedLaunchNewsArticles]", error);
+    return [];
+  }
+}
+
+/** Published Misje articles with `launch:{id}` tag — /starty „Zapowiedzi i newsy”. */
+export async function getPublishedLaunchNewsArticles(
+  limit = 6,
+): Promise<ArticleListItem[]> {
+  return unstable_cache(
+    () => queryPublishedLaunchNewsFromDb(limit),
+    ["published-launch-news", String(limit), "v1"],
     { tags: [ARTICLES_TAG] },
   )();
 }

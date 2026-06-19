@@ -2,6 +2,7 @@ import type { OpsLaunch } from "@/lib/ops/types";
 
 export function launchNeedsBrief(launch: OpsLaunch): boolean {
   if (!launch.brief) return true;
+  if (launch.brief.model === "fallback") return true;
   return launch.brief.basedOnNet !== launch.net;
 }
 

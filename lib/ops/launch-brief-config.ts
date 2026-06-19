@@ -1,7 +1,7 @@
 import { getOpenAIKey } from "@/lib/rss/translate";
 
 /** Max startów z briefem AI na jeden run ops:refresh (koszt). */
-export const OPS_LAUNCH_BRIEFS_BATCH_LIMIT = 12;
+export const OPS_LAUNCH_BRIEFS_BATCH_LIMIT = 18;
 
 /** Generuj briefy tylko dla startów w tym horyzoncie (dni). */
 export const OPS_LAUNCH_BRIEFS_HORIZON_DAYS = 21;

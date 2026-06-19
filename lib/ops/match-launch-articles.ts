@@ -1,4 +1,5 @@
 import type { OpsLaunch } from "@/lib/ops/types";
+import { extractLaunchIdFromTags, hasLaunchTag } from "@/lib/ops/launch-tag";
 
 /** Minimal article shape for launch ↔ news matching (no DB import). */
 export type BridgeArticle = {
@@ -205,6 +206,12 @@ export function pickArticleForLaunch(
   reservedIds: Set<string> = new Set(),
   minScore = LAUNCH_ARTICLE_MIN_SCORE,
 ): BridgeArticle | null {
+  const tagMatch = articles.find(
+    (article) =>
+      !reservedIds.has(article.id) && hasLaunchTag(article.tags, launch.id),
+  );
+  if (tagMatch) return tagMatch;
+
   let best: BridgeArticle | null = null;
   let bestScore = minScore - 1;
 
@@ -237,6 +244,18 @@ export function buildLaunchArticleMap(
   const reserved = new Set<string>();
 
   for (const launch of launches) {
+    const tagMatch = articles.find(
+      (article) =>
+        !reserved.has(article.id) && hasLaunchTag(article.tags, launch.id),
+    );
+    if (tagMatch) {
+      map.set(launch.id, tagMatch);
+      reserved.add(tagMatch.id);
+    }
+  }
+
+  for (const launch of launches) {
+    if (map.has(launch.id)) continue;
     const match = pickArticleForLaunch(launch, articles, reserved);
     if (match) {
       map.set(launch.id, match);
@@ -252,6 +271,12 @@ export function pickLaunchForArticle(
   launches: OpsLaunch[],
   minScore = LAUNCH_ARTICLE_MIN_SCORE,
 ): OpsLaunch | null {
+  const launchId = extractLaunchIdFromTags(article.tags);
+  if (launchId) {
+    const exact = launches.find((launch) => launch.id === launchId);
+    if (exact) return exact;
+  }
+
   let best: OpsLaunch | null = null;
   let bestScore = minScore - 1;
 

@@ -4,6 +4,7 @@ import LaunchCountdown from "@/components/discover/LaunchCountdown";
 import LaunchBriefBlock from "@/components/discover/LaunchBriefBlock";
 import LaunchWssArticleLink from "@/components/discover/LaunchWssArticleLink";
 import { OPS_LAUNCH_IMAGE_GRADIENT } from "@/lib/ops/discover-data";
+import { resolveLaunchBrief } from "@/lib/ops/launch-brief-fallback";
 import type { LaunchWssArticleLink as WssArticleLink } from "@/lib/ops/launch-article-bridge";
 import type { OpsLaunch } from "@/lib/ops/types";
 import { cn } from "@/lib/cn";
@@ -67,8 +68,8 @@ export default function LaunchCard({
           </span>
         )}
       </div>
-      <div className={`flex flex-1 flex-col justify-between ${featured ? "p-4" : "p-3"}`}>
-        <div>
+      <div className={`flex min-h-0 flex-1 flex-col ${featured ? "p-4" : "p-3"}`}>
+        <div className="min-h-0 flex-1">
           <p
             className={
               featured
@@ -78,25 +79,25 @@ export default function LaunchCard({
           >
             {mission}
           </p>
-          {rocketName && (
-            <p
-              className={
-                featured
-                  ? "mt-1 text-[11px] font-medium text-text-tertiary"
-                  : "mt-0.5 text-[10px] text-text-muted"
-              }
-            >
-              {rocketName}
+          {(rocketName || windowLabel) && featured && (
+            <p className="mt-1 text-[10px] leading-relaxed text-text-muted">
+              {[rocketName, windowLabel].filter(Boolean).join(" · ")}
             </p>
           )}
-          {windowLabel && featured && (
-            <p className="mt-1 text-[10px] text-text-muted">{windowLabel}</p>
+          {rocketName && !featured && (
+            <p className="mt-0.5 text-[10px] text-text-muted">{rocketName}</p>
           )}
-          {launch.brief && featured ? (
-            <LaunchBriefBlock brief={launch.brief} className="mt-2.5 line-clamp-2" />
+          {featured ? (
+            <LaunchBriefBlock
+              brief={resolveLaunchBrief(launch)}
+              inline
+              compact
+              maxLines={4}
+              className="mt-2.5"
+            />
           ) : null}
         </div>
-        <div className={featured ? "mt-3" : undefined}>
+        <div className={cn("shrink-0", featured ? "mt-3 border-t border-hairline/80 pt-3" : undefined)}>
           {launch.phase === "countdown" || launch.phase === "hold" ? (
             <>
               <p className="mb-1 text-[8px] font-bold uppercase tracking-[0.14em] text-text-muted">

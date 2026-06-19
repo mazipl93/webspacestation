@@ -7,6 +7,7 @@ import {
 } from "@/lib/ops/ops-outage-copy";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
 import StartyLaunchFeed from "@/components/discover/StartyLaunchFeed";
+import StartyLaunchNewsSection from "@/components/discover/StartyLaunchNewsSection";
 import {
   InteractiveToolsCrossLinks,
   ToolPageJsonLd,
@@ -17,6 +18,7 @@ import { buildToolPageMetadata } from "@/lib/seo/tool-metadata";
 import { getCoreOpsData } from "@/lib/ops/get-ops-data";
 import { getLaunchWssArticleLinks } from "@/lib/ops/launch-article-bridge";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
+import { getPublishedLaunchNewsArticles } from "@/lib/server/articles";
 
 const TOOL = getInteractiveTool("rocket-launches");
 
@@ -41,7 +43,10 @@ const DISCOVER_LINKS = [
 
 export default async function StartyPage() {
   const ops = await getCoreOpsData();
-  const articleLinks = await getLaunchWssArticleLinks(ops.launches);
+  const [articleLinks, launchNews] = await Promise.all([
+    getLaunchWssArticleLinks(ops.launches),
+    getPublishedLaunchNewsArticles(6),
+  ]);
   const primary = pickPrimaryLaunch(ops.launches);
 
   return (
@@ -69,6 +74,8 @@ export default async function StartyPage() {
             articleLinks={articleLinks}
           />
         )}
+
+        <StartyLaunchNewsSection articles={launchNews} />
 
         <section className="mt-10 grid gap-4 sm:grid-cols-2">
           {DISCOVER_LINKS.map(({ href, label, description, icon: Icon }) => (
