@@ -2185,6 +2185,30 @@ html[data-portal-theme] .site-cosmos-grain {
   .wss-nav-social-link:hover::after {
     opacity: 1;
   }
+
+  /* Mobilny dock social — klikalne ikony + osobny przycisk scroll-to-top */
+  .wss-social-mobile-dock-chip {
+    background: rgba(8, 12, 18, 0.82);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 6px 20px -8px rgba(0, 0, 0, 0.55);
+  }
+
+  .wss-social-mobile-scroll-top {
+    background: rgba(8, 12, 18, 0.82);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 6px 20px -8px rgba(0, 0, 0, 0.55);
+  }
+
+  .wss-social-mobile-scroll-top:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(12, 16, 24, 0.9);
+  }
 }
 
 /* ── Legacy white-alpha shorthands (kept so existing markup renders) ──── */

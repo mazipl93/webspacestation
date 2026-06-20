@@ -41,6 +41,7 @@ import {
   NavMobileAccordion,
 } from "@/components/layout/NavMenuPrimitives";
 import SocialIconLinks from "@/components/social/SocialIconLinks";
+import SocialMobileRail from "@/components/social/SocialMobileRail";
 
 const NAV_ICON_BTN =
   "flex h-11 w-11 items-center justify-center rounded-lg transition-colors duration-200 lg:h-8 lg:w-8";
@@ -682,6 +683,10 @@ export default function Navbar() {
           </div>
         </>
       ) : null}
+
+      <SocialMobileRail
+        suppressed={mobileOpen || searchOpen || notificationsOpen}
+      />
     </header>
   );
 }
