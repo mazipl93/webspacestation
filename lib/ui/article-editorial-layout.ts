@@ -20,7 +20,7 @@ export const ARTICLE_HERO_SHELL_WRAP =
   "overflow-hidden rounded-xl border border-hairline";
 
 /** Szerokość bloku czytelniczego (tytuł może być szerszy). */
-export const ARTICLE_PROSE_MAX = "max-w-[72ch]";
+export const ARTICLE_PROSE_MAX = "max-w-[72ch] min-w-0";
 
 /** Tytuł / meta pod okładką — pełna szerokość kolumny treści. */
 export const ARTICLE_HEADLINE_MAX = "max-w-[min(100%,52rem)]";

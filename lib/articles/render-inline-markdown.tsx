@@ -16,7 +16,7 @@ function trimAutolinkTrail(href: string, full: string): string {
 }
 
 const LINK_CLASS =
-  "font-medium text-accent-cyan underline decoration-accent-cyan/35 underline-offset-2 transition-colors hover:text-accent-blue hover:decoration-accent-blue/50";
+  "break-all font-medium text-accent-cyan underline decoration-accent-cyan/35 underline-offset-2 transition-colors hover:text-accent-blue hover:decoration-accent-blue/50";
 
 type InlinePart =
   | { kind: "text"; value: string }

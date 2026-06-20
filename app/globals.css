@@ -1828,6 +1828,7 @@ html[data-portal-theme] .site-cosmos-grain {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
@@ -1839,10 +1840,19 @@ html[data-portal-theme] .site-cosmos-grain {
     min-height: 100dvh;
     line-height: 1.55;
     letter-spacing: -0.011em;   /* tighten body slightly, Apple-like      */
+    overflow-x: clip;
   }
 
   body:has(.site-cosmos) {
     background-color: transparent;
+  }
+
+  /* Długie URL / ciągi bez spacji — nie mogą rozszerzać viewportu (mobile menu itd.) */
+  main p a,
+  main li a,
+  main figcaption a {
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 
   /* Headings inherit tighter optical tracking */
@@ -2211,7 +2221,17 @@ html[data-portal-theme] .site-cosmos-grain {
   }
 }
 
-/* Artykuł — większa, wyraźniejsza typografia na mobile */
+/* Artykuł — większa, wyraźniejsza typografia na mobile + łamanie długich URL */
+#article-body {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#article-body a {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
 @media (max-width: 639px) {
   #article-body {
     --text-body: 1.0625rem;
