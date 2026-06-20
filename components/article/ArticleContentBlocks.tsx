@@ -7,13 +7,13 @@ import { cn } from "@/lib/cn";
 
 const BODY_TEXT_STYLE = {
   fontSize: "var(--text-body)",
-  lineHeight: 1.8,
+  lineHeight: 1.82,
 } as const;
 
 const HEADING_CLASS: Record<HeadingLevel, string> = {
-  2: "mb-4 mt-8 text-[1.35rem] font-extrabold leading-snug text-text-primary sm:text-[1.5rem]",
-  3: "mb-3 mt-7 text-[1.15rem] font-bold leading-snug text-text-primary sm:text-[1.25rem]",
-  4: "mb-3 mt-6 text-[1.05rem] font-bold leading-snug text-text-primary",
+  2: "mb-4 mt-8 text-[1.5rem] font-extrabold leading-snug text-text-primary sm:text-[1.5rem]",
+  3: "mb-3 mt-7 text-[1.3rem] font-bold leading-snug text-text-primary sm:text-[1.25rem]",
+  4: "mb-3 mt-6 text-[1.15rem] font-bold leading-snug text-text-primary",
 };
 
 type ArticleContentBlocksProps = {
@@ -25,8 +25,8 @@ type ArticleContentBlocksProps = {
 
 export default function ArticleContentBlocks({
   blocks,
-  paragraphClassName = "mb-6 text-text-secondary",
-  listClassName = "mb-6 list-disc space-y-2 pl-6 text-text-secondary",
+  paragraphClassName = "mb-6 text-text-secondary max-sm:text-text-primary/88",
+  listClassName = "mb-6 list-disc space-y-2 pl-6 text-text-secondary max-sm:text-text-primary/88",
   itemClassName = "leading-relaxed",
 }: ArticleContentBlocksProps) {
   return (

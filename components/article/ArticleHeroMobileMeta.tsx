@@ -31,7 +31,7 @@ function ArticleHeroLeadCopy({ article }: { article: NewsArticle }) {
         <p
           className={cn(
             ARTICLE_PROSE_MAX,
-            "text-[15px] font-medium leading-snug text-text-secondary lg:text-[16px]",
+            "text-[15px] font-medium leading-snug text-text-secondary max-sm:text-[16px] lg:text-[16px]",
           )}
         >
           {subtitle}
@@ -41,7 +41,7 @@ function ArticleHeroLeadCopy({ article }: { article: NewsArticle }) {
         <p
           className={cn(
             ARTICLE_PROSE_MAX,
-            "pt-0.5 text-[14px] leading-relaxed text-text-secondary",
+            "pt-0.5 text-[14px] leading-relaxed text-text-secondary max-sm:text-[15px]",
           )}
         >
           {excerpt}
@@ -124,7 +124,7 @@ export default function ArticleHeroMobileMeta({
         <h1
           className={cn(
             ARTICLE_HEADLINE_MAX,
-            "text-balance text-[1.35rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-text-primary lg:text-[clamp(1.75rem,2.8vw,2.65rem)] lg:leading-[1.12]",
+            "text-balance text-[1.5rem] font-extrabold leading-[1.15] tracking-[-0.025em] text-text-primary lg:text-[clamp(1.75rem,2.8vw,2.65rem)] lg:leading-[1.12]",
           )}
         >
           {article.title}

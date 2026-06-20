@@ -60,7 +60,7 @@ export default function ArticlePageBodyMain({
               className="mb-7 border-l-[3px] pl-5 font-medium text-text-primary"
               style={{
                 fontSize: "var(--text-body)",
-                lineHeight: 1.78,
+                lineHeight: 1.82,
                 borderColor: meta.color,
               }}
             >
@@ -72,8 +72,8 @@ export default function ArticlePageBodyMain({
             segment.kind === "paragraph" ? (
               <p
                 key={`p-${i}`}
-                className="mb-6 text-text-secondary"
-                style={{ fontSize: "var(--text-body)", lineHeight: 1.8 }}
+                className="mb-6 text-text-secondary max-sm:text-text-primary/88"
+                style={{ fontSize: "var(--text-body)", lineHeight: 1.82 }}
               >
                 {renderInlineMarkdown(injectHubAnchors(segment.text, usedHubHrefs))}
               </p>

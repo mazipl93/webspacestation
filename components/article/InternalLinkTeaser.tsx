@@ -31,7 +31,7 @@ export default function InternalLinkTeaser({
 
   return (
     <p
-      className="mb-6 border-l-2 border-accent-blue/35 pl-4 text-[13.5px] leading-relaxed text-text-tertiary"
+      className="mb-6 border-l-2 border-accent-blue/35 pl-4 leading-relaxed text-text-tertiary max-sm:text-text-secondary"
       style={{ fontSize: "var(--text-body-sm, 0.9rem)" }}
     >
       {opener}{" "}

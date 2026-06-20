@@ -12,7 +12,7 @@ export default function SourceAttribution({ article }: { article: NewsArticle })
       className="mt-10 border-t border-hairline pt-6"
       aria-label="Źródło artykułu"
     >
-      <p className="text-[13px] leading-relaxed text-text-muted">
+      <p className="text-[13px] leading-relaxed text-text-muted max-sm:text-[14px]">
         Źródło:{" "}
         <a
           href={article.originalUrl}

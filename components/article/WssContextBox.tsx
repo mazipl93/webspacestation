@@ -15,7 +15,7 @@ export default function WssContextBox({ text }: { text: string }) {
           Kontekst WSS
         </p>
       </div>
-      <p className="text-[15px] leading-relaxed text-text-secondary">{text}</p>
+      <p className="text-[15px] leading-relaxed text-text-secondary max-sm:text-[16px]">{text}</p>
     </aside>
   );
 }

@@ -2211,6 +2211,14 @@ html[data-portal-theme] .site-cosmos-grain {
   }
 }
 
+/* Artykuł — większa, wyraźniejsza typografia na mobile */
+@media (max-width: 639px) {
+  #article-body {
+    --text-body: 1.0625rem;
+    --text-body-sm: 1rem;
+  }
+}
+
 /* ── Legacy white-alpha shorthands (kept so existing markup renders) ──── */
 .bg-white\/4  { background-color: rgba(255,255,255,0.04); }
 .bg-white\/5  { background-color: rgba(255,255,255,0.05); }
