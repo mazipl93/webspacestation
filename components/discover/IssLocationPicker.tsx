@@ -297,7 +297,7 @@ export default function IssLocationPicker({ location, onChange, className }: Pro
               ))
             : (
               <li className="iss-loc-picker__no-results">
-                Brak wyników dla „{query}"
+                {`Brak wyników dla „${query}"`}
               </li>
             )}
         </ul>
