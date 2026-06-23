@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Newspaper,
   FolderTree,
-  Image as ImageIcon,
   PlusCircle,
   ExternalLink,
   LogOut,
@@ -37,7 +36,6 @@ const NAV = [
   { href: "/admin/dashboard", label: "Pulpit", icon: LayoutDashboard },
   { href: "/admin/articles", label: "Artykuły", icon: Newspaper },
   { href: "/admin/categories", label: "Kategorie", icon: FolderTree },
-  { href: "/admin/media", label: "Media", icon: ImageIcon },
   { href: "/admin/users", label: "Użytkownicy", icon: Users, adminOnly: true },
 ] as const;
 

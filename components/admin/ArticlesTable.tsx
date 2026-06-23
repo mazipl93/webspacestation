@@ -7,6 +7,10 @@ import {
   CheckCircle,
   XCircle,
   ExternalLink,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Clock,
 } from "lucide-react";
 import type { AdminArticle } from "@/lib/admin/types";
 import {
@@ -33,8 +37,30 @@ function formatDate(iso: string): string {
   });
 }
 
+function isOverdue(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() > 24 * 60 * 60 * 1000;
+}
+
+export type ArticleSortKey = "title" | "createdAt" | "updatedAt" | "status";
+export type ArticleSortDir = "asc" | "desc";
+
 function canModerateStatus(status: AdminArticle["status"]): boolean {
   return status === "REVIEW" || status === "DRAFT" || status === "SCHEDULED";
+}
+
+function SortIcon({
+  col,
+  sortKey,
+  sortDir,
+}: {
+  col: ArticleSortKey;
+  sortKey: ArticleSortKey;
+  sortDir: ArticleSortDir;
+}) {
+  if (sortKey !== col) return <ChevronsUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
+  return sortDir === "asc"
+    ? <ChevronUp className="ml-1 inline h-3 w-3 text-accent-blue" />
+    : <ChevronDown className="ml-1 inline h-3 w-3 text-accent-blue" />;
 }
 
 export default function ArticlesTable({
@@ -47,6 +73,9 @@ export default function ArticlesTable({
   onReject,
   onArchive,
   canDelete = false,
+  sortKey = "createdAt",
+  sortDir = "desc",
+  onSort,
 }: {
   articles: AdminArticle[];
   busyId: string | null;
@@ -57,6 +86,9 @@ export default function ArticlesTable({
   onReject: (article: AdminArticle) => void;
   onArchive: (article: AdminArticle) => void;
   canDelete?: boolean;
+  sortKey?: ArticleSortKey;
+  sortDir?: ArticleSortDir;
+  onSort?: (key: ArticleSortKey) => void;
 }) {
   const allSelected =
     articles.length > 0 && articles.every((a) => selectedIds.has(a.id));
@@ -87,7 +119,20 @@ export default function ArticlesTable({
                 aria-label="Zaznacz wszystkie"
               />
             </th>
-            <th className="px-5 py-3 text-overline font-semibold">Tytuł / streszczenie</th>
+            <th className="px-5 py-3 text-overline font-semibold">
+              {onSort ? (
+                <button
+                  type="button"
+                  onClick={() => onSort("title")}
+                  className="inline-flex items-center hover:text-text-primary"
+                >
+                  Tytuł / streszczenie
+                  <SortIcon col="title" sortKey={sortKey} sortDir={sortDir} />
+                </button>
+              ) : (
+                "Tytuł / streszczenie"
+              )}
+            </th>
             <th className="hidden px-5 py-3 text-overline font-semibold md:table-cell">
               Typ
             </th>
@@ -97,9 +142,33 @@ export default function ArticlesTable({
             <th className="hidden px-5 py-3 text-overline font-semibold sm:table-cell">
               Czas
             </th>
-            <th className="px-5 py-3 text-overline font-semibold">Status</th>
+            <th className="px-5 py-3 text-overline font-semibold">
+              {onSort ? (
+                <button
+                  type="button"
+                  onClick={() => onSort("status")}
+                  className="inline-flex items-center hover:text-text-primary"
+                >
+                  Status
+                  <SortIcon col="status" sortKey={sortKey} sortDir={sortDir} />
+                </button>
+              ) : (
+                "Status"
+              )}
+            </th>
             <th className="hidden px-5 py-3 text-overline font-semibold md:table-cell">
-              Utworzono
+              {onSort ? (
+                <button
+                  type="button"
+                  onClick={() => onSort("createdAt")}
+                  className="inline-flex items-center hover:text-text-primary"
+                >
+                  Utworzono
+                  <SortIcon col="createdAt" sortKey={sortKey} sortDir={sortDir} />
+                </button>
+              ) : (
+                "Utworzono"
+              )}
             </th>
             <th className="px-5 py-3 text-right text-overline font-semibold">Akcje</th>
           </tr>
@@ -107,6 +176,7 @@ export default function ArticlesTable({
         <tbody>
           {articles.map((a) => {
             const canModerate = canModerateStatus(a.status);
+            const overdueReview = a.status === "REVIEW" && isOverdue(a.createdAt);
             const typeLabel = cmsArticleTypeLabel(a.source, a.originalUrl);
             const sourceLabel = a.source?.trim();
             const showAttribution = hasSourceAttribution(a.originalUrl);
@@ -132,12 +202,19 @@ export default function ArticlesTable({
                   />
                 </td>
                 <td className="max-w-md px-5 py-3.5">
-                  <Link
-                    href={`/admin/articles/${a.id}/edit`}
-                    className="line-clamp-2 text-meta font-medium text-text-primary transition-colors hover:text-accent-cyan"
-                  >
-                    {getAdminDisplayTitle(a)}
-                  </Link>
+                  <div className="flex items-start gap-1.5">
+                    {overdueReview && (
+                      <span title="Czeka na review ponad 24h" className="mt-0.5 shrink-0">
+                        <Clock className="h-3.5 w-3.5 text-red-400" aria-hidden />
+                      </span>
+                    )}
+                    <Link
+                      href={`/admin/articles/${a.id}/edit`}
+                      className="line-clamp-2 text-meta font-medium text-text-primary transition-colors hover:text-accent-cyan"
+                    >
+                      {getAdminDisplayTitle(a)}
+                    </Link>
+                  </div>
                   {summary ? (
                     <p className="mt-1 line-clamp-2 text-caption leading-snug text-text-tertiary">
                       {summary}

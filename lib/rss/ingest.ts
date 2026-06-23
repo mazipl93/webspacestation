@@ -82,8 +82,13 @@ async function loadDedupeSets(): Promise<{
   slugs: Set<string>;
 
 }> {
+  // Limit to last 90 days — originalUrl is UNIQUE in DB so the constraint handles
+  // deduplication for articles older than 90 days without loading them all into memory.
+  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
   const rows = await prisma.article.findMany({
+
+    where: { publishedAt: { gte: cutoff } },
 
     select: { originalUrl: true, title: true, slug: true },
 

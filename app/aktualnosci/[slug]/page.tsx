@@ -114,9 +114,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: canonical,
       title: ogTitle,
       description,
-      images: [{ url: article.image, width: 1280, height: 720 }],
+      images: [{ url: article.image }],
       type: "article",
       locale: "pl_PL",
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt ?? article.publishedAt,
+      authors: article.publicByline?.name
+        ? [article.publicByline.name]
+        : article.authorByline
+          ? [article.authorByline]
+          : undefined,
+      section: catMeta(article.category).label,
     },
     twitter: {
       card: "summary_large_image",

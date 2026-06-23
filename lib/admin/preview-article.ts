@@ -49,8 +49,6 @@ export function resolvePreviewImageFromForm(
 export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
   const { form, categories, contentOrigin, articleId, bylineAuthors } = input;
   const category = previewCategorySlug(form.categoryId, categories);
-  const source = form.sourceName.trim() || undefined;
-  const originalUrl = form.sourceUrl.trim() || undefined;
   const paragraphs = splitContentParagraphs(form.content);
   const now = new Date().toISOString();
   const slug = form.slug.trim() || "podglad";
@@ -74,10 +72,7 @@ export function formToPreviewArticle(input: PreviewArticleInput): NewsArticle {
     featured: form.featured,
     heroPosition: form.heroPosition,
     content: paragraphs.length > 0 ? paragraphs : undefined,
-    contextNote: form.contextNote.trim() || undefined,
     contentOrigin: contentOrigin ?? "EDITORIAL",
-    source,
-    originalUrl,
     coverImageCredit: form.coverImageCredit.trim() || undefined,
     imageCredit,
     authorByline: form.authorByline.trim() || undefined,

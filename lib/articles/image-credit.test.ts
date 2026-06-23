@@ -29,14 +29,19 @@ describe("image credit resolution", () => {
     assert.ok(credit?.includes("NASA"));
   });
 
-  it("resolveImageCreditFromForm uses form field first", () => {
+  it("resolveImageCreditFromForm returns manual caption", () => {
     assert.equal(
       resolveImageCreditFromForm({
         coverImageCredit: "WSS / redakcja",
-        sourceName: "",
-        sourceUrl: "",
       }),
       "WSS / redakcja"
+    );
+  });
+
+  it("resolveImageCreditFromForm returns undefined when empty", () => {
+    assert.equal(
+      resolveImageCreditFromForm({ coverImageCredit: "" }),
+      undefined
     );
   });
 });

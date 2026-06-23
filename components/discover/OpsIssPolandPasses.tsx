@@ -1,6 +1,7 @@
 "use client";
 
-import { Eye, Radio, Satellite } from "lucide-react";
+import { useState } from "react";
+import { Eye, Satellite } from "lucide-react";
 import { cn } from "@/lib/cn";
 import {
   formatPassCompact,
@@ -8,12 +9,10 @@ import {
   formatPassPeak,
   formatPassSummary,
   formatPassWindow,
-  passBadgeClass,
-  passBadgeMeta,
 } from "@/lib/ops/format-iss-pass";
 import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
-import { POLAND_OBSERVER } from "@/lib/ops/iss-poland-passes.types";
 import { useIssPolandPasses } from "@/hooks/useIssPolandPasses";
+import IssLocationPicker, { type IssLocation } from "@/components/discover/IssLocationPicker";
 
 type Props = {
   limit?: number;
@@ -23,16 +22,14 @@ type Props = {
   initialComputedAt?: string | null;
 };
 
-function PassBadge({ kind, small }: { kind: IssPolandPass["observationKind"]; small?: boolean }) {
-  const meta = passBadgeMeta(kind);
+function VisibleBadge({ small }: { small?: boolean }) {
   return (
     <span
-      className={cn("ops-iss-passes__badge", passBadgeClass(kind), small && "ops-iss-passes__badge--sm")}
-      title={meta.hint}
+      className={cn("ops-iss-passes__badge ops-iss-passes__badge--visible", small && "ops-iss-passes__badge--sm")}
+      title="Ciemne niebo, ISS oświetlona — widoczna gołym okiem"
     >
-      {kind === "visible" ? <Eye size={10} aria-hidden /> : null}
-      {kind === "daylight" ? <Radio size={10} aria-hidden /> : null}
-      {meta.label}
+      <Eye size={10} aria-hidden />
+      Widoczny
     </span>
   );
 }
@@ -78,10 +75,15 @@ export default function OpsIssPolandPasses({
 }: Props) {
   const compact = variant === "compact";
   const sidebar = variant === "sidebar";
+
+  const [location, setLocation] = useState<IssLocation | null>(null);
+
   const { passes, computedAt, tleAt, loading } = useIssPolandPasses({
     limit: sidebar ? Math.max(limit, 8) : limit,
-    initialPasses,
-    initialComputedAt,
+    initialPasses: location ? [] : initialPasses,
+    initialComputedAt: location ? null : initialComputedAt,
+    lat: location?.lat,
+    lon: location?.lon,
   });
 
   return (
@@ -98,13 +100,13 @@ export default function OpsIssPolandPasses({
         <div className="min-w-0">
           <p className="ops-iss-passes__kicker">
             <Satellite size={compact ? 11 : 13} aria-hidden />
-            Przeloty nad Polską
+            {location ? `Widoczne z: ${location.name}` : "Widoczne z Polski"}
           </p>
           {!compact && (
             <p className="ops-iss-passes__sub">
               {sidebar
-                ? `Najbliższe 72 h · elewacja ze środka PL`
-                : `Tor nad PL · elewacja z ${POLAND_OBSERVER.city} · 72 h`}
+                ? `Najbliższe 10 dni · tylko przeloty widoczne gołym okiem`
+                : `Ciemne niebo + ISS oświetlona · 10 dni naprzód`}
             </p>
           )}
         </div>
@@ -114,6 +116,14 @@ export default function OpsIssPolandPasses({
           compact={compact || sidebar}
         />
       </header>
+
+      {!compact && (
+        <IssLocationPicker
+          location={location}
+          onChange={setLocation}
+          className="ops-iss-passes__location"
+        />
+      )}
 
       {loading && passes.length === 0 ? (
         <div className="ops-iss-passes__skeleton" aria-hidden>
@@ -129,7 +139,9 @@ export default function OpsIssPolandPasses({
         </div>
       ) : passes.length === 0 ? (
         <p className="ops-iss-passes__empty">
-          Brak przelotów w najbliższych 72 h — sprawdź ponownie za chwilę.
+          {location
+            ? `Brak widocznych przelotów nad ${location.name} w najbliższych 10 dniach.`
+            : "Brak widocznych przelotów w najbliższych 10 dniach — latem w Polsce to normalne (białe noce). Sprawdź ponownie za kilka dni."}
         </p>
       ) : sidebar ? (
         <ol className="ops-iss-passes__sidebar-list">
@@ -145,7 +157,7 @@ export default function OpsIssPolandPasses({
                   {formatPassDuration(pass.durationSec)} nad PL
                 </p>
               </div>
-              <PassBadge kind={pass.observationKind} small />
+              <VisibleBadge small />
             </li>
           ))}
         </ol>
@@ -154,7 +166,7 @@ export default function OpsIssPolandPasses({
           {passes.map((pass) => (
             <li key={pass.id} className="ops-iss-passes__row-compact-wrap">
               <span className="ops-iss-passes__row-compact">{formatPassCompact(pass)}</span>
-              <PassBadge kind={pass.observationKind} small />
+              <VisibleBadge small />
             </li>
           ))}
         </ol>
@@ -172,7 +184,7 @@ export default function OpsIssPolandPasses({
                     {formatPassSummary(pass)} · tor {formatPassWindow(pass)}
                   </p>
                 </div>
-                <PassBadge kind={pass.observationKind} />
+                <VisibleBadge />
               </div>
               <p className="ops-iss-passes__detail">
                 {formatPassDuration(pass.durationSec)} nad terytorium Polski

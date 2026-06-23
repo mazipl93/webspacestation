@@ -7,7 +7,7 @@ import ArticleListingPageShell, {
 const LISTING: ArticleListingConfig = {
   title: "Nauka · jak działa kosmos",
   description:
-    "Evergreeny o fizyce kosmosu, astronomii od podstaw i technologiach orbitalnych. Przewodniki bez newsów z 24h.",
+    "Evergreeny o fizyce kosmosu, astronomii od podstaw i technologiach orbitalnych. Przewodniki i wyjaśnienia — bez bieżących newsów.",
   path: "/nauka",
 };
 

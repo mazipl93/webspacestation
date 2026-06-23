@@ -16,12 +16,16 @@ type Options = {
   limit?: number;
   initialPasses?: IssPolandPass[];
   initialComputedAt?: string | null;
+  lat?: number;
+  lon?: number;
 };
 
 export function useIssPolandPasses({
   limit = 4,
   initialPasses = [],
   initialComputedAt = null,
+  lat,
+  lon,
 }: Options = {}) {
   const [passes, setPasses] = useState<IssPolandPass[]>(initialPasses);
   const [computedAt, setComputedAt] = useState<string | null>(initialComputedAt);
@@ -31,10 +35,20 @@ export function useIssPolandPasses({
   useEffect(() => {
     let cancelled = false;
 
+    const buildUrl = () => {
+      const params = new URLSearchParams({ limit: String(limit) });
+      if (lat !== undefined && lon !== undefined) {
+        params.set("lat", lat.toFixed(4));
+        params.set("lon", lon.toFixed(4));
+      }
+      return `${PASSES_URL}?${params.toString()}`;
+    };
+
     const load = async () => {
       if (typeof document !== "undefined" && document.hidden) return;
+      setLoading(true);
       try {
-        const res = await fetch(`${PASSES_URL}?limit=${limit}`, { cache: "no-store" });
+        const res = await fetch(buildUrl(), { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as Payload;
         if (cancelled) return;
@@ -59,7 +73,7 @@ export function useIssPolandPasses({
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [limit]);
+  }, [limit, lat, lon]);
 
   return { passes, computedAt, tleAt, loading };
 }

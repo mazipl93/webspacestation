@@ -26,10 +26,7 @@ const BASE_FORM: ArticleFormValues = {
   slug: "starship-flight-8",
   subtitle: "Podtytuł testowy",
   excerpt: "Lead artykułu dla podglądu.",
-  socialCardTitle: "",
-  socialCardHook: "",
   content: "Pierwszy akapit treści.\n\nDrugi akapit treści.",
-  contextNote: "",
   coverImage: "https://example.com/cover.jpg",
   coverImageCredit: "",
   authorByline: "",
@@ -42,8 +39,6 @@ const BASE_FORM: ArticleFormValues = {
   weekTopic: false,
   readingTime: 4,
   tagsText: "SpaceX, Starship",
-  sourceName: "SpaceNews",
-  sourceUrl: "https://spacenews.com/example",
   publishAtLocal: "",
 };
 
@@ -60,8 +55,6 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
     assert.equal(article.category, "misje");
     assert.equal(article.content?.length, 2);
     assert.equal(article.tags?.join(","), "SpaceX,Starship");
-    assert.equal(article.source, "SpaceNews");
-    assert.equal(article.originalUrl, "https://spacenews.com/example");
     assert.equal(article.contentOrigin, "RSS");
     assert.equal(article.image, "https://example.com/cover.jpg");
   });
@@ -96,14 +89,6 @@ describe("formToPreviewArticle (PR11 — live preview)", () => {
       resolveImage({ image: "", category: "misje" }, { withFallback: false }),
       null
     );
-  });
-
-  it("builds image credit when source URL present", () => {
-    const article = formToPreviewArticle({
-      form: BASE_FORM,
-      categories: CATEGORIES,
-    });
-    assert.ok(article.imageCredit?.includes("SpaceNews"));
   });
 
   it("uses manual coverImageCredit when set", () => {

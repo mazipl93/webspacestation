@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { NewsArticle } from "@/types";
 import SourceAttribution from "@/components/article/SourceAttribution";
-import WssContextBox from "@/components/article/WssContextBox";
 import ArticleContentBlocks from "@/components/article/ArticleContentBlocks";
 import ArticleFigure from "@/components/article/ArticleFigure";
 import ArticleVideoEmbed from "@/components/article/ArticleVideoEmbed";
@@ -116,10 +115,6 @@ export default function ArticlePageBodyMain({
               />
             )
           )}
-
-          {article.contextNote ? (
-            <WssContextBox text={article.contextNote} />
-          ) : null}
 
           {hasSourceAttribution(article.originalUrl) ? (
             <SourceAttribution article={article} />

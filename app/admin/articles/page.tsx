@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Archive, CheckCircle, PlusCircle, Trash2 } from "lucide-react";
+import { Archive, CheckCircle, PlusCircle, Trash2, Search, X, User } from "lucide-react";
 import {
   isBulkArchivableStatus,
   isBulkPublishableStatus,
@@ -12,7 +12,7 @@ import { adminApi, ApiError } from "@/lib/admin/api";
 import { traceArticleCmsRender } from "@/lib/admin/article-trace";
 import type { AdminArticle } from "@/lib/admin/types";
 import PageHeader from "@/components/admin/PageHeader";
-import ArticlesTable from "@/components/admin/ArticlesTable";
+import ArticlesTable, { type ArticleSortKey, type ArticleSortDir } from "@/components/admin/ArticlesTable";
 import ArchiveArticlesTable from "@/components/admin/ArchiveArticlesTable";
 import { Banner, Button } from "@/components/admin/primitives";
 import CmsPanel from "@/components/admin/CmsPanel";
@@ -20,6 +20,40 @@ import { useAdminAuth } from "@/components/admin/AdminAuthProvider";
 import { canDeleteArticle } from "@/lib/auth/permissions";
 import { cn } from "@/lib/cn";
 import { isPublishScheduleDue } from "@/lib/admin/schedule-datetime";
+
+const SORT_KEY_STORAGE = "cms_articles_sort_key";
+const SORT_DIR_STORAGE = "cms_articles_sort_dir";
+
+function readStoredSort(): { key: ArticleSortKey; dir: ArticleSortDir } {
+  if (typeof window === "undefined") return { key: "createdAt", dir: "desc" };
+  const k = window.localStorage.getItem(SORT_KEY_STORAGE) as ArticleSortKey | null;
+  const d = window.localStorage.getItem(SORT_DIR_STORAGE) as ArticleSortDir | null;
+  const validKeys: ArticleSortKey[] = ["title", "createdAt", "updatedAt", "status"];
+  return {
+    key: k && validKeys.includes(k) ? k : "createdAt",
+    dir: d === "asc" || d === "desc" ? d : "desc",
+  };
+}
+
+function sortArticles(
+  list: AdminArticle[],
+  key: ArticleSortKey,
+  dir: ArticleSortDir,
+): AdminArticle[] {
+  return [...list].sort((a, b) => {
+    let cmp = 0;
+    if (key === "title") {
+      cmp = a.title.localeCompare(b.title, "pl");
+    } else if (key === "createdAt") {
+      cmp = a.createdAt.localeCompare(b.createdAt);
+    } else if (key === "updatedAt") {
+      cmp = a.updatedAt.localeCompare(b.updatedAt);
+    } else if (key === "status") {
+      cmp = a.status.localeCompare(b.status);
+    }
+    return dir === "asc" ? cmp : -cmp;
+  });
+}
 
 const FILTERS = [
   { id: "draft", label: "Szkic", status: "DRAFT" },
@@ -33,7 +67,7 @@ const FILTERS = [
 type FilterId = (typeof FILTERS)[number]["id"];
 
 export default function ArticlesListPage() {
-  const { role } = useAdminAuth();
+  const { role, userId } = useAdminAuth();
   const mayDelete = canDeleteArticle(role);
   const mayPublish = canPublishArticle(role);
 
@@ -48,8 +82,45 @@ export default function ArticlesListPage() {
   const [bulkArchiveBusy, setBulkArchiveBusy] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [reviewQueueCount, setReviewQueueCount] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortKey, setSortKey] = useState<ArticleSortKey>("createdAt");
+  const [sortDir, setSortDir] = useState<ArticleSortDir>("desc");
+  const [onlyMine, setOnlyMine] = useState(false);
 
   const isArchiveView = filter === "archive";
+
+  // Initialise sort from localStorage on mount
+  useEffect(() => {
+    const stored = readStoredSort();
+    setSortKey(stored.key);
+    setSortDir(stored.dir);
+  }, []);
+
+  const displayedArticles = useMemo(() => {
+    let list = articles;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter((a) => a.title.toLowerCase().includes(q));
+    }
+    if (onlyMine && userId) {
+      list = list.filter((a) => a.author.id === userId);
+    }
+    // In review view sort oldest first by default unless user overrode
+    const effectiveKey = filter === "review" && sortKey === "createdAt" ? "createdAt" : sortKey;
+    const effectiveDir = filter === "review" && sortKey === "createdAt" ? "asc" : sortDir;
+    return sortArticles(list, effectiveKey, effectiveDir);
+  }, [articles, searchQuery, onlyMine, userId, sortKey, sortDir, filter]);
+
+  const handleSort = (key: ArticleSortKey) => {
+    const newDir: ArticleSortDir =
+      sortKey === key && sortDir === "asc" ? "desc" : sortKey === key ? "asc" : "desc";
+    setSortKey(key);
+    setSortDir(newDir);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SORT_KEY_STORAGE, key);
+      window.localStorage.setItem(SORT_DIR_STORAGE, newDir);
+    }
+  };
 
   const dueScheduledCount = articles.filter(
     (a) => a.status === "SCHEDULED" && isPublishScheduleDue(a.publishAt)
@@ -130,10 +201,15 @@ export default function ArticlesListPage() {
     setBusyId(article.id);
     try {
       await adminApi.updateArticle(article.id, { status: "PUBLISHED" });
-      await load(filter);
+      setArticles((prev) =>
+        filter === "all" || filter === "published"
+          ? prev.map((a) => a.id === article.id ? { ...a, status: "PUBLISHED" as const } : a)
+          : prev.filter((a) => a.id !== article.id)
+      );
       await refreshReviewCount();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się opublikować.");
+      await load(filter);
     } finally {
       setBusyId(null);
     }
@@ -144,10 +220,11 @@ export default function ArticlesListPage() {
     setBusyId(article.id);
     try {
       await adminApi.archiveArticle(article.id);
-      await load(filter);
+      setArticles((prev) => prev.filter((a) => a.id !== article.id));
       await refreshReviewCount();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się odrzucić.");
+      await load(filter);
     } finally {
       setBusyId(null);
     }
@@ -179,10 +256,11 @@ export default function ArticlesListPage() {
     setBusyId(article.id);
     try {
       await adminApi.archiveArticle(article.id);
-      await load(filter);
+      setArticles((prev) => prev.filter((a) => a.id !== article.id));
       await refreshReviewCount();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się zarchiwizować.");
+      await load(filter);
     } finally {
       setBusyId(null);
     }
@@ -236,11 +314,17 @@ export default function ArticlesListPage() {
       } else if (partial) {
         setError(partial);
       }
-      await load(filter);
+      const idSet = new Set(ids);
+      setArticles((prev) =>
+        filter === "all" || filter === "published"
+          ? prev.map((a) => idSet.has(a.id) ? { ...a, status: "PUBLISHED" as const } : a)
+          : prev.filter((a) => !idSet.has(a.id))
+      );
       await refreshReviewCount();
       setSelectedIds(new Set());
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Nie udało się opublikować zaznaczonych.");
+      await load(filter);
     } finally {
       setBulkPublishBusy(false);
     }
@@ -267,13 +351,15 @@ export default function ArticlesListPage() {
       } else if (partial) {
         setError(partial);
       }
-      await load(filter);
+      const archiveIdSet = new Set(ids);
+      setArticles((prev) => prev.filter((a) => !archiveIdSet.has(a.id)));
       await refreshReviewCount();
       setSelectedIds(new Set());
     } catch (e) {
       setError(
         e instanceof ApiError ? e.message : "Nie udało się zarchiwizować zaznaczonych."
       );
+      await load(filter);
     } finally {
       setBulkArchiveBusy(false);
     }
@@ -468,6 +554,49 @@ export default function ArticlesListPage() {
         </div>
       ) : null}
 
+      {!isArchiveView && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+            <input
+              type="search"
+              placeholder="Szukaj po tytule…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-[0.55rem] border border-hairline bg-space-surface py-2 pl-8 pr-8 text-meta text-text-primary placeholder:text-text-muted focus:border-accent-blue/60 focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
+                aria-label="Wyczyść wyszukiwanie"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOnlyMine((v) => !v)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-badge border px-3 py-1.5 text-meta font-medium transition-colors",
+              onlyMine
+                ? "border-accent-blue/50 bg-accent-blue/10 text-accent-blue"
+                : "border-hairline text-text-tertiary hover:text-text-secondary"
+            )}
+          >
+            <User className="h-3.5 w-3.5" />
+            Tylko moje
+          </button>
+          {(searchQuery || onlyMine) && (
+            <span className="text-caption text-text-muted">
+              {displayedArticles.length} z {articles.length}
+            </span>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="card-surface px-6 py-12 text-center text-meta text-text-tertiary">
           Ładowanie…
@@ -481,7 +610,7 @@ export default function ArticlesListPage() {
         />
       ) : (
         <ArticlesTable
-          articles={articles}
+          articles={displayedArticles}
           busyId={busyId}
           selectedIds={selectedIds}
           onToggle={handleToggle}
@@ -490,6 +619,9 @@ export default function ArticlesListPage() {
           onReject={handleReject}
           onArchive={handleArchive}
           canDelete={mayDelete}
+          sortKey={sortKey}
+          sortDir={sortDir}
+          onSort={handleSort}
         />
       )}
     </div>

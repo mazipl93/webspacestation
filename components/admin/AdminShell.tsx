@@ -116,7 +116,7 @@ export default function AdminShell({
           className={cn(
             "mx-auto w-full flex-1 transition-[max-width] duration-300 ease-out",
             isArticleEditor
-              ? "max-w-none px-4 py-5 md:px-6 lg:px-8"
+              ? "max-w-none p-0"
               : "px-6 py-8 md:px-10 md:py-10",
             !isArticleEditor &&
               (collapsed ? "max-w-none xl:max-w-[1600px]" : "max-w-5xl")

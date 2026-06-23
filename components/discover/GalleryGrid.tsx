@@ -35,6 +35,7 @@ export default function GalleryGrid({ items }: Props) {
               src={hero.imageUrl}
               alt={hero.title}
               fill
+              unoptimized
               className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
               sizes="(max-width: 1320px) 100vw, 1320px"
               priority
@@ -65,6 +66,7 @@ export default function GalleryGrid({ items }: Props) {
                 src={item.imageUrl}
                 alt={item.title}
                 fill
+                unoptimized
                 className="object-cover opacity-90 transition-transform group-hover:scale-105"
                 sizes="280px"
               />

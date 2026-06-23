@@ -29,5 +29,10 @@ export function solarElevationDeg(time: Date, latDeg: number, lonDeg: number): n
   return Math.asin(Math.max(-1, Math.min(1, sinAlt))) / rad;
 }
 
-/** Zmierzch cywilny — ISS widoczna gołym okiem zwykle gdy Słońce < −6°. */
-export const ISS_VISIBLE_SUN_MAX_DEG = -6;
+/**
+ * Zmierzch nautyczny — ISS widoczna gołym okiem gdy Słońce < −12°.
+ * W Polsce latem Słońce nie schodzi poniżej −6° (zmierzch cywilny) przez całą dobę,
+ * więc próg −6° powodował, że wszystkie przeloty dostawały "daylight" i visible=false.
+ * Próg −12° daje realne "ciemne niebo" obserwowalne przez obserwatorów.
+ */
+export const ISS_VISIBLE_SUN_MAX_DEG = -12;

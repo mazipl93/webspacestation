@@ -158,12 +158,6 @@ export const adminApi = {
     });
   },
 
-  reprocessRssArticle(id: string) {
-    return request<AdminArticle>(`/api/articles/${id}/reprocess-rss`, {
-      method: "POST",
-    });
-  },
-
   /** Publish every SCHEDULED article that is past publishAt (same as cron worker). */
   publishDueScheduled() {
     return request<{

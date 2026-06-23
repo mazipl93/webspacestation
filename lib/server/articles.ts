@@ -133,6 +133,69 @@ const articleSelect = {
   },
 } satisfies Prisma.ArticleSelect;
 
+/**
+ * Admin list — bez `content` (setki KB na artykuł; CMS ładuje całą pulę przy każdym filtrze).
+ * Zawiera pola edytorskie (socialCardTitle, socialCardHook) niezbędne dla AdminArticle,
+ * ale pomija treść artykułu — ta jest pobierana tylko przez getArticleById().
+ */
+const articleAdminListSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  subtitle: true,
+  excerpt: true,
+  socialCardTitle: true,
+  socialCardHook: true,
+  contextNote: true,
+  coverImage: true,
+  coverImageCredit: true,
+  authorByline: true,
+  bylineUserId: true,
+  bylineUser: {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      avatarUrl: true,
+    },
+  },
+  status: true,
+  featured: true,
+  heroPosition: true,
+  weekTopicPosition: true,
+  weekTopic: true,
+  score: true,
+  readingTime: true,
+  tags: true,
+  createdAt: true,
+  updatedAt: true,
+  publishedAt: true,
+  publishAt: true,
+  source: true,
+  originalUrl: true,
+  contentOrigin: true,
+  contentKind: true,
+  facebookPostId: true,
+  facebookPostedAt: true,
+  instagramPostId: true,
+  instagramPostedAt: true,
+  category: {
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      colorTheme: true,
+    },
+  },
+  author: {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+    },
+  },
+} satisfies Prisma.ArticleSelect;
+
 /** List/feed reads — bez `content` (setki KB na artykuł; homepage ładuje całą pulę). */
 const articleListSelect = {
   id: true,
@@ -172,6 +235,11 @@ export type ArticleWithRelations = Prisma.ArticleGetPayload<{
 
 export type ArticleListItem = Prisma.ArticleGetPayload<{
   select: typeof articleListSelect;
+}>;
+
+/** Kształt zwracany przez getArticlesForAdmin() — bez pola content. */
+export type ArticleAdminListItem = Prisma.ArticleGetPayload<{
+  select: typeof articleAdminListSelect;
 }>;
 
 /** Lean rows for sitemap.xml — no schedule tick, no heavy joins. */
@@ -370,6 +438,7 @@ async function queryPublishedArticlesFromDb(): Promise<ArticleListItem[]> {
     const rows = await prisma.article.findMany({
       where: PUBLISHED_ARTICLE_WHERE,
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
+      take: 500,
       select: articleListSelect,
     });
     traceArticleFetchPublic({ scope: "published-all", count: rows.length });
@@ -706,7 +775,7 @@ export async function getArticlesByCategoryPage(
       String(pageSize),
       "v1",
     ],
-    { tags: [ARTICLES_TAG, categoryTag(categorySlug)] },
+    { tags: [categoryTag(categorySlug)] },
   )();
 }
 
@@ -785,7 +854,7 @@ export async function getArticlesByCategory(
   return unstable_cache(
     () => queryArticlesByCategoryFromDb(categorySlug, options.limit),
     ["category-articles", categorySlug, limitKey, "v3-list-no-content"],
-    { tags: [ARTICLES_TAG, categoryTag(categorySlug)] },
+    { tags: [categoryTag(categorySlug)] },
   )();
 }
 
@@ -847,12 +916,14 @@ export function getCategories(): Promise<CategoryRecord[]> {
 export interface AdminArticleQuery {
   status?: ArticleStatus | "ALL";
   categorySlug?: string;
+  take?: number;
+  skip?: number;
 }
 
 /** Admin listing: any status, optional status + category filters, recently edited first. */
 export async function getArticlesForAdmin(
   query: AdminArticleQuery = {}
-): Promise<ArticleWithRelations[]> {
+): Promise<ArticleAdminListItem[]> {
   await maybeTickScheduledPublish();
   const where: Prisma.ArticleWhereInput = {};
   if (query.status && query.status !== "ALL") {
@@ -866,7 +937,9 @@ export async function getArticlesForAdmin(
   return prisma.article.findMany({
     where,
     orderBy: { updatedAt: "desc" },
-    select: articleSelect,
+    take: query.take ?? 100,
+    skip: query.skip ?? 0,
+    select: articleAdminListSelect,
   }).then((rows) => {
     traceArticleFetchCms({
       status: query.status ?? "ALL",
@@ -1229,10 +1302,26 @@ export async function updateArticle(
     input.heroPosition >= 1 &&
     input.heroPosition <= 4
   ) {
-    await prisma.article.updateMany({
-      where: { heroPosition: input.heroPosition, id: { not: id } },
-      data: { heroPosition: 0 },
-    });
+    if (input.heroPosition === 1) {
+      // Push-to-front: 4→0, 3→4, 2→3, 1→2 (od tyłu, żeby nie było kolizji)
+      for (const [from, to] of [
+        [4, 0],
+        [3, 4],
+        [2, 3],
+        [1, 2],
+      ] as const) {
+        await prisma.article.updateMany({
+          where: { heroPosition: from, id: { not: id } },
+          data: { heroPosition: to },
+        });
+      }
+    } else {
+      // Dla pozycji 2–4: wyczyść konflikt (tryb ręczny)
+      await prisma.article.updateMany({
+        where: { heroPosition: input.heroPosition, id: { not: id } },
+        data: { heroPosition: 0 },
+      });
+    }
   }
 
   if (

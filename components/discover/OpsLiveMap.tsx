@@ -49,13 +49,11 @@ function MapViewController({
   iss,
   pins,
   focusPinId,
-  followIss = false,
   onUserMoved,
 }: {
   iss?: OpsIssPosition | null;
   pins: OpsMapPin[];
   focusPinId?: string | null;
-  followIss?: boolean;
   onUserMoved?: () => void;
 }) {
   const map = useMap();
@@ -83,10 +81,10 @@ function MapViewController({
     if (!initDoneRef.current) {
       map.setView([iss.latitude, iss.longitude], 3, { animate: false });
       initDoneRef.current = true;
-    } else if (followIss) {
-      map.panTo([iss.latitude, iss.longitude], { animate: true, duration: 2 });
     }
-  }, [iss, pins, map, focusPinId, followIss]);
+    // Nie panTo co 5s — marker przesuwa się sam przez zaktualizowanie prop `position`.
+    // Viewport pozostaje nieruchomy, co eliminuje ciągłe drganie mapy.
+  }, [iss, pins, map, focusPinId]);
 
   return null;
 }
@@ -262,6 +260,7 @@ export default function OpsLiveMap({
   const overlayOpen = Boolean(pinDetail);
   const [isFollowing, setIsFollowing] = useState(followIss);
   const [orbitReady, setOrbitReady] = useState(false);
+  const mapRef = useRef<L.Map | null>(null);
   const { iss: liveIss, orbitPast, orbitFuture } = useLiveIssTrack(
     iss ?? null,
     issOrbitPast ?? issOrbit,
@@ -283,8 +282,9 @@ export default function OpsLiveMap({
         : prepareOrbitSegmentsForLeaflet(orbitFuture, refLon),
     [orbitFuture, refLon],
   );
-  const showOrbit =
-    orbitReady && refLon != null && (displayPast.length > 0 || displayFuture.length > 0);
+  const hasOrbitData = refLon != null && (displayPast.length > 0 || displayFuture.length > 0);
+  /** Opacity guard: polylines render immediately (no layout flash), fade in when ready. */
+  const orbitOpacity = orbitReady ? 1 : 0;
   const issPin = pins.find((p) => p.kind === "iss");
   const cosmodromePins = pins.filter((p) => p.kind === "cosmodrome");
   const extraPadPins = pins.filter((p) => p.kind === "pad");
@@ -378,6 +378,7 @@ export default function OpsLiveMap({
       style={useFixedShell ? undefined : { height }}
     >
       <MapContainer
+        ref={mapRef}
         center={initialCenterRef.current ?? center}
         zoom={3}
         scrollWheelZoom={interactive}
@@ -395,7 +396,6 @@ export default function OpsLiveMap({
           iss={liveIss}
           pins={effectivePins}
           focusPinId={focusPinId}
-          followIss={isFollowing}
           onUserMoved={followIss ? () => setIsFollowing(false) : undefined}
         />
         <PinFocusController focusPinId={focusPinId} pins={effectivePins} />
@@ -403,7 +403,7 @@ export default function OpsLiveMap({
           <OverlayPanAdjust focusPinId={focusPinId} overlayOpen={overlayOpen} />
         ) : null}
 
-        {showOrbit
+        {hasOrbitData
           ? displayPast.map((segment, i) => (
           <Polyline
             key={`orbit-past-${i}`}
@@ -412,7 +412,7 @@ export default function OpsLiveMap({
               ...ORBIT_LINE_OPTS,
               color: "#f87171",
               weight: 2.75,
-              opacity: 0.95,
+              opacity: 0.95 * orbitOpacity,
               lineCap: "round",
               lineJoin: "round",
             }}
@@ -420,7 +420,7 @@ export default function OpsLiveMap({
         ))
           : null}
 
-        {showOrbit
+        {hasOrbitData
           ? displayFuture.map((segment, i) => (
           <Polyline
             key={`orbit-future-${i}`}
@@ -429,7 +429,7 @@ export default function OpsLiveMap({
               ...ORBIT_LINE_OPTS,
               color: "#ef4444",
               weight: 2,
-              opacity: 0.55,
+              opacity: 0.55 * orbitOpacity,
               lineCap: "round",
               lineJoin: "round",
               dashArray: "6 8",
@@ -496,7 +496,17 @@ export default function OpsLiveMap({
 
       {followIss && !isFollowing && liveIss && !overlayOpen && (
         <button
-          onClick={() => setIsFollowing(true)}
+          onClick={() => {
+            setIsFollowing(true);
+            if (mapRef.current && liveIss) {
+              const currentZoom = mapRef.current.getZoom();
+              mapRef.current.setView(
+                [liveIss.latitude, liveIss.longitude],
+                currentZoom,
+                { animate: true, duration: 1.5 },
+              );
+            }
+          }}
           className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-lg border border-accent-cyan/40 bg-[rgba(8,14,24,0.88)] px-3 py-1.5 text-[11px] font-semibold text-accent-cyan backdrop-blur-sm transition-colors hover:bg-[rgba(8,14,24,0.95)]"
         >
           <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-accent-cyan" />

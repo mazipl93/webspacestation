@@ -53,7 +53,7 @@ export async function buildHubMetadata(
 ): Promise<Metadata> {
   const page = parseListingPage((await searchParams).strona);
   return buildListingPageMetadata({
-    title: `${config.title} · misje, starty i odkrycia`,
+    title: `${config.title} · ${config.tagline}`,
     description: config.description,
     path: `/${config.slug}`,
     page,
@@ -89,7 +89,7 @@ export default async function HubPageShell({
     <>
       <JsonLd
         data={buildListingPageJsonLd(
-          `${config.title} — misje, starty i odkrycia`,
+          `${config.title} — ${config.tagline}`,
           config.description,
           `/${config.slug}`,
           [

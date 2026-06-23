@@ -76,6 +76,17 @@ export function buildSitemapIndexLocations(): string[] {
   ];
 }
 
+/**
+ * Paths that never change content — Googlebot shouldn't waste crawl budget
+ * re-fetching them on every sitemap regeneration (every 5 min).
+ * Everything else (categories, hubs, tools, homepage) gets `now` because
+ * it changes whenever an article is published.
+ */
+const STATIC_PAGE_LAST_MODIFIED: Partial<Record<string, string>> = {
+  "/polityka-prywatnosci": "2025-01-01T00:00:00.000Z",
+  "/kontakt": "2025-01-01T00:00:00.000Z",
+};
+
 export function buildPagesSitemapEntries(now = new Date()): MetadataRoute.Sitemap {
   const base = getSiteUrl().replace(/\/$/, "");
 
@@ -86,19 +97,22 @@ export function buildPagesSitemapEntries(now = new Date()): MetadataRoute.Sitema
     Object.values(INTERACTIVE_TOOLS).map((t) => [t.path, t.sitemapChangeFrequency]),
   ) as Record<string, MetadataRoute.Sitemap[number]["changeFrequency"]>;
 
-  return SEO_SITEMAP_PATHS.map((path) => ({
-    url: `${base}${path === "/" ? "" : path}`,
-    lastModified: now,
-    changeFrequency:
-      toolFrequencyByPath[path]
-      ?? (path === "/" ? "hourly" : "daily"),
-    priority:
-      toolPriorityByPath[path]
-      ?? (path === "/" ? 1
-      : path === "/aktualnosci" ? 0.9
-      : ["/nasa", "/spacex", "/esa", "/jwst"].includes(path) ? 0.85
-      : 0.7),
-  }));
+  return SEO_SITEMAP_PATHS.map((path) => {
+    const staticDate = STATIC_PAGE_LAST_MODIFIED[path];
+    return {
+      url: `${base}${path === "/" ? "" : path}`,
+      lastModified: staticDate ? new Date(staticDate) : now,
+      changeFrequency:
+        toolFrequencyByPath[path]
+        ?? (path === "/" ? "hourly" : staticDate ? "yearly" : "daily"),
+      priority:
+        toolPriorityByPath[path]
+        ?? (path === "/" ? 1
+        : path === "/aktualnosci" ? 0.9
+        : ["/nasa", "/spacex", "/esa", "/jwst"].includes(path) ? 0.85
+        : 0.7),
+    };
+  });
 }
 
 export async function buildArticlesSitemapEntries(

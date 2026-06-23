@@ -7,6 +7,7 @@ import { getInteractiveTool, getRelatedTools } from "@/lib/seo/interactive-tools
 import { buildToolPageMetadata } from "@/lib/seo/tool-metadata";
 import { getMapOpsData } from "@/lib/ops/get-ops-data";
 import { computeIssPolandPasses } from "@/lib/ops/iss-poland-passes";
+import { fetchN2yoVisualPasses } from "@/lib/ops/iss-passes-n2yo";
 import { getIssTleCachedAt } from "@/lib/ops/iss-orbit";
 
 const TOOL = getInteractiveTool("iss-tracker");
@@ -16,10 +17,12 @@ export const metadata: Metadata = buildToolPageMetadata(TOOL);
 export const revalidate = 300;
 
 export default async function MapaPage() {
-  const [ops, polandPasses] = await Promise.all([
+  const [ops, n2yoPasses] = await Promise.all([
     getMapOpsData(),
-    computeIssPolandPasses(10, 72).catch(() => []),
+    fetchN2yoVisualPasses(10, 10, 10).catch(() => null),
   ]);
+  const polandPasses =
+    n2yoPasses ?? (await computeIssPolandPasses(10, 240, true).catch(() => []));
   const passesComputedAt = getIssTleCachedAt() ?? new Date().toISOString();
   const related = getRelatedTools("iss-tracker");
 

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import DiscoverPageShell from "@/components/discover/DiscoverPageShell";
-import OpsTimeline from "@/components/discover/OpsTimeline";
 import StartyLaunchFeed from "@/components/discover/StartyLaunchFeed";
 import StartyPageBelowFold from "@/components/discover/StartyPageBelowFold";
 import StartyPageTabsClient from "@/components/discover/StartyPageTabsClient";
@@ -48,16 +47,6 @@ export default async function StartyPage() {
       />
     );
 
-  const harmonogramPanel = (
-    <>
-      <p className="starty-tabs__harmonogram-lead">
-        Widok kwartalny nadchodzących startów (NET, UTC). Szczegóły i odliczanie
-        znajdziesz w zakładce Nadchodzące starty.
-      </p>
-      <OpsTimeline events={ops.calendar} variant="page" />
-    </>
-  );
-
   return (
     <>
       <ToolPageJsonLd tool={TOOL} />
@@ -67,10 +56,7 @@ export default async function StartyPage() {
         description={TOOL.longDescription}
         accent="#38bdf8"
       >
-        <StartyPageTabsClient
-          listaPanel={listaPanel}
-          harmonogramPanel={harmonogramPanel}
-        />
+        <StartyPageTabsClient listaPanel={listaPanel} />
 
         <StartyPageBelowFold
           tool={TOOL}

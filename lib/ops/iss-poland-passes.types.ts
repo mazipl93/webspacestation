@@ -14,7 +14,7 @@ export const POLAND_OBSERVER = {
   lon: 19.4615,
 } as const;
 
-export type IssPassObservationKind = "visible" | "daylight" | "low" | "below";
+export type IssPassObservationKind = "visible" | "daylight" | "low" | "below" | "shadow";
 
 export type IssPolandPass = {
   id: string;

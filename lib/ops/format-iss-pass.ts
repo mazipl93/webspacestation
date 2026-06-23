@@ -96,7 +96,7 @@ const PASS_BADGE: Record<
 > = {
   visible: {
     label: "Widoczny",
-    hint: "Ciemne niebo, elewacja ≥ 15° — do obserwacji gołym okiem",
+    hint: "Ciemne niebo, elewacja ≥ 10° — do obserwacji gołym okiem",
   },
   daylight: {
     label: "W dzień",
@@ -104,7 +104,11 @@ const PASS_BADGE: Record<
   },
   low: {
     label: "Nisko",
-    hint: "Nad horyzontem, ale elewacja < 15° — trudna obserwacja wzrokowa",
+    hint: "Nad horyzontem, ale elewacja < 10° — trudna obserwacja wzrokowa",
+  },
+  shadow: {
+    label: "W cieniu",
+    hint: "Ciemne niebo, dobra elewacja — lecz ISS w cieniu Ziemi, niewidoczna gołym okiem",
   },
   below: {
     label: "Pod horyzontem",
@@ -124,6 +128,8 @@ export function passBadgeClass(kind: IssPassObservationKind): string {
       return "ops-iss-passes__badge--daylight";
     case "low":
       return "ops-iss-passes__badge--low";
+    case "shadow":
+      return "ops-iss-passes__badge--shadow";
     default:
       return "ops-iss-passes__badge--below";
   }

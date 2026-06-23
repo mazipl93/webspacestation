@@ -1,4 +1,3 @@
-import { RSS_RAW_SUBTITLE_MARKER } from "@/lib/rss/pipeline";
 import { inferRssSource } from "@/lib/rss/is-aggregator";
 import type { ArticleContentOrigin } from "@/lib/admin/types";
 
@@ -18,45 +17,6 @@ export function isRssAggregatorArticle(article: {
   return isRssContentOrigin(article);
 }
 
-export function isRawRssDraftArticle(article: {
-  contentOrigin?: ArticleContentOrigin | string;
-  subtitle?: string | null;
-  status?: string;
-}): boolean {
-  return (
-    isRssContentOrigin(article) &&
-    article.status === "DRAFT" &&
-    Boolean(article.subtitle?.includes(RSS_RAW_SUBTITLE_MARKER))
-  );
-}
-
-/** B+ enriched when lead + body + context exist (new pipeline). Legacy rows may lack body/context. */
-export function isAiEnrichedRssArticle(article: {
-  contentOrigin?: ArticleContentOrigin | string;
-  subtitle?: string | null;
-  status?: string;
-  content?: string | null;
-  contextNote?: string | null;
-}): boolean {
-  if (!isRssContentOrigin(article)) return false;
-  if (isRawRssDraftArticle(article)) return false;
-  return Boolean(article.content?.trim() && article.contextNote?.trim());
-}
-
-/** Legacy RSS in REVIEW with excerpt only (pre-B+). Still publishable — SAFE MODE. */
-export function isLegacyRssReviewArticle(article: {
-  contentOrigin?: ArticleContentOrigin | string;
-  subtitle?: string | null;
-  status?: string;
-  excerpt?: string | null;
-  content?: string | null;
-  contextNote?: string | null;
-}): boolean {
-  if (!isRssContentOrigin(article)) return false;
-  if (isRawRssDraftArticle(article)) return false;
-  if (isAiEnrichedRssArticle(article)) return false;
-  return Boolean(article.excerpt?.trim());
-}
 
 export function getAdminArticleTags(article: { tags?: string[] }): string[] {
   return (article.tags ?? []).filter((t) => t.trim().length > 0);

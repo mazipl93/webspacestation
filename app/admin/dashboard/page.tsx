@@ -9,6 +9,7 @@ import {
   FolderTree,
   ArrowRight,
   ClipboardCheck,
+  Clock,
 } from "lucide-react";
 import { adminApi, type AdminArticleStats } from "@/lib/admin/api";
 import type { AdminArticle } from "@/lib/admin/types";
@@ -16,22 +17,40 @@ import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { Banner } from "@/components/admin/primitives";
 
+function waitingHours(createdAt: string): number {
+  return (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60);
+}
+
+function formatWaitTime(createdAt: string): string {
+  const h = waitingHours(createdAt);
+  if (h < 1) return "< 1 godz.";
+  if (h < 24) return `${Math.floor(h)} godz.`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? "1 dzień" : `${d} dni`;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<AdminArticleStats | null>(null);
   const [recent, setRecent] = useState<AdminArticle[]>([]);
+  const [reviewQueue, setReviewQueue] = useState<AdminArticle[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const [articleStats, articles] = await Promise.all([
+        const [articleStats, articles, reviewArticles] = await Promise.all([
           adminApi.getArticleStats(),
           adminApi.listArticles({ status: "ALL" }),
+          adminApi.listArticles({ status: "REVIEW" }),
         ]);
         if (!active) return;
         setStats(articleStats);
         setRecent(articles.slice(0, 5));
+        // oldest first
+        setReviewQueue(
+          [...reviewArticles].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        );
       } catch (e) {
         if (active) setError(e instanceof Error ? e.message : "Błąd ładowania.");
       }
@@ -97,6 +116,62 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {(reviewQueue.length > 0 || stats?.review === 0) && (
+        <section className="card-surface mt-8 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">
+            <h2 className="flex items-center gap-2 text-title-sm font-semibold">
+              Czeka na review
+              {reviewQueue.length > 0 && (
+                <span className="rounded-badge bg-accent-amber/15 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-accent-amber">
+                  {reviewQueue.length}
+                </span>
+              )}
+            </h2>
+            <Link
+              href="/admin/articles?filter=review"
+              className="inline-flex items-center gap-1 text-meta text-text-tertiary transition-colors hover:text-text-primary"
+            >
+              Otwórz kolejkę <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <ul>
+            {reviewQueue.length === 0 ? (
+              <li className="px-5 py-6 text-meta text-text-tertiary">
+                Kolejka pusta — wszystko sprawdzone.
+              </li>
+            ) : (
+              reviewQueue.map((a) => {
+                const hours = waitingHours(a.createdAt);
+                const overdue = hours >= 24;
+                return (
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between gap-4 border-b border-hairline-faint px-5 py-3 last:border-b-0"
+                  >
+                    <Link
+                      href={`/admin/articles/${a.id}/edit`}
+                      className="min-w-0 flex-1 truncate text-meta text-text-secondary transition-colors hover:text-text-primary"
+                    >
+                      {a.title}
+                    </Link>
+                    <span className="hidden shrink-0 text-caption text-text-tertiary sm:block">
+                      {a.category.name}
+                    </span>
+                    <span
+                      className={`inline-flex shrink-0 items-center gap-1 text-caption tabular-nums ${overdue ? "text-red-400" : "text-text-muted"}`}
+                      title={overdue ? "Czeka ponad 24h" : undefined}
+                    >
+                      <Clock className="h-3 w-3" />
+                      {formatWaitTime(a.createdAt)}
+                    </span>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </section>
+      )}
 
       <section className="card-surface mt-8 overflow-hidden">
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">

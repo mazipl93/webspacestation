@@ -71,7 +71,8 @@ export interface AdminArticle {
   excerpt: string | null;
   socialCardTitle: string | null;
   socialCardHook: string | null;
-  content: string | null;
+  /** Dostępny tylko w edytorze (getArticleById). Lista admina nie pobiera content. */
+  content?: string | null;
   contextNote: string | null;
   coverImage: string | null;
   coverImageCredit: string | null;
@@ -104,10 +105,7 @@ export interface ArticleFormValues {
   slug: string;
   subtitle: string;
   excerpt: string;
-  socialCardTitle: string;
-  socialCardHook: string;
   content: string;
-  contextNote: string;
   coverImage: string;
   coverImageCredit: string;
   authorByline: string;
@@ -121,8 +119,6 @@ export interface ArticleFormValues {
   readingTime: number | null;
   /** Comma-separated in the form; normalized to Article.tags on save. */
   tagsText: string;
-  sourceName: string;
-  sourceUrl: string;
   /** ISO datetime-local value for scheduled publish. */
   publishAtLocal: string;
 }

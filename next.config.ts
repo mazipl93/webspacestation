@@ -73,14 +73,25 @@ const nextConfig: NextConfig = {
     // Default imageSizes tops out at 384 — too small for retina card/thumb slots.
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 640, 828, 1080],
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-      {
-        protocol: "http",
-        hostname: "**",
-      },
+      // Supabase Storage (covers i media CMS) — serwowane bezpośrednio (unoptimized w CoverImage).
+      { protocol: "https", hostname: "*.supabase.co" },
+      // NASA — wiele subdomen (apod, images-assets, assets.science, www).
+      { protocol: "https", hostname: "*.nasa.gov" },
+      // ESA
+      { protocol: "https", hostname: "*.esa.int" },
+      // ESO
+      { protocol: "https", hostname: "*.eso.org" },
+      // YouTube thumbnails (VideoGrid)
+      { protocol: "https", hostname: "i.ytimg.com" },
+      { protocol: "https", hostname: "img.youtube.com" },
+      // WordPress.com CDN — wspólny host dla wielu serwisów kosmicznych (Spaceflight Now, etc.)
+      { protocol: "https", hostname: "*.wp.com" },
+      // Unsplash (artykuły redakcyjne)
+      { protocol: "https", hostname: "images.unsplash.com" },
+      // Avatary użytkowników Supabase Auth
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+      // Jeśli brakuje domeny: sprawdź Vercel → projekt → Logs → filtruj /_next/image
+      // i dodaj tutaj zanim włączysz na produkcji.
     ],
   },
 };

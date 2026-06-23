@@ -32,6 +32,7 @@ export default function VideoGrid({ items }: Props) {
                 src={item.thumbnail}
                 alt=""
                 fill
+                unoptimized
                 className="object-cover opacity-80"
                 sizes="400px"
               />

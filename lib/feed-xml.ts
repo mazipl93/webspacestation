@@ -3,6 +3,14 @@ import { getCategoryInfo } from "@/lib/categories";
 
 const SITE_NAME = "Web Space Station";
 
+function mimeFromUrl(url: string): string {
+  if (/\.webp(\?|$)/i.test(url)) return "image/webp";
+  if (/\.png(\?|$)/i.test(url)) return "image/png";
+  if (/\.gif(\?|$)/i.test(url)) return "image/gif";
+  if (/\.svg(\?|$)/i.test(url)) return "image/svg+xml";
+  return "image/jpeg";
+}
+
 function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -52,7 +60,7 @@ export function buildRssXml({
       const articleUrl = `${siteUrl}/aktualnosci/${article.slug}`;
       const enclosure =
         article.image.startsWith("http")
-          ? `\n      <enclosure url="${escapeXml(article.image)}" type="image/jpeg" length="0"/>`
+          ? `\n      <enclosure url="${escapeXml(article.image)}" type="${mimeFromUrl(article.image)}"/>`
           : "";
 
       return `    <item>

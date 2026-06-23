@@ -378,6 +378,42 @@ export const OG_PAGE_REGISTRY: Record<string, OgPageEntry> = {
     backgroundImage: "/og/home-cover.jpg",
     keywords: ["stacja kosmiczna", "ISS", "Tiangong", "stacja orbitalna"],
   },
+  galeria: {
+    id: "galeria",
+    path: "/galeria",
+    headline: "Galeria zdjęć",
+    subtitle: "NASA APOD · archiwum NASA · astronomia",
+    alt: "Galeria zdjęć kosmicznych — NASA APOD, archiwum NASA Image Library i okładki artykułów",
+    accent: "#c084fc",
+    gradient:
+      "radial-gradient(ellipse at 55% 40%, rgba(192,132,252,0.35) 0%, transparent 55%), linear-gradient(145deg, #080610 0%, #100818 100%)",
+    keywords: [
+      "galeria zdjęć kosmos",
+      "NASA APOD",
+      "zdjęcia z kosmosu",
+      "NASA Image Library",
+      "astronomiczne zdjęcia",
+      "kosmos zdjęcia",
+    ],
+  },
+  wideo: {
+    id: "wideo",
+    path: "/wideo",
+    headline: "Wideo NASA",
+    subtitle: "Starty · ISS · eksploracja kosmosu",
+    alt: "Wideo NASA — nagrania startów rakiet, ISS i eksploracji kosmosu",
+    accent: "#f472b6",
+    gradient:
+      "radial-gradient(ellipse at 50% 40%, rgba(244,114,182,0.35) 0%, transparent 55%), linear-gradient(145deg, #0a0810 0%, #180812 100%)",
+    keywords: [
+      "wideo NASA",
+      "filmy z kosmosu",
+      "starty rakiet wideo",
+      "ISS wideo",
+      "NASA Video Library",
+      "kosmos nagrania",
+    ],
+  },
 };
 
 const PATH_TO_ID = Object.fromEntries(

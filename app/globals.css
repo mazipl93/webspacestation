@@ -1349,6 +1349,12 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   background: rgba(148, 163, 184, 0.06);
 }
 
+.ops-iss-passes__badge--shadow {
+  border-color: rgba(139, 92, 246, 0.30);
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.07);
+}
+
 .ops-iss-passes__badge--sm {
   padding: 0.06rem 0.32rem;
   font-size: 8px;
@@ -1496,6 +1502,189 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
 .ops-iss-passes__empty {
   font-size: 12px;
   color: var(--color-text-tertiary, #6e7894);
+}
+
+/* ── Location Picker ─────────────────────────────────────────────────────── */
+
+.ops-iss-passes__location {
+  margin-bottom: 0.65rem;
+}
+
+.iss-loc-picker {
+  position: relative;
+}
+
+/* Główny rząd: input + GPS button */
+.iss-loc-picker__row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.45rem;
+  background: rgba(148, 163, 184, 0.07);
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  transition: border-color 0.15s;
+}
+
+.iss-loc-picker__row:focus-within {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(148, 163, 184, 0.09);
+}
+
+.iss-loc-picker__pin-icon {
+  flex-shrink: 0;
+  color: var(--color-accent-cyan, #38bdf8);
+}
+
+.iss-loc-picker__search-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.iss-loc-picker__input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 11px;
+  color: var(--color-text-primary, #e2e8f0);
+  padding: 0;
+  line-height: 1.4;
+}
+
+.iss-loc-picker__input::placeholder {
+  color: rgba(148, 163, 184, 0.35);
+  font-style: italic;
+}
+
+.iss-loc-picker__input--selected {
+  color: var(--color-text-secondary, #94a3b8);
+  font-weight: 500;
+}
+
+.iss-loc-picker__spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid rgba(148, 163, 184, 0.2);
+  border-top-color: var(--color-accent-cyan, #38bdf8);
+  border-radius: 50%;
+  animation: iss-loc-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+.iss-loc-picker__spinner--gps {
+  width: 12px;
+  height: 12px;
+}
+
+@keyframes iss-loc-spin {
+  to { transform: rotate(360deg); }
+}
+
+.iss-loc-picker__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  color: var(--color-text-muted, #64748b);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.12s, background 0.12s;
+}
+
+.iss-loc-picker__clear:hover {
+  color: var(--color-text-secondary, #94a3b8);
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.iss-loc-picker__gps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  background: rgba(148, 163, 184, 0.06);
+  color: var(--color-text-muted, #64748b);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.iss-loc-picker__gps:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--color-accent-cyan, #38bdf8);
+  border-color: rgba(56, 189, 248, 0.28);
+}
+
+.iss-loc-picker__gps--loading,
+.iss-loc-picker__gps:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* Dropdown — position:fixed (renderowany w JS przez style prop)
+   żeby nie był clipped przez overflow:hidden rodzica */
+.iss-loc-picker__dropdown {
+  background: #0d1526;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 0.6rem;
+  overflow: hidden;
+  z-index: 9999;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.08);
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.iss-loc-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 12px;
+  color: #94a3b8;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s, color 0.1s;
+  line-height: 1.35;
+}
+
+.iss-loc-picker__option:hover {
+  background: rgba(56, 189, 248, 0.09);
+  color: #e2e8f0;
+}
+
+.iss-loc-picker__option-pin {
+  flex-shrink: 0;
+  color: #475569;
+}
+
+.iss-loc-picker__no-results {
+  font-size: 11px;
+  color: #475569;
+  padding: 0.45rem 0.6rem;
+  font-style: italic;
+}
+
+.iss-loc-picker__error {
+  font-size: 10.5px;
+  color: #f87171;
+  padding-top: 0.3rem;
+  padding-left: 0.1rem;
 }
 
 .ops-iss-passes__skeleton {
