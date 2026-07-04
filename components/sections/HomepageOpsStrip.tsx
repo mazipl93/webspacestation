@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import OpsAuroraShowcase from "@/components/discover/OpsAuroraShowcase";
+import OpsIssGlobeTeaser from "@/components/iss-globe/OpsIssGlobeTeaser";
 import OpsIssShowcase from "@/components/discover/OpsIssShowcase";
 import OpsLaunchFeedPaused from "@/components/discover/OpsLaunchFeedPaused";
 import OpsLaunchShowcase from "@/components/discover/OpsLaunchShowcase";
@@ -10,6 +11,8 @@ import { cn } from "@/lib/cn";
 import { isOpsLaunchImminent } from "@/lib/ops/ops-widget-utils";
 import { pickPrimaryLaunch } from "@/lib/ops/launch-phase";
 import { getHomepageOpsData } from "@/lib/ops/get-ops-data";
+import { computeIssLiveTrack } from "@/lib/ops/iss-orbit";
+import type { GlobePoint } from "@/lib/ops/iss-globe-geo";
 import {
   getLaunchWssArticleLinks,
   linkForLaunch,
@@ -23,6 +26,8 @@ function HomepageOpsStripView({
   live,
   wssArticle,
   aurora,
+  globePast,
+  globeFuture,
 }: {
   launches: Awaited<ReturnType<typeof getHomepageOpsData>>["launches"];
   recentLaunches: Awaited<ReturnType<typeof getHomepageOpsData>>["recentLaunches"];
@@ -30,6 +35,8 @@ function HomepageOpsStripView({
   live: boolean;
   wssArticle: LaunchWssArticleLink | null;
   aurora: AuroraHomepageSnapshot | null;
+  globePast: GlobePoint[];
+  globeFuture: GlobePoint[];
 }) {
   const next = pickPrimaryLaunch(launches);
   const imminent = next ? isOpsLaunchImminent(next.net) : false;
@@ -79,9 +86,18 @@ function HomepageOpsStripView({
 
           <aside className="ops-widget-side">
             <OpsIssShowcase initialIss={iss} passLimit={4} />
-            <OpsQuickNav exclude={["/mapa"]} />
+            <OpsQuickNav exclude={["/mapa", "/sledziss"]} />
           </aside>
         </div>
+
+        {iss ? (
+          <OpsIssGlobeTeaser
+            initialIss={iss}
+            initialGlobePast={globePast}
+            initialGlobeFuture={globeFuture}
+            className="mt-3"
+          />
+        ) : null}
       </div>
     </section>
   );
@@ -104,6 +120,14 @@ async function HomepageOpsStripLoader() {
   const hasIss = ops.iss != null;
   if (!hasLaunches && !hasIss) return null;
 
+  const track = hasIss
+    ? await computeIssLiveTrack({
+        minutesBefore: 28,
+        minutesAfter: 28,
+        stepSeconds: 55,
+      }).catch(() => null)
+    : null;
+
   const articleLinks = hasLaunches
     ? await getLaunchWssArticleLinks(ops.launches)
     : new Map<string, LaunchWssArticleLink>();
@@ -117,6 +141,8 @@ async function HomepageOpsStripLoader() {
       live={ops.live}
       wssArticle={next ? linkForLaunch(next.id, articleLinks) : null}
       aurora={aurora}
+      globePast={track?.globePast ?? []}
+      globeFuture={track?.globeFuture ?? []}
     />
   );
 }

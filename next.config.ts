@@ -67,6 +67,16 @@ const nextConfig: NextConfig = {
         destination: "/starty#harmonogram",
         permanent: true,
       },
+      {
+        source: "/isstracker",
+        destination: "/sledziss",
+        permanent: true,
+      },
+      {
+        source: "/iss-tracker",
+        destination: "/sledziss",
+        permanent: true,
+      },
     ];
   },
   images: {

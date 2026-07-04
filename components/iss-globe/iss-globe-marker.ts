@@ -1,0 +1,33 @@
+import { ISS_MAP_PIN_SRC } from "@/lib/ops/iss-map-pin-icon";
+
+/** Jedna instancja markera — globe.gl aktualizuje pozycję bez przebudowy DOM. */
+let markerEl: HTMLDivElement | null = null;
+let markerCompact = false;
+
+export function getIssGlobeMarkerElement(compact: boolean): HTMLDivElement {
+  if (markerEl && markerCompact === compact) return markerEl;
+
+  markerEl = document.createElement("div");
+  markerCompact = compact;
+  markerEl.className = compact
+    ? "iss-globe__marker iss-globe__marker--compact"
+    : "iss-globe__marker";
+  markerEl.setAttribute("role", "img");
+  markerEl.setAttribute("aria-label", "Międzynarodowa Stacja Kosmiczna");
+
+  const img = document.createElement("img");
+  img.src = ISS_MAP_PIN_SRC;
+  img.alt = "";
+  img.draggable = false;
+  img.decoding = "async";
+  markerEl.appendChild(img);
+
+  return markerEl;
+}
+
+export function issGlobeMarkerVisibility(
+  el: HTMLElement,
+  isVisible: boolean,
+): void {
+  el.style.opacity = isVisible ? "1" : "0";
+}

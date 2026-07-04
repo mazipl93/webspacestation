@@ -29,6 +29,7 @@ describe("discovery SEO smoke", () => {
     }
     assert.ok(SEO_SITEMAP_PATHS.includes("/starty"));
     assert.ok(SEO_SITEMAP_PATHS.includes("/aktualnosci"));
+    assert.ok(SEO_SITEMAP_PATHS.includes("/sledziss"));
   });
 
   it("robots disallows tag and feed paths", () => {

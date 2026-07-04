@@ -51,9 +51,9 @@ export default function OpsIssShowcase({
 
   return (
     <Link
-      href="/mapa"
+      href="/sledziss"
       className={cn("ops-iss-showcase group block min-w-0", className)}
-      aria-label="ISS na żywo i przeloty nad Polską — otwórz mapę"
+      aria-label="ISS na żywo i przeloty nad Polską — otwórz globus 3D"
     >
       <OpsShowcaseBackdrop
         src={OPS_ISS_SHOWCASE_IMAGE}
@@ -104,7 +104,7 @@ export default function OpsIssShowcase({
           </div>
 
           <span className="ops-iss-showcase__cta inline-flex items-center gap-1 text-[11px] font-medium text-accent-cyan/90 group-hover:text-accent-cyan">
-            Mapa, orbita i przeloty
+            Globus 3D, orbita i przeloty
             <ChevronRight size={12} />
           </span>
         </div>

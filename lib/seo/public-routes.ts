@@ -28,6 +28,7 @@ export const SEO_SITEMAP_PATHS = [
   "/kontakt",
   "/starty",
   "/mapa",
+  "/sledziss",
   "/galeria",
   "/wideo",
   "/zorza",

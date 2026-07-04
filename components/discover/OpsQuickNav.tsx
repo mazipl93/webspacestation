@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Map, Rocket, Sparkles } from "lucide-react";
+import { Globe2, Map, Rocket, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const LINKS = [
+  { href: "/sledziss", label: "Globus ISS", icon: Globe2, color: "#22d3ee" },
   { href: "/starty", label: "Starty", icon: Rocket, color: "#38bdf8" },
   { href: "/mapa", label: "Mapa", icon: Map, color: "#a78bfa" },
   {

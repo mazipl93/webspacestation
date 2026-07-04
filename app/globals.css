@@ -1082,6 +1082,399 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   margin-top: 0.65rem;
 }
 
+/* ISS globus 3D — /sledziss + widget homepage */
+.iss-globe {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.iss-globe__stage {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #030712;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: contain;
+}
+
+.iss-globe__stage > div {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+  background: transparent !important;
+}
+
+/* CSS2D (ikona ISS) — bez mlecznego overlay na iOS/Safari */
+.iss-globe__stage canvas + div {
+  background: transparent !important;
+  pointer-events: none;
+}
+
+.iss-globe__stage canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.iss-globe__boot {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #030712;
+  font-size: 12px;
+  color: var(--color-text-muted, #64748b);
+  pointer-events: none;
+}
+
+.iss-globe__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.iss-globe--compact .iss-globe__stage {
+  aspect-ratio: 16 / 10;
+  height: auto;
+  min-height: 0;
+}
+
+.iss-globe--mobile.iss-globe--compact .iss-globe__stage {
+  max-height: 11.5rem;
+}
+
+.iss-globe:not(.iss-globe--compact) .iss-globe__stage {
+  aspect-ratio: 16 / 11;
+  height: auto;
+  min-height: min(62dvh, 560px);
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 211, 238, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.iss-globe--mobile:not(.iss-globe--compact) .iss-globe__stage {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  max-height: min(88vw, 22.5rem);
+}
+
+.iss-globe__marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 28px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.85));
+  transition: opacity 180ms ease;
+}
+
+.iss-globe__marker img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.iss-globe__marker--compact {
+  width: 34px;
+  height: 22px;
+}
+
+.iss-globe__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.iss-globe__live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: auto;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: rgba(6, 10, 18, 0.94);
+  padding: 0.35rem 0.7rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #22d3ee;
+}
+
+.iss-globe__live-chip--muted {
+  color: var(--color-text-muted, #64748b);
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+.iss-globe__hud-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #22d3ee;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.iss-globe__control-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 0.42rem 0.85rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #94a3b8);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.iss-globe__control-btn:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  color: #e2e8f0;
+}
+
+.iss-globe__control-btn--active {
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+}
+
+.iss-globe-teaser__shell {
+  border-radius: 0.85rem;
+  border: 1px solid rgba(34, 211, 238, 0.16);
+  background:
+    radial-gradient(ellipse 80% 120% at 0% 0%, rgba(34, 211, 238, 0.08) 0%, transparent 55%),
+    rgba(8, 12, 22, 0.92);
+  overflow: hidden;
+}
+
+.iss-globe-teaser__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem 0.45rem;
+}
+
+.iss-globe-teaser__title-link {
+  min-width: 0;
+}
+
+.iss-globe-teaser__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #22d3ee;
+}
+
+.iss-globe-teaser__live {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: #22d3ee;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.iss-globe-teaser__cta,
+.iss-globe-teaser__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(34, 211, 238, 0.88);
+  transition: color 0.2s;
+}
+
+.iss-globe-teaser__cta:hover,
+.iss-globe-teaser__hint:hover {
+  color: #22d3ee;
+}
+
+.iss-globe-teaser__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+@media (max-width: 640px) {
+  .iss-globe-teaser__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.iss-globe-teaser__globe {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+@media (max-width: 640px) {
+  .iss-globe-teaser__globe {
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  }
+}
+
+.iss-globe-teaser__meta {
+  padding: 0.75rem 0.85rem 0.85rem;
+}
+
+.iss-globe-teaser__live-row {
+  margin: 0 0 0.55rem;
+}
+
+.iss-globe-teaser__live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #22d3ee;
+}
+
+.iss-globe-teaser__coords {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary, #f8fafc);
+  font-variant-numeric: tabular-nums;
+}
+
+.iss-globe-teaser__chip {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.55);
+  padding: 0.18rem 0.5rem;
+  font-size: 10px;
+  color: var(--color-text-secondary, #94a3b8);
+}
+
+.iss-globe-teaser__hint {
+  margin-top: 0.75rem;
+}
+
+.sledziss-page__layout {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sledziss-page__main {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .sledziss-page__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+    align-items: start;
+  }
+}
+
+.sledziss-page__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  margin-top: 0.85rem;
+}
+
+.sledziss-page__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 11px;
+  color: var(--color-text-tertiary, #64748b);
+}
+
+.sledziss-page__legend-item::before {
+  content: "";
+  width: 1.1rem;
+  height: 0.18rem;
+  border-radius: 999px;
+}
+
+.sledziss-page__legend-item--past::before {
+  background: rgba(148, 163, 184, 0.65);
+}
+
+.sledziss-page__legend-item--future::before {
+  background: rgba(34, 211, 238, 0.92);
+}
+
+.sledziss-page__legend-item--ground::before {
+  background: rgba(34, 211, 238, 0.28);
+  height: 0.12rem;
+}
+
+.sledziss-page__legend-item--visibility::before {
+  background: rgba(239, 68, 68, 0.85);
+}
+
+.sledziss-page__visibility-note {
+  margin: 0.5rem 0 0;
+  max-width: 62ch;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--color-text-tertiary, #64748b);
+}
+
+.sledziss-page__telemetry {
+  margin-top: 0.85rem;
+  max-width: 320px;
+}
+
+.sledziss-page__note {
+  margin: 0.85rem 0 0;
+  max-width: 62ch;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--color-text-tertiary, #64748b);
+}
+
+.sledziss-page__map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.sledziss-page__map-link:hover {
+  color: #c4b5fd;
+}
+
+.sledziss-page__aside {
+  min-width: 0;
+}
+
 /* Aurora showcase — ISS-scale teaser */
 .ops-aurora-showcase {
   width: 100%;

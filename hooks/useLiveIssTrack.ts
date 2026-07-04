@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { GlobePoint } from "@/lib/ops/iss-globe-geo";
 import type { IssLiveTrack, OrbitSegment } from "@/lib/ops/iss-orbit-geo";
 import type { OpsIssPosition } from "@/lib/ops/types";
 
 const TRACK_URL = "/api/ops/iss-track";
 const TRACK_INTERVAL_MS = 5_000;
+/** Geometria orbity rzadziej niż marker — stabilna linia bez migania. */
+const ORBIT_GEOMETRY_REFRESH_MS = 120_000;
 const FALLBACK_POSITION_URL =
   "https://api.wheretheiss.at/v1/satellites/25544";
 
@@ -40,16 +43,24 @@ export function useLiveIssTrack(
   initialIss: OpsIssPosition | null,
   initialOrbitPast: OrbitSegment[] = [],
   initialOrbitFuture: OrbitSegment[] = [],
+  initialGlobePast: GlobePoint[] = [],
+  initialGlobeFuture: GlobePoint[] = [],
 ): {
   iss: OpsIssPosition | null;
   orbitPast: OrbitSegment[];
   orbitFuture: OrbitSegment[];
+  globePast: GlobePoint[];
+  globeFuture: GlobePoint[];
 } {
   const [iss, setIss] = useState<OpsIssPosition | null>(initialIss);
   const [orbitPast, setOrbitPast] = useState<OrbitSegment[]>(initialOrbitPast);
   const [orbitFuture, setOrbitFuture] =
     useState<OrbitSegment[]>(initialOrbitFuture);
+  const [globePast, setGlobePast] = useState<GlobePoint[]>(initialGlobePast);
+  const [globeFuture, setGlobeFuture] =
+    useState<GlobePoint[]>(initialGlobeFuture);
   const sgp4OkRef = useRef(false);
+  const lastOrbitRefreshRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,8 +73,20 @@ export function useLiveIssTrack(
         const data = (await res.json()) as IssLiveTrack;
         if (cancelled || !data?.iss) return;
         setIss(data.iss);
-        setOrbitPast(data.orbitPast ?? []);
-        setOrbitFuture(data.orbitFuture ?? []);
+
+        const now = Date.now();
+        const shouldRefreshOrbit =
+          lastOrbitRefreshRef.current === 0
+          || now - lastOrbitRefreshRef.current >= ORBIT_GEOMETRY_REFRESH_MS;
+
+        if (shouldRefreshOrbit) {
+          setOrbitPast(data.orbitPast ?? []);
+          setOrbitFuture(data.orbitFuture ?? []);
+          setGlobePast(data.globePast ?? []);
+          setGlobeFuture(data.globeFuture ?? []);
+          lastOrbitRefreshRef.current = now;
+        }
+
         sgp4OkRef.current = true;
       } catch {
         sgp4OkRef.current = false;
@@ -104,5 +127,5 @@ export function useLiveIssTrack(
     };
   }, []);
 
-  return { iss, orbitPast, orbitFuture };
+  return { iss, orbitPast, orbitFuture, globePast, globeFuture };
 }

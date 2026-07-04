@@ -7,8 +7,9 @@ import { getSiteUrl } from "@/lib/site-url";
 export const GSC_SEARCH_INTENTS = [
   { query: "zorza polarna dziś", path: "/zorza" },
   { query: "indeks kp", path: "/zorza" },
-  { query: "iss tracker", path: "/mapa" },
-  { query: "gdzie jest iss", path: "/mapa" },
+  { query: "iss tracker", path: "/sledziss" },
+  { query: "gdzie jest iss", path: "/sledziss" },
+  { query: "śledź iss", path: "/sledziss" },
   { query: "harmonogram startów spacex", path: "/starty" },
   { query: "starty rakiet", path: "/starty" },
   { query: "aktualności kosmiczne", path: "/aktualnosci" },

@@ -2,6 +2,7 @@
 
 export type InteractiveToolId =
   | "iss-tracker"
+  | "iss-globe-tracker"
   | "aurora-terminal"
   | "rocket-launches";
 
@@ -70,9 +71,60 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
           "Tak. Na tej samej mapie zaznaczone są platformy startowe i nadchodzące starty. Pełny harmonogram z odliczaniem znajdziesz w sekcji Starty rakiet.",
       },
     ],
-    relatedToolIds: ["rocket-launches", "aurora-terminal"],
+    relatedToolIds: ["iss-globe-tracker", "rocket-launches", "aurora-terminal"],
     ogImageAlt: "ISS tracker na żywo · mapa pozycji Międzynarodowej Stacji Kosmicznej",
     sitemapPriority: 0.95,
+    sitemapChangeFrequency: "hourly",
+  },
+  "iss-globe-tracker": {
+    id: "iss-globe-tracker",
+    path: "/sledziss",
+    title: "Śledź ISS · globus 3D na żywo",
+    headline: "Śledź ISS · interaktywny globus 3D",
+    description:
+      "Międzynarodowa Stacja Kosmiczna na interaktywnym globusie 3D: pozycja na orbicie, ground track, wysokość i prędkość — odświeżane na żywo z TLE i SGP4.",
+    longDescription:
+      "Obracaj globus, obserwuj ISS ~400 km nad Ziemią i śledź trasę orbity w czasie rzeczywistym. Ten sam propagator SGP4 co w mapie 2D — dokładna pozycja stacji bez instalacji aplikacji.",
+    keywords: [
+      "śledź ISS",
+      "ISS tracker",
+      "globus ISS",
+      "ISS 3D",
+      "gdzie jest ISS",
+      "ISS na żywo",
+      "orbita ISS",
+      "Międzynarodowa Stacja Kosmiczna",
+      "tracker stacji kosmicznej",
+      "ISS teraz",
+      "pozycja ISS",
+    ],
+    featureList: [
+      "Interaktywny globus 3D z teksturą Ziemi",
+      "Pozycja ISS na orbicie w czasie rzeczywistym",
+      "Orbita przeszła i przyszła + ground track",
+      "Telemetria: wysokość, prędkość, współrzędne",
+      "Przeloty ISS nad Polską",
+    ],
+    faq: [
+      {
+        question: "Jak dokładna jest pozycja ISS na globusie?",
+        answer:
+          "Pozycja jest liczona z elementów orbitalnych TLE (satelita NORAD 25544) metodą SGP4 — standard stosowany przez trackery NASA i N2YO. Typowa dokładność to ok. kilometr, odświeżana co kilka sekund.",
+      },
+      {
+        question: "Czym różni się globus od mapy 2D?",
+        answer:
+          "Globus pokazuje ISS w przestrzeni 3D nad kulą Ziemi z orbitą na właściwej wysokości (~408 km). Mapa 2D pod /mapa pokazuje ground track i platformy startowe rakiet.",
+      },
+      {
+        question: "Czy mogę zobaczyć ISS gołym okiem?",
+        answer:
+          "Tak — przy sprzyjających warunkach ISS wygląda jak jasna gwiazda. W panelu bocznym znajdziesz nadchodzące przeloty nad Polską z oznaczeniem widoczności.",
+      },
+    ],
+    relatedToolIds: ["iss-tracker", "rocket-launches", "aurora-terminal"],
+    ogImageAlt: "Śledź ISS — interaktywny globus 3D z orbitą stacji kosmicznej na żywo",
+    sitemapPriority: 0.94,
     sitemapChangeFrequency: "hourly",
   },
   "aurora-terminal": {

@@ -118,6 +118,13 @@ export const NAV_HUB_LINKS: NavMenuLink[] = [
 
 export const NAV_MORE_LINKS: NavMenuLink[] = [
   {
+    label: "Śledź ISS · globus 3D",
+    href: "/sledziss",
+    accentKey: "sledziss",
+    description: "Interaktywny globus 3D z orbitą stacji na żywo",
+    icon: Globe2,
+  },
+  {
     label: "ISS tracker na żywo",
     href: "/mapa",
     accentKey: "mapa",

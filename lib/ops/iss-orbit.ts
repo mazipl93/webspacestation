@@ -9,6 +9,10 @@ import {
   type OrbitPoint,
   type OrbitSegment,
 } from "@/lib/ops/iss-orbit-geo";
+import {
+  orbitPointsToGlobePath,
+  type GlobePoint,
+} from "@/lib/ops/iss-globe-geo";
 import type { OpsIssPosition } from "@/lib/ops/types";
 
 export type { IssLiveTrack, OrbitPoint, OrbitSegment } from "@/lib/ops/iss-orbit-geo";
@@ -84,6 +88,10 @@ function propagatePoint(
   return {
     lat: satellite.degreesLat(geo.latitude),
     lon: continuousLongitude(rawLon, prevLon),
+    altKm:
+      typeof geo.height === "number"
+        ? Math.round(geo.height * 10) / 10
+        : undefined,
   };
 }
 
@@ -187,6 +195,7 @@ export async function computeIssLiveTrack(
   const issPoint: OrbitPoint = {
     lat: iss.latitude,
     lon: continuousLongitude(iss.longitude, prevLonBeforeNow),
+    altKm: iss.altitudeKm,
   };
 
   const pastPoints = [
@@ -198,9 +207,14 @@ export async function computeIssLiveTrack(
     ...allPoints.slice(nowIdx + 1).map((x) => x.point),
   ];
 
+  const globePast: GlobePoint[] = orbitPointsToGlobePath(pastPoints);
+  const globeFuture: GlobePoint[] = orbitPointsToGlobePath(futurePoints);
+
   return {
     iss,
     orbitPast: finalizeOrbitSegments(pastPoints, iss.longitude),
     orbitFuture: finalizeOrbitSegments(futurePoints, iss.longitude),
+    globePast,
+    globeFuture,
   };
 }

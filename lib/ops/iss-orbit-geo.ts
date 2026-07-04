@@ -1,6 +1,6 @@
 import type { OpsIssPosition } from "@/lib/ops/types";
 
-export type OrbitPoint = { lat: number; lon: number };
+export type OrbitPoint = { lat: number; lon: number; altKm?: number };
 
 /** Jedna linia orbity (bez skoków przez dateline). */
 export type OrbitSegment = OrbitPoint[];
@@ -9,6 +9,9 @@ export type IssLiveTrack = {
   iss: OpsIssPosition;
   orbitPast: OrbitSegment[];
   orbitFuture: OrbitSegment[];
+  /** Ciągła orbita 3D (lat/lng/alt) — bez cięcia dateline pod globus. */
+  globePast: import("@/lib/ops/iss-globe-geo").GlobePoint[];
+  globeFuture: import("@/lib/ops/iss-globe-geo").GlobePoint[];
 };
 
 export function unwrapLongitude(lon: number): number {
