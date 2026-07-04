@@ -1,4 +1,4 @@
-/** Ikona ISS — biała sylwetka (Wikimedia CC0). */
+/** Ikona ISS — srebrne moduły + złote panele słoneczne. */
 export const ISS_MAP_PIN_SRC = "/images/ops-pads/iss-silhouette.svg";
 
 export const ISS_MAP_PIN_WIDTH = 38;

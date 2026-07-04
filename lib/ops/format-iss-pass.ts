@@ -100,7 +100,7 @@ const PASS_BADGE: Record<
   },
   daylight: {
     label: "W dzień",
-    hint: "Jasne niebo — ISS niewidoczna, ale tor nad Polską (anteny, łączność)",
+    hint: "Jasne niebo — ISS niewidoczna gołym okiem, choć jest nad horyzontem",
   },
   low: {
     label: "Nisko",
@@ -112,7 +112,7 @@ const PASS_BADGE: Record<
   },
   below: {
     label: "Pod horyzontem",
-    hint: "Tor nad terytorium PL, ale satelita poniżej horyzontu ze środka kraju",
+    hint: "Satelita poniżej horyzontu obserwatora",
   },
 };
 

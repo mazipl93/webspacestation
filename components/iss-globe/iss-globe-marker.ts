@@ -31,3 +31,16 @@ export function issGlobeMarkerVisibility(
 ): void {
   el.style.opacity = isVisible ? "1" : "0";
 }
+
+/** Marker obserwatora (lokalizacja z pickera przelotów). */
+let observerMarkerEl: HTMLDivElement | null = null;
+
+export function getObserverGlobeMarkerElement(): HTMLDivElement {
+  if (observerMarkerEl) return observerMarkerEl;
+
+  observerMarkerEl = document.createElement("div");
+  observerMarkerEl.className = "iss-globe__observer-marker";
+  observerMarkerEl.setAttribute("role", "img");
+  observerMarkerEl.setAttribute("aria-label", "Lokalizacja obserwatora");
+  return observerMarkerEl;
+}

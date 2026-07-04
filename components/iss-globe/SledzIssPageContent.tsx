@@ -1,13 +1,18 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Map } from "lucide-react";
 import IssGlobeCanvas from "@/components/iss-globe/IssGlobeCanvas";
+import IssGlobeLegend from "@/components/iss-globe/IssGlobeLegend";
 import OpsIssPolandPasses from "@/components/discover/OpsIssPolandPasses";
 import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
+import type { IssLocation } from "@/components/discover/IssLocationPicker";
 import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
 import type { GlobePoint } from "@/lib/ops/iss-globe-geo";
 import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
+import type { GlobeLayerStatus } from "@/hooks/useGlobeAtmosphereLayer";
+import type { IssGlobeLayerId } from "@/lib/ops/iss-globe-layers";
 import type { OpsIssPosition } from "@/lib/ops/types";
 
 type Props = {
@@ -27,6 +32,26 @@ export default function SledzIssPageContent({
   passesComputedAt,
   tleCachedAt,
 }: Props) {
+  const [observerLocation, setObserverLocation] = useState<IssLocation | null>(
+    null,
+  );
+  const [atmosphereLayer, setAtmosphereLayer] =
+    useState<IssGlobeLayerId>("none");
+  const [layerUpdatedAt, setLayerUpdatedAt] = useState<string | null>(null);
+  const [layerStatus, setLayerStatus] = useState<GlobeLayerStatus>("off");
+
+  const handleLayerMeta = useCallback(
+    (meta: {
+      updatedAt: string | null;
+      label: string;
+      status: GlobeLayerStatus;
+    }) => {
+      setLayerUpdatedAt(meta.updatedAt);
+      setLayerStatus(meta.status);
+    },
+    [],
+  );
+
   const { iss } = useLiveIssTrack(
     initialIss,
     [],
@@ -47,21 +72,24 @@ export default function SledzIssPageContent({
             showControls
             liveHud="controls"
             interactive
+            observer={observerLocation}
+            atmosphereLayer={atmosphereLayer}
+            onAtmosphereLayerMeta={handleLayerMeta}
           />
 
-          <div className="sledziss-page__legend" aria-label="Legenda orbity">
-            <span className="sledziss-page__legend-item sledziss-page__legend-item--future">
-              Orbita ISS (~408 km nad Ziemią)
-            </span>
-            <span className="sledziss-page__legend-item sledziss-page__legend-item--visibility">
-              Horyzont ISS — gdzie stacja jest nad linią horyzontu
-            </span>
-          </div>
+          <IssGlobeLegend
+            className="mt-3"
+            atmosphereLayer={atmosphereLayer}
+            onAtmosphereLayerChange={setAtmosphereLayer}
+            layerUpdatedAt={layerUpdatedAt}
+            layerStatus={layerStatus}
+          />
 
           <p className="sledziss-page__visibility-note">
-            Czerwone koło to zasięg geometryczny (ISS nad horyzontem), nie strefa „gołego oka”.
-            Widoczność zależy od pory dnia, oświetlenia Słońcem i chmur — przeloty z oceną
-            widoczności są w panelu obok.
+            Czerwone koło to zasięg geometryczny (ISS nad horyzontem), nie strefa
+            „gołego oka”. Warstwy atmosferyczne (np. chmury satelitarne) pomagają
+            ocenić przeszkody w obserwacji — przeloty z oceną widoczności są w
+            panelu obok.
           </p>
 
           {iss ? (
@@ -71,8 +99,8 @@ export default function SledzIssPageContent({
           ) : null}
 
           <p className="sledziss-page__note">
-            Pozycja liczona z elementów orbitalnych TLE (NORAD 25544) i modelu SGP4 —
-            ten sam propagator co w mapie 2D. Odświeżanie co ok. 5 s.
+            Pozycja liczona z elementów orbitalnych TLE (NORAD 25544) i modelu
+            SGP4 — ten sam propagator co w mapie 2D. Odświeżanie co ok. 5 s.
             {tleCachedAt ? (
               <>
                 {" "}
@@ -104,6 +132,8 @@ export default function SledzIssPageContent({
             limit={10}
             initialPasses={polandPasses}
             initialComputedAt={passesComputedAt}
+            location={observerLocation}
+            onLocationChange={setObserverLocation}
           />
         </aside>
       </div>

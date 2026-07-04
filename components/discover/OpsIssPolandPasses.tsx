@@ -20,6 +20,9 @@ type Props = {
   className?: string;
   initialPasses?: IssPolandPass[];
   initialComputedAt?: string | null;
+  /** Wspólny stan lokalizacji (np. z SledzIssPageContent + globus). */
+  location?: IssLocation | null;
+  onLocationChange?: (loc: IssLocation | null) => void;
 };
 
 function VisibleBadge({ small }: { small?: boolean }) {
@@ -72,11 +75,15 @@ export default function OpsIssPolandPasses({
   className,
   initialPasses,
   initialComputedAt,
+  location: controlledLocation,
+  onLocationChange,
 }: Props) {
   const compact = variant === "compact";
   const sidebar = variant === "sidebar";
 
-  const [location, setLocation] = useState<IssLocation | null>(null);
+  const [internalLocation, setInternalLocation] = useState<IssLocation | null>(null);
+  const location = controlledLocation !== undefined ? controlledLocation : internalLocation;
+  const setLocation = onLocationChange ?? setInternalLocation;
 
   const { passes, computedAt, tleAt, loading } = useIssPolandPasses({
     limit: sidebar ? Math.max(limit, 8) : limit,
@@ -94,7 +101,11 @@ export default function OpsIssPolandPasses({
         sidebar && "ops-iss-passes--sidebar",
         className,
       )}
-      aria-label="Przeloty ISS nad Polską"
+      aria-label={
+        location
+          ? `Przeloty ISS widoczne z ${location.name}`
+          : "Przeloty ISS widoczne ze środka Polski"
+      }
     >
       <header className="ops-iss-passes__header">
         <div className="min-w-0">
@@ -140,8 +151,8 @@ export default function OpsIssPolandPasses({
       ) : passes.length === 0 ? (
         <p className="ops-iss-passes__empty">
           {location
-            ? `Brak widocznych przelotów nad ${location.name} w najbliższych 10 dniach.`
-            : "Brak widocznych przelotów w najbliższych 10 dniach — latem w Polsce to normalne (białe noce). Sprawdź ponownie za kilka dni."}
+            ? `Brak widocznych przelotów z ${location.name} w najbliższych 10 dniach.`
+            : "Brak widocznych przelotów ze środka Polski w najbliższych 10 dniach — latem w Polsce to normalne (białe noce). Sprawdź ponownie za kilka dni."}
         </p>
       ) : sidebar ? (
         <ol className="ops-iss-passes__sidebar-list">
@@ -154,7 +165,7 @@ export default function OpsIssPolandPasses({
                   {formatPassSummary(pass)} · tor {formatPassWindow(pass)}
                 </p>
                 <p className="ops-iss-passes__sidebar-detail">
-                  {formatPassDuration(pass.durationSec)} nad PL
+                  {formatPassDuration(pass.durationSec)} nad horyzontem
                 </p>
               </div>
               <VisibleBadge small />
@@ -187,7 +198,7 @@ export default function OpsIssPolandPasses({
                 <VisibleBadge />
               </div>
               <p className="ops-iss-passes__detail">
-                {formatPassDuration(pass.durationSec)} nad terytorium Polski
+                {formatPassDuration(pass.durationSec)} ISS nad horyzontem
               </p>
             </li>
           ))}

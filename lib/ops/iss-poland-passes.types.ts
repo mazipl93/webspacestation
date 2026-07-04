@@ -18,9 +18,9 @@ export type IssPassObservationKind = "visible" | "daylight" | "low" | "below" | 
 
 export type IssPolandPass = {
   id: string;
-  /** ISO — wejście nad terytorium PL */
+  /** ISO — ISS wchodzi nad horyzont obserwatora */
   startAt: string;
-  /** ISO — wyjście z terytorium PL */
+  /** ISO — ISS schodzi poniżej horyzontu obserwatora */
   endAt: string;
   durationSec: number;
   maxElevationDeg: number;

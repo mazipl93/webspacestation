@@ -12,9 +12,12 @@ import dynamic from "next/dynamic";
 import type { GlobeMethods } from "react-globe.gl";
 import {
   getIssGlobeMarkerElement,
+  getObserverGlobeMarkerElement,
   issGlobeMarkerVisibility,
 } from "@/components/iss-globe/iss-globe-marker";
 import { useGlobeStageSize } from "@/components/iss-globe/useGlobeStageSize";
+import { useGlobeCountries } from "@/hooks/useGlobeCountries";
+import { useGlobeAtmosphereLayer } from "@/hooks/useGlobeAtmosphereLayer";
 import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
 import { cn } from "@/lib/cn";
 import {
@@ -25,11 +28,15 @@ import {
   type GlobePoint,
 } from "@/lib/ops/iss-globe-geo";
 import {
-  ISS_GLOBE_TEXTURES,
+  ISS_GLOBE_FOLLOW,
+  flattenGlobeMaterial,
   getIssGlobeCameraAltitude,
+  getIssGlobeZoomLimits,
   resolveIssGlobeProfile,
   type IssGlobeVariant,
 } from "@/lib/ops/iss-globe-config";
+import { resolveGlobeCountryBorderStyle } from "@/lib/ops/iss-globe-countries";
+import type { IssGlobeLayerId } from "@/lib/ops/iss-globe-layers";
 import type { OpsIssPosition } from "@/lib/ops/types";
 import { issVisibilityRingDegrees } from "@/lib/ops/iss-visibility";
 
@@ -49,6 +56,12 @@ type GlobePath = {
   stroke: number;
 };
 
+type GlobeHtmlMarker = GlobePoint & { id: string; kind: "iss" | "observer" };
+
+type GlobeInstanceRef = GlobeMethods & {
+  globeMaterial?: () => import("three").Material;
+};
+
 type Props = {
   initialIss: OpsIssPosition | null;
   initialGlobePast?: GlobePoint[];
@@ -59,9 +72,16 @@ type Props = {
   onFollowChange?: (follow: boolean) => void;
   showControls?: boolean;
   interactive?: boolean;
-  /** Gdzie pokazać „ISS · na żywo” — nie na canvasie w widgecie. */
   liveHud?: "off" | "controls";
   globeRef?: RefObject<GlobeMethods | undefined>;
+  observer?: { lat: number; lon: number; name?: string } | null;
+  atmosphereLayer?: IssGlobeLayerId;
+  onAtmosphereLayerMeta?: (meta: {
+    updatedAt: string | null;
+    label: string;
+    status: import("@/hooks/useGlobeAtmosphereLayer").GlobeLayerStatus;
+    error?: string;
+  }) => void;
 };
 
 function useMobileGlobe() {
@@ -166,11 +186,15 @@ export default function IssGlobeCanvas({
   interactive = true,
   liveHud = "off",
   globeRef: externalGlobeRef,
+  observer = null,
+  atmosphereLayer = "none",
+  onAtmosphereLayerMeta,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const internalGlobeRef = useRef<GlobeMethods | undefined>(undefined);
   const globeRef = externalGlobeRef ?? internalGlobeRef;
   const userMovedRef = useRef(false);
+  const programmaticPovRef = useRef(false);
   const viewInitRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [globePainted, setGlobePainted] = useState(false);
@@ -186,6 +210,22 @@ export default function IssGlobeCanvas({
   const showGlobe = mounted && globeReady;
   const size = useGlobeStageSize(containerRef, isMobile, showGlobe);
   const cameraAltitude = getIssGlobeCameraAltitude(variant, isMobile);
+  const countryBorderStyle = useMemo(
+    () => resolveGlobeCountryBorderStyle(variant, isMobile),
+    [variant, isMobile],
+  );
+  const countryFeatures = useGlobeCountries(
+    showGlobe && globePainted && countryBorderStyle != null,
+  );
+  const showCountryBorders =
+    countryBorderStyle != null && countryFeatures.length > 0;
+
+  useGlobeAtmosphereLayer(
+    globeRef,
+    variant === "full" ? atmosphereLayer : "none",
+    globePainted,
+    onAtmosphereLayerMeta,
+  );
 
   const { iss, globePast, globeFuture } = useLiveIssTrack(
     initialIss,
@@ -199,10 +239,22 @@ export default function IssGlobeCanvas({
     setMounted(true);
   }, []);
 
-  const issMarkerData = useMemo(
-    () => (iss ? [{ ...issToGlobePoint(iss), id: "iss" }] : []),
-    [iss],
-  );
+  const issMarkerData = useMemo((): GlobeHtmlMarker[] => {
+    const markers: GlobeHtmlMarker[] = [];
+    if (iss) {
+      markers.push({ ...issToGlobePoint(iss), id: "iss", kind: "iss" });
+    }
+    if (observer) {
+      markers.push({
+        lat: observer.lat,
+        lng: observer.lon,
+        alt: 0.008,
+        id: "observer",
+        kind: "observer",
+      });
+    }
+    return markers;
+  }, [iss, observer]);
 
   const pathsData = useMemo(
     () => buildPaths(globePast, globeFuture, iss, variant, isMobile),
@@ -212,6 +264,7 @@ export default function IssGlobeCanvas({
   const centerOnIss = useCallback(
     (transitionMs = 0) => {
       if (!iss || !globeRef.current) return;
+      programmaticPovRef.current = true;
       globeRef.current.pointOfView(
         {
           lat: iss.latitude,
@@ -220,6 +273,13 @@ export default function IssGlobeCanvas({
         },
         transitionMs,
       );
+      if (transitionMs <= 0) {
+        programmaticPovRef.current = false;
+      } else {
+        window.setTimeout(() => {
+          programmaticPovRef.current = false;
+        }, transitionMs + 80);
+      }
     },
     [iss, cameraAltitude, globeRef],
   );
@@ -229,61 +289,91 @@ export default function IssGlobeCanvas({
       const controls = globe.controls();
       const renderer = globe.renderer();
       const radius = globe.getGlobeRadius();
-      const targetDistance = radius * cameraAltitude;
+      const zoom = getIssGlobeZoomLimits(variant, isMobile);
 
       controls.enablePan = false;
       controls.enableDamping = true;
       controls.dampingFactor = isMobile ? 0.16 : 0.08;
       controls.rotateSpeed = isMobile ? 0.22 : 0.45;
-      controls.enableZoom = !isMobile;
-      controls.zoomSpeed = isMobile ? 0 : 0.7;
+      controls.enableZoom = zoom.enableZoom;
+      controls.zoomSpeed = isMobile ? 0.55 : 0.85;
+      controls.minDistance = radius * zoom.minDistanceFactor;
+      controls.maxDistance = radius * zoom.maxDistanceFactor;
 
-      if (isMobile) {
+      if (isMobile && !zoom.enableZoom) {
+        const targetDistance = radius * cameraAltitude;
         controls.minDistance = targetDistance;
         controls.maxDistance = targetDistance;
+        controls.touches = { ONE: 0, TWO: 0 };
+      } else if (isMobile) {
+        controls.touches = { ONE: 0, TWO: 1 };
       } else {
-        controls.minDistance = radius * 1.75;
-        controls.maxDistance = radius * 3.15;
+        controls.touches = { ONE: 0, TWO: 2 };
       }
-
-      controls.touches = {
-        ONE: 0,
-        TWO: isMobile ? 0 : 2,
-      };
 
       renderer.setPixelRatio(
         Math.min(window.devicePixelRatio || 1, profile.maxPixelRatio),
       );
+
+      flattenGlobeMaterial(globe as GlobeInstanceRef);
     },
-    [cameraAltitude, isMobile, profile.maxPixelRatio],
+    [cameraAltitude, isMobile, profile.maxPixelRatio, variant],
   );
 
-  const handleGlobeReady = useCallback(() => {
-    if (!globeRef.current) return;
+  useEffect(() => {
+    if (!showGlobe) return;
 
-    const globe = globeRef.current;
-    configureControls(globe);
+    let cancelled = false;
+    let frame = 0;
+    const fallback = window.setTimeout(() => {
+      if (!cancelled) setGlobePainted(true);
+    }, 1200);
 
-    if (!viewInitRef.current) {
-      if (iss) {
-        globe.pointOfView(
-          {
-            lat: iss.latitude,
-            lng: iss.longitude,
-            altitude: cameraAltitude,
-          },
-          0,
-        );
-      } else {
-        globe.pointOfView({ lat: 20, lng: 15, altitude: 2.6 }, 0);
+    const boot = () => {
+      if (cancelled) return;
+      const globe = globeRef.current;
+      if (!globe) {
+        frame = requestAnimationFrame(boot);
+        return;
       }
-      viewInitRef.current = true;
-    }
 
-    setGlobePainted(true);
-  }, [iss, cameraAltitude, configureControls, globeRef]);
+      try {
+        configureControls(globe);
+
+        if (!viewInitRef.current) {
+          if (iss) {
+            globe.pointOfView(
+              {
+                lat: iss.latitude,
+                lng: iss.longitude,
+                altitude: cameraAltitude,
+              },
+              0,
+            );
+          } else {
+            globe.pointOfView({ lat: 20, lng: 15, altitude: 2.6 }, 0);
+          }
+          viewInitRef.current = true;
+        }
+      } catch (err) {
+        console.error("[iss-globe] globe setup failed", err);
+      }
+
+      setGlobePainted(true);
+      clearTimeout(fallback);
+    };
+
+    boot();
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      clearTimeout(fallback);
+    };
+  }, [showGlobe, configureControls, iss, cameraAltitude, globeRef]);
 
   const handleUserMove = useCallback(() => {
+    if (programmaticPovRef.current) return;
     userMovedRef.current = true;
     if (followIssProp === undefined) {
       setFollowInternal(false);
@@ -314,7 +404,12 @@ export default function IssGlobeCanvas({
       if (next) userMovedRef.current = false;
       if (followIssProp === undefined) setFollowInternal(next);
       onFollowChange?.(next);
-      if (next) centerOnIss(isMobile ? 0 : 500);
+      if (next)
+        centerOnIss(
+          isMobile
+            ? ISS_GLOBE_FOLLOW.mobileTransitionMs
+            : ISS_GLOBE_FOLLOW.desktopTransitionMs,
+        );
     },
     [centerOnIss, followIssProp, isMobile, onFollowChange],
   );
@@ -325,17 +420,59 @@ export default function IssGlobeCanvas({
   }, [setFollow]);
 
   const htmlElement = useCallback(
-    () => getIssGlobeMarkerElement(variant === "compact"),
+    (d: object) => {
+      const marker = d as GlobeHtmlMarker;
+      return marker.kind === "observer"
+        ? getObserverGlobeMarkerElement()
+        : getIssGlobeMarkerElement(variant === "compact");
+    },
     [variant],
   );
 
   useEffect(() => {
-    if (!showGlobe || !globeRef.current) return;
-    configureControls(globeRef.current);
-  }, [showGlobe, size.width, size.height, configureControls, globeRef]);
+    if (!followIss || !iss || !globeRef.current || !globePainted) return;
+    centerOnIss(
+      isMobile
+        ? ISS_GLOBE_FOLLOW.mobileTransitionMs
+        : ISS_GLOBE_FOLLOW.desktopTransitionMs,
+    );
+  }, [
+    followIss,
+    iss?.latitude,
+    iss?.longitude,
+    globePainted,
+    centerOnIss,
+    isMobile,
+    globeRef,
+  ]);
 
   useEffect(() => {
-    if (!showGlobe) setGlobePainted(false);
+    if (!showGlobe || !globeRef.current || !globePainted) return;
+    globeRef.current.renderer().setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, profile.maxPixelRatio),
+    );
+  }, [
+    showGlobe,
+    globePainted,
+    size.width,
+    size.height,
+    profile.maxPixelRatio,
+    globeRef,
+  ]);
+
+  useEffect(() => {
+    if (!globePainted || !globeRef.current) return;
+    const globe = globeRef.current as GlobeInstanceRef;
+    flattenGlobeMaterial(globe);
+    const retry = window.setTimeout(() => flattenGlobeMaterial(globe), 1800);
+    return () => clearTimeout(retry);
+  }, [globePainted, profile.globeImageUrl, profile.bumpImageUrl, globeRef]);
+
+  useEffect(() => {
+    if (!showGlobe) {
+      setGlobePainted(false);
+      viewInitRef.current = false;
+    }
   }, [showGlobe]);
 
   return (
@@ -356,16 +493,14 @@ export default function IssGlobeCanvas({
               height={size.height}
               backgroundColor="rgba(3,7,18,1)"
               backgroundImageUrl={profile.backgroundImageUrl}
-              globeImageUrl={ISS_GLOBE_TEXTURES.globe}
+              globeImageUrl={profile.globeImageUrl}
               bumpImageUrl={profile.bumpImageUrl}
               globeCurvatureResolution={profile.globeCurvatureResolution}
-            showAtmosphere={profile.showAtmosphere}
-            atmosphereColor="#38bdf8"
-            atmosphereAltitude={0.045}
+              showAtmosphere={profile.showAtmosphere}
+              atmosphereColor="#7dd3fc"
+              atmosphereAltitude={0.055}
               showGraticules={profile.showGraticules}
               animateIn={false}
-              waitForGlobeReady
-              onGlobeReady={handleGlobeReady}
               enablePointerInteraction={interactive && globePainted}
               htmlElementsData={issMarkerData}
               htmlLat="lat"
@@ -380,21 +515,45 @@ export default function IssGlobeCanvas({
               pathPointLng="lng"
               pathPointAlt="alt"
               pathColor="color"
-            pathStroke="stroke"
-            pathTransitionDuration={0}
-          />
+              pathStroke="stroke"
+              pathTransitionDuration={0}
+              polygonsData={showCountryBorders ? countryFeatures : []}
+              polygonGeoJsonGeometry="geometry"
+              polygonAltitude={
+                showCountryBorders
+                  ? () => countryBorderStyle!.altitude
+                  : undefined
+              }
+              polygonCapColor={
+                showCountryBorders
+                  ? () => countryBorderStyle!.capColor
+                  : undefined
+              }
+              polygonSideColor={
+                showCountryBorders
+                  ? () => countryBorderStyle!.sideColor
+                  : undefined
+              }
+              polygonStrokeColor={
+                showCountryBorders
+                  ? () => countryBorderStyle!.strokeColor
+                  : undefined
+              }
+              polygonsTransitionDuration={0}
+            />
             {!globePainted ? (
               <div className="iss-globe__boot" aria-hidden>
-                Ładowanie tekstur Ziemi…
+                Ładowanie globusa…
               </div>
             ) : null}
           </>
         ) : (
           <div className="iss-globe__loading flex h-full min-h-[inherit] w-full items-center justify-center bg-[#030712] text-[12px] text-text-muted">
-            {deferMount ? "Przewiń, by załadować globus…" : "Ładowanie globusa…"}
+            {deferMount
+              ? "Przewiń, by załadować globus…"
+              : "Ładowanie globusa…"}
           </div>
         )}
-
       </div>
 
       {(showControls || liveHud === "controls") && (
