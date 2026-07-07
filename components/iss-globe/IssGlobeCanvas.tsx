@@ -15,9 +15,9 @@ import {
   getObserverGlobeMarkerElement,
   issGlobeMarkerVisibility,
 } from "@/components/iss-globe/iss-globe-marker";
+import OpsIssTelemetry from "@/components/discover/OpsIssTelemetry";
 import { useGlobeStageSize } from "@/components/iss-globe/useGlobeStageSize";
 import { useGlobeCountries } from "@/hooks/useGlobeCountries";
-import { useGlobeAtmosphereLayer } from "@/hooks/useGlobeAtmosphereLayer";
 import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
 import { cn } from "@/lib/cn";
 import {
@@ -28,15 +28,14 @@ import {
   type GlobePoint,
 } from "@/lib/ops/iss-globe-geo";
 import {
-  ISS_GLOBE_FOLLOW,
   flattenGlobeMaterial,
   getIssGlobeCameraAltitude,
+  getIssGlobeFollowTransitionMs,
   getIssGlobeZoomLimits,
   resolveIssGlobeProfile,
   type IssGlobeVariant,
 } from "@/lib/ops/iss-globe-config";
 import { resolveGlobeCountryBorderStyle } from "@/lib/ops/iss-globe-countries";
-import type { IssGlobeLayerId } from "@/lib/ops/iss-globe-layers";
 import type { OpsIssPosition } from "@/lib/ops/types";
 import { issVisibilityRingDegrees } from "@/lib/ops/iss-visibility";
 
@@ -44,7 +43,7 @@ const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
   loading: () => (
     <div className="iss-globe__loading flex h-full min-h-[inherit] w-full items-center justify-center bg-[#030712] text-[12px] text-text-muted">
-      Ładowanie globusa…
+      Ładowanie modelu Ziemi…
     </div>
   ),
 });
@@ -75,20 +74,12 @@ type Props = {
   liveHud?: "off" | "controls";
   globeRef?: RefObject<GlobeMethods | undefined>;
   observer?: { lat: number; lon: number; name?: string } | null;
-  atmosphereLayer?: IssGlobeLayerId;
-  onAtmosphereLayerMeta?: (meta: {
-    updatedAt: string | null;
-    label: string;
-    status: import("@/hooks/useGlobeAtmosphereLayer").GlobeLayerStatus;
-    error?: string;
-  }) => void;
 };
 
 function useMobileGlobe() {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(max-width: 768px), (pointer: coarse)").matches;
-  });
+  // Zawsze false na SSR i pierwszym renderze klienta — matchMedia w useState
+  // powoduje mismatch klas (iss-globe--mobile) przy hydratacji.
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px), (pointer: coarse)");
@@ -187,19 +178,19 @@ export default function IssGlobeCanvas({
   liveHud = "off",
   globeRef: externalGlobeRef,
   observer = null,
-  atmosphereLayer = "none",
-  onAtmosphereLayerMeta,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const internalGlobeRef = useRef<GlobeMethods | undefined>(undefined);
   const globeRef = externalGlobeRef ?? internalGlobeRef;
   const userMovedRef = useRef(false);
   const programmaticPovRef = useRef(false);
+  const followIssRef = useRef(true);
   const viewInitRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [globePainted, setGlobePainted] = useState(false);
   const [followInternal, setFollowInternal] = useState(true);
   const followIss = followIssProp ?? followInternal;
+  followIssRef.current = followIss;
   const isMobile = useMobileGlobe();
   const profile = useMemo(
     () => resolveIssGlobeProfile(variant, isMobile),
@@ -219,13 +210,12 @@ export default function IssGlobeCanvas({
   );
   const showCountryBorders =
     countryBorderStyle != null && countryFeatures.length > 0;
-
-  useGlobeAtmosphereLayer(
-    globeRef,
-    variant === "full" ? atmosphereLayer : "none",
-    globePainted,
-    onAtmosphereLayerMeta,
+  const followTransitionMs = getIssGlobeFollowTransitionMs(
+    variant,
+    interactive,
+    isMobile,
   );
+  const isCompactPreview = variant === "compact" && !interactive;
 
   const { iss, globePast, globeFuture } = useLiveIssTrack(
     initialIss,
@@ -238,6 +228,11 @@ export default function IssGlobeCanvas({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const issRef = useRef(iss);
+  const cameraAltitudeRef = useRef(cameraAltitude);
+  issRef.current = iss;
+  cameraAltitudeRef.current = cameraAltitude;
 
   const issMarkerData = useMemo((): GlobeHtmlMarker[] => {
     const markers: GlobeHtmlMarker[] = [];
@@ -274,7 +269,9 @@ export default function IssGlobeCanvas({
         transitionMs,
       );
       if (transitionMs <= 0) {
-        programmaticPovRef.current = false;
+        window.setTimeout(() => {
+          programmaticPovRef.current = false;
+        }, 0);
       } else {
         window.setTimeout(() => {
           programmaticPovRef.current = false;
@@ -289,24 +286,26 @@ export default function IssGlobeCanvas({
       const controls = globe.controls();
       const renderer = globe.renderer();
       const radius = globe.getGlobeRadius();
-      const zoom = getIssGlobeZoomLimits(variant, isMobile);
+      const zoom = getIssGlobeZoomLimits(variant, isMobile, interactive);
+      const baseDistance = radius * cameraAltitude;
 
+      controls.enabled = interactive;
       controls.enablePan = false;
-      controls.enableDamping = true;
+      controls.enableRotate = interactive;
+      controls.enableDamping = interactive;
       controls.dampingFactor = isMobile ? 0.16 : 0.08;
       controls.rotateSpeed = isMobile ? 0.22 : 0.45;
-      controls.enableZoom = zoom.enableZoom;
-      controls.zoomSpeed = isMobile ? 0.55 : 0.85;
-      controls.minDistance = radius * zoom.minDistanceFactor;
-      controls.maxDistance = radius * zoom.maxDistanceFactor;
+      controls.enableZoom = interactive && zoom.enableZoom;
+      controls.zoomSpeed = isMobile ? 0.65 : 0.85;
+      controls.minDistance = baseDistance * zoom.minMultiplier;
+      controls.maxDistance = baseDistance * zoom.maxMultiplier;
 
-      if (isMobile && !zoom.enableZoom) {
-        const targetDistance = radius * cameraAltitude;
-        controls.minDistance = targetDistance;
-        controls.maxDistance = targetDistance;
+      if (!interactive || !zoom.enableZoom) {
+        controls.minDistance = baseDistance;
+        controls.maxDistance = baseDistance;
         controls.touches = { ONE: 0, TWO: 0 };
       } else if (isMobile) {
-        controls.touches = { ONE: 0, TWO: 1 };
+        controls.touches = { ONE: 0, TWO: 2 };
       } else {
         controls.touches = { ONE: 0, TWO: 2 };
       }
@@ -317,8 +316,16 @@ export default function IssGlobeCanvas({
 
       flattenGlobeMaterial(globe as GlobeInstanceRef);
     },
-    [cameraAltitude, isMobile, profile.maxPixelRatio, variant],
+    [cameraAltitude, interactive, isMobile, profile.maxPixelRatio, variant],
   );
+
+  useEffect(() => {
+    if (!globePainted || !globeRef.current) return;
+    configureControls(globeRef.current);
+    if (isCompactPreview && followIss && issRef.current) {
+      centerOnIss(0);
+    }
+  }, [globePainted, configureControls, globeRef, isCompactPreview, followIss, centerOnIss]);
 
   useEffect(() => {
     if (!showGlobe) return;
@@ -341,12 +348,13 @@ export default function IssGlobeCanvas({
         configureControls(globe);
 
         if (!viewInitRef.current) {
-          if (iss) {
+          const bootIss = issRef.current;
+          if (bootIss) {
             globe.pointOfView(
               {
-                lat: iss.latitude,
-                lng: iss.longitude,
-                altitude: cameraAltitude,
+                lat: bootIss.latitude,
+                lng: bootIss.longitude,
+                altitude: cameraAltitudeRef.current,
               },
               0,
             );
@@ -370,10 +378,10 @@ export default function IssGlobeCanvas({
       cancelAnimationFrame(frame);
       clearTimeout(fallback);
     };
-  }, [showGlobe, configureControls, iss, cameraAltitude, globeRef]);
+  }, [showGlobe, configureControls, globeRef]);
 
-  const handleUserMove = useCallback(() => {
-    if (programmaticPovRef.current) return;
+  const disableFollowOnUserInput = useCallback(() => {
+    if (!followIssRef.current) return;
     userMovedRef.current = true;
     if (followIssProp === undefined) {
       setFollowInternal(false);
@@ -382,36 +390,60 @@ export default function IssGlobeCanvas({
   }, [followIssProp, onFollowChange]);
 
   useEffect(() => {
+    if (!globePainted || !interactive) return;
+
     const globe = globeRef.current;
-    if (!globe || !interactive) return;
+    if (!globe) return;
+
     const controls = globe.controls();
-    controls.addEventListener("start", handleUserMove);
-    return () => controls.removeEventListener("start", handleUserMove);
-  }, [mounted, globeReady, interactive, handleUserMove, globeRef]);
+    const canvas = globe.renderer().domElement;
+
+    controls.addEventListener("start", disableFollowOnUserInput);
+    canvas.addEventListener("wheel", disableFollowOnUserInput, { passive: true });
+    canvas.addEventListener("pointerdown", disableFollowOnUserInput);
+
+    return () => {
+      controls.removeEventListener("start", disableFollowOnUserInput);
+      canvas.removeEventListener("wheel", disableFollowOnUserInput);
+      canvas.removeEventListener("pointerdown", disableFollowOnUserInput);
+    };
+  }, [globePainted, interactive, disableFollowOnUserInput, globeRef]);
 
   useEffect(() => {
     const onVisibility = () => {
       const globe = globeRef.current;
       if (!globe) return;
-      globe.controls().enabled = !document.hidden;
+      globe.controls().enabled = interactive && !document.hidden;
+      if (!document.hidden && isCompactPreview && globePainted && followIss && iss) {
+        centerOnIss(0);
+      }
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [mounted, globeReady, globeRef]);
+  }, [
+    interactive,
+    isCompactPreview,
+    globePainted,
+    followIss,
+    iss,
+    centerOnIss,
+    globeRef,
+  ]);
+
+  useEffect(() => {
+    if (!isCompactPreview || !globePainted || !followIss || !iss) return;
+    const id = window.setTimeout(() => centerOnIss(0), 100);
+    return () => window.clearTimeout(id);
+  }, [size.width, size.height, isCompactPreview, globePainted, followIss, iss, centerOnIss]);
 
   const setFollow = useCallback(
     (next: boolean) => {
       if (next) userMovedRef.current = false;
       if (followIssProp === undefined) setFollowInternal(next);
       onFollowChange?.(next);
-      if (next)
-        centerOnIss(
-          isMobile
-            ? ISS_GLOBE_FOLLOW.mobileTransitionMs
-            : ISS_GLOBE_FOLLOW.desktopTransitionMs,
-        );
+      if (next) centerOnIss(followTransitionMs);
     },
-    [centerOnIss, followIssProp, isMobile, onFollowChange],
+    [centerOnIss, followIssProp, followTransitionMs, onFollowChange],
   );
 
   const resetView = useCallback(() => {
@@ -431,20 +463,22 @@ export default function IssGlobeCanvas({
 
   useEffect(() => {
     if (!followIss || !iss || !globeRef.current || !globePainted) return;
-    centerOnIss(
-      isMobile
-        ? ISS_GLOBE_FOLLOW.mobileTransitionMs
-        : ISS_GLOBE_FOLLOW.desktopTransitionMs,
-    );
+    centerOnIss(followTransitionMs);
   }, [
     followIss,
     iss?.latitude,
     iss?.longitude,
     globePainted,
     centerOnIss,
-    isMobile,
+    followTransitionMs,
     globeRef,
   ]);
+
+  useEffect(() => {
+    if (!globePainted || !viewInitRef.current || !globeRef.current) return;
+    if (followTransitionMs > 0) return;
+    centerOnIss(0);
+  }, [cameraAltitude, globePainted, centerOnIss, followTransitionMs, globeRef]);
 
   useEffect(() => {
     if (!showGlobe || !globeRef.current || !globePainted) return;
@@ -481,6 +515,7 @@ export default function IssGlobeCanvas({
         "iss-globe",
         variant === "compact" && "iss-globe--compact",
         isMobile && "iss-globe--mobile",
+        !interactive && "iss-globe--preview",
         className,
       )}
     >
@@ -543,55 +578,61 @@ export default function IssGlobeCanvas({
             />
             {!globePainted ? (
               <div className="iss-globe__boot" aria-hidden>
-                Ładowanie globusa…
+                Ładowanie modelu Ziemi…
               </div>
+            ) : null}
+
+            {(showControls || liveHud === "controls") && globePainted ? (
+              <>
+                {liveHud === "controls" && iss ? (
+                  <div className="iss-globe__telemetry">
+                    <OpsIssTelemetry iss={iss} variant="hud" />
+                  </div>
+                ) : null}
+
+                <div className="iss-globe__hud" aria-label="Sterowanie modelem Ziemi">
+                  {liveHud === "controls" && !iss ? (
+                    <span className="iss-globe__live-chip iss-globe__live-chip--muted">
+                      Oczekiwanie na dane ISS…
+                    </span>
+                  ) : null}
+
+                  {showControls ? (
+                  <div className="iss-globe__hud-actions">
+                    <button
+                      type="button"
+                      className={cn(
+                        "iss-globe__follow-btn",
+                        followIss && "iss-globe__follow-btn--active",
+                      )}
+                      onClick={() => setFollow(!followIss)}
+                      aria-pressed={followIss}
+                    >
+                      Śledź ISS
+                    </button>
+                    {!followIss ? (
+                      <button
+                        type="button"
+                        className="iss-globe__follow-btn iss-globe__follow-btn--ghost"
+                        onClick={resetView}
+                      >
+                        Wróć do ISS
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+                </div>
+              </>
             ) : null}
           </>
         ) : (
           <div className="iss-globe__loading flex h-full min-h-[inherit] w-full items-center justify-center bg-[#030712] text-[12px] text-text-muted">
             {deferMount
-              ? "Przewiń, by załadować globus…"
-              : "Ładowanie globusa…"}
+              ? "Przewiń, by załadować model…"
+              : "Ładowanie modelu Ziemi…"}
           </div>
         )}
       </div>
-
-      {(showControls || liveHud === "controls") && (
-        <div className="iss-globe__controls">
-          {liveHud === "controls" && iss ? (
-            <span className="iss-globe__live-chip" aria-live="polite">
-              <span className="iss-globe__hud-dot" aria-hidden />
-              ISS · na żywo
-            </span>
-          ) : liveHud === "controls" ? (
-            <span className="iss-globe__live-chip iss-globe__live-chip--muted">
-              Oczekiwanie na dane ISS…
-            </span>
-          ) : null}
-          {showControls ? (
-            <>
-              <button
-                type="button"
-                className={cn(
-                  "iss-globe__control-btn",
-                  followIss && "iss-globe__control-btn--active",
-                )}
-                onClick={() => setFollow(!followIss)}
-                aria-pressed={followIss}
-              >
-                {followIss ? "Śledzenie ISS" : "Śledź ISS"}
-              </button>
-              <button
-                type="button"
-                className="iss-globe__control-btn"
-                onClick={resetView}
-              >
-                Reset widoku
-              </button>
-            </>
-          ) : null}
-        </div>
-      )}
     </div>
   );
 }

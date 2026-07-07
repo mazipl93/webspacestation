@@ -38,7 +38,7 @@ export default function OpsIssGlobeTeaser({
           <Link href="/sledziss" className="iss-globe-teaser__title-link">
             <span className="iss-globe-teaser__title">
               <Globe2 size={14} aria-hidden />
-              Globus ISS 3D
+              Model Ziemi 3D · ISS
               <span className="iss-globe-teaser__live" aria-hidden />
             </span>
           </Link>
@@ -55,7 +55,7 @@ export default function OpsIssGlobeTeaser({
               initialGlobePast={initialGlobePast}
               initialGlobeFuture={initialGlobeFuture}
               variant="compact"
-              interactive
+              interactive={false}
             />
           </div>
 
@@ -82,7 +82,7 @@ export default function OpsIssGlobeTeaser({
               </div>
             )}
             <Link href="/sledziss" className="iss-globe-teaser__hint">
-              Obróć globus · orbita na żywo · otwórz pełny tracker
+              Podgląd na żywo · pełna interakcja w trackerze ISS
               <ChevronRight size={11} className="inline opacity-70" />
             </Link>
           </div>

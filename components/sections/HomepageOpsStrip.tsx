@@ -132,12 +132,14 @@ async function HomepageOpsStripLoader() {
     ? await getLaunchWssArticleLinks(ops.launches)
     : new Map<string, LaunchWssArticleLink>();
   const next = hasLaunches ? pickPrimaryLaunch(ops.launches) : null;
+  /** Ta sama pozycja co ground track — marker i kamera startują bez skoku. */
+  const iss = track?.iss ?? ops.iss;
 
   return (
     <HomepageOpsStripView
       launches={ops.launches}
       recentLaunches={ops.recentLaunches}
-      iss={ops.iss}
+      iss={iss}
       live={ops.live}
       wssArticle={next ? linkForLaunch(next.id, articleLinks) : null}
       aurora={aurora}

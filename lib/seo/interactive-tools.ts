@@ -13,8 +13,11 @@ export type InteractiveToolSeo = {
   title: string;
   /** Nagłówek H1 na stronie. */
   headline: string;
+  /** Meta description (Google, OG, Twitter). */
   description: string;
   longDescription: string;
+  /** Akapit pod schema.org WebApplication.abstract (tylko JSON-LD). */
+  abstract?: string;
   keywords: string[];
   featureList: string[];
   faq: { question: string; answer: string }[];
@@ -79,51 +82,70 @@ export const INTERACTIVE_TOOLS: Record<InteractiveToolId, InteractiveToolSeo> = 
   "iss-globe-tracker": {
     id: "iss-globe-tracker",
     path: "/sledziss",
-    title: "Śledź ISS · globus 3D na żywo",
-    headline: "Śledź ISS · interaktywny globus 3D",
+    title: "Śledź ISS · model Ziemi 3D na żywo",
+    headline: "Śledź ISS · model Ziemi 3D",
     description:
-      "Międzynarodowa Stacja Kosmiczna na interaktywnym globusie 3D: pozycja na orbicie, ground track, wysokość i prędkość — odświeżane na żywo z TLE i SGP4.",
+      "Gdzie jest ISS teraz? Trójwymiarowy model Ziemi z pozycją stacji, orbitą, prędkością i przelotami nad Twoją lokalizacją. Darmowy tracker w przeglądarce.",
     longDescription:
-      "Obracaj globus, obserwuj ISS ~400 km nad Ziemią i śledź trasę orbity w czasie rzeczywistym. Ten sam propagator SGP4 co w mapie 2D — dokładna pozycja stacji bez instalacji aplikacji.",
+      "Obracaj model Ziemi i obserwuj ISS na wysokości około 400 km. Włącz śledzenie kamery, sprawdź wysokość i prędkość stacji oraz zaplanuj obserwację dzięki liście przelotów w panelu bocznym.",
+    abstract:
+      "Interaktywny tracker Międzynarodowej Stacji Kosmicznej w trójwymiarze. Strona pokazuje aktualną pozycję ISS na orbicie około 408 km nad powierzchnią Ziemi, trasę orbity, telemetrię na żywo oraz nadchodzące przeloty widoczne z wybranej lokalizacji w Polsce. Narzędzie działa w przeglądarce na komputerze i telefonie, bez instalacji aplikacji.",
     keywords: [
       "śledź ISS",
       "ISS tracker",
-      "globus ISS",
-      "ISS 3D",
       "gdzie jest ISS",
+      "gdzie jest ISS teraz",
       "ISS na żywo",
+      "pozycja ISS",
       "orbita ISS",
       "Międzynarodowa Stacja Kosmiczna",
+      "model Ziemi 3D",
+      "ISS 3D",
       "tracker stacji kosmicznej",
       "ISS teraz",
-      "pozycja ISS",
+      "przelot ISS",
+      "przelot ISS nad Polską",
+      "obserwacja ISS",
+      "stacja kosmiczna na żywo",
+      "ISS wysokość prędkość",
     ],
     featureList: [
-      "Interaktywny globus 3D z teksturą Ziemi",
-      "Pozycja ISS na orbicie w czasie rzeczywistym",
-      "Orbita przeszła i przyszła + ground track",
-      "Telemetria: wysokość, prędkość, współrzędne",
-      "Przeloty ISS nad Polską",
+      "Trójwymiarowy model Ziemi z teksturą NASA Blue Marble",
+      "Pozycja ISS na orbicie aktualizowana co kilka sekund",
+      "Orbita stacji i zasięg horyzontu geometrycznego",
+      "Telemetria: współrzędne, wysokość, prędkość, czas obiegu",
+      "Przeloty ISS nad wybraną lokalizacją z oceną widoczności",
+      "Obsługa telefonu: obracanie, pinch-zoom, śledzenie kamery",
     ],
     faq: [
       {
-        question: "Jak dokładna jest pozycja ISS na globusie?",
+        question: "Gdzie jest ISS teraz?",
         answer:
-          "Pozycja jest liczona z elementów orbitalnych TLE (satelita NORAD 25544) metodą SGP4 — standard stosowany przez trackery NASA i N2YO. Typowa dokładność to ok. kilometr, odświeżana co kilka sekund.",
+          "Na stronie /sledziss zobaczysz bieżącą pozycję Międzynarodowej Stacji Kosmicznej na modelu Ziemi 3D wraz z wysokością, prędkością i współrzędnymi geograficznymi. Dane odświeżają się automatycznie co około 5 sekund.",
       },
       {
-        question: "Czym różni się globus od mapy 2D?",
+        question: "Jak dokładna jest pozycja ISS na modelu?",
         answer:
-          "Globus pokazuje ISS w przestrzeni 3D nad kulą Ziemi z orbitą na właściwej wysokości (~408 km). Mapa 2D pod /mapa pokazuje ground track i platformy startowe rakiet.",
+          "Pozycja pochodzi z elementów orbitalnych TLE satelity NORAD 25544 i propagatora SGP4, tego samego standardu co w trackera NASA i N2YO. Typowa dokładność to około jeden kilometr.",
+      },
+      {
+        question: "Czym różni się model 3D od mapy 2D?",
+        answer:
+          "Model Ziemi pokazuje ISS w przestrzeni trójwymiarowej nad kulą planety z orbitą na właściwej wysokości około 408 km. Mapa 2D pod adresem /mapa pokazuje ground track na płaskiej mapie oraz platformy startowe rakiet.",
       },
       {
         question: "Czy mogę zobaczyć ISS gołym okiem?",
         answer:
-          "Tak — przy sprzyjających warunkach ISS wygląda jak jasna gwiazda. W panelu bocznym znajdziesz nadchodzące przeloty nad Polską z oznaczeniem widoczności.",
+          "Tak, przy sprzyjających warunkach ISS wygląda jak jasna gwiazda przelatująca po niebie. W panelu bocznym wybierz swoje miasto i sprawdź nadchodzące przeloty z oceną widoczności.",
+      },
+      {
+        question: "Czy tracker ISS działa na telefonie?",
+        answer:
+          "Tak. Model Ziemi obsługuje dotyk: możesz obracać widok, przybliżać dwoma palcami i włączyć śledzenie kamery za stacją jednym przyciskiem.",
       },
     ],
     relatedToolIds: ["iss-tracker", "rocket-launches", "aurora-terminal"],
-    ogImageAlt: "Śledź ISS — interaktywny globus 3D z orbitą stacji kosmicznej na żywo",
+    ogImageAlt: "Śledź ISS na trójwymiarowym modelu Ziemi z orbitą stacji kosmicznej na żywo",
     sitemapPriority: 0.94,
     sitemapChangeFrequency: "hourly",
   },

@@ -28,7 +28,6 @@ export default async function SledzIssPage() {
   return (
     <>
       <link rel="preload" href="/geo/earth-blue-marble.jpg" as="image" />
-      <link rel="preload" href="/geo/earth-night.jpg" as="image" />
       <ToolPageJsonLd tool={TOOL} />
       <DiscoverPageShell
         overline="Odkrywaj"
@@ -43,7 +42,6 @@ export default async function SledzIssPage() {
             initialGlobeFuture={track?.globeFuture ?? []}
             polandPasses={polandPasses}
             passesComputedAt={passesComputedAt}
-            tleCachedAt={getIssTleCachedAt()}
           />
         </div>
 

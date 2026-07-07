@@ -24,6 +24,7 @@ export function buildToolPageMetadata(tool: InteractiveToolSeo): Metadata {
       description: tool.description,
       type: "website",
       locale: "pl_PL",
+      siteName: "Web Space Station",
       images: [
         {
           url: og.url,
@@ -38,6 +39,10 @@ export function buildToolPageMetadata(tool: InteractiveToolSeo): Metadata {
       title: pageTitle,
       description: tool.description,
       images: [og.url],
+    },
+    other: {
+      "application-name": "Web Space Station",
+      "apple-mobile-web-app-title": cleanTitle.slice(0, 32),
     },
   };
 }

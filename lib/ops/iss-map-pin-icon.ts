@@ -1,8 +1,8 @@
-/** Ikona ISS — srebrne moduły + złote panele słoneczne. */
-export const ISS_MAP_PIN_SRC = "/images/ops-pads/iss-silhouette.svg";
+/** Ikona ISS na mapie 2D i modelu 3D. */
+export const ISS_MAP_PIN_SRC = "/images/ops-pads/issik2.png";
 
-export const ISS_MAP_PIN_WIDTH = 38;
-export const ISS_MAP_PIN_HEIGHT = 24;
+export const ISS_MAP_PIN_WIDTH = 48;
+export const ISS_MAP_PIN_HEIGHT = 28;
 
 export function issMapPinHtml(active: boolean): string {
   const activeClass = active ? " ops-iss-map-pin--active" : "";

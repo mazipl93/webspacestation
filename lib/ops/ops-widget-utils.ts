@@ -1,6 +1,13 @@
 import { formatIssForReader } from "@/lib/ops/format-ops-display";
 import type { OpsIssPosition, OpsLaunch } from "@/lib/ops/types";
 
+/** Stały separator tysięcy — Intl w Node vs przeglądarce daje inne nbsp → hydration mismatch. */
+export function formatOpsInteger(n: number): string {
+  const sign = n < 0 ? "-" : "";
+  const digits = String(Math.abs(Math.round(n)));
+  return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
 export const OPS_IMMINENT_MS = 24 * 60 * 60 * 1000;
 
 export function isOpsLaunchImminent(netIso: string): boolean {
@@ -27,7 +34,7 @@ export function formatIssStats(iss: OpsIssPosition | null): {
       typeof iss.altitudeKm === "number" ? `${iss.altitudeKm} km` : null,
     velocity:
       typeof iss.velocityKmh === "number"
-        ? `${iss.velocityKmh.toLocaleString("pl-PL")} km/h`
+        ? `${formatOpsInteger(iss.velocityKmh)} km/h`
         : null,
   };
 }

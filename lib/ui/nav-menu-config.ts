@@ -118,10 +118,10 @@ export const NAV_HUB_LINKS: NavMenuLink[] = [
 
 export const NAV_MORE_LINKS: NavMenuLink[] = [
   {
-    label: "Śledź ISS · globus 3D",
+    label: "Śledź ISS · model 3D",
     href: "/sledziss",
     accentKey: "sledziss",
-    description: "Interaktywny globus 3D z orbitą stacji na żywo",
+    description: "Trójwymiarowy model Ziemi z orbitą stacji na żywo",
     icon: Globe2,
   },
   {

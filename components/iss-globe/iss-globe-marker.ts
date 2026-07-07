@@ -3,12 +3,20 @@ import { ISS_MAP_PIN_SRC } from "@/lib/ops/iss-map-pin-icon";
 /** Jedna instancja markera — globe.gl aktualizuje pozycję bez przebudowy DOM. */
 let markerEl: HTMLDivElement | null = null;
 let markerCompact = false;
+let markerSrc: string | null = null;
 
 export function getIssGlobeMarkerElement(compact: boolean): HTMLDivElement {
-  if (markerEl && markerCompact === compact) return markerEl;
+  if (
+    markerEl &&
+    markerCompact === compact &&
+    markerSrc === ISS_MAP_PIN_SRC
+  ) {
+    return markerEl;
+  }
 
   markerEl = document.createElement("div");
   markerCompact = compact;
+  markerSrc = ISS_MAP_PIN_SRC;
   markerEl.className = compact
     ? "iss-globe__marker iss-globe__marker--compact"
     : "iss-globe__marker";

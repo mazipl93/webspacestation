@@ -156,13 +156,27 @@ export function buildWebApplicationJsonLd(tool: InteractiveToolSeo) {
     name: tool.headline,
     url,
     description: tool.description,
+    ...(tool.abstract || tool.longDescription
+      ? { abstract: tool.abstract ?? tool.longDescription }
+      : {}),
     applicationCategory: "ScienceApplication",
+    applicationSubCategory: "Space & Astronomy",
     operatingSystem: "Web",
-    browserRequirements: "Requires JavaScript",
+    browserRequirements: "Requires JavaScript. WebGL recommended.",
     inLanguage: "pl-PL",
     isAccessibleForFree: true,
     keywords: tool.keywords.join(", "),
     featureList: tool.featureList,
+    audience: {
+      "@type": "Audience",
+      audienceType: "Space enthusiasts, amateur astronomers, ISS observers",
+    },
+    about: {
+      "@type": "Thing",
+      name: "International Space Station",
+      alternateName: "ISS",
+      identifier: "NORAD 25544",
+    },
     ...(ogImage ? { image: ogImage } : {}),
     offers: {
       "@type": "Offer",
@@ -200,13 +214,43 @@ export function buildFaqPageJsonLd(
   };
 }
 
-/** Łączy WebApplication + Breadcrumb + FAQ dla narzędzia live. */
+/** WebPage — uzupełnia WebApplication o kontekst strony dla wyszukiwarek. */
+export function buildToolWebPageJsonLd(tool: InteractiveToolSeo) {
+  const siteUrl = getSiteUrl();
+  const url = `${siteUrl}${tool.path}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: tool.title,
+    description: tool.description,
+    inLanguage: "pl-PL",
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: ORG_NAME,
+      url: siteUrl,
+    },
+    about: {
+      "@type": "Thing",
+      name: "International Space Station tracking",
+    },
+    mainEntity: {
+      "@id": `${url}#app`,
+    },
+  };
+}
+
+/** Łączy WebApplication + WebPage + Breadcrumb + FAQ dla narzędzia live. */
 export function buildInteractiveToolJsonLd(
   tool: InteractiveToolSeo,
   breadcrumb: BreadcrumbItem[],
 ) {
   const blocks: Record<string, unknown>[] = [
     buildWebApplicationJsonLd(tool),
+    buildToolWebPageJsonLd(tool),
     buildBreadcrumbJsonLd(breadcrumb),
   ];
   const faq = buildFaqPageJsonLd(tool.faq, tool.path);
