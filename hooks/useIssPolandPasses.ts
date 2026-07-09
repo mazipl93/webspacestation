@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
+import { filterUpcomingIssPasses } from "@/lib/ops/iss-passes-filter";
 
 const PASSES_URL = "/api/ops/iss-passes";
 const INTERVAL_MS = 60_000;
@@ -27,7 +28,9 @@ export function useIssPolandPasses({
   lat,
   lon,
 }: Options = {}) {
-  const [passes, setPasses] = useState<IssPolandPass[]>(initialPasses);
+  const [passes, setPasses] = useState<IssPolandPass[]>(() =>
+    filterUpcomingIssPasses(initialPasses),
+  );
   const [computedAt, setComputedAt] = useState<string | null>(initialComputedAt);
   const [tleAt, setTleAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(initialPasses.length === 0);
@@ -52,7 +55,7 @@ export function useIssPolandPasses({
         if (!res.ok) return;
         const data = (await res.json()) as Payload;
         if (cancelled) return;
-        setPasses(data.passes ?? []);
+        setPasses(filterUpcomingIssPasses(data.passes ?? []));
         setComputedAt(data.computedAt ?? null);
         setTleAt(data.tleAt ?? null);
       } catch {
@@ -74,6 +77,14 @@ export function useIssPolandPasses({
       document.removeEventListener("visibilitychange", onVis);
     };
   }, [limit, lat, lon]);
+
+  useEffect(() => {
+    const tick = () => {
+      setPasses((prev) => filterUpcomingIssPasses(prev));
+    };
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   return { passes, computedAt, tleAt, loading };
 }

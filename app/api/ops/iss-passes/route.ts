@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getIssTleCachedAt } from "@/lib/ops/iss-orbit";
 import { computeIssPolandPasses } from "@/lib/ops/iss-poland-passes";
 import { fetchN2yoVisualPasses } from "@/lib/ops/iss-passes-n2yo";
+import { filterUpcomingIssPasses } from "@/lib/ops/iss-passes-filter";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,12 +24,12 @@ export async function GET(request: Request) {
   if (n2yoPasses !== null) {
     return NextResponse.json(
       {
-        passes: n2yoPasses,
+        passes: filterUpcomingIssPasses(n2yoPasses, Date.now(), limit),
         computedAt: new Date().toISOString(),
         source: "n2yo",
       },
       {
-        headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+        headers: { "Cache-Control": "private, no-store, must-revalidate" },
       },
     );
   }
@@ -37,13 +38,13 @@ export async function GET(request: Request) {
   const passes = await computeIssPolandPasses(limit, 240, true, observer);
   return NextResponse.json(
     {
-      passes,
+      passes: filterUpcomingIssPasses(passes, Date.now(), limit),
       computedAt: new Date().toISOString(),
       tleAt: getIssTleCachedAt(),
       source: "sgp4",
     },
     {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" },
+      headers: { "Cache-Control": "private, no-store, must-revalidate" },
     },
   );
 }

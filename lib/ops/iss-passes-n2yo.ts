@@ -2,6 +2,7 @@ import "server-only";
 
 import { POLAND_OBSERVER } from "@/lib/ops/iss-poland-passes.types";
 import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
+import { filterUpcomingIssPasses } from "@/lib/ops/iss-passes-filter";
 
 const ISS_NORAD_ID = 25544;
 const N2YO_BASE = "https://api.n2yo.com/rest/v1/satellite";
@@ -69,15 +70,17 @@ export async function fetchN2yoVisualPasses(
 
   try {
     const res = await fetch(url, {
-      next: { revalidate: 300 },
+      cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
     const data = (await res.json()) as N2yoResponse;
     if (!data.passes?.length) return [];
-    return data.passes
-      .slice(0, limit)
-      .map((p, i) => n2yoPassToPolandPass(p, i));
+    return filterUpcomingIssPasses(
+      data.passes.map((p, i) => n2yoPassToPolandPass(p, i)),
+      Date.now(),
+      limit,
+    );
   } catch {
     return null;
   }

@@ -90,6 +90,7 @@ export default function OpsMissionMap({
       pinDetail={pinDetail}
       onPinDetailClose={() => setFocusPinId(null)}
       followIss={followIss}
+      mapPageLayout={isMapPage}
     />
   );
 

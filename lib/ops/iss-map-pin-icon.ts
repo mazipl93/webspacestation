@@ -1,10 +1,16 @@
-/** Ikona ISS na mapie 2D i modelu 3D. */
+/** Ikona ISS — ta sama grafika na globusie 3D i mapie 2D. */
 export const ISS_MAP_PIN_SRC = "/images/ops-pads/issik2.png";
 
-export const ISS_MAP_PIN_WIDTH = 48;
-export const ISS_MAP_PIN_HEIGHT = 28;
+/** Rozmiar markera na mapie 2D (odpowiednik iss-globe__marker--compact). */
+export const ISS_MAP_PIN_WIDTH = 44;
+export const ISS_MAP_PIN_HEIGHT = 26;
 
+/** HTML markera 2D — bez klas globusa (globalne width:100% psuły rozmiar w Leaflet). */
 export function issMapPinHtml(active: boolean): string {
-  const activeClass = active ? " ops-iss-map-pin--active" : "";
-  return `<span class="ops-iss-map-pin${activeClass}"><img src="${ISS_MAP_PIN_SRC}" width="${ISS_MAP_PIN_WIDTH}" height="${ISS_MAP_PIN_HEIGHT}" alt="" decoding="async" draggable="false" /></span>`;
+  const w = ISS_MAP_PIN_WIDTH;
+  const h = ISS_MAP_PIN_HEIGHT;
+  const activeStyle = active ? "transform:scale(1.06);" : "";
+  const shadow =
+    "filter:drop-shadow(0 2px 4px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(0,0,0,0.45));";
+  return `<img src="${ISS_MAP_PIN_SRC}" class="ops-iss-map-pin__img" alt="" width="${w}" height="${h}" style="display:block;width:${w}px;height:${h}px;max-width:${w}px;max-height:${h}px;object-fit:contain;pointer-events:none;${shadow}${activeStyle}" decoding="async" draggable="false" />`;
 }

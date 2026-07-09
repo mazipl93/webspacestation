@@ -7,6 +7,7 @@ import {
   type IssPassObservationKind,
   type IssPolandPass,
 } from "@/lib/ops/iss-poland-passes.types";
+import { filterUpcomingIssPasses } from "@/lib/ops/iss-passes-filter";
 
 export type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
 export { POLAND_BOUNDS, POLAND_OBSERVER } from "@/lib/ops/iss-poland-passes.types";
@@ -271,7 +272,7 @@ export async function computeIssPolandPasses(
     prevT = t;
   }
 
-  const fresh = passes.filter((p) => new Date(p.endAt).getTime() > now);
+  const fresh = filterUpcomingIssPasses(passes, now);
   if (visibleOnly) return fresh.filter((p) => p.visible).slice(0, limit);
   return fresh.slice(0, limit);
 }

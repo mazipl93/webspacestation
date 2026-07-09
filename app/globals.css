@@ -1185,7 +1185,7 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
   transition: opacity 180ms ease;
 }
 
-.iss-globe__marker img {
+.iss-globe .iss-globe__marker img {
   display: block;
   width: 100%;
   height: auto;
@@ -1194,6 +1194,16 @@ html[data-portal-theme] .homepage-ops-panel .border-hairline-faint {
 .iss-globe__marker--compact {
   width: 44px;
   height: 26px;
+}
+
+.iss-globe__marker--map {
+  width: 44px;
+  height: 26px;
+}
+
+.iss-globe__marker--active img {
+  opacity: 1;
+  transform: scale(1.06);
 }
 
 .iss-globe__observer-marker {
@@ -3754,29 +3764,45 @@ html[data-portal-theme] .ops-map-pin-detail--overlay .ops-map-pin-detail__desc {
   background: transparent !important;
   border: none !important;
 }
+.ops-leaflet-pin--iss {
+  overflow: visible !important;
+  background: transparent !important;
+  border: none !important;
+}
+.ops-live-map .leaflet-marker-icon.ops-leaflet-pin--iss {
+  width: 44px !important;
+  height: 26px !important;
+  margin-left: -22px !important;
+  margin-top: -13px !important;
+  overflow: hidden !important;
+}
+.ops-live-map .leaflet-marker-icon.ops-leaflet-pin--iss .ops-iss-map-pin__img {
+  width: 44px !important;
+  height: 26px !important;
+  max-width: 44px !important;
+  max-height: 26px !important;
+  object-fit: contain !important;
+}
 .ops-iss-map-pin {
   display: block;
   line-height: 0;
 }
-.ops-iss-map-pin img {
+.ops-iss-map-pin--chip {
   display: block;
-  width: 38px;
-  height: auto;
-  max-height: 24px;
+  width: 22px;
+  height: 13px;
+}
+.ops-iss-map-pin--chip img {
+  display: block;
+  width: 22px !important;
+  height: 13px !important;
+  max-width: 22px !important;
+  max-height: 13px !important;
   object-fit: contain;
   opacity: 0.96;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
   pointer-events: none;
   user-select: none;
-}
-.ops-iss-map-pin--active img {
-  opacity: 1;
-  transform: scale(1.06);
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
-}
-.ops-iss-map-pin--chip img {
-  width: 24px;
-  max-height: 15px;
 }
 .ops-live-map .ops-map-leaflet-popup .leaflet-popup-content-wrapper {
   border-radius: 14px;

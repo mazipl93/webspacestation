@@ -17,6 +17,7 @@ import { useLiveIssTrack } from "@/hooks/useLiveIssTrack";
 import { prepareOrbitSegmentsForLeaflet } from "@/lib/ops/iss-orbit-geo";
 import { cn } from "@/lib/cn";
 import { issMapPinHtml, ISS_MAP_PIN_HEIGHT, ISS_MAP_PIN_WIDTH } from "@/lib/ops/iss-map-pin-icon";
+import { ISS_MAP_PAGE_CENTER, ISS_MAP_PAGE_ZOOM } from "@/lib/ops/iss-map-view";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
 import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
@@ -43,6 +44,7 @@ type Props = {
   } | null;
   onPinDetailClose?: () => void;
   followIss?: boolean;
+  mapPageLayout?: boolean;
 };
 
 function MapViewController({
@@ -50,11 +52,13 @@ function MapViewController({
   pins,
   focusPinId,
   onUserMoved,
+  mapPageLayout = false,
 }: {
   iss?: OpsIssPosition | null;
   pins: OpsMapPin[];
   focusPinId?: string | null;
   onUserMoved?: () => void;
+  mapPageLayout?: boolean;
 }) {
   const map = useMap();
   const initDoneRef = useRef(false);
@@ -67,24 +71,28 @@ function MapViewController({
   }, [map, onUserMoved]);
 
   useEffect(() => {
-    if (focusPinId) return;
+    if (focusPinId || initDoneRef.current) return;
 
-    if (!iss) {
-      if (!initDoneRef.current && pins.length > 0) {
-        const bounds = L.latLngBounds(pins.map((p) => [p.lat, p.lon] as [number, number]));
-        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 3 });
-        initDoneRef.current = true;
-      }
+    if (mapPageLayout) {
+      map.setView(ISS_MAP_PAGE_CENTER, ISS_MAP_PAGE_ZOOM, { animate: false });
+      initDoneRef.current = true;
       return;
     }
 
-    if (!initDoneRef.current) {
-      map.setView([iss.latitude, iss.longitude], 3, { animate: false });
+    if (!iss) {
+      if (pins.length > 0) {
+        const bounds = L.latLngBounds(pins.map((p) => [p.lat, p.lon] as [number, number]));
+        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 3 });
+      }
       initDoneRef.current = true;
+      return;
     }
+
+    map.setView([iss.latitude, iss.longitude], 3, { animate: false });
+    initDoneRef.current = true;
     // Nie panTo co 5s — marker przesuwa się sam przez zaktualizowanie prop `position`.
     // Viewport pozostaje nieruchomy, co eliminuje ciągłe drganie mapy.
-  }, [iss, pins, map, focusPinId]);
+  }, [iss, pins, map, focusPinId, mapPageLayout]);
 
   return null;
 }
@@ -196,7 +204,7 @@ function createIssIcon(active: boolean) {
   const w = ISS_MAP_PIN_WIDTH;
   const h = ISS_MAP_PIN_HEIGHT;
   return L.divIcon({
-    className: "ops-leaflet-pin",
+    className: "ops-leaflet-pin ops-leaflet-pin--iss",
     html: issMapPinHtml(active),
     iconSize: [w, h],
     iconAnchor: [w / 2, h / 2],
@@ -256,6 +264,7 @@ export default function OpsLiveMap({
   pinDetail = null,
   onPinDetailClose,
   followIss = false,
+  mapPageLayout = false,
 }: Props) {
   const overlayOpen = Boolean(pinDetail);
   const [isFollowing, setIsFollowing] = useState(followIss);
@@ -321,11 +330,16 @@ export default function OpsLiveMap({
     return icons;
   }, [cosmodromePins, extraPadPins, focusPinId]);
 
+  const isMapPage = mapPageLayout || Boolean(className?.includes("ops-map-page-map"));
+
   const center = useMemo<[number, number]>(() => {
+    if (isMapPage) return ISS_MAP_PAGE_CENTER;
     if (issLatLng) return issLatLng;
     if (pins[0]) return [pins[0].lat, pins[0].lon];
     return [20, 0];
-  }, [issLatLng, pins]);
+  }, [isMapPage, issLatLng, pins]);
+
+  const initialZoom = isMapPage ? ISS_MAP_PAGE_ZOOM : 3;
 
   const initialCenterRef = useRef<[number, number] | null>(null);
   if (initialCenterRef.current === null) {
@@ -380,7 +394,7 @@ export default function OpsLiveMap({
       <MapContainer
         ref={mapRef}
         center={initialCenterRef.current ?? center}
-        zoom={3}
+        zoom={initialZoom}
         scrollWheelZoom={interactive}
         dragging
         touchZoom
@@ -397,6 +411,7 @@ export default function OpsLiveMap({
           pins={effectivePins}
           focusPinId={focusPinId}
           onUserMoved={followIss ? () => setIsFollowing(false) : undefined}
+          mapPageLayout={isMapPage}
         />
         <PinFocusController focusPinId={focusPinId} pins={effectivePins} />
         {overlayOpen ? (
@@ -499,10 +514,9 @@ export default function OpsLiveMap({
           onClick={() => {
             setIsFollowing(true);
             if (mapRef.current && liveIss) {
-              const currentZoom = mapRef.current.getZoom();
               mapRef.current.setView(
                 [liveIss.latitude, liveIss.longitude],
-                currentZoom,
+                isMapPage ? ISS_MAP_PAGE_ZOOM : mapRef.current.getZoom(),
                 { animate: true, duration: 1.5 },
               );
             }
