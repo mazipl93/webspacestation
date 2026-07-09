@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import type { KpData, SolarWindData } from "@/lib/aurora/api";
 import {
   getEarthSolarWindPoint,
@@ -59,10 +58,5 @@ async function loadAuroraSnapshot(): Promise<AuroraHomepageSnapshot | null> {
 }
 
 export async function getHomepageAuroraSnapshot(): Promise<AuroraHomepageSnapshot | null> {
-  if (process.env.NODE_ENV === "development") {
-    return loadAuroraSnapshot();
-  }
-  return unstable_cache(loadAuroraSnapshot, ["aurora-homepage-v3"], {
-    revalidate: 60,
-  })();
+  return loadAuroraSnapshot();
 }

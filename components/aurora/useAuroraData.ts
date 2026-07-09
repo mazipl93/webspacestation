@@ -12,6 +12,7 @@ import type {
   SolarRegion,
 } from "@/lib/aurora/api";
 import { parseRtswSolarWind } from "@/lib/aurora/rtsw";
+import { setAuroraTerminalCoreCache } from "@/lib/aurora/terminal-core";
 
 export interface AuroraFetchDiag {
   key: string;
@@ -448,11 +449,30 @@ export function useAuroraData() {
         else delete mergedErrors[d.key];
       }
 
+      const nextKpCurrent =
+        kpCurrentParsed.length > 0 ? kpCurrentParsed : prev.kpCurrent;
+      const nextKp3Day = kp3DayParsed.length > 0 ? kp3DayParsed : prev.kp3Day;
+      const nextSolarWind =
+        solarWindParsed.length > 0 ? solarWindParsed : prev.solarWind;
+
+      if (
+        nextKpCurrent.length > 0 ||
+        nextKp3Day.length > 0 ||
+        nextSolarWind.length > 0
+      ) {
+        setAuroraTerminalCoreCache({
+          kp1m: nextKpCurrent,
+          kp3Day: nextKp3Day,
+          solarWind: nextSolarWind,
+          lastUpdate: new Date(),
+        });
+      }
+
       return {
-        kpCurrent: kpCurrentParsed.length > 0 ? kpCurrentParsed : prev.kpCurrent,
-        kp3Day: kp3DayParsed.length > 0 ? kp3DayParsed : prev.kp3Day,
+        kpCurrent: nextKpCurrent,
+        kp3Day: nextKp3Day,
         kpForecast: kpForecastParsed.length > 0 ? kpForecastParsed : prev.kpForecast,
-        solarWind: solarWindParsed.length > 0 ? solarWindParsed : prev.solarWind,
+        solarWind: nextSolarWind,
         dst: dstParsed.length > 0 ? dstParsed : prev.dst,
         ae: aeParsed,
         symh: symhParsed.length > 0 ? symhParsed : prev.symh,

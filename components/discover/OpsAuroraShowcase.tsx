@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Sparkles } from "lucide-react";
 import OpsKpDashboardGauge from "@/components/discover/OpsKpDashboardGauge";
 import OpsShowcaseBackdrop from "@/components/discover/OpsShowcaseBackdrop";
 import { cn } from "@/lib/cn";
-import { getBzColor, getKpLabel, getKpLiveReading } from "@/lib/aurora/api";
+import { getBzColor } from "@/lib/aurora/api";
 import KpContextCaption from "@/components/aurora/KpContextCaption";
 import type { AuroraHomepageSnapshot } from "@/lib/aurora/homepage-snapshot";
+import { useAuroraTerminalCore } from "@/hooks/useAuroraTerminalCore";
 import {
   OPS_AURORA_SHOWCASE_IMAGE,
   OPS_SHOWCASE_GLOW,
@@ -20,59 +20,22 @@ type Props = {
   className?: string;
 };
 
-const POLL_MS = 60_000;
-
 export default function OpsAuroraShowcase({ initialSnapshot, className }: Props) {
-  const [snapshot, setSnapshot] = useState(initialSnapshot);
+  const { reading, kp, label, stormy, bzAtEarth } = useAuroraTerminalCore(initialSnapshot);
 
-  useEffect(() => {
-    let cancelled = false;
+  if (kp == null || !reading || !label) return null;
 
-    async function refresh() {
-      try {
-        const res = await fetch("/api/aurora/snapshot");
-        if (!res.ok) return;
-        const data = (await res.json()) as AuroraHomepageSnapshot;
-        if (!cancelled) setSnapshot(data);
-      } catch {
-        /* keep last snapshot */
-      }
-    }
-
-    void refresh();
-    const id = window.setInterval(refresh, POLL_MS);
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-  }, []);
-
-  const live = useMemo(() => {
-    if (!snapshot) return null;
-    const reading = getKpLiveReading(snapshot.kp1m, snapshot.kp3Day);
-    const kp = reading.current;
-    return {
-      kp,
-      reading,
-      label: getKpLabel(kp),
-      stormy: kp >= 5,
-      bzAtEarth: snapshot.bzAtEarth,
-    };
-  }, [snapshot]);
-
-  if (!live) return null;
-
-  const bzColor = live.bzAtEarth != null ? getBzColor(live.bzAtEarth) : undefined;
+  const bzColor = bzAtEarth != null ? getBzColor(bzAtEarth) : undefined;
 
   return (
     <Link
       href="/zorza"
       className={cn(
         "ops-aurora-showcase group block min-w-0",
-        live.stormy && "ops-aurora-showcase--stormy",
+        stormy && "ops-aurora-showcase--stormy",
         className,
       )}
-      aria-label={`Zorza na żywo — Kp ${live.kp.toFixed(1)}, ${live.label}. Wejdź do Aurora Terminal.`}
+      aria-label={`Zorza na żywo — Kp ${kp.toFixed(1)}, ${label}. Wejdź do Aurora Terminal.`}
     >
       <OpsShowcaseBackdrop
         src={OPS_AURORA_SHOWCASE_IMAGE}
@@ -94,21 +57,21 @@ export default function OpsAuroraShowcase({ initialSnapshot, className }: Props)
 
             <div className="ops-aurora-showcase__meta-row">
               <p className="ops-aurora-showcase__kp">
-                Kp {live.kp.toFixed(1)}
+                Kp {kp.toFixed(1)}
                 <span className="ops-aurora-showcase__kp-sep"> · </span>
-                {live.label}
+                {label}
               </p>
               <div className="ops-aurora-showcase__chips flex flex-wrap gap-2">
-                {live.bzAtEarth != null && (
+                {bzAtEarth != null && (
                   <span
                     className="ops-aurora-showcase__chip"
                     style={{ color: bzColor, borderColor: `${bzColor}55` }}
                   >
-                    Bz @ Ziemia {live.bzAtEarth > 0 ? "+" : ""}
-                    {live.bzAtEarth.toFixed(1)} nT
+                    Bz @ Ziemia {bzAtEarth > 0 ? "+" : ""}
+                    {bzAtEarth.toFixed(1)} nT
                   </span>
                 )}
-                {live.stormy && (
+                {stormy && (
                   <span className="ops-aurora-showcase__chip ops-aurora-showcase__chip--storm">
                     Burza geomagnetyczna
                   </span>
@@ -116,9 +79,9 @@ export default function OpsAuroraShowcase({ initialSnapshot, className }: Props)
               </div>
             </div>
 
-            <OpsKpDashboardGauge kp={live.kp} className="ops-aurora-showcase__scale" />
+            <OpsKpDashboardGauge kp={kp} className="ops-aurora-showcase__scale" />
 
-            <KpContextCaption reading={live.reading} variant="compact" className="text-[10px] mt-1 block" />
+            <KpContextCaption reading={reading} variant="compact" className="text-[10px] mt-1 block" />
 
             <p className="ops-aurora-showcase__desc">
               Śledź warunki geomagnetyczne i sprawdź szansę na zorzę u siebie.

@@ -685,37 +685,49 @@ export function getFlareColor(flux: number): string {
   return "#00ddff";
 }
 
+/** Średni synodyczny miesiąc księżycowy (dni). */
+const SYNODIC_MONTH_DAYS = 29.530588853;
+
+/** Nów odniesienia: 2000-01-06 18:14 UTC (USNO). */
+const KNOWN_NEW_MOON_UTC = Date.UTC(2000, 0, 6, 18, 14, 0);
+
 export function getMoonPhase(date: Date): { name: string; emoji: string; illumination: number } {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
+  const msPerDay = 86_400_000;
+  const daysSince =
+    ((((date.getTime() - KNOWN_NEW_MOON_UTC) / msPerDay) % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) %
+    SYNODIC_MONTH_DAYS;
 
-  const c = Math.floor(year / 100);
-  const y = year - 100 * c;
-  const j = Math.floor((c - 15) / 2) + 202 - 11 * (y % 19);
-  const l = 30 - (j % 30);
-  const q = (day - l) % 30;
-  const phase = Math.abs(q - 15) / 15;
-
-  const illumination = Math.round((1 - phase) * 100);
-
-  // Simple cycle based on days since known new moon
-  const known = new Date(2000, 0, 6).getTime();
-  const diff = date.getTime() - known;
-  const cycle = 29.530588853;
-  const daysSince = diff / (1000 * 60 * 60 * 24);
-  const pos = ((daysSince % cycle) + cycle) % cycle;
+  const illumination = Math.round(
+    ((1 - Math.cos((2 * Math.PI * daysSince) / SYNODIC_MONTH_DAYS)) / 2) * 100,
+  );
 
   let name: string;
   let emoji: string;
-  if (pos < 1) { name = "Nów"; emoji = "🌑"; }
-  else if (pos < 7.4) { name = "Rosnący sierp"; emoji = "🌒"; }
-  else if (pos < 8.4) { name = "Pierwsza kwadra"; emoji = "🌓"; }
-  else if (pos < 14.8) { name = "Rosnący garbaty"; emoji = "🌔"; }
-  else if (pos < 15.8) { name = "Pełnia"; emoji = "🌕"; }
-  else if (pos < 22.1) { name = "Malejący garbaty"; emoji = "🌖"; }
-  else if (pos < 23.1) { name = "Ostatnia kwadra"; emoji = "🌗"; }
-  else { name = "Malejący sierp"; emoji = "🌘"; }
+  if (daysSince < 1) {
+    name = "Nów";
+    emoji = "🌑";
+  } else if (daysSince < 7.4) {
+    name = "Rosnący sierp";
+    emoji = "🌒";
+  } else if (daysSince < 8.4) {
+    name = "Pierwsza kwadra";
+    emoji = "🌓";
+  } else if (daysSince < 14.8) {
+    name = "Rosnący garbaty";
+    emoji = "🌔";
+  } else if (daysSince < 15.8) {
+    name = "Pełnia";
+    emoji = "🌕";
+  } else if (daysSince < 22.1) {
+    name = "Malejący garbaty";
+    emoji = "🌖";
+  } else if (daysSince < 23.1) {
+    name = "Ostatnia kwadra";
+    emoji = "🌗";
+  } else {
+    name = "Malejący sierp";
+    emoji = "🌘";
+  }
 
   return { name, emoji, illumination: Math.min(100, Math.max(0, illumination)) };
 }
