@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import OpsPinList from "@/components/discover/OpsPinList";
 import OpsIssPolandPasses from "@/components/discover/OpsIssPolandPasses";
 import { captionForMapPin } from "@/lib/ops/map-pin-caption";
+import { buildIssMapPin, ISS_MAP_PIN_ID } from "@/lib/ops/iss-map-pin";
 import { resolveMapPinSpotlight } from "@/lib/ops/map-pin-spotlight";
 import type { IssPolandPass } from "@/lib/ops/iss-poland-passes.types";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
@@ -61,10 +62,16 @@ export default function OpsMissionMap({
     setFocusPinId((prev) => (prev === pinId ? null : pinId));
   }, []);
 
-  const focusedPin = useMemo(
-    () => (focusPinId ? pins.find((p) => p.id === focusPinId) : undefined),
-    [focusPinId, pins],
-  );
+  const focusedPin = useMemo(() => {
+    if (!focusPinId) return undefined;
+    const pin = pins.find((p) => p.id === focusPinId);
+    if (pin) return pin;
+    // Marker ISS mógł powstać dopiero z danych live (pin nie przyszedł z serwera).
+    if (focusPinId === ISS_MAP_PIN_ID) {
+      return buildIssMapPin(iss ?? { latitude: 0, longitude: 0 });
+    }
+    return undefined;
+  }, [focusPinId, pins, iss]);
 
   const pinDetail = useMemo(() => {
     if (!focusPinId || !focusedPin) return null;

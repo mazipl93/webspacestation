@@ -19,6 +19,7 @@ import { cn } from "@/lib/cn";
 import { issMapPinHtml, ISS_MAP_PIN_HEIGHT, ISS_MAP_PIN_WIDTH } from "@/lib/ops/iss-map-pin-icon";
 import { ISS_MAP_PAGE_CENTER, ISS_MAP_PAGE_ZOOM } from "@/lib/ops/iss-map-view";
 import { issVisibilityRadiusM } from "@/lib/ops/iss-visibility";
+import { withIssPin } from "@/lib/ops/iss-map-pin";
 import { opsMapShellClass } from "@/lib/ops/ops-map-shell-class";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 import "leaflet/dist/leaflet.css";
@@ -294,7 +295,15 @@ export default function OpsLiveMap({
   const hasOrbitData = refLon != null && (displayPast.length > 0 || displayFuture.length > 0);
   /** Opacity guard: polylines render immediately (no layout flash), fade in when ready. */
   const orbitOpacity = orbitReady ? 1 : 0;
-  const issPin = pins.find((p) => p.kind === "iss");
+  /**
+   * Pin ISS z pozycją live — focus / mapa trafiają tam, gdzie marker.
+   * Gdy snapshot z serwera nie zawiera pinu ISS (iss: null w DB), tworzymy go z danych live,
+   * inaczej telemetria i orbita działały, a marker stacji w ogóle się nie renderował.
+   */
+  const effectivePins = useMemo(() => withIssPin(pins, liveIss), [pins, liveIss]);
+
+  const issPin = effectivePins.find((p) => p.kind === "iss");
+  const issPinId = issPin?.id ?? null;
   const cosmodromePins = pins.filter((p) => p.kind === "cosmodrome");
   const extraPadPins = pins.filter((p) => p.kind === "pad");
 
@@ -304,19 +313,10 @@ export default function OpsLiveMap({
     return null;
   }, [liveIss, issPin]);
 
-  /** Pin ISS z podmienioną pozycją live — focus / mapa trafiają tam, gdzie marker. */
-  const effectivePins = useMemo(() => {
-    if (!liveIss) return pins;
-    return pins.map((p) =>
-      p.kind === "iss"
-        ? { ...p, lat: liveIss.latitude, lon: liveIss.longitude }
-        : p,
-    );
-  }, [pins, liveIss]);
-
+  // Zależność od id (nie obiektu pinu) — ikona nie jest odtwarzana przy każdym ticku pozycji (5 s).
   const issIcon = useMemo(
-    () => (issPin ? createIssIcon(focusPinId === issPin.id) : null),
-    [issPin, focusPinId]
+    () => (issPinId ? createIssIcon(focusPinId === issPinId) : null),
+    [issPinId, focusPinId]
   );
   const siteIcons = useMemo(() => {
     const icons: Record<string, L.DivIcon> = {};

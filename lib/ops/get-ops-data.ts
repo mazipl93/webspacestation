@@ -32,6 +32,7 @@ import { withTimeout } from "@/lib/ops/with-timeout";
 import { isLaunchFeedStale } from "@/lib/ops/launch-phase";
 import { isIssPositionStale } from "@/lib/ops/iss-stale";
 import { fetchIssCoreFields } from "@/lib/ops/refresh-iss-fields";
+import { withIssPin } from "@/lib/ops/iss-map-pin";
 
 export { OPS_CACHE_TAG };
 
@@ -215,7 +216,11 @@ function cachedVideoLoader() {
 /** Homepage + Centrum operacyjne — tylko starty, ISS, mapa (bez NASA). */
 export async function getHomepageOpsData(): Promise<OpsSnapshot> {
   const core = await cachedCoreLoader();
-  return coreToOpsSnapshot(core);
+  // Snapshot z DB mógł zostać zapisany bez pinu ISS — pozycja i pin muszą być spójne.
+  return coreToOpsSnapshot({
+    ...core,
+    mapPins: withIssPin(core.mapPins, core.iss),
+  });
 }
 
 /** Starty + kalendarz — ten sam rdzeń co homepage. */

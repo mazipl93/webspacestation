@@ -1,18 +1,15 @@
 import { computeIssLiveTrack } from "@/lib/ops/iss-orbit";
 import { buildMapPins } from "@/lib/ops/map-geo";
+import { withIssPin } from "@/lib/ops/iss-map-pin";
 import type { OpsCorePayload } from "@/lib/ops/payloads";
 import type { OpsIssPosition, OpsMapPin } from "@/lib/ops/types";
 
+/** Aktualizuje pozycję pinu ISS — i dodaje go, jeśli zapisany snapshot go nie miał. */
 export function refreshIssOnMapPins(
   pins: OpsMapPin[],
   iss: OpsIssPosition | null,
 ): OpsMapPin[] {
-  if (!iss) return pins;
-  return pins.map((pin) =>
-    pin.kind === "iss"
-      ? { ...pin, lat: iss.latitude, lon: iss.longitude }
-      : pin,
-  );
+  return withIssPin(pins, iss);
 }
 
 export type IssCoreFields = Pick<

@@ -8,6 +8,7 @@ import {
 } from "@/lib/ops/major-cosmodromes";
 import type { OpsMapPin } from "@/lib/ops/types";
 import type { OpsIssPosition } from "@/lib/ops/types";
+import { buildIssMapPin } from "@/lib/ops/iss-map-pin";
 
 const COSMODROME_COLOR = "#64748b";
 
@@ -35,15 +36,7 @@ export function buildMapPins(
   const pins: OpsMapPin[] = [];
 
   if (iss) {
-    pins.push({
-      id: "iss-live",
-      label: "ISS",
-      sublabel: "Międzynarodowa Stacja Kosmiczna",
-      color: "#38bdf8",
-      lat: iss.latitude,
-      lon: iss.longitude,
-      kind: "iss",
-    });
+    pins.push(buildIssMapPin(iss));
   }
 
   const scheduledBySite = new Map<
